@@ -108,11 +108,12 @@ def register():
             user.groups.append(group)
         db.session.add(user)
         db.session.commit()
-        flash('Congratulations, you are now registered!', 'success')
+        login_user(user)
+        flash('Welcome to FunList.ai! Your account has been created and you are now logged in.', 'success')
         if form.is_organizer.data:
             flash('As an Event Organizer, please visit LocalMarketingTool.com for additional resources and support.', 'info')
             return redirect('https://localmarketingtool.com')
-        return redirect(url_for('login'))
+        return redirect(url_for('index'))
     return render_template('register.html', form=form)
 
 @app.route('/weekly_top_10')
