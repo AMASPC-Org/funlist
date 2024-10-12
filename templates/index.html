@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="mb-4">Welcome to TheFunMap.com</h1>
+<p class="lead">Discover the best events in Thurston County!</p>
+
+<h2 class="mt-5 mb-3">Weekly Top 10 Events</h2>
+<div class="row row-cols-1 row-cols-md-2 g-4">
+    {% for event in top_events %}
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ event.title }}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">{{ event.date.strftime('%B %d, %Y at %I:%M %p') }}</h6>
+                <p class="card-text">{{ event.description[:100] }}{% if event.description|length > 100 %}...{% endif %}</p>
+                <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-primary">View Details</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="mt-5">
+    <h2 class="mb-3">Explore Events</h2>
+    <a href="{{ url_for('events') }}" class="btn btn-lg btn-primary">Browse All Events</a>
+</div>
+{% endblock %}

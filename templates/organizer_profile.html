@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="mb-4">Organizer Profile</h1>
+
+<form method="POST" action="{{ url_for('organizer_profile') }}">
+    {{ form.hidden_tag() }}
+    <div class="mb-3">
+        {{ form.company_name.label(class="form-label") }}
+        {{ form.company_name(class="form-control") }}
+    </div>
+    <div class="mb-3">
+        {{ form.description.label(class="form-label") }}
+        {{ form.description(class="form-control", rows="3") }}
+    </div>
+    <div class="mb-3">
+        {{ form.website.label(class="form-label") }}
+        {{ form.website(class="form-control") }}
+    </div>
+    <div class="mb-3">
+        {{ form.advertising_opportunities.label(class="form-label") }}
+        {{ form.advertising_opportunities(class="form-control", rows="3") }}
+    </div>
+    <div class="mb-3">
+        {{ form.sponsorship_opportunities.label(class="form-label") }}
+        {{ form.sponsorship_opportunities(class="form-control", rows="3") }}
+    </div>
+    {{ form.submit(class="btn btn-primary") }}
+</form>
+{% endblock %}

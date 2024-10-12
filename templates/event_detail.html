@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="mb-4">{{ event.title }}</h1>
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Event Details</h5>
+        <p class="card-text"><strong>Date:</strong> {{ event.date.strftime('%B %d, %Y at %I:%M %p') }}</p>
+        <p class="card-text"><strong>Location:</strong> {{ event.location }}</p>
+        <p class="card-text"><strong>Category:</strong> {{ event.category|capitalize }}</p>
+        <p class="card-text"><strong>Description:</strong></p>
+        <p class="card-text">{{ event.description }}</p>
+    </div>
+</div>
+
+<div class="mt-4">
+    <h3>Organizer Information</h3>
+    <p><strong>Organized by:</strong> {{ event.organizer.username }}</p>
+    {% if event.organizer.organizerprofile %}
+        <p><strong>Company:</strong> {{ event.organizer.organizerprofile.company_name }}</p>
+        {% if event.organizer.organizerprofile.website %}
+            <p><strong>Website:</strong> <a href="{{ event.organizer.organizerprofile.website }}" target="_blank">{{ event.organizer.organizerprofile.website }}</a></p>
+        {% endif %}
+    {% endif %}
+</div>
+
+{% if event.organizer.organizerprofile %}
+    <div class="mt-4">
+        <h3>Sponsorship and Advertising Opportunities</h3>
+        {% if event.organizer.organizerprofile.advertising_opportunities %}
+            <h4>Advertising Opportunities</h4>
+            <p>{{ event.organizer.organizerprofile.advertising_opportunities }}</p>
+        {% endif %}
+        {% if event.organizer.organizerprofile.sponsorship_opportunities %}
+            <h4>Sponsorship Opportunities</h4>
+            <p>{{ event.organizer.organizerprofile.sponsorship_opportunities }}</p>
+        {% endif %}
+    </div>
+{% endif %}
+
+<a href="{{ url_for('events') }}" class="btn btn-secondary mt-4">Back to Events</a>
+{% endblock %}
