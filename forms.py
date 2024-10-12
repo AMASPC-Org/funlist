@@ -18,8 +18,6 @@ class RegistrationForm(FlaskForm):
         ('parent', 'Parent'),
         ('single', 'Single'),
         ('senior', 'Senior'),
-        ('family', 'Family'),
-        ('teen', 'Teen'),
         ('young_adult', 'Young Adult'),
         ('couple', 'Couple'),
         ('21_plus', '21+')
@@ -43,7 +41,6 @@ class EventForm(FlaskForm):
         ('other', 'Other')
     ], validators=[DataRequired()])
     target_audience = SelectField('Target Audience', choices=[
-        ('family', 'Family'),
         ('adults', 'Adults'),
         ('singles', 'Singles'),
         ('inclusive', 'Inclusive')
