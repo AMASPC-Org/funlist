@@ -25,6 +25,25 @@
         </div>
         {% endfor %}
     </div>
+
+    {% if similar_events %}
+    <h2 class="mt-5 mb-4">Similar Events You Might Like</h2>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for event in similar_events %}
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ event.title }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ event.date.strftime('%B %d, %Y at %I:%M %p') }}</h6>
+                    <p class="card-text">{{ event.description[:100] }}{% if event.description|length > 100 %}...{% endif %}</p>
+                    <p class="card-text"><small class="text-muted">Location: {{ event.location }}</small></p>
+                    <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-outline-primary">View Details</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 {% else %}
     <p class="text-center mt-4">No personalized recommendations available at the moment. Try attending more events or updating your user groups to improve your recommendations!</p>
 {% endif %}
@@ -38,12 +57,16 @@
         <li>Events you've attended</li>
         <li>Popular events among users similar to you</li>
         <li>The event's "Fun Meter" rating</li>
+        <li>Event categories you've shown interest in</li>
+        <li>Upcoming events happening soon</li>
+        <li>Events with similar descriptions to those you've liked</li>
     </ul>
     <p>To get better recommendations, make sure to:</p>
     <ul>
         <li>Update your user groups in your profile</li>
         <li>Express interest in events you like</li>
         <li>Mark events as attended after you've been to them</li>
+        <li>Explore events from various categories</li>
     </ul>
 </div>
 {% endblock %}

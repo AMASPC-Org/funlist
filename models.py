@@ -5,7 +5,7 @@ from datetime import datetime
 
 user_groups = db.Table('user_groups',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
-    db.Column('group_name', db.String(50), primary_key=True)
+    db.Column('group_name', db.String(50), db.ForeignKey('user_group.name'), primary_key=True)
 )
 
 event_interests = db.Table('event_interests',
@@ -18,6 +18,10 @@ event_attendances = db.Table('event_attendances',
     db.Column('event_id', db.Integer, db.ForeignKey('event.id'), primary_key=True)
 )
 
+class UserGroup(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
+
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -26,7 +30,10 @@ class User(UserMixin, db.Model):
     opt_in_email = db.Column(db.Boolean, default=False)
     reset_token = db.Column(db.String(100), unique=True)
     events = db.relationship('Event', backref='organizer', lazy='dynamic')
-    groups = db.relationship('UserGroup', secondary=user_groups, backref=db.backref('users', lazy='dynamic'))
+    groups = db.relationship('UserGroup', secondary=user_groups,
+        primaryjoin=(user_groups.c.user_id == id),
+        secondaryjoin=(user_groups.c.group_name == UserGroup.name),
+        backref=db.backref('users', lazy='dynamic'))
     interested_events = db.relationship('Event', secondary=event_interests, backref=db.backref('interested_users', lazy='dynamic'))
     attended_events = db.relationship('Event', secondary=event_attendances, backref=db.backref('attendees', lazy='dynamic'))
 
@@ -35,10 +42,6 @@ class User(UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
-
-class UserGroup(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), unique=True, nullable=False)
 
 class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)

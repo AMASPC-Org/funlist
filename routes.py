@@ -3,7 +3,7 @@ from flask_login import current_user, login_user, logout_user, login_required
 from app import app, db
 from models import User, Event, OrganizerProfile, UserGroup
 from forms import LoginForm, RegistrationForm, EventForm, OrganizerProfileForm, PasswordResetRequestForm, PasswordResetForm
-from utils import get_weekly_top_events, get_personalized_recommendations, get_events_by_user_groups
+from utils import get_weekly_top_events, get_personalized_recommendations, get_events_by_user_groups, get_similar_events
 import secrets
 
 @app.route('/')
@@ -129,7 +129,15 @@ def map_view():
 @login_required
 def recommendations():
     recommended_events = get_personalized_recommendations(current_user)
-    return render_template('recommendations.html', events=recommended_events, title="Personalized Recommendations")
+    
+    similar_events = []
+    if recommended_events:
+        similar_events = get_similar_events(recommended_events[0])
+    
+    return render_template('recommendations.html', 
+                           events=recommended_events, 
+                           similar_events=similar_events,
+                           title="Personalized Recommendations")
 
 @app.route('/reset_password_request', methods=['GET', 'POST'])
 def reset_password_request():
