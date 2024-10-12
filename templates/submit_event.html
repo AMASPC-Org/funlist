@@ -25,6 +25,14 @@
         {{ form.category.label(class="form-label") }}
         {{ form.category(class="form-select") }}
     </div>
+    <div class="mb-3">
+        {{ form.target_audience.label(class="form-label") }}
+        {{ form.target_audience(class="form-select") }}
+    </div>
+    <div class="mb-3">
+        {{ form.fun_meter.label(class="form-label") }}
+        {{ form.fun_meter(class="form-control", type="number", min="1", max="5") }}
+    </div>
     {{ form.submit(class="btn btn-primary") }}
 </form>
 {% endblock %}

@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, DateTimeField, SelectField
-from wtforms.validators import DataRequired, Email, EqualTo, Length, URL, Optional
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, DateTimeField, SelectField, IntegerField
+from wtforms.validators import DataRequired, Email, EqualTo, Length, URL, Optional, NumberRange
 
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
@@ -28,6 +28,13 @@ class EventForm(FlaskForm):
         ('food', 'Food'),
         ('other', 'Other')
     ], validators=[DataRequired()])
+    target_audience = SelectField('Target Audience', choices=[
+        ('family', 'Family'),
+        ('adults', 'Adults'),
+        ('singles', 'Singles'),
+        ('inclusive', 'Inclusive')
+    ], validators=[DataRequired()])
+    fun_meter = IntegerField('Fun Meter (1-5)', validators=[DataRequired(), NumberRange(min=1, max=5)])
     submit = SubmitField('Submit Event')
 
 class OrganizerProfileForm(FlaskForm):

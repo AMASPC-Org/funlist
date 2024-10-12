@@ -24,6 +24,8 @@ class Event(db.Model):
     date = db.Column(db.DateTime, nullable=False)
     location = db.Column(db.String(100), nullable=False)
     category = db.Column(db.String(50), nullable=False)
+    target_audience = db.Column(db.String(50), nullable=False)
+    fun_meter = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 

@@ -20,6 +20,7 @@ def events():
     category = request.args.get('category')
     date = request.args.get('date')
     location = request.args.get('location')
+    target_audience = request.args.get('target_audience')
 
     query = Event.query
 
@@ -29,6 +30,8 @@ def events():
         query = query.filter(Event.date >= datetime.strptime(date, '%Y-%m-%d'))
     if location:
         query = query.filter(Event.location.ilike(f'%{location}%'))
+    if target_audience:
+        query = query.filter_by(target_audience=target_audience)
 
     events = query.order_by(Event.date).all()
     return render_template('events.html', events=events)
@@ -49,6 +52,8 @@ def submit_event():
             date=form.date.data,
             location=form.location.data,
             category=form.category.data,
+            target_audience=form.target_audience.data,
+            fun_meter=form.fun_meter.data,
             user_id=current_user.id
         )
         db.session.add(event)
@@ -112,3 +117,8 @@ def register():
         flash('Congratulations, you are now registered!', 'success')
         return redirect(url_for('login'))
     return render_template('register.html', form=form)
+
+@app.route('/weekly_top_10')
+def weekly_top_10():
+    top_events = get_weekly_top_events(limit=10)
+    return render_template('weekly_top_10.html', top_events=top_events)
