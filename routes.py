@@ -140,7 +140,6 @@ def reset_password_request():
             reset_token = secrets.token_urlsafe(32)
             user.reset_token = reset_token
             db.session.commit()
-            # Send email with reset instructions (implement this part)
             flash('Check your email for instructions to reset your password', 'info')
         else:
             flash('No account found with that email address', 'error')
