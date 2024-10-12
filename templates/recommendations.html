@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="mb-4">Personalized Event Recommendations</h1>
+
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for event in events %}
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ event.title }}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">{{ event.date.strftime('%B %d, %Y at %I:%M %p') }}</h6>
+                <p class="card-text">{{ event.description[:100] }}{% if event.description|length > 100 %}...{% endif %}</p>
+                <p class="card-text"><small class="text-muted">{{ event.location }}</small></p>
+                <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-primary">View Details</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if not events %}
+<p class="text-center mt-4">No personalized recommendations available at the moment. Try attending more events to improve your recommendations!</p>
+{% endif %}
+{% endblock %}

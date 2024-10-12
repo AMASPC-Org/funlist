@@ -3,7 +3,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from app import app, db, login_manager
 from models import User, Event, OrganizerProfile
 from forms import LoginForm, RegistrationForm, EventForm, OrganizerProfileForm
-from utils import get_weekly_top_events
+from utils import get_weekly_top_events, get_personalized_recommendations
 from datetime import datetime
 
 @login_manager.user_loader
@@ -129,3 +129,9 @@ def weekly_top_10():
 def map_view():
     events = Event.query.all()
     return render_template('map.html', events=events)
+
+@app.route('/recommendations')
+@login_required
+def recommendations():
+    recommended_events = get_personalized_recommendations(current_user)
+    return render_template('recommendations.html', events=recommended_events)
