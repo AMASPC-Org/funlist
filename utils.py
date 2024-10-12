@@ -52,7 +52,7 @@ def get_personalized_recommendations(user, limit=10):
         days_until_event = (event.date - datetime.utcnow()).days
         score += max(0, 30 - days_until_event) / 30  # Max boost for events within 30 days
         
-        # New: Add more weight to very recent events (within the next 7 days)
+        # Add more weight to very recent events (within the next 7 days)
         if days_until_event <= 7:
             score += (7 - days_until_event) * 0.5
         
@@ -73,7 +73,7 @@ def get_personalized_recommendations(user, limit=10):
         if event in user.attended_events:
             score -= 5
         
-        # New: Consider user's location (if available)
+        # Consider user's location (if available)
         if hasattr(user, 'location') and event.location:
             if user.location.lower() in event.location.lower():
                 score += 2
@@ -83,7 +83,7 @@ def get_personalized_recommendations(user, limit=10):
     # Sort events by score
     sorted_events = sorted(event_scores.items(), key=lambda x: x[1], reverse=True)
     
-    # New: Implement diversity factor
+    # Implement diversity factor
     diverse_recommendations = []
     categories_added = set()
     for event, _ in sorted_events:

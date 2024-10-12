@@ -13,6 +13,8 @@ def update_schema():
             if result.fetchone() is None:
                 conn.execute(text("ALTER TABLE \"user\" ADD COLUMN opt_in_email BOOLEAN DEFAULT FALSE"))
                 print("Added opt_in_email column to User table")
+            else:
+                print("opt_in_email column already exists in User table")
         
         # Create default user groups if they don't exist
         default_groups = ['adult', 'parent', 'single', 'senior', 'young_adult', 'couple', '21_plus']
