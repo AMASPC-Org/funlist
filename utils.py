@@ -47,9 +47,14 @@ def get_personalized_recommendations(user, limit=10):
         score += preferred_categories[event.category] * 2  # Increased weight for preferred categories
         # Score based on popularity (number of interested users)
         score += len(event.interested_users)
+        
         # Time-based weighting: higher score for events happening soon
         days_until_event = (event.date - datetime.utcnow()).days
         score += max(0, 30 - days_until_event) / 30  # Max boost for events within 30 days
+        
+        # New: Add more weight to very recent events (within the next 7 days)
+        if days_until_event <= 7:
+            score += (7 - days_until_event) * 0.5
         
         # Content-based similarity
         event_vector = tfidf_matrix[i]
@@ -68,13 +73,27 @@ def get_personalized_recommendations(user, limit=10):
         if event in user.attended_events:
             score -= 5
         
+        # New: Consider user's location (if available)
+        if hasattr(user, 'location') and event.location:
+            if user.location.lower() in event.location.lower():
+                score += 2
+        
         event_scores[event] = score
     
-    # Sort events by score and get top recommendations
+    # Sort events by score
     sorted_events = sorted(event_scores.items(), key=lambda x: x[1], reverse=True)
-    recommendations = [event for event, _ in sorted_events[:limit]]
     
-    return recommendations
+    # New: Implement diversity factor
+    diverse_recommendations = []
+    categories_added = set()
+    for event, _ in sorted_events:
+        if len(diverse_recommendations) >= limit:
+            break
+        if event.category not in categories_added or len(categories_added) >= limit // 2:
+            diverse_recommendations.append(event)
+            categories_added.add(event.category)
+    
+    return diverse_recommendations
 
 def get_events_by_user_groups(user_groups, limit=None):
     events = Event.query.filter(
