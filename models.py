@@ -20,7 +20,6 @@ event_attendances = db.Table('event_attendances',
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(64), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
     is_organizer = db.Column(db.Boolean, default=False)

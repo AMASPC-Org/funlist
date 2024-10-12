@@ -23,6 +23,10 @@ args = "Update Schema"
 task = "workflow.run"
 args = "Add Sample Events"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Create Test User"
+
 [[workflows.workflow]]
 name = "Run Flask App"
 author = "agent"
@@ -56,6 +60,17 @@ agentRequireRestartOnSave = false
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python add_sample_events.py"
+
+[[workflows.workflow]]
+name = "Create Test User"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python create_test_user.py"
 
 [deployment]
 run = ["sh", "-c", "python main.py"]

@@ -95,7 +95,6 @@ def register():
     form = RegistrationForm()
     if form.validate_on_submit():
         user = User(
-            username=form.username.data,
             email=form.email.data,
             is_organizer=form.is_organizer.data,
             opt_in_email=form.opt_in_email.data
@@ -110,6 +109,9 @@ def register():
         db.session.add(user)
         db.session.commit()
         flash('Congratulations, you are now registered!', 'success')
+        if form.is_organizer.data:
+            flash('As an Event Organizer, please visit LocalMarketingTool.com for additional resources and support.', 'info')
+            return redirect('https://localmarketingtool.com')
         return redirect(url_for('login'))
     return render_template('register.html', form=form)
 
@@ -127,7 +129,7 @@ def map_view():
 @login_required
 def recommendations():
     recommended_events = get_personalized_recommendations(current_user)
-    return render_template('recommendations.html', events=recommended_events)
+    return render_template('recommendations.html', events=recommended_events, title="Personalized Recommendations")
 
 @app.route('/reset_password_request', methods=['GET', 'POST'])
 def reset_password_request():

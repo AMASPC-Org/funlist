@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1 class="mb-4">Personalized Event Recommendations</h1>
+<h1 class="mb-4">Your Personalized Event Recommendations</h1>
 
 {% if events %}
     <div class="row row-cols-1 row-cols-md-3 g-4">
@@ -12,8 +12,13 @@
                     <h5 class="card-title">{{ event.title }}</h5>
                     <h6 class="card-subtitle mb-2 text-muted">{{ event.date.strftime('%B %d, %Y at %I:%M %p') }}</h6>
                     <p class="card-text">{{ event.description[:100] }}{% if event.description|length > 100 %}...{% endif %}</p>
-                    <p class="card-text"><small class="text-muted">{{ event.location }}</small></p>
+                    <p class="card-text"><small class="text-muted">Location: {{ event.location }}</small></p>
+                    <p class="card-text"><strong>Category:</strong> {{ event.category|capitalize }}</p>
+                    <p class="card-text"><strong>Target Audience:</strong> {{ event.target_audience|capitalize }}</p>
                     <p class="card-text"><strong>Fun Meter:</strong> {{ event.fun_meter }} / 5</p>
+                    {% if event in current_user.interested_events %}
+                        <p class="card-text"><small class="text-success">You're interested in this event!</small></p>
+                    {% endif %}
                     <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-primary">View Details</a>
                 </div>
             </div>
@@ -23,4 +28,22 @@
 {% else %}
     <p class="text-center mt-4">No personalized recommendations available at the moment. Try attending more events or updating your user groups to improve your recommendations!</p>
 {% endif %}
+
+<div class="mt-5">
+    <h2>How Recommendations Work</h2>
+    <p>Your personalized recommendations are based on:</p>
+    <ul>
+        <li>Your selected user groups</li>
+        <li>Events you've expressed interest in</li>
+        <li>Events you've attended</li>
+        <li>Popular events among users similar to you</li>
+        <li>The event's "Fun Meter" rating</li>
+    </ul>
+    <p>To get better recommendations, make sure to:</p>
+    <ul>
+        <li>Update your user groups in your profile</li>
+        <li>Express interest in events you like</li>
+        <li>Mark events as attended after you've been to them</li>
+    </ul>
+</div>
 {% endblock %}

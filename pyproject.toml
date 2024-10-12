@@ -10,4 +10,6 @@ dependencies = [
     "psycopg2-binary>=2.9.9",
     "flask-login",
     "flask-wtf>=1.2.1",
+    "scikit-learn>=1.5.2",
+    "numpy>=2.1.2",
 ]
