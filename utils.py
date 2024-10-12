@@ -68,15 +68,6 @@ def get_personalized_recommendations(user, limit=10):
         if event in user.attended_events:
             score -= 5
         
-        # New: Consider the user's age group (if available)
-        if hasattr(user, 'age_group'):
-            if user.age_group == event.target_audience:
-                score += 2
-        
-        # New: Consider the event's location (if available)
-        if hasattr(user, 'preferred_location') and event.location == user.preferred_location:
-            score += 2
-        
         event_scores[event] = score
     
     # Sort events by score and get top recommendations
