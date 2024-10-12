@@ -11,30 +11,39 @@ def get_weekly_top_events(limit=10):
 
 def get_personalized_recommendations(user, limit=10):
     """
-    Generate personalized event recommendations for a user.
+    Generate personalized event recommendations for a user based on their groups.
     """
-    # Get the user's attended events
-    attended_events = Event.query.filter(Event.attendees.any(id=user.id)).all()
+    user_groups = [group.name for group in user.groups]
     
-    # Extract categories and target audiences from attended events
-    categories = [event.category for event in attended_events]
-    target_audiences = [event.target_audience for event in attended_events]
-    
-    # Count occurrences of categories and target audiences
-    category_counter = Counter(categories)
-    audience_counter = Counter(target_audiences)
-    
-    # Get the most common category and target audience
-    preferred_category = category_counter.most_common(1)[0][0] if category_counter else None
-    preferred_audience = audience_counter.most_common(1)[0][0] if audience_counter else None
-    
-    # Query for recommended events
+    # Query for events that match the user's groups
     recommended_events = Event.query.filter(
-        (Event.category == preferred_category) | (Event.target_audience == preferred_audience)
-    ).filter(
-        Event.id.notin_([event.id for event in attended_events])
+        Event.target_audience.in_(user_groups)
     ).order_by(
         func.random()
     ).limit(limit).all()
     
+    # If we don't have enough events, add some random events to fill the limit
+    if len(recommended_events) < limit:
+        additional_events = Event.query.filter(
+            ~Event.id.in_([e.id for e in recommended_events])
+        ).order_by(
+            func.random()
+        ).limit(limit - len(recommended_events)).all()
+        recommended_events.extend(additional_events)
+    
     return recommended_events
+
+def get_events_by_user_groups(user_groups, limit=None):
+    """
+    Generate a list of events based on user groups.
+    """
+    events = Event.query.filter(
+        Event.target_audience.in_(user_groups)
+    ).order_by(
+        Event.date
+    )
+    
+    if limit:
+        events = events.limit(limit)
+    
+    return events.all()

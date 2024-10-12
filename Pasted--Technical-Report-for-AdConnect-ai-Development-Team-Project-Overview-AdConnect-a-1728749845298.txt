@@ -1,0 +1,115 @@
+### Technical Report for AdConnect.ai Development Team
+
+---
+
+**Project Overview**  
+AdConnect.ai is a hyper-local advertising platform designed to connect businesses, nonprofits, and organizations with regional marketing opportunities. The primary focus of the platform is to facilitate real-time advertising and sponsorship transactions, providing tools for users to create, manage, search, and bulk upload listings, integrated with FunList.ai for cross-platform sponsor visibility.
+
+### 1. Password Reset Functionality
+**Objective**: Enhance user experience by adding a password reset option during login.
+
+- **Process**: Implement a "Forgot your password?" link on the login page. The backend should send an automated email containing a secure password reset link, valid for a limited period (e.g., 1 hour).
+  
+```python
+def send_reset_link(user_email):
+    token = generate_reset_token(user_email)
+    reset_url = f"{app_url}/reset-password/{token}"
+    send_email(user_email, subject="Password Reset", body=f"Click to reset: {reset_url}")
+    return {"message": "Reset link sent!"}
+```
+
+- **Security**: Ensure the link expires after a set duration to mitigate unauthorized use.
+  
+---
+
+### 2. Footer Copyright Update
+**Objective**: Update the copyright year to 2024.
+
+- **Task**: In the website’s footer, update the copyright text to:  
+  ```html
+  <footer>© 2024 AdConnect.ai. All rights reserved. Powered by <a href="https://localmarketingtool.com">LocalMarketingTool.com</a></footer>
+  ```
+
+---
+
+### 3. Registration: Additional User Groups & Multiple Selections
+**Objective**: Allow users to select one or more user groups during registration to enable targeted recommendations.
+
+- **User Group Categories**:  
+  - Young Adult
+  - Couple
+  - 21+
+
+**Implementation Logic for Event List Generation**: Users selecting multiple categories (e.g., Senior & Single) will see events that cater to overlapping interests.
+
+```python
+def generate_event_list(user_groups):
+    all_events = fetch_all_events()
+    return [event for event in all_events if event.matches_user_groups(user_groups)]
+```
+
+- **UX/UI**:  
+  - Use intuitive checkboxes for multiple selections.
+  - Provide tooltips explaining that selecting multiple categories improves recommendations.
+  
+---
+
+### 4. Weekly Fun List Email Opt-In
+**Objective**: Add an opt-in checkbox for receiving the Weekly Fun List email.
+
+- **Implementation**:  
+  ```html
+  <input type="checkbox" name="weekly_fun_list" value="yes"> I would like to receive the Weekly Fun List Email for events in my area.
+  ```
+
+**Backend**:
+```python
+def register_user(user_data):
+    if user_data.get('weekly_fun_list'):
+        subscribe_to_weekly_list(user_data['email'])
+```
+
+---
+
+### 5. UX/UI Enhancements with Tooltips
+**Objective**: Ensure the UI/UX is clean, responsive, and user-friendly, guiding users through the process of selecting categories.
+
+- **Recommendations**:  
+  - Use tooltips for category selection to clarify that multiple groups can be chosen.  
+  - Implement real-time feedback as users make selections.
+
+```javascript
+// Example of real-time feedback for multiple category selection
+document.querySelectorAll('input[type=checkbox]').forEach(checkbox => {
+  checkbox.addEventListener('change', function() {
+    let selectedGroups = Array.from(document.querySelectorAll('input[type=checkbox]:checked')).map(cb => cb.value);
+    document.querySelector('#feedback').innerText = `You have selected: ${selectedGroups.join(', ')}`;
+  });
+});
+```
+
+---
+
+---
+
+### 10. Notifications System
+**Objective**: Build a robust notification system for all users.
+
+- **Firebase Integration**: Use Firebase for push notifications for events like listing approvals or inquiries.
+
+```javascript
+// Example of Firebase push notifications setup
+firebase.messaging().onMessage((payload) => {
+  displayNotification(payload.notification.title, payload.notification.body);
+});
+```
+
+---
+
+### 11. Scalability, Performance, and Security
+- **Scalability**: Use Google Cloud Load Balancer and Kubernetes (GKE) for handling traffic spikes. 
+- **Data Security**: Ensure API and data security using OAuth 2.0 and Google Cloud KMS for encryption.
+
+---
+
+

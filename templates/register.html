@@ -2,7 +2,7 @@
 
 {% block content %}
 <h1 class="mb-4">Register</h1>
-<form method="POST" action="{{ url_for('register') }}">
+<form method="POST" action="{{ url_for('register') }}" id="registration-form">
     {{ form.hidden_tag() }}
     <div class="mb-3">
         {{ form.username.label(class="form-label") }}
@@ -20,10 +20,48 @@
         {{ form.password2.label(class="form-label") }}
         {{ form.password2(class="form-control") }}
     </div>
+    <div class="mb-3">
+        <label class="form-label">User Groups</label>
+        <div class="form-text mb-2">Select one or more groups that best describe you. Selecting multiple groups improves event recommendations.</div>
+        {% for value, label in form.user_groups.choices %}
+        <div class="form-check">
+            <input class="form-check-input user-group-checkbox" type="checkbox" name="user_groups" value="{{ value }}" id="{{ value }}">
+            <label class="form-check-label" for="{{ value }}">{{ label }}</label>
+        </div>
+        {% endfor %}
+    </div>
+    <div id="group-feedback" class="mb-3 text-info"></div>
     <div class="mb-3 form-check">
         {{ form.is_organizer(class="form-check-input") }}
         {{ form.is_organizer.label(class="form-check-label") }}
     </div>
+    <div class="mb-3 form-check">
+        {{ form.opt_in_email(class="form-check-input") }}
+        {{ form.opt_in_email.label(class="form-check-label") }}
+    </div>
     {{ form.submit(class="btn btn-primary") }}
 </form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('.user-group-checkbox');
+    const feedbackDiv = document.getElementById('group-feedback');
+
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateFeedback);
+    });
+
+    function updateFeedback() {
+        const selectedGroups = Array.from(checkboxes)
+            .filter(cb => cb.checked)
+            .map(cb => cb.nextElementSibling.textContent);
+
+        if (selectedGroups.length > 0) {
+            feedbackDiv.textContent = `You've selected: ${selectedGroups.join(', ')}`;
+        } else {
+            feedbackDiv.textContent = 'Please select at least one user group';
+        }
+    }
+});
+</script>
 {% endblock %}

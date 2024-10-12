@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, DateTimeField, SelectField, IntegerField, FloatField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, DateTimeField, SelectField, IntegerField, FloatField, SelectMultipleField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, URL, Optional, NumberRange
 
 class LoginForm(FlaskForm):
@@ -13,7 +13,19 @@ class RegistrationForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
     password2 = PasswordField('Repeat Password', validators=[DataRequired(), EqualTo('password')])
+    user_groups = SelectMultipleField('User Groups', choices=[
+        ('adult', 'Adult'),
+        ('parent', 'Parent'),
+        ('single', 'Single'),
+        ('senior', 'Senior'),
+        ('family', 'Family'),
+        ('teen', 'Teen'),
+        ('young_adult', 'Young Adult'),
+        ('couple', 'Couple'),
+        ('21_plus', '21+')
+    ], validators=[DataRequired()])
     is_organizer = BooleanField('Register as Event Organizer')
+    opt_in_email = BooleanField('I would like to receive the Weekly Fun List Email for events in my area')
     submit = SubmitField('Register')
 
 class EventForm(FlaskForm):
@@ -46,3 +58,12 @@ class OrganizerProfileForm(FlaskForm):
     advertising_opportunities = TextAreaField('Advertising Opportunities')
     sponsorship_opportunities = TextAreaField('Sponsorship Opportunities')
     submit = SubmitField('Update Profile')
+
+class PasswordResetRequestForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    submit = SubmitField('Request Password Reset')
+
+class PasswordResetForm(FlaskForm):
+    password = PasswordField('New Password', validators=[DataRequired()])
+    password2 = PasswordField('Repeat Password', validators=[DataRequired(), EqualTo('password')])
+    submit = SubmitField('Reset Password')

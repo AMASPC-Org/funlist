@@ -3,19 +3,31 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 
+user_groups = db.Table('user_groups',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('group_name', db.String(50), primary_key=True)
+)
+
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
     is_organizer = db.Column(db.Boolean, default=False)
+    opt_in_email = db.Column(db.Boolean, default=False)
+    reset_token = db.Column(db.String(100), unique=True)
     events = db.relationship('Event', backref='organizer', lazy='dynamic')
+    groups = db.relationship('UserGroup', secondary=user_groups, backref=db.backref('users', lazy='dynamic'))
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+class UserGroup(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
 
 class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
