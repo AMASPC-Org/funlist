@@ -51,6 +51,8 @@ def submit_event():
             description=form.description.data,
             date=form.date.data,
             location=form.location.data,
+            latitude=form.latitude.data,
+            longitude=form.longitude.data,
             category=form.category.data,
             target_audience=form.target_audience.data,
             fun_meter=form.fun_meter.data,
@@ -122,3 +124,8 @@ def register():
 def weekly_top_10():
     top_events = get_weekly_top_events(limit=10)
     return render_template('weekly_top_10.html', top_events=top_events)
+
+@app.route('/map')
+def map_view():
+    events = Event.query.all()
+    return render_template('map.html', events=events)

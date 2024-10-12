@@ -7,6 +7,8 @@ def update_schema():
         with db.engine.connect() as conn:
             conn.execute(db.text("ALTER TABLE event ADD COLUMN IF NOT EXISTS target_audience VARCHAR(50)"))
             conn.execute(db.text("ALTER TABLE event ADD COLUMN IF NOT EXISTS fun_meter INTEGER"))
+            conn.execute(db.text("ALTER TABLE event ADD COLUMN IF NOT EXISTS latitude FLOAT"))
+            conn.execute(db.text("ALTER TABLE event ADD COLUMN IF NOT EXISTS longitude FLOAT"))
             conn.commit()
     
     print("Database schema updated successfully.")

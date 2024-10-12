@@ -23,6 +23,8 @@ class Event(db.Model):
     description = db.Column(db.Text, nullable=False)
     date = db.Column(db.DateTime, nullable=False)
     location = db.Column(db.String(100), nullable=False)
+    latitude = db.Column(db.Float, nullable=True)
+    longitude = db.Column(db.Float, nullable=True)
     category = db.Column(db.String(50), nullable=False)
     target_audience = db.Column(db.String(50), nullable=False)
     fun_meter = db.Column(db.Integer, nullable=False)

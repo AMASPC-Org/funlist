@@ -22,6 +22,14 @@
         {{ form.location(class="form-control") }}
     </div>
     <div class="mb-3">
+        {{ form.latitude.label(class="form-label") }}
+        {{ form.latitude(class="form-control", type="number", step="any") }}
+    </div>
+    <div class="mb-3">
+        {{ form.longitude.label(class="form-label") }}
+        {{ form.longitude(class="form-control", type="number", step="any") }}
+    </div>
+    <div class="mb-3">
         {{ form.category.label(class="form-label") }}
         {{ form.category(class="form-select") }}
     </div>

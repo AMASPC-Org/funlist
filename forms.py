@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, DateTimeField, SelectField, IntegerField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, DateTimeField, SelectField, IntegerField, FloatField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, URL, Optional, NumberRange
 
 class LoginForm(FlaskForm):
@@ -21,6 +21,8 @@ class EventForm(FlaskForm):
     description = TextAreaField('Description', validators=[DataRequired()])
     date = DateTimeField('Date and Time', validators=[DataRequired()], format='%Y-%m-%d %H:%M')
     location = StringField('Location', validators=[DataRequired()])
+    latitude = FloatField('Latitude', validators=[Optional(), NumberRange(min=-90, max=90)])
+    longitude = FloatField('Longitude', validators=[Optional(), NumberRange(min=-180, max=180)])
     category = SelectField('Category', choices=[
         ('music', 'Music'),
         ('sports', 'Sports'),
