@@ -27,7 +27,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
     is_organizer = db.Column(db.Boolean, default=False)
-    opt_in_email = db.Column(db.Boolean, default=False)
+    opt_in_email = db.Column(db.Boolean, default=False)  # Added this line
     reset_token = db.Column(db.String(100), unique=True)
     events = db.relationship('Event', backref='organizer', lazy='dynamic')
     groups = db.relationship('UserGroup', secondary=user_groups,
