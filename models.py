@@ -8,6 +8,16 @@ user_groups = db.Table('user_groups',
     db.Column('group_name', db.String(50), primary_key=True)
 )
 
+event_interests = db.Table('event_interests',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('event_id', db.Integer, db.ForeignKey('event.id'), primary_key=True)
+)
+
+event_attendances = db.Table('event_attendances',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('event_id', db.Integer, db.ForeignKey('event.id'), primary_key=True)
+)
+
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, nullable=False)
@@ -18,6 +28,8 @@ class User(UserMixin, db.Model):
     reset_token = db.Column(db.String(100), unique=True)
     events = db.relationship('Event', backref='organizer', lazy='dynamic')
     groups = db.relationship('UserGroup', secondary=user_groups, backref=db.backref('users', lazy='dynamic'))
+    interested_events = db.relationship('Event', secondary=event_interests, backref=db.backref('interested_users', lazy='dynamic'))
+    attended_events = db.relationship('Event', secondary=event_attendances, backref=db.backref('attendees', lazy='dynamic'))
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

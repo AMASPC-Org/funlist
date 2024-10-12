@@ -161,3 +161,27 @@ def reset_password(token):
         flash('Your password has been reset', 'success')
         return redirect(url_for('login'))
     return render_template('reset_password.html', form=form)
+
+@app.route('/express_interest/<int:event_id>')
+@login_required
+def express_interest(event_id):
+    event = Event.query.get_or_404(event_id)
+    if event not in current_user.interested_events:
+        current_user.interested_events.append(event)
+        db.session.commit()
+        flash('You have expressed interest in this event!', 'success')
+    else:
+        flash('You have already expressed interest in this event.', 'info')
+    return redirect(url_for('event_detail', event_id=event_id))
+
+@app.route('/mark_attended/<int:event_id>')
+@login_required
+def mark_attended(event_id):
+    event = Event.query.get_or_404(event_id)
+    if event not in current_user.attended_events:
+        current_user.attended_events.append(event)
+        db.session.commit()
+        flash('You have marked this event as attended!', 'success')
+    else:
+        flash('You have already marked this event as attended.', 'info')
+    return redirect(url_for('event_detail', event_id=event_id))
