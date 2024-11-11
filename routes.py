@@ -7,7 +7,8 @@ from db_init import db
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 import logging
 from typing import List
-from email_utils import send_verification_email
+# Temporarily comment out email verification import
+# from email_utils import send_verification_email
 from urllib.parse import unquote
 
 logger = logging.getLogger(__name__)
@@ -30,21 +31,24 @@ def init_routes(app):
                 user = User()
                 user.email = form.email.data
                 user.password_hash = generate_password_hash(form.password.data)
-                user.account_active = False  # Account inactive until email verified
+                # Set account active by default (temporary)
+                user.account_active = True
+                user.email_verified = True  # Temporarily set to True
                 
                 # Add user to database
                 db.session.add(user)
                 db.session.commit()
                 
-                # Send verification email
-                try:
-                    send_verification_email(user)
-                    logger.info(f"Verification email sent to user: {user.email}")
-                    flash('Please check your email to verify your account before logging in.', 'info')
-                except Exception as e:
-                    logger.error(f"Error sending verification email: {str(e)}")
-                    flash('Account created but there was a problem sending the verification email. Please contact support.', 'warning')
+                # Email verification temporarily disabled
+                # try:
+                #     send_verification_email(user)
+                #     logger.info(f"Verification email sent to user: {user.email}")
+                #     flash('Please check your email to verify your account before logging in.', 'info')
+                # except Exception as e:
+                #     logger.error(f"Error sending verification email: {str(e)}")
+                #     flash('Account created but there was a problem sending the verification email. Please contact support.', 'warning')
                 
+                flash('Account created successfully! You can now log in.', 'success')
                 return redirect(url_for('login'))
                 
             except IntegrityError as e:
@@ -70,39 +74,40 @@ def init_routes(app):
         
         return render_template('signup.html', form=form)
 
-    @app.route('/verify/<token>')
-    def verify_email(token):
-        try:
-            # Decode the URL-encoded token
-            decoded_token = unquote(token)
-            email = User.verify_token(decoded_token, app.config['SECRET_KEY'])
+    # Temporarily comment out email verification route
+    # @app.route('/verify/<token>')
+    # def verify_email(token):
+    #     try:
+    #         # Decode the URL-encoded token
+    #         decoded_token = unquote(token)
+    #         email = User.verify_token(decoded_token, app.config['SECRET_KEY'])
             
-            if email is None:
-                flash('The verification link is invalid or has expired. Please request a new verification email.', 'danger')
-                return redirect(url_for('login'))
+    #         if email is None:
+    #             flash('The verification link is invalid or has expired. Please request a new verification email.', 'danger')
+    #             return redirect(url_for('login'))
             
-            user = User.query.filter_by(email=email).first()
-            if user is None:
-                logger.error(f"No user found for email: {email}")
-                flash('Invalid verification link.', 'danger')
-                return redirect(url_for('login'))
+    #         user = User.query.filter_by(email=email).first()
+    #         if user is None:
+    #             logger.error(f"No user found for email: {email}")
+    #             flash('Invalid verification link.', 'danger')
+    #             return redirect(url_for('login'))
             
-            if user.email_verified:
-                flash('Email already verified. Please login.', 'info')
-                return redirect(url_for('login'))
+    #         if user.email_verified:
+    #             flash('Email already verified. Please login.', 'info')
+    #             return redirect(url_for('login'))
             
-            user.email_verified = True
-            user.account_active = True
-            db.session.commit()
+    #         user.email_verified = True
+    #         user.account_active = True
+    #         db.session.commit()
             
-            logger.info(f"Email verified successfully for user: {email}")
-            flash('Your email has been verified! You can now log in.', 'success')
-            return redirect(url_for('login'))
+    #         logger.info(f"Email verified successfully for user: {email}")
+    #         flash('Your email has been verified! You can now log in.', 'success')
+    #         return redirect(url_for('login'))
             
-        except Exception as e:
-            logger.error(f"Error during email verification: {str(e)}")
-            flash('An error occurred during verification. Please try again or contact support.', 'danger')
-            return redirect(url_for('login'))
+    #     except Exception as e:
+    #         logger.error(f"Error during email verification: {str(e)}")
+    #         flash('An error occurred during verification. Please try again or contact support.', 'danger')
+    #         return redirect(url_for('login'))
 
     @app.route('/login', methods=['GET'])
     def login():

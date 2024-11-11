@@ -11,8 +11,8 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(256), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    account_active = db.Column(db.Boolean, default=False, nullable=False)
-    email_verified = db.Column(db.Boolean, default=False, nullable=False)
+    account_active = db.Column(db.Boolean, default=True, nullable=False)  # Changed default to True
+    email_verified = db.Column(db.Boolean, default=True, nullable=False)  # Changed default to True
     email_verification_sent_at = db.Column(db.DateTime)
     last_login = db.Column(db.DateTime)
 
@@ -25,6 +25,7 @@ class User(UserMixin, db.Model):
     def __repr__(self):
         return f'<User {self.email}>'
 
+    # Keep token methods for future use
     @staticmethod
     def generate_verification_token(email, secret_key):
         try:
@@ -38,7 +39,7 @@ class User(UserMixin, db.Model):
     @staticmethod
     def verify_token(token, secret_key, expiration=3600):
         try:
-            salt = 'ev'  # Use the same shortened salt
+            salt = 'ev'
             serializer = URLSafeTimedSerializer(secret_key)
             email = serializer.loads(token, salt=salt, max_age=expiration)
             return email
