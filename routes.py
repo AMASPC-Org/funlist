@@ -8,6 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 import logging
 from typing import List
 from email_utils import send_verification_email
+from urllib.parse import unquote
 
 logger = logging.getLogger(__name__)
 
@@ -39,11 +40,19 @@ def init_routes(app):
                 db.session.add(user)
                 db.session.commit()
                 
-                # Send verification email
+                # Send verification email with improved error handling
                 try:
                     send_verification_email(user)
                     logger.info(f"Verification email sent to user: {user.email}")
                     flash('Please check your email to verify your account before logging in.', 'info')
+                except ValueError as e:
+                    logger.error(f"Validation error during email verification: {str(e)}")
+                    flash('Invalid email format. Please contact support.', 'danger')
+                    return render_template('signup.html', form=form)
+                except UnicodeError as e:
+                    logger.error(f"Unicode encoding error during email verification: {str(e)}")
+                    flash('Unable to process email verification. Please contact support.', 'danger')
+                    return render_template('signup.html', form=form)
                 except Exception as e:
                     logger.error(f"Error sending verification email: {str(e)}")
                     flash('Account created but there was a problem sending the verification email. Please contact support.', 'warning')
@@ -71,19 +80,22 @@ def init_routes(app):
                 logger.error(f"Unexpected error during sign up: {str(e)}")
                 flash('An unexpected error occurred. Please try again. If the problem persists, contact support.', 'danger')
         
-        # If form validation failed, errors will be shown in the template
         return render_template('signup.html', form=form)
 
     @app.route('/verify/<token>')
     def verify_email(token):
         try:
-            email = User.verify_token(token, app.config['SECRET_KEY'])
+            # Decode the URL-encoded token
+            decoded_token = unquote(token)
+            email = User.verify_token(decoded_token, app.config['SECRET_KEY'])
+            
             if email is None:
-                flash('The verification link is invalid or has expired.', 'danger')
+                flash('The verification link is invalid or has expired. Please request a new verification email.', 'danger')
                 return redirect(url_for('login'))
             
             user = User.query.filter_by(email=email).first()
             if user is None:
+                logger.error(f"No user found for email: {email}")
                 flash('Invalid verification link.', 'danger')
                 return redirect(url_for('login'))
             
@@ -95,12 +107,17 @@ def init_routes(app):
             user.account_active = True
             db.session.commit()
             
+            logger.info(f"Email verified successfully for user: {email}")
             flash('Your email has been verified! You can now log in.', 'success')
             return redirect(url_for('login'))
             
+        except UnicodeError as e:
+            logger.error(f"Unicode error during email verification: {str(e)}")
+            flash('Invalid verification link format. Please try again or contact support.', 'danger')
+            return redirect(url_for('login'))
         except Exception as e:
             logger.error(f"Error during email verification: {str(e)}")
-            flash('An error occurred during verification. Please try again.', 'danger')
+            flash('An error occurred during verification. Please try again or contact support.', 'danger')
             return redirect(url_for('login'))
 
     @app.route('/login', methods=['GET'])
