@@ -1,4 +1,4 @@
-from flask import render_template, flash, redirect, url_for, request
+from flask import render_template, flash, redirect, url_for, request, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user, login_required, login_user, logout_user
 from forms import SignupForm, LoginForm, ProfileForm
@@ -6,10 +6,25 @@ from models import User
 from db_init import db
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 import logging
+from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
 def init_routes(app):
+    @app.before_request
+    def before_request():
+        if current_user.is_authenticated:
+            # Update session timestamp
+            session['last_activity'] = datetime.utcnow()
+            
+            # Check session timeout (30 minutes of inactivity)
+            if 'last_activity' in session:
+                last_activity = session['last_activity']
+                if datetime.utcnow() - last_activity > timedelta(minutes=30):
+                    logout_user()
+                    flash('Your session has expired. Please log in again.', 'info')
+                    return redirect(url_for('login'))
+
     @app.route('/')
     def index():
         if current_user.is_authenticated:
@@ -71,8 +86,18 @@ def init_routes(app):
                 user = User.query.filter_by(email=form.email.data).first()
                 
                 if user and user.check_password(form.password.data):
+                    # Set session as permanent if remember me is checked
+                    if form.remember_me.data:
+                        session.permanent = True
+                    
                     login_user(user, remember=form.remember_me.data)
                     user.last_login = db.func.now()
+                    
+                    # Record login in session
+                    session['user_id'] = user.id
+                    session['login_time'] = datetime.utcnow()
+                    session['last_activity'] = datetime.utcnow()
+                    
                     db.session.commit()
                     
                     flash('Logged in successfully!', 'success')
@@ -96,6 +121,8 @@ def init_routes(app):
     @app.route('/logout')
     @login_required
     def logout():
+        # Clear session data
+        session.clear()
         logout_user()
         flash('You have been logged out successfully.', 'info')
         return redirect(url_for('login'))
