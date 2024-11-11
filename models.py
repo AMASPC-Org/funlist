@@ -11,8 +11,8 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(256), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    account_active = db.Column(db.Boolean, default=True, nullable=False)  # Changed default to True
-    email_verified = db.Column(db.Boolean, default=True, nullable=False)  # Changed default to True
+    account_active = db.Column(db.Boolean, default=True, nullable=False)
+    email_verified = db.Column(db.Boolean, default=False, nullable=False)  # Changed back to False
     email_verification_sent_at = db.Column(db.DateTime)
     last_login = db.Column(db.DateTime)
 
@@ -20,12 +20,11 @@ class User(UserMixin, db.Model):
         return str(self.id)
 
     def is_active(self):
-        return self.account_active
+        return self.account_active and self.email_verified  # Updated to require email verification
 
     def __repr__(self):
         return f'<User {self.email}>'
 
-    # Keep token methods for future use
     @staticmethod
     def generate_verification_token(email, secret_key):
         try:

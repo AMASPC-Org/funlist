@@ -53,7 +53,6 @@ init_routes(app)
 
 # Create database tables
 with app.app_context():
-    db.drop_all()  # Temporarily added to recreate tables
     db.create_all()
 
 if __name__ == '__main__':
