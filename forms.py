@@ -4,9 +4,9 @@ from wtforms.validators import DataRequired, Email, Length, EqualTo, ValidationE
 
 class SignupForm(FlaskForm):
     email = StringField('Email', validators=[
-        DataRequired(message="Please enter an email address"),
-        Email(message="Please enter a valid email address (e.g., user@example.com)"),
-        Length(max=120, message="Email address is too long (maximum is 120 characters)")
+        DataRequired(message="Please enter your email address"),
+        Email(message="Please enter a valid email address"),
+        Length(max=120, message="Email address is too long")
     ])
     password = PasswordField('Password', validators=[
         DataRequired(message="Please enter a password"),

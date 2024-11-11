@@ -26,10 +26,6 @@ def init_routes(app):
         form = SignupForm()
         if form.validate_on_submit():
             try:
-                if not form.password.data:
-                    flash('Password is required. Please enter a secure password.', 'danger')
-                    return render_template('signup.html', form=form)
-
                 # Create new user instance
                 user = User()
                 user.email = form.email.data
@@ -40,19 +36,11 @@ def init_routes(app):
                 db.session.add(user)
                 db.session.commit()
                 
-                # Send verification email with improved error handling
+                # Send verification email
                 try:
                     send_verification_email(user)
                     logger.info(f"Verification email sent to user: {user.email}")
                     flash('Please check your email to verify your account before logging in.', 'info')
-                except ValueError as e:
-                    logger.error(f"Validation error during email verification: {str(e)}")
-                    flash('Invalid email format. Please contact support.', 'danger')
-                    return render_template('signup.html', form=form)
-                except UnicodeError as e:
-                    logger.error(f"Unicode encoding error during email verification: {str(e)}")
-                    flash('Unable to process email verification. Please contact support.', 'danger')
-                    return render_template('signup.html', form=form)
                 except Exception as e:
                     logger.error(f"Error sending verification email: {str(e)}")
                     flash('Account created but there was a problem sending the verification email. Please contact support.', 'warning')
@@ -111,10 +99,6 @@ def init_routes(app):
             flash('Your email has been verified! You can now log in.', 'success')
             return redirect(url_for('login'))
             
-        except UnicodeError as e:
-            logger.error(f"Unicode error during email verification: {str(e)}")
-            flash('Invalid verification link format. Please try again or contact support.', 'danger')
-            return redirect(url_for('login'))
         except Exception as e:
             logger.error(f"Error during email verification: {str(e)}")
             flash('An error occurred during verification. Please try again or contact support.', 'danger')
