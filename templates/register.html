@@ -16,9 +16,6 @@
                     <div class="mb-3">
                         {{ form.email.label(class="form-label") }}
                         {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
-                        <small class="form-text text-muted">
-                            Enter a valid email address that you have access to.
-                        </small>
                         {% for error in form.email.errors %}
                             <div class="invalid-feedback">
                                 <i class="fas fa-exclamation-circle"></i> {{ error }}
