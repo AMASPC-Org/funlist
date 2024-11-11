@@ -2,6 +2,7 @@ from flask_login import UserMixin
 from datetime import datetime
 from db_init import db
 import logging
+from werkzeug.security import generate_password_hash, check_password_hash
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +23,12 @@ class User(UserMixin, db.Model):
     interests = db.Column(db.String(200))
     birth_date = db.Column(db.Date)
     profile_updated_at = db.Column(db.DateTime)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
     def get_id(self):
         return str(self.id)

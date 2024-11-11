@@ -27,7 +27,7 @@ def init_routes(app):
                 # Create new user instance
                 user = User()
                 user.email = form.email.data
-                user.password_hash = generate_password_hash(form.password.data)
+                user.set_password(form.password.data)
                 user.account_active = True
                 
                 # Add user to database
@@ -70,14 +70,16 @@ def init_routes(app):
             try:
                 user = User.query.filter_by(email=form.email.data).first()
                 
-                if user and check_password_hash(user.password_hash, form.password.data):
+                if user and user.check_password(form.password.data):
                     login_user(user, remember=form.remember_me.data)
                     user.last_login = db.func.now()
                     db.session.commit()
                     
                     flash('Logged in successfully!', 'success')
-                    return redirect(url_for('index'))
+                    next_page = request.args.get('next')
+                    return redirect(next_page or url_for('index'))
                 else:
+                    logger.warning(f"Failed login attempt for email: {form.email.data}")
                     flash('Invalid email or password. Please try again.', 'danger')
                     
             except SQLAlchemyError as e:
