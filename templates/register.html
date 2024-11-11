@@ -14,18 +14,11 @@
                     {{ form.hidden_tag() }}
                     
                     <div class="mb-3">
-                        {{ form.username.label(class="form-label") }}
-                        {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else "")) }}
-                        {% for error in form.username.errors %}
-                            <div class="invalid-feedback">
-                                <i class="fas fa-exclamation-circle"></i> {{ error }}
-                            </div>
-                        {% endfor %}
-                    </div>
-
-                    <div class="mb-3">
                         {{ form.email.label(class="form-label") }}
                         {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
+                        <small class="form-text text-muted">
+                            Enter a valid email address that you have access to.
+                        </small>
                         {% for error in form.email.errors %}
                             <div class="invalid-feedback">
                                 <i class="fas fa-exclamation-circle"></i> {{ error }}
@@ -36,6 +29,9 @@
                     <div class="mb-3">
                         {{ form.password.label(class="form-label") }}
                         {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else "")) }}
+                        <small class="form-text text-muted">
+                            Password must be at least 8 characters long and contain a mix of letters, numbers, and special characters.
+                        </small>
                         {% for error in form.password.errors %}
                             <div class="invalid-feedback">
                                 <i class="fas fa-exclamation-circle"></i> {{ error }}
@@ -46,6 +42,9 @@
                     <div class="mb-3">
                         {{ form.confirm_password.label(class="form-label") }}
                         {{ form.confirm_password(class="form-control" + (" is-invalid" if form.confirm_password.errors else "")) }}
+                        <small class="form-text text-muted">
+                            Please enter your password again to confirm.
+                        </small>
                         {% for error in form.confirm_password.errors %}
                             <div class="invalid-feedback">
                                 <i class="fas fa-exclamation-circle"></i> {{ error }}

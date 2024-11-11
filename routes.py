@@ -30,7 +30,6 @@ def init_routes(app):
 
                 # Create new user instance
                 user = User()
-                user.username = form.username.data
                 user.email = form.email.data
                 user.password_hash = generate_password_hash(form.password.data)
                 
@@ -38,8 +37,8 @@ def init_routes(app):
                 db.session.add(user)
                 db.session.commit()
                 
-                logger.info(f"Successfully registered user: {user.username}")
-                flash('Registration successful! You can now log in with your credentials.', 'success')
+                logger.info(f"Successfully registered user: {user.email}")
+                flash('Registration successful! You can now log in with your email and password.', 'success')
                 return redirect(url_for('login'))
                 
             except IntegrityError as e:
@@ -47,10 +46,7 @@ def init_routes(app):
                 logger.error(f"Database integrity error during registration: {str(e)}")
                 error_msg = str(e).lower()
                 
-                if 'username' in error_msg and 'unique constraint' in error_msg:
-                    flash('This username is already taken. Please choose a different username.', 'danger')
-                    form.username.errors = list(form.username.errors) + ['Username already exists']
-                elif 'email' in error_msg and 'unique constraint' in error_msg:
+                if 'email' in error_msg and 'unique constraint' in error_msg:
                     flash('This email address is already registered. Please use a different email or try logging in.', 'danger')
                     form.email.errors = list(form.email.errors) + ['Email already registered']
                 else:
