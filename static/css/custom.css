@@ -1,1 +1,23 @@
-/* Add any custom styles here if needed */
+/* Minimal custom styles to complement Bootstrap */
+.card {
+    margin-top: 2rem;
+    border-radius: 0.5rem;
+}
+
+.card-header {
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+}
+
+.form-control:focus {
+    box-shadow: none;
+    border-color: var(--bs-primary);
+}
+
+.btn-primary {
+    padding: 0.75rem;
+}
+
+.alert {
+    margin-bottom: 1.5rem;
+}
