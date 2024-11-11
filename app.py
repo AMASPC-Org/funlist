@@ -3,7 +3,6 @@ import logging
 from flask import Flask
 from flask_login import LoginManager
 from db_init import db
-from email_utils import mail
 
 # Configure logging
 logging.basicConfig(
@@ -24,21 +23,13 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 }
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# Email configuration
-app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER')
-app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
-app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
-
 # initialize extensions
 db.init_app(app)
-mail.init_app(app)
 
 # Setup login manager
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = "login"  # type: ignore
+login_manager.login_view = "login"
 
 # Import models and routes after app initialization to avoid circular imports
 from models import User  # noqa: E402
