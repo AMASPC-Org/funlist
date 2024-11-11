@@ -1,7 +1,7 @@
 from flask import render_template, flash, redirect, url_for
-from werkzeug.security import generate_password_hash
-from flask_login import current_user, login_required
-from forms import SignupForm
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import current_user, login_required, login_user, logout_user
+from forms import SignupForm, LoginForm
 from models import User
 from db_init import db
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
@@ -74,46 +74,43 @@ def init_routes(app):
         
         return render_template('signup.html', form=form)
 
-    # Temporarily comment out email verification route
-    # @app.route('/verify/<token>')
-    # def verify_email(token):
-    #     try:
-    #         # Decode the URL-encoded token
-    #         decoded_token = unquote(token)
-    #         email = User.verify_token(decoded_token, app.config['SECRET_KEY'])
-            
-    #         if email is None:
-    #             flash('The verification link is invalid or has expired. Please request a new verification email.', 'danger')
-    #             return redirect(url_for('login'))
-            
-    #         user = User.query.filter_by(email=email).first()
-    #         if user is None:
-    #             logger.error(f"No user found for email: {email}")
-    #             flash('Invalid verification link.', 'danger')
-    #             return redirect(url_for('login'))
-            
-    #         if user.email_verified:
-    #             flash('Email already verified. Please login.', 'info')
-    #             return redirect(url_for('login'))
-            
-    #         user.email_verified = True
-    #         user.account_active = True
-    #         db.session.commit()
-            
-    #         logger.info(f"Email verified successfully for user: {email}")
-    #         flash('Your email has been verified! You can now log in.', 'success')
-    #         return redirect(url_for('login'))
-            
-    #     except Exception as e:
-    #         logger.error(f"Error during email verification: {str(e)}")
-    #         flash('An error occurred during verification. Please try again or contact support.', 'danger')
-    #         return redirect(url_for('login'))
-
-    @app.route('/login', methods=['GET'])
+    @app.route('/login', methods=['GET', 'POST'])
     def login():
         if current_user.is_authenticated:
             return redirect(url_for('index'))
-        return render_template('login.html')
+
+        form = LoginForm()
+        if form.validate_on_submit():
+            try:
+                user = User.query.filter_by(email=form.email.data).first()
+                
+                if user and check_password_hash(user.password_hash, form.password.data):
+                    login_user(user, remember=form.remember_me.data)
+                    user.last_login = db.func.now()
+                    db.session.commit()
+                    
+                    flash('Logged in successfully!', 'success')
+                    return redirect(url_for('index'))
+                else:
+                    flash('Invalid email or password. Please try again.', 'danger')
+                    
+            except SQLAlchemyError as e:
+                db.session.rollback()
+                logger.error(f"Database error during login: {str(e)}")
+                flash('We encountered a technical issue. Please try again later.', 'danger')
+                
+            except Exception as e:
+                logger.error(f"Unexpected error during login: {str(e)}")
+                flash('An unexpected error occurred. Please try again.', 'danger')
+                
+        return render_template('login.html', form=form)
+
+    @app.route('/logout')
+    @login_required
+    def logout():
+        logout_user()
+        flash('You have been logged out successfully.', 'info')
+        return redirect(url_for('login'))
 
     @app.errorhandler(404)
     def not_found_error(error):
