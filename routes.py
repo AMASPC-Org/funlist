@@ -6,7 +6,8 @@ from models import User
 from db_init import db
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 import logging
-from email_utils import send_verification_email
+# Temporarily comment out email verification import
+# from email_utils import send_verification_email
 from urllib.parse import unquote
 
 logger = logging.getLogger(__name__)
@@ -32,20 +33,22 @@ def init_routes(app):
                 user.email = form.email.data
                 user.password_hash = generate_password_hash(form.password.data)
                 user.account_active = True
-                user.email_verified = False
+                user.email_verified = True  # Temporarily set to True
                 
                 # Add user to database
                 db.session.add(user)
                 db.session.commit()
                 
-                try:
-                    send_verification_email(user)
-                    logger.info(f"Verification email sent to user: {user.email}")
-                    flash('Please check your email to verify your account before logging in.', 'info')
-                except Exception as e:
-                    logger.error(f"Error sending verification email: {str(e)}")
-                    flash('Account created but there was a problem sending the verification email. Please contact support.', 'warning')
+                # Email verification temporarily disabled
+                # try:
+                #     send_verification_email(user)
+                #     logger.info(f"Verification email sent to user: {user.email}")
+                #     flash('Please check your email to verify your account before logging in.', 'info')
+                # except Exception as e:
+                #     logger.error(f"Error sending verification email: {str(e)}")
+                #     flash('Account created but there was a problem sending the verification email. Please contact support.', 'warning')
                 
+                flash('Account created successfully! You can now log in.', 'success')
                 return redirect(url_for('login'))
                 
             except IntegrityError as e:
@@ -115,10 +118,7 @@ def init_routes(app):
                 user = User.query.filter_by(email=form.email.data).first()
                 
                 if user and check_password_hash(user.password_hash, form.password.data):
-                    if not user.email_verified:
-                        flash('Please verify your email address before logging in.', 'warning')
-                        return render_template('login.html', form=form)
-                        
+                    # Remove email verification check
                     login_user(user, remember=form.remember_me.data)
                     user.last_login = db.func.now()
                     db.session.commit()
