@@ -1,27 +1,19 @@
 {% extends "base.html" %}
-
+{% block title %}Welcome{% endblock %}
 {% block content %}
-<h1 class="mb-4">Welcome to FunList.ai</h1>
-<p class="lead">Discover the best events in Thurston County!</p>
-
-<h2 class="mt-5 mb-3">Weekly Top 10 Events</h2>
-<div class="row row-cols-1 row-cols-md-2 g-4">
-    {% for event in top_events %}
-    <div class="col">
-        <div class="card h-100">
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="text-center mb-0">Welcome!</h2>
+            </div>
             <div class="card-body">
-                <h5 class="card-title">{{ event.title }}</h5>
-                <h6 class="card-subtitle mb-2 text-muted">{{ event.date.strftime('%B %d, %Y at %I:%M %p') }}</h6>
-                <p class="card-text">{{ event.description[:100] }}{% if event.description|length > 100 %}...{% endif %}</p>
-                <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-primary">View Details</a>
+                <p class="text-center">You are now logged in.</p>
+                <div class="d-grid">
+                    <a href="{{ url_for('logout') }}" class="btn btn-primary">Logout</a>
+                </div>
             </div>
         </div>
     </div>
-    {% endfor %}
-</div>
-
-<div class="mt-5">
-    <h2 class="mb-3">Explore Events</h2>
-    <a href="{{ url_for('events') }}" class="btn btn-lg btn-primary">Browse All Events</a>
 </div>
 {% endblock %}

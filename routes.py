@@ -15,14 +15,14 @@ logger = logging.getLogger(__name__)
 def init_routes(app):
     @app.route('/')
     def index():
-        if not current_user.is_authenticated:
-            return redirect(url_for('login'))
-        return redirect(url_for('signup'))
+        if current_user.is_authenticated:
+            # Return a simple welcome page
+            return render_template('index.html')
+        return redirect(url_for('login'))
 
     @app.route('/signup', methods=['GET', 'POST'])
     def signup():
         if current_user.is_authenticated:
-            flash('You are already signed up and logged in.', 'info')
             return redirect(url_for('index'))
             
         form = SignupForm()
