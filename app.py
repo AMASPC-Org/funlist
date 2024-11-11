@@ -1,9 +1,10 @@
 import os
 import logging
 from datetime import timedelta
-from flask import Flask
+from flask import Flask, session
 from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect
+from flask_session import Session
 from db_init import db
 
 # Configure logging
@@ -26,7 +27,8 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Session configuration
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=1)  # Session lifetime
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)  # Session timeout after 30 minutes
 app.config['SESSION_COOKIE_SECURE'] = True  # Only send cookies over HTTPS
 app.config['SESSION_COOKIE_HTTPONLY'] = True  # Prevent JavaScript access to session cookie
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # CSRF protection
@@ -38,6 +40,7 @@ app.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
 # initialize extensions
 db.init_app(app)
 csrf = CSRFProtect(app)  # Initialize CSRF protection
+Session(app)  # Initialize Flask-Session
 
 # Setup login manager
 login_manager = LoginManager()
@@ -53,7 +56,7 @@ from routes import init_routes  # noqa: E402
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return db.session.get(User, int(user_id))
 
 # Initialize routes
 init_routes(app)

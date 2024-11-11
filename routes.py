@@ -14,16 +14,32 @@ def init_routes(app):
     @app.before_request
     def before_request():
         if current_user.is_authenticated:
-            # Update session timestamp
-            session['last_activity'] = datetime.utcnow()
+            # Get the current timestamp
+            current_time = datetime.utcnow()
             
-            # Check session timeout (30 minutes of inactivity)
-            if 'last_activity' in session:
-                last_activity = session['last_activity']
-                if datetime.utcnow() - last_activity > timedelta(minutes=30):
-                    logout_user()
-                    flash('Your session has expired. Please log in again.', 'info')
-                    return redirect(url_for('login'))
+            # Initialize last activity if it doesn't exist
+            if 'last_activity' not in session:
+                session['last_activity'] = current_time
+                return
+            
+            # Parse the last activity time
+            last_activity = session.get('last_activity')
+            if isinstance(last_activity, str):
+                try:
+                    last_activity = datetime.fromisoformat(last_activity)
+                except ValueError:
+                    last_activity = current_time
+            
+            # Check for session timeout (30 minutes of inactivity)
+            if (current_time - last_activity) > timedelta(minutes=30):
+                # Clear all session data
+                session.clear()
+                logout_user()
+                flash('Your session has expired. Please log in again.', 'info')
+                return redirect(url_for('login'))
+            
+            # Update last activity time
+            session['last_activity'] = current_time
 
     @app.route('/')
     def index():
@@ -90,14 +106,13 @@ def init_routes(app):
                     if form.remember_me.data:
                         session.permanent = True
                     
+                    # Initialize session data
+                    session['user_id'] = user.id
+                    session['login_time'] = datetime.utcnow().isoformat()
+                    session['last_activity'] = datetime.utcnow().isoformat()
+                    
                     login_user(user, remember=form.remember_me.data)
                     user.last_login = db.func.now()
-                    
-                    # Record login in session
-                    session['user_id'] = user.id
-                    session['login_time'] = datetime.utcnow()
-                    session['last_activity'] = datetime.utcnow()
-                    
                     db.session.commit()
                     
                     flash('Logged in successfully!', 'success')
@@ -121,7 +136,7 @@ def init_routes(app):
     @app.route('/logout')
     @login_required
     def logout():
-        # Clear session data
+        # Clear all session data
         session.clear()
         logout_user()
         flash('You have been logged out successfully.', 'info')
