@@ -28,11 +28,9 @@ class User(UserMixin, db.Model):
     @staticmethod
     def generate_verification_token(email, secret_key):
         try:
-            # Use a shorter salt value
-            salt = 'ev'  # shortened from 'email-verification'
+            salt = 'ev'
             serializer = URLSafeTimedSerializer(secret_key)
-            # Use compression to reduce token size
-            return serializer.dumps(email, salt=salt, compress=True)
+            return serializer.dumps(email, salt=salt)
         except Exception as e:
             logger.error(f"Error generating verification token: {str(e)}")
             return None
