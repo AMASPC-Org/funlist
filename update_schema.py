@@ -1,32 +1,46 @@
 from app import app, db
-from models import User, UserGroup, Event, OrganizerProfile
+from models import User
 from sqlalchemy import text
+import logging
+
+logger = logging.getLogger(__name__)
 
 def update_schema():
     with app.app_context():
         # Create tables if they don't exist
         db.create_all()
         
-        # Add opt_in_email column if it doesn't exist
+        # Add profile columns if they don't exist
+        profile_columns = {
+            'username': 'VARCHAR(50)',
+            'first_name': 'VARCHAR(50)',
+            'last_name': 'VARCHAR(50)',
+            'bio': 'TEXT',
+            'location': 'VARCHAR(100)',
+            'interests': 'VARCHAR(200)',
+            'birth_date': 'DATE',
+            'profile_updated_at': 'TIMESTAMP'
+        }
+        
         with db.engine.connect() as conn:
-            result = conn.execute(text("SELECT column_name FROM information_schema.columns WHERE table_name='user' AND column_name='opt_in_email'"))
-            if result.fetchone() is None:
-                conn.execute(text("ALTER TABLE \"user\" ADD COLUMN opt_in_email BOOLEAN DEFAULT FALSE"))
-                print("Added opt_in_email column to User table")
-            else:
-                print("opt_in_email column already exists in User table")
-        
-        # Create default user groups if they don't exist
-        default_groups = ['adult', 'parent', 'single', 'senior', 'young_adult', 'couple', '21_plus']
-        for group_name in default_groups:
-            group = UserGroup.query.filter_by(name=group_name).first()
-            if group is None:
-                new_group = UserGroup(name=group_name)
-                db.session.add(new_group)
-        
-        db.session.commit()
+            for column, data_type in profile_columns.items():
+                try:
+                    result = conn.execute(text(
+                        f"SELECT column_name FROM information_schema.columns "
+                        f"WHERE table_name='user' AND column_name='{column}'"
+                    ))
+                    if result.fetchone() is None:
+                        conn.execute(text(f'ALTER TABLE "user" ADD COLUMN {column} {data_type}'))
+                        logger.info(f"Added {column} column to User table")
+                    else:
+                        logger.info(f"{column} column already exists in User table")
+                except Exception as e:
+                    logger.error(f"Error adding column {column}: {str(e)}")
+                    raise
+            
+            conn.commit()
     
-    print("Database schema updated successfully.")
+    logger.info("Database schema updated successfully.")
 
 if __name__ == "__main__":
     update_schema()
