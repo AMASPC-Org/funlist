@@ -43,9 +43,14 @@ def init_routes(app):
 
     @app.route('/')
     def index():
+        """
+        Handle the homepage route differently for authenticated and non-authenticated users
+        """
         if current_user.is_authenticated:
-            return render_template('index.html')
-        return redirect(url_for('login'))
+            # Show dashboard/events for logged in users
+            return render_template('index.html', user=current_user)
+        # Show public homepage for non-authenticated users
+        return render_template('home.html')
 
     @app.route('/signup', methods=['GET', 'POST'])
     def signup():
@@ -140,7 +145,7 @@ def init_routes(app):
         session.clear()
         logout_user()
         flash('You have been logged out successfully.', 'info')
-        return redirect(url_for('login'))
+        return redirect(url_for('index'))  # Redirect to index which will show proper page
 
     @app.route('/profile', methods=['GET'])
     @login_required
