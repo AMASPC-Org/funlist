@@ -58,6 +58,10 @@ class Event(db.Model):
     fun_meter = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    website = db.Column(db.String(200))
+    facebook = db.Column(db.String(200))
+    instagram = db.Column(db.String(200))
+    twitter = db.Column(db.String(200))
     
     # Add relationship to User model
     organizer = db.relationship('User', backref='organized_events')

@@ -60,13 +60,34 @@
             </div>
 
             <div class="mt-4">
-                <h5>Organizer Information</h5>
+                <h5>Event Links & Social Media</h5>
+                <div class="social-links">
+                    {% if event.website %}
+                        <a href="{{ event.website }}" class="btn btn-outline-primary mb-2" target="_blank">
+                            <i class="fas fa-globe"></i> Visit Website
+                        </a>
+                    {% endif %}
+                    {% if event.facebook %}
+                        <a href="{{ event.facebook }}" class="btn btn-outline-primary mb-2" target="_blank">
+                            <i class="fab fa-facebook"></i> Facebook
+                        </a>
+                    {% endif %}
+                    {% if event.instagram %}
+                        <a href="{{ event.instagram }}" class="btn btn-outline-primary mb-2" target="_blank">
+                            <i class="fab fa-instagram"></i> Instagram
+                        </a>
+                    {% endif %}
+                    {% if event.twitter %}
+                        <a href="{{ event.twitter }}" class="btn btn-outline-primary mb-2" target="_blank">
+                            <i class="fab fa-twitter"></i> Twitter
+                        </a>
+                    {% endif %}
+                </div>
+
+                <h5 class="mt-4">Organizer Information</h5>
                 <p><strong>Organized by:</strong> {{ event.organizer.username or 'Anonymous' }}</p>
                 {% if event.organizer.organizerprofile %}
                     <p><strong>Company:</strong> {{ event.organizer.organizerprofile.company_name }}</p>
-                    {% if event.organizer.organizerprofile.website %}
-                        <p><strong>Website:</strong> <a href="{{ event.organizer.organizerprofile.website }}" target="_blank">{{ event.organizer.organizerprofile.website }}</a></p>
-                    {% endif %}
                 {% endif %}
             </div>
         </div>
