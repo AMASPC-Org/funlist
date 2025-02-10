@@ -4,6 +4,7 @@ from flask_login import current_user, login_required, login_user, logout_user
 from forms import SignupForm, LoginForm, ProfileForm, EventForm
 from models import User, Event # Added Event import
 from db_init import db
+from utils import geocode_address
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 import logging
 from datetime import datetime, timedelta
