@@ -7,8 +7,23 @@ from db_init import db
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 import logging
 from datetime import datetime, timedelta
+import json
 
 logger = logging.getLogger(__name__)
+
+@app.route('/subscribe', methods=['POST'])
+def subscribe():
+    try:
+        data = request.get_json()
+        email = data.get('email')
+        if email:
+            # Here you would typically save this to your database
+            # For now, we'll just return success
+            return jsonify({'success': True, 'message': 'Subscription successful'})
+        return jsonify({'success': False, 'message': 'Email is required'}), 400
+    except Exception as e:
+        logger.error(f"Subscription error: {str(e)}")
+        return jsonify({'success': False, 'message': 'An error occurred'}), 500
 
 def init_routes(app):
     @app.before_request
