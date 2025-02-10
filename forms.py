@@ -76,7 +76,25 @@ class ProfileForm(FlaskForm):
 class EventForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
     description = TextAreaField('Description', validators=[DataRequired()])
-    date_time = DateTimeLocalField('Date and Time', validators=[DataRequired()])
+    date = DateTimeLocalField('Date and Time', format='%Y-%m-%dT%H:%M', validators=[DataRequired()])
     location = StringField('Location', validators=[DataRequired()])
-    price = FloatField('Price', validators=[NumberRange(min=0)])
-    capacity = SelectField('Capacity', choices=[(str(i), str(i)) for i in range(1, 101)], validators=[DataRequired()]) #Example capacity range
+    latitude = FloatField('Latitude', validators=[DataRequired(), NumberRange(min=-90, max=90)])
+    longitude = FloatField('Longitude', validators=[DataRequired(), NumberRange(min=-180, max=180)])
+    category = SelectField('Category', choices=[
+        ('music', 'Music'), 
+        ('sports', 'Sports'),
+        ('arts', 'Arts'),
+        ('food', 'Food & Drink'),
+        ('other', 'Other')
+    ], validators=[DataRequired()])
+    target_audience = SelectField('Target Audience', choices=[
+        ('all', 'All Ages'),
+        ('adults', 'Adults'),
+        ('kids', 'Kids'),
+        ('seniors', 'Seniors')
+    ], validators=[DataRequired()])
+    website = StringField('Website')
+    facebook = StringField('Facebook')
+    instagram = StringField('Instagram')
+    twitter = StringField('Twitter')
+    submit = SubmitField('Create Event')

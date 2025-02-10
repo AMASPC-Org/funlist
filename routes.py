@@ -1,7 +1,7 @@
 from flask import render_template, flash, redirect, url_for, request, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user, login_required, login_user, logout_user
-from forms import SignupForm, LoginForm, ProfileForm
+from forms import SignupForm, LoginForm, ProfileForm, EventForm
 from models import User, Event # Added Event import
 from db_init import db
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
