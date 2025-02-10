@@ -1,4 +1,3 @@
-
 from datetime import datetime, timedelta
 import random
 from models import Event, User
@@ -18,7 +17,7 @@ def add_sample_events():
             db.session.add(user)
             db.session.commit()
 
-        # Sample events with coordinates
+        # Sample events with coordinates and social media links
         events = [
             {
                 "title": "Olympia Music Festival",
@@ -27,7 +26,11 @@ def add_sample_events():
                 "target_audience": "adults",
                 "fun_meter": 5,
                 "latitude": 47.0379,
-                "longitude": -122.9007
+                "longitude": -122.9007,
+                "website": "https://olympiamusicfest.com",
+                "facebook": "https://facebook.com/olympiamusicfest",
+                "instagram": "https://instagram.com/olympiamusicfest",
+                "twitter": "https://twitter.com/olympiamusicfest"
             },
             {
                 "title": "Thurston County Fair",
@@ -36,7 +39,11 @@ def add_sample_events():
                 "target_audience": "family",
                 "fun_meter": 4,
                 "latitude": 47.0343,
-                "longitude": -122.8815
+                "longitude": -122.8815,
+                "website": "https://thurstoncountyfair.com",
+                "facebook": "https://facebook.com/thurstoncountyfair",
+                "instagram": "https://instagram.com/thurstoncountyfair",
+                "twitter": "https://twitter.com/thurstoncountyfair"
             },
             {
                 "title": "Lakefair Fireworks Show",
@@ -45,7 +52,12 @@ def add_sample_events():
                 "target_audience": "inclusive",
                 "fun_meter": 5,
                 "latitude": 47.0378,
-                "longitude": -122.9054
+                "longitude": -122.9054,
+                "website": "https://lakefair.com",
+                "facebook": "https://facebook.com/lakefair",
+                "instagram": "https://instagram.com/lakefair",
+                "twitter": "https://twitter.com/lakefair"
+
             },
             {
                 "title": "Olympia Farmers Market",
@@ -54,7 +66,11 @@ def add_sample_events():
                 "target_audience": "inclusive",
                 "fun_meter": 3,
                 "latitude": 47.0467,
-                "longitude": -122.9023
+                "longitude": -122.9023,
+                "website": "https://olympiafarmersmarket.com",
+                "facebook": "https://facebook.com/olympiafarmersmarket",
+                "instagram": "https://instagram.com/olympiafarmersmarket",
+                "twitter": "https://twitter.com/olympiafarmersmarket"
             },
             {
                 "title": "Olympia Film Society Movie Night",
@@ -63,7 +79,11 @@ def add_sample_events():
                 "target_audience": "adults",
                 "fun_meter": 4,
                 "latitude": 47.0452,
-                "longitude": -122.8999
+                "longitude": -122.8999,
+                "website": "https://olympiafilmsociety.com",
+                "facebook": "https://facebook.com/olympiafilmsociety",
+                "instagram": "https://instagram.com/olympiafilmsociety",
+                "twitter": "https://twitter.com/olympiafilmsociety"
             }
         ]
 
@@ -79,6 +99,10 @@ def add_sample_events():
                 fun_meter=event_data["fun_meter"],
                 latitude=event_data["latitude"],
                 longitude=event_data["longitude"],
+                website=event_data.get("website", ""), #Handle missing website gracefully.
+                facebook=event_data.get("facebook", ""),
+                instagram=event_data.get("instagram", ""),
+                twitter=event_data.get("twitter", ""),
                 user_id=user.id
             )
             db.session.add(event)
