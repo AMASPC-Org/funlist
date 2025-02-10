@@ -229,6 +229,29 @@ def init_routes(app):
     def not_found_error(error):
         return render_template('404.html'), 404
 
+    @app.route('/submit-event', methods=['GET', 'POST'])
+    @login_required
+    def submit_event():
+        form = EventForm()
+        if form.validate_on_submit():
+            event = Event(
+                title=form.title.data,
+                description=form.description.data,
+                date=form.date.data,
+                location=form.location.data,
+                latitude=form.latitude.data,
+                longitude=form.longitude.data,
+                category=form.category.data,
+                target_audience=form.target_audience.data,
+                fun_meter=3,
+                user_id=current_user.id
+            )
+            db.session.add(event)
+            db.session.commit()
+            flash('Event created successfully!', 'success')
+            return redirect(url_for('events'))
+        return render_template('submit_event.html', form=form)
+
     @app.errorhandler(500)
     def internal_error(error):
         db.session.rollback()

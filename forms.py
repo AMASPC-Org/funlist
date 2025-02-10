@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, DateField
-from wtforms.validators import DataRequired, Email, Length, EqualTo, ValidationError, Regexp, Optional
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, DateField, DateTimeLocalField, SelectField, FloatField
+from wtforms.validators import DataRequired, Email, Length, EqualTo, ValidationError, Regexp, Optional, NumberRange
 
 class SignupForm(FlaskForm):
     email = StringField('Email', validators=[
@@ -72,3 +72,11 @@ class ProfileForm(FlaskForm):
             user = User.query.filter_by(username=username.data).first()
             if user and user.id != self.user_id:
                 raise ValidationError('This username is already taken. Please choose another one.')
+
+class EventForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired()])
+    description = TextAreaField('Description', validators=[DataRequired()])
+    date_time = DateTimeLocalField('Date and Time', validators=[DataRequired()])
+    location = StringField('Location', validators=[DataRequired()])
+    price = FloatField('Price', validators=[NumberRange(min=0)])
+    capacity = SelectField('Capacity', choices=[(str(i), str(i)) for i in range(1, 101)], validators=[DataRequired()]) #Example capacity range
