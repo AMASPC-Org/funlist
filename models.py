@@ -6,6 +6,23 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 logger = logging.getLogger(__name__)
 
+class Event(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+    date = db.Column(db.DateTime, nullable=False)
+    street = db.Column(db.String(100))
+    city = db.Column(db.String(50))
+    state = db.Column(db.String(2))
+    zip_code = db.Column(db.String(10))
+    latitude = db.Column(db.Float)
+    longitude = db.Column(db.Float)
+    category = db.Column(db.String(50))
+    target_audience = db.Column(db.String(50))
+    fun_meter = db.Column(db.Integer)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
