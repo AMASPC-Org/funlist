@@ -1,4 +1,4 @@
-from flask import render_template, flash, redirect, url_for, request, session
+from flask import render_template, flash, redirect, url_for, request, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user, login_required, login_user, logout_user
 from forms import SignupForm, LoginForm, ProfileForm
@@ -11,7 +11,8 @@ import json
 
 logger = logging.getLogger(__name__)
 
-@app.route('/subscribe', methods=['POST'])
+def init_routes(app):
+    @app.route('/subscribe', methods=['POST'])
 def subscribe():
     try:
         data = request.get_json()
