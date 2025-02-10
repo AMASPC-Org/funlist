@@ -40,7 +40,7 @@ agentRequireRestartOnSave = false
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python main.py"
+args = "python app.py"
 
 [[workflows.workflow]]
 name = "Update Schema"
