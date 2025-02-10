@@ -1,8 +1,9 @@
 :root {
-    --primary-color: #0097FB;
-    --secondary-color: #97FB00;
-    --dark-color: #333333;
-    --light-color: #f4f4f4;
+    --primary-color: #2B3990;    /* AMA Blue */
+    --secondary-color: #00A651;   /* AMA Green */
+    --accent-color: #F7941D;      /* AMA Orange */
+    --dark-color: #1A1A1A;        /* Near black */
+    --light-color: #F5F5F5;       /* Off white */
 }
 
 body {
