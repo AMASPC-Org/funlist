@@ -80,6 +80,13 @@ class EventForm(FlaskForm):
     location = StringField('Location', validators=[DataRequired()])
     latitude = FloatField('Latitude', validators=[DataRequired(), NumberRange(min=-90, max=90)])
     longitude = FloatField('Longitude', validators=[DataRequired(), NumberRange(min=-180, max=180)])
+    fun_meter = SelectField('Fun Rating', choices=[
+        ('1', '⭐'),
+        ('2', '⭐⭐'),
+        ('3', '⭐⭐⭐'),
+        ('4', '⭐⭐⭐⭐'),
+        ('5', '⭐⭐⭐⭐⭐')
+    ], validators=[DataRequired()])
     category = SelectField('Category', choices=[
         ('music', 'Music'), 
         ('sports', 'Sports'),
