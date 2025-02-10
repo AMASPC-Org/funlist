@@ -6,7 +6,7 @@
     <h1 class="mb-4">Event Map</h1>
 
     <div class="row mb-4">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <select class="form-select" id="categoryFilter">
                 <option value="">All Categories</option>
                 <option value="music">Music</option>
@@ -16,8 +16,18 @@
                 <option value="other">Other</option>
             </select>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <input type="date" class="form-control" id="dateFilter">
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" id="funFilter">
+                <option value="">All Fun Ratings</option>
+                <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+                <option value="4">⭐⭐⭐⭐ (4+)</option>
+                <option value="3">⭐⭐⭐ (3+)</option>
+                <option value="2">⭐⭐ (2+)</option>
+                <option value="1">⭐ (1+)</option>
+            </select>
         </div>
     </div>
 
@@ -112,6 +122,7 @@
     function filterEvents() {
         const category = document.getElementById('categoryFilter').value;
         const date = document.getElementById('dateFilter').value;
+        const funRating = document.getElementById('funFilter').value;
         
         let filteredEvents = events;
         
@@ -125,6 +136,12 @@
                 new Date(event.date).toDateString() === selectedDate
             );
         }
+
+        if (funRating) {
+            filteredEvents = filteredEvents.filter(event => 
+                event.funMeter >= parseInt(funRating)
+            );
+        }
         
         addMarkers(filteredEvents);
     }
@@ -135,6 +152,7 @@
     // Add event listeners
     document.getElementById('categoryFilter').addEventListener('change', filterEvents);
     document.getElementById('dateFilter').addEventListener('change', filterEvents);
+    document.getElementById('funFilter').addEventListener('change', filterEvents);
 
     // Add hover effect for event cards
     document.querySelectorAll('.event-card').forEach(card => {
