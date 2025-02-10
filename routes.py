@@ -1,3 +1,4 @@
+
 from flask import render_template, flash, redirect, url_for, request, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user, login_required, login_user, logout_user
@@ -16,54 +17,41 @@ def init_routes(app):
     def subscribe():
         try:
             data = request.get_json()
-        email = data.get('email')
-        if email:
-            # Here you would typically save this to your database
-            # For now, we'll just return success
-            return jsonify({'success': True, 'message': 'Subscription successful'})
-        return jsonify({'success': False, 'message': 'Email is required'}), 400
-    except Exception as e:
-        logger.error(f"Subscription error: {str(e)}")
-        return jsonify({'success': False, 'message': 'An error occurred'}), 500
+            email = data.get('email')
+            if email:
+                # Here you would typically save this to your database
+                # For now, we'll just return success
+                return jsonify({'success': True, 'message': 'Subscription successful'})
+            return jsonify({'success': False, 'message': 'Email is required'}), 400
+        except Exception as e:
+            logger.error(f"Subscription error: {str(e)}")
+            return jsonify({'success': False, 'message': 'An error occurred'}), 500
 
-def init_routes(app):
     @app.before_request
     def before_request():
         if current_user.is_authenticated:
-            # Get the current timestamp
             current_time = datetime.utcnow()
-
-            # Initialize last activity if it doesn't exist
             if 'last_activity' not in session:
                 session['last_activity'] = current_time
                 return
-
-            # Parse the last activity time
             last_activity = session.get('last_activity')
             if isinstance(last_activity, str):
                 try:
                     last_activity = datetime.fromisoformat(last_activity)
                 except ValueError:
                     last_activity = current_time
-
-            # Check for session timeout (30 minutes of inactivity)
             if (current_time - last_activity) > timedelta(minutes=30):
-                # Clear all session data
                 session.clear()
                 logout_user()
                 flash('Your session has expired. Please log in again.', 'info')
                 return redirect(url_for('login'))
-
-            # Update last activity time
             session['last_activity'] = current_time
 
     @app.route('/')
     def index():
         events = Event.query.order_by(Event.date.desc()).limit(6).all()
         if current_user.is_authenticated:
-            # Show dashboard/events for logged in users
             return render_template('index.html', user=current_user, events=events)
-        # Show public homepage for non-authenticated users
         return render_template('home.html', events=events)
 
     @app.route('/signup', methods=['GET', 'POST'])
@@ -74,13 +62,11 @@ def init_routes(app):
         form = SignupForm()
         if form.validate_on_submit():
             try:
-                # Create new user instance
                 user = User()
                 user.email = form.email.data
                 user.set_password(form.password.data)
                 user.account_active = True
 
-                # Add user to database
                 db.session.add(user)
                 db.session.commit()
 
@@ -121,11 +107,9 @@ def init_routes(app):
                 user = User.query.filter_by(email=form.email.data).first()
 
                 if user and user.check_password(form.password.data):
-                    # Set session as permanent if remember me is checked
                     if form.remember_me.data:
                         session.permanent = True
 
-                    # Initialize session data
                     session['user_id'] = user.id
                     session['login_time'] = datetime.utcnow().isoformat()
                     session['last_activity'] = datetime.utcnow().isoformat()
@@ -155,11 +139,10 @@ def init_routes(app):
     @app.route('/logout')
     @login_required
     def logout():
-        # Clear all session data
         session.clear()
         logout_user()
         flash('You have been logged out successfully.', 'info')
-        return redirect(url_for('index'))  # Redirect to index which will show proper page
+        return redirect(url_for('index'))
 
     @app.route('/profile', methods=['GET'])
     @login_required
@@ -173,7 +156,6 @@ def init_routes(app):
         form.user_id = current_user.id
 
         if request.method == 'GET':
-            # Pre-populate form with current user data
             form.username.data = current_user.username
             form.first_name.data = current_user.first_name
             form.last_name.data = current_user.last_name
