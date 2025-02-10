@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 
 class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    status = db.Column(db.String(20), default='pending')  # pending, approved, rejected
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text, nullable=False)
     date = db.Column(db.DateTime, nullable=False)
