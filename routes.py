@@ -2,7 +2,7 @@ from flask import render_template, flash, redirect, url_for, request, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user, login_required, login_user, logout_user
 from forms import SignupForm, LoginForm, ProfileForm
-from models import User
+from models import User, Event # Added Event import
 from db_init import db
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 import logging
@@ -16,12 +16,12 @@ def init_routes(app):
         if current_user.is_authenticated:
             # Get the current timestamp
             current_time = datetime.utcnow()
-            
+
             # Initialize last activity if it doesn't exist
             if 'last_activity' not in session:
                 session['last_activity'] = current_time
                 return
-            
+
             # Parse the last activity time
             last_activity = session.get('last_activity')
             if isinstance(last_activity, str):
@@ -29,7 +29,7 @@ def init_routes(app):
                     last_activity = datetime.fromisoformat(last_activity)
                 except ValueError:
                     last_activity = current_time
-            
+
             # Check for session timeout (30 minutes of inactivity)
             if (current_time - last_activity) > timedelta(minutes=30):
                 # Clear all session data
@@ -37,26 +37,24 @@ def init_routes(app):
                 logout_user()
                 flash('Your session has expired. Please log in again.', 'info')
                 return redirect(url_for('login'))
-            
+
             # Update last activity time
             session['last_activity'] = current_time
 
     @app.route('/')
     def index():
-        """
-        Handle the homepage route differently for authenticated and non-authenticated users
-        """
+        events = Event.query.order_by(Event.date.desc()).limit(6).all()
         if current_user.is_authenticated:
             # Show dashboard/events for logged in users
-            return render_template('index.html', user=current_user)
+            return render_template('index.html', user=current_user, events=events)
         # Show public homepage for non-authenticated users
-        return render_template('home.html')
+        return render_template('home.html', events=events)
 
     @app.route('/signup', methods=['GET', 'POST'])
     def signup():
         if current_user.is_authenticated:
             return redirect(url_for('index'))
-            
+
         form = SignupForm()
         if form.validate_on_submit():
             try:
@@ -65,35 +63,35 @@ def init_routes(app):
                 user.email = form.email.data
                 user.set_password(form.password.data)
                 user.account_active = True
-                
+
                 # Add user to database
                 db.session.add(user)
                 db.session.commit()
-                
+
                 flash('Account created successfully! You can now log in.', 'success')
                 return redirect(url_for('login'))
-                
+
             except IntegrityError as e:
                 db.session.rollback()
                 logger.error(f"Database integrity error during sign up: {str(e)}")
                 error_msg = str(e).lower()
-                
+
                 if 'email' in error_msg and 'unique constraint' in error_msg:
                     flash('This email address is already registered. Please use a different email or try logging in.', 'danger')
                     form.email.errors = list(form.email.errors) + ['Email already registered']
                 else:
                     flash('There was a problem with your sign up. Please verify your information and try again.', 'danger')
-                    
+
             except SQLAlchemyError as e:
                 db.session.rollback()
                 logger.error(f"Database error during sign up: {str(e)}")
                 flash('We encountered a technical issue. Our team has been notified. Please try again later.', 'danger')
-                
+
             except Exception as e:
                 db.session.rollback()
                 logger.error(f"Unexpected error during sign up: {str(e)}")
                 flash('An unexpected error occurred. Please try again. If the problem persists, contact support.', 'danger')
-        
+
         return render_template('signup.html', form=form)
 
     @app.route('/login', methods=['GET', 'POST'])
@@ -105,37 +103,37 @@ def init_routes(app):
         if form.validate_on_submit():
             try:
                 user = User.query.filter_by(email=form.email.data).first()
-                
+
                 if user and user.check_password(form.password.data):
                     # Set session as permanent if remember me is checked
                     if form.remember_me.data:
                         session.permanent = True
-                    
+
                     # Initialize session data
                     session['user_id'] = user.id
                     session['login_time'] = datetime.utcnow().isoformat()
                     session['last_activity'] = datetime.utcnow().isoformat()
-                    
+
                     login_user(user, remember=form.remember_me.data)
                     user.last_login = db.func.now()
                     db.session.commit()
-                    
+
                     flash('Logged in successfully!', 'success')
                     next_page = request.args.get('next')
                     return redirect(next_page or url_for('index'))
                 else:
                     logger.warning(f"Failed login attempt for email: {form.email.data}")
                     flash('Invalid email or password. Please try again.', 'danger')
-                    
+
             except SQLAlchemyError as e:
                 db.session.rollback()
                 logger.error(f"Database error during login: {str(e)}")
                 flash('We encountered a technical issue. Please try again later.', 'danger')
-                
+
             except Exception as e:
                 logger.error(f"Unexpected error during login: {str(e)}")
                 flash('An unexpected error occurred. Please try again.', 'danger')
-                
+
         return render_template('login.html', form=form)
 
     @app.route('/logout')
@@ -179,28 +177,46 @@ def init_routes(app):
                     'interests': form.interests.data,
                     'birth_date': form.birth_date.data
                 }
-                
+
                 current_user.update_profile(profile_data)
                 db.session.commit()
                 flash('Profile updated successfully!', 'success')
                 return redirect(url_for('profile'))
-                
+
             except IntegrityError as e:
                 db.session.rollback()
                 logger.error(f"Database integrity error during profile update: {str(e)}")
                 flash('There was a problem updating your profile. Please try again.', 'danger')
-                
+
             except SQLAlchemyError as e:
                 db.session.rollback()
                 logger.error(f"Database error during profile update: {str(e)}")
                 flash('We encountered a technical issue. Please try again later.', 'danger')
-                
+
             except Exception as e:
                 db.session.rollback()
                 logger.error(f"Unexpected error during profile update: {str(e)}")
                 flash('An unexpected error occurred. Please try again.', 'danger')
 
         return render_template('edit_profile.html', form=form)
+
+    @app.route('/events')
+    def events():
+        category = request.args.get('category')
+        date = request.args.get('date')
+        location = request.args.get('location')
+
+        query = Event.query
+
+        if category:
+            query = query.filter(Event.category == category)
+        if date:
+            query = query.filter(db.func.date(Event.date) == date)
+        if location:
+            query = query.filter(Event.location.ilike(f'%{location}%'))
+
+        events = query.order_by(Event.date).all()
+        return render_template('events.html', events=events)
 
     @app.route('/map')
     def map():
