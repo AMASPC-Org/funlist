@@ -41,6 +41,13 @@ body {
 .btn-primary {
     background-color: var(--primary-color);
     border-color: var(--primary-color);
+    color: white !important;
+}
+
+.mapboxgl-popup-content .btn-primary {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+    color: white !important;
 }
 
 .btn-primary:hover {
