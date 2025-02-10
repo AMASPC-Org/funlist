@@ -202,6 +202,11 @@ def init_routes(app):
 
         return render_template('edit_profile.html', form=form)
 
+    @app.route('/map')
+    def map():
+        events = Event.query.all()
+        return render_template('map.html', events=events)
+
     @app.errorhandler(404)
     def not_found_error(error):
         return render_template('404.html'), 404
