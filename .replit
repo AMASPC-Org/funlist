@@ -4,7 +4,7 @@ modules = ["python-3.11", "nodejs-20"]
 channel = "stable-24_05"
 
 [workflows]
-runButton = "Flask App"
+runButton = "Run Flask App"
 
 [[workflows.workflow]]
 name = "Project"
@@ -41,7 +41,6 @@ agentRequireRestartOnSave = false
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python main.py"
-waitForPort = 5000
 
 [[workflows.workflow]]
 name = "Update Schema"
