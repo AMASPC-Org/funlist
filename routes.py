@@ -13,9 +13,9 @@ logger = logging.getLogger(__name__)
 
 def init_routes(app):
     @app.route('/subscribe', methods=['POST'])
-def subscribe():
-    try:
-        data = request.get_json()
+    def subscribe():
+        try:
+            data = request.get_json()
         email = data.get('email')
         if email:
             # Here you would typically save this to your database
