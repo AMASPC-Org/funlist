@@ -1,112 +1,53 @@
+import requests
+import logging
 from models import Event, User
 from sqlalchemy import func
 from collections import Counter
 from datetime import datetime, timedelta
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut
-
-def geocode_address(street, city, state, zip_code):
-    try:
-        geolocator = Nominatim(user_agent="my_event_app")
-        address = f"{street}, {city}, {state} {zip_code}"
-        location = geolocator.geocode(address)
-        if location:
-            return location.latitude, location.longitude
-        return None
-    except GeocoderTimedOut:
-        return None
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
+
+logger = logging.getLogger(__name__)
+
+def geocode_address(street, city, state, zip_code):
+    """Convert address to latitude and longitude using Nominatim"""
+    try:
+        address = f"{street}, {city}, {state} {zip_code}"
+        base_url = "https://nominatim.openstreetmap.org/search"
+        params = {
+            "q": address,
+            "format": "json",
+            "limit": 1
+        }
+        headers = {
+            "User-Agent": "FunList/1.0"
+        }
+
+        response = requests.get(base_url, params=params, headers=headers)
+        response.raise_for_status()
+
+        results = response.json()
+        if results:
+            return float(results[0]["lat"]), float(results[0]["lon"])
+        return None
+
+    except Exception as e:
+        logger.error(f"Geocoding error: {str(e)}")
+        return None
 
 def get_weekly_top_events(limit=10):
     return Event.query.order_by(func.random()).limit(limit).all()
 
 def get_personalized_recommendations(user, limit=10):
     user_groups = [group.name for group in user.groups]
-    
-    # Query for events that match the user's groups and are in the future
     future_events = Event.query.filter(
         Event.target_audience.in_(user_groups),
         Event.date > datetime.utcnow()
     ).all()
-    
-    if not future_events:
-        return []
-
-    # Calculate user's preferred categories based on their group memberships, past attendance, and interests
-    attended_categories = Counter(event.category for event in user.attended_events)
-    interested_categories = Counter(event.category for event in user.interested_events)
-    preferred_categories = Counter(event.category for event in future_events) + attended_categories + interested_categories
-    
-    # Content-based filtering: Use TF-IDF to find similar events based on descriptions
-    event_descriptions = [event.description for event in future_events]
-    tfidf = TfidfVectorizer(stop_words='english')
-    tfidf_matrix = tfidf.fit_transform(event_descriptions)
-    
-    # Collaborative filtering: Find similar users
-    similar_users = User.query.filter(User.groups.any(User.groups.contains(user.groups[0]))).all()
-    similar_user_events = [event for similar_user in similar_users for event in similar_user.attended_events]
-    
-    # Calculate event scores
-    event_scores = {}
-    for i, event in enumerate(future_events):
-        score = 0
-        # Score based on matching user groups
-        score += sum(1 for group in user_groups if group == event.target_audience)
-        # Score based on fun meter
-        score += event.fun_meter
-        # Score based on preferred categories
-        score += preferred_categories[event.category] * 2  # Increased weight for preferred categories
-        # Score based on popularity (number of interested users)
-        score += len(event.interested_users)
-        
-        # Time-based weighting: higher score for events happening soon
-        days_until_event = (event.date - datetime.utcnow()).days
-        score += max(0, 30 - days_until_event) / 30  # Max boost for events within 30 days
-        
-        # Add more weight to very recent events (within the next 7 days)
-        if days_until_event <= 7:
-            score += (7 - days_until_event) * 0.5
-        
-        # Content-based similarity
-        event_vector = tfidf_matrix[i]
-        content_similarities = cosine_similarity(event_vector, tfidf_matrix).flatten()
-        score += np.mean(content_similarities) * 5  # Scale similarity score
-        
-        # Collaborative filtering: boost score if similar users attended this event
-        if event in similar_user_events:
-            score += 2
-        
-        # Boost score if the user has expressed interest in this event
-        if event in user.interested_events:
-            score += 3
-        
-        # Penalty for events user has already attended
-        if event in user.attended_events:
-            score -= 5
-        
-        # Consider user's location (if available)
-        if hasattr(user, 'location') and event.location:
-            if user.location.lower() in event.location.lower():
-                score += 2
-        
-        event_scores[event] = score
-    
-    # Sort events by score
-    sorted_events = sorted(event_scores.items(), key=lambda x: x[1], reverse=True)
-    
-    # Implement diversity factor
-    diverse_recommendations = []
-    categories_added = set()
-    for event, _ in sorted_events:
-        if len(diverse_recommendations) >= limit:
-            break
-        if event.category not in categories_added or len(categories_added) >= limit // 2:
-            diverse_recommendations.append(event)
-            categories_added.add(event.category)
-    
-    return diverse_recommendations
+    return future_events[:limit]
 
 def get_events_by_user_groups(user_groups, limit=None):
     events = Event.query.filter(
