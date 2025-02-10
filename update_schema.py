@@ -14,3 +14,13 @@ def update_schema():
 
 if __name__ == "__main__":
     update_schema()
+from app import app, db
+
+def update_schema():
+    with app.app_context():
+        db.drop_all()
+        db.create_all()
+        print("Schema updated successfully")
+
+if __name__ == '__main__':
+    update_schema()
