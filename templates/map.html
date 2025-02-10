@@ -7,6 +7,9 @@
 
     <div class="row mb-4">
         <div class="col-md-3">
+            <input type="text" class="form-control" id="locationSearch" placeholder="Search location...">
+        </div>
+        <div class="col-md-3">
             <select class="form-select" id="categoryFilter">
                 <option value="">All Categories</option>
                 <option value="music">Music</option>
@@ -153,6 +156,35 @@
     document.getElementById('categoryFilter').addEventListener('change', filterEvents);
     document.getElementById('dateFilter').addEventListener('change', filterEvents);
     document.getElementById('funFilter').addEventListener('change', filterEvents);
+    
+    // Location search functionality
+    document.getElementById('locationSearch').addEventListener('input', debounce(function(e) {
+        const searchQuery = e.target.value;
+        if (searchQuery.length > 2) {
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length > 0) {
+                        const location = data[0];
+                        map.setView([location.lat, location.lon], 12);
+                        filterEvents();
+                    }
+                });
+        }
+    }, 500));
+
+    // Debounce function to limit API calls
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
 
     // Add hover effect for event cards
     document.querySelectorAll('.event-card').forEach(card => {
