@@ -2,7 +2,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container">
+<div class="container-fluid">
     <h1 class="mb-4">Event Map</h1>
 
     <div class="row mb-4">
@@ -21,7 +21,28 @@
         </div>
     </div>
 
-    <div id="map" style="height: 600px;" class="mb-4"></div>
+    <div class="row">
+        <div class="col-md-7">
+            <div id="map" style="height: 700px;" class="mb-4"></div>
+        </div>
+        <div class="col-md-5">
+            <div class="event-cards-container" style="height: 700px; overflow-y: auto;">
+                {% for event in events %}
+                <div class="card mb-3 event-card" data-event-id="{{ event.id }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ event.title }}</h5>
+                        <p class="card-text">{{ event.description|truncate(100) }}</p>
+                        <p class="card-text">
+                            <small class="text-muted">{{ event.date.strftime('%B %d, %Y at %I:%M %p') }}</small>
+                        </p>
+                        <p class="card-text"><small class="text-muted">{{ event.location }}</small></p>
+                        <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-primary">View Details</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
 </div>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
@@ -29,7 +50,7 @@
 
 <script>
     var map = L.map('map').setView([47.0379, -122.9007], 12);
-    var markers = [];
+    var markers = {};
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -51,10 +72,23 @@
         {% endfor %}
     ];
 
+    function highlightEventCard(eventId) {
+        document.querySelectorAll('.event-card').forEach(card => {
+            card.classList.remove('highlighted');
+        });
+        const card = document.querySelector(`.event-card[data-event-id="${eventId}"]`);
+        if (card) {
+            card.classList.add('highlighted');
+            card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+
     function addMarkers(filteredEvents) {
         // Clear existing markers
-        markers.forEach(marker => map.removeLayer(marker));
-        markers = [];
+        for (let id in markers) {
+            map.removeLayer(markers[id]);
+        }
+        markers = {};
 
         // Add new markers
         filteredEvents.forEach(event => {
@@ -69,7 +103,8 @@
                         <a href="${event.url}" class="btn btn-primary btn-sm">View Details</a>
                     </div>
                 `);
-            markers.push(marker);
+            marker.on('click', () => highlightEventCard(event.id));
+            markers[event.id] = marker;
             marker.addTo(map);
         });
     }
@@ -100,6 +135,16 @@
     // Add event listeners
     document.getElementById('categoryFilter').addEventListener('change', filterEvents);
     document.getElementById('dateFilter').addEventListener('change', filterEvents);
+
+    // Add hover effect for event cards
+    document.querySelectorAll('.event-card').forEach(card => {
+        card.addEventListener('mouseenter', () => {
+            const eventId = card.dataset.eventId;
+            if (markers[eventId]) {
+                markers[eventId].openPopup();
+            }
+        });
+    });
 </script>
 
 <style>
@@ -111,6 +156,16 @@
 }
 .event-popup p {
     margin-bottom: 5px;
+}
+.event-card {
+    transition: background-color 0.3s ease;
+}
+.event-card:hover {
+    background-color: #f8f9fa;
+}
+.event-card.highlighted {
+    background-color: #e9ecef;
+    border-color: var(--primary-color);
 }
 </style>
 {% endblock %}
