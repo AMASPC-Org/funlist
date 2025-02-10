@@ -241,11 +241,11 @@ def init_routes(app):
                 form.state.data,
                 form.zip_code.data
             )
-            
+
             if not coordinates:
                 flash('Could not geocode address. Please verify the address is correct.', 'danger')
                 return render_template('submit_event.html', form=form)
-                
+
             event = Event(
                 title=form.title.data,
                 description=form.description.data,
@@ -259,7 +259,8 @@ def init_routes(app):
                 category=form.category.data,
                 target_audience=form.target_audience.data,
                 fun_meter=form.fun_meter.data,
-                user_id=current_user.id
+                user_id=current_user.id,
+                status='pending' #Added status field
             )
             db.session.add(event)
             db.session.commit()
@@ -271,3 +272,52 @@ def init_routes(app):
     def internal_error(error):
         db.session.rollback()
         return render_template('500.html'), 500
+
+    @app.route('/admin/login', methods=['GET', 'POST'])
+    def admin_login():
+        if current_user.is_authenticated and current_user.is_admin:
+            return redirect(url_for('admin_dashboard'))
+
+        form = LoginForm()
+        if form.validate_on_submit():
+            user = User.query.filter_by(email=form.email.data).first()
+            if user and user.check_password(form.password.data) and user.is_admin:
+                login_user(user)
+                return redirect(url_for('admin_dashboard'))
+            flash('Invalid credentials or not an admin user.', 'danger')
+        return render_template('admin_login.html', form=form)
+
+    @app.route('/admin/dashboard')
+    @login_required
+    def admin_dashboard():
+        if not current_user.is_admin:
+            flash('Access denied. Admin privileges required.', 'danger')
+            return redirect(url_for('index'))
+
+        status = request.args.get('status', 'pending')
+        events = Event.query.filter_by(status=status).order_by(Event.date).all()
+        return render_template('admin_dashboard.html', events=events, status=status)
+
+    @app.route('/admin/event/<int:event_id>/approve')
+    @login_required
+    def admin_approve_event(event_id):
+        if not current_user.is_admin:
+            return jsonify({'error': 'Unauthorized'}), 403
+
+        event = Event.query.get_or_404(event_id)
+        event.status = 'approved'
+        db.session.commit()
+        flash('Event approved successfully!', 'success')
+        return redirect(url_for('admin_dashboard', status='pending'))
+
+    @app.route('/admin/event/<int:event_id>/reject')
+    @login_required
+    def admin_reject_event(event_id):
+        if not current_user.is_admin:
+            return jsonify({'error': 'Unauthorized'}), 403
+
+        event = Event.query.get_or_404(event_id)
+        event.status = 'rejected'
+        db.session.commit()
+        flash('Event rejected.', 'success')
+        return redirect(url_for('admin_dashboard', status='pending'))

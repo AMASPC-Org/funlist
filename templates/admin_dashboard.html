@@ -1,0 +1,41 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Admin Dashboard</h2>
+    
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <a class="nav-link {% if status == 'pending' %}active{% endif %}" href="{{ url_for('admin_dashboard', status='pending') }}">Pending</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if status == 'approved' %}active{% endif %}" href="{{ url_for('admin_dashboard', status='approved') }}">Approved</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if status == 'rejected' %}active{% endif %}" href="{{ url_for('admin_dashboard', status='rejected') }}">Rejected</a>
+        </li>
+    </ul>
+
+    <div class="row">
+        {% for event in events %}
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ event.title }}</h5>
+                    <p class="card-text">{{ event.description[:200] }}...</p>
+                    <p>Date: {{ event.date.strftime('%Y-%m-%d %H:%M') }}</p>
+                    <p>Location: {{ event.city }}, {{ event.state }}</p>
+                    {% if event.status == 'pending' %}
+                    <div class="btn-group">
+                        <a href="{{ url_for('admin_approve_event', event_id=event.id) }}" class="btn btn-success">Approve</a>
+                        <a href="{{ url_for('admin_reject_event', event_id=event.id) }}" class="btn btn-danger">Reject</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

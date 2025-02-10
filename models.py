@@ -26,6 +26,7 @@ class Event(db.Model):
     facebook = db.Column(db.String(200))
     instagram = db.Column(db.String(200))
     twitter = db.Column(db.String(200))
+    status = db.Column(db.String(20), default='pending')  # pending, approved, rejected
 
     # Add relationship to User model
     organizer = db.relationship('User', backref='organized_events')
@@ -45,6 +46,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(50), unique=True)
     first_name = db.Column(db.String(50))
     last_name = db.Column(db.String(50))
+    is_admin = db.Column(db.Boolean, default=False)
     bio = db.Column(db.Text)
     location = db.Column(db.String(100))
     interests = db.Column(db.String(200))
