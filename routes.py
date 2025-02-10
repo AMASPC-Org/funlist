@@ -50,9 +50,7 @@ def init_routes(app):
     @app.route('/')
     def index():
         events = Event.query.order_by(Event.date.desc()).limit(6).all()
-        if current_user.is_authenticated:
-            return render_template('index.html', user=current_user, events=events)
-        return render_template('home.html', events=events)
+        return render_template('home.html', events=events, user=current_user)
 
     @app.route('/signup', methods=['GET', 'POST'])
     def signup():
