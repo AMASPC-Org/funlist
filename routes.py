@@ -234,16 +234,30 @@ def init_routes(app):
     def submit_event():
         form = EventForm()
         if form.validate_on_submit():
+            coordinates = geocode_address(
+                form.street.data,
+                form.city.data,
+                form.state.data,
+                form.zip_code.data
+            )
+            
+            if not coordinates:
+                flash('Could not geocode address. Please verify the address is correct.', 'danger')
+                return render_template('submit_event.html', form=form)
+                
             event = Event(
                 title=form.title.data,
                 description=form.description.data,
                 date=form.date.data,
-                location=form.location.data,
-                latitude=form.latitude.data,
-                longitude=form.longitude.data,
+                street=form.street.data,
+                city=form.city.data,
+                state=form.state.data,
+                zip_code=form.zip_code.data,
+                latitude=coordinates[0],
+                longitude=coordinates[1],
                 category=form.category.data,
                 target_audience=form.target_audience.data,
-                fun_meter=3,
+                fun_meter=form.fun_meter.data,
                 user_id=current_user.id
             )
             db.session.add(event)

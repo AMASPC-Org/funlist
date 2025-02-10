@@ -2,6 +2,19 @@ from models import Event, User
 from sqlalchemy import func
 from collections import Counter
 from datetime import datetime, timedelta
+from geopy.geocoders import Nominatim
+from geopy.exc import GeocoderTimedOut
+
+def geocode_address(street, city, state, zip_code):
+    try:
+        geolocator = Nominatim(user_agent="my_event_app")
+        address = f"{street}, {city}, {state} {zip_code}"
+        location = geolocator.geocode(address)
+        if location:
+            return location.latitude, location.longitude
+        return None
+    except GeocoderTimedOut:
+        return None
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np

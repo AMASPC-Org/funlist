@@ -77,9 +77,10 @@ class EventForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
     description = TextAreaField('Description', validators=[DataRequired()])
     date = DateTimeLocalField('Date and Time', format='%Y-%m-%dT%H:%M', validators=[DataRequired()])
-    location = StringField('Location', validators=[DataRequired()])
-    latitude = FloatField('Latitude', validators=[DataRequired(), NumberRange(min=-90, max=90)])
-    longitude = FloatField('Longitude', validators=[DataRequired(), NumberRange(min=-180, max=180)])
+    street = StringField('Street Address', validators=[DataRequired()])
+    city = StringField('City', validators=[DataRequired()])
+    state = StringField('State', validators=[DataRequired()])
+    zip_code = StringField('ZIP Code', validators=[DataRequired()])
     fun_meter = SelectField('Fun Rating', choices=[
         ('1', '⭐'),
         ('2', '⭐⭐'),

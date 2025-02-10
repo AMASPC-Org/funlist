@@ -18,16 +18,20 @@
         {{ form.date(class="form-control", type="datetime-local") }}
     </div>
     <div class="mb-3">
-        {{ form.location.label(class="form-label") }}
-        {{ form.location(class="form-control") }}
+        {{ form.street.label(class="form-label") }}
+        {{ form.street(class="form-control") }}
     </div>
     <div class="mb-3">
-        {{ form.latitude.label(class="form-label") }}
-        {{ form.latitude(class="form-control", type="number", step="any") }}
+        {{ form.city.label(class="form-label") }}
+        {{ form.city(class="form-control") }}
     </div>
     <div class="mb-3">
-        {{ form.longitude.label(class="form-label") }}
-        {{ form.longitude(class="form-control", type="number", step="any") }}
+        {{ form.state.label(class="form-label") }}
+        {{ form.state(class="form-control") }}
+    </div>
+    <div class="mb-3">
+        {{ form.zip_code.label(class="form-label") }}
+        {{ form.zip_code(class="form-control") }}
     </div>
     <div class="mb-3">
         {{ form.category.label(class="form-label") }}
