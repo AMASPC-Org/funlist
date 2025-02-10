@@ -61,9 +61,7 @@ def load_user(user_id):
 # Initialize routes
 init_routes(app)
 
-# Create database tables
-with app.app_context():
-    db.create_all()
+# Tables are managed by update_schema.py
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
