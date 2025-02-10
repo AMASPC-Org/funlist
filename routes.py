@@ -294,30 +294,85 @@ def init_routes(app):
             flash('Access denied. Admin privileges required.', 'danger')
             return redirect(url_for('index'))
 
+        tab = request.args.get('tab', 'overview')
         status = request.args.get('status', 'pending')
+
+        # Get statistics for overview
+        stats = {
+            'pending_events': Event.query.filter_by(status='pending').count(),
+            'total_users': User.query.count(),
+            'todays_events': Event.query.filter(
+                Event.date >= datetime.now().date(),
+                Event.date < datetime.now().date() + timedelta(days=1)
+            ).count(),
+            'new_users_24h': User.query.filter(
+                User.created_at >= datetime.now() - timedelta(hours=24)
+            ).count()
+        }
+
+        # Get events for event management
         events = Event.query.filter_by(status=status).order_by(Event.date).all()
-        return render_template('admin_dashboard.html', events=events, status=status)
 
-    @app.route('/admin/event/<int:event_id>/approve')
+        # Get users for user management
+        users = User.query.order_by(User.created_at.desc()).all()
+
+        # Get analytics data
+        events_by_category = {
+            'labels': ['Sports', 'Music', 'Arts', 'Food', 'Other'],
+            'datasets': [{
+                'data': [
+                    Event.query.filter_by(category='Sports').count(),
+                    Event.query.filter_by(category='Music').count(),
+                    Event.query.filter_by(category='Arts').count(),
+                    Event.query.filter_by(category='Food').count(),
+                    Event.query.filter_by(category='Other').count()
+                ]
+            }]
+        }
+
+        # User growth data (last 7 days)
+        user_growth_data = {
+            'labels': [(datetime.now() - timedelta(days=x)).strftime('%Y-%m-%d') for x in range(7)],
+            'datasets': [{
+                'label': 'New Users',
+                'data': [
+                    User.query.filter(
+                        User.created_at >= datetime.now().date() - timedelta(days=x),
+                        User.created_at < datetime.now().date() - timedelta(days=x-1)
+                    ).count() for x in range(7)
+                ]
+            }]
+        }
+
+        return render_template('admin_dashboard.html',
+                             active_tab=tab,
+                             stats=stats,
+                             events=events,
+                             users=users,
+                             status=status,
+                             events_by_category=events_by_category,
+                             user_growth_data=user_growth_data)
+
+    @app.route('/admin/user/<int:user_id>/deactivate')
     @login_required
-    def admin_approve_event(event_id):
+    def admin_deactivate_user(user_id):
         if not current_user.is_admin:
             return jsonify({'error': 'Unauthorized'}), 403
 
-        event = Event.query.get_or_404(event_id)
-        event.status = 'approved'
+        user = User.query.get_or_404(user_id)
+        user.account_active = False
         db.session.commit()
-        flash('Event approved successfully!', 'success')
-        return redirect(url_for('admin_dashboard', status='pending'))
+        flash('User account deactivated.', 'success')
+        return redirect(url_for('admin_dashboard', tab='users'))
 
-    @app.route('/admin/event/<int:event_id>/reject')
+    @app.route('/admin/user/<int:user_id>/activate')
     @login_required
-    def admin_reject_event(event_id):
+    def admin_activate_user(user_id):
         if not current_user.is_admin:
             return jsonify({'error': 'Unauthorized'}), 403
 
-        event = Event.query.get_or_404(event_id)
-        event.status = 'rejected'
+        user = User.query.get_or_404(user_id)
+        user.account_active = True
         db.session.commit()
-        flash('Event rejected.', 'success')
-        return redirect(url_for('admin_dashboard', status='pending'))
+        flash('User account activated.', 'success')
+        return redirect(url_for('admin_dashboard', tab='users'))

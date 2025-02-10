@@ -2,40 +2,227 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-5">
-    <h2>Admin Dashboard</h2>
-    
-    <ul class="nav nav-tabs mb-4">
-        <li class="nav-item">
-            <a class="nav-link {% if status == 'pending' %}active{% endif %}" href="{{ url_for('admin_dashboard', status='pending') }}">Pending</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link {% if status == 'approved' %}active{% endif %}" href="{{ url_for('admin_dashboard', status='approved') }}">Approved</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link {% if status == 'rejected' %}active{% endif %}" href="{{ url_for('admin_dashboard', status='rejected') }}">Rejected</a>
-        </li>
-    </ul>
-
+<div class="container-fluid mt-4">
     <div class="row">
-        {% for event in events %}
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">{{ event.title }}</h5>
-                    <p class="card-text">{{ event.description[:200] }}...</p>
-                    <p>Date: {{ event.date.strftime('%Y-%m-%d %H:%M') }}</p>
-                    <p>Location: {{ event.city }}, {{ event.state }}</p>
-                    {% if event.status == 'pending' %}
-                    <div class="btn-group">
-                        <a href="{{ url_for('admin_approve_event', event_id=event.id) }}" class="btn btn-success">Approve</a>
-                        <a href="{{ url_for('admin_reject_event', event_id=event.id) }}" class="btn btn-danger">Reject</a>
-                    </div>
-                    {% endif %}
-                </div>
+        <!-- Sidebar -->
+        <div class="col-md-2 bg-light sidebar">
+            <div class="position-sticky">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_tab == 'overview' %}active{% endif %}" href="{{ url_for('admin_dashboard') }}">
+                            Overview
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_tab == 'events' %}active{% endif %}" href="{{ url_for('admin_dashboard', tab='events') }}">
+                            Event Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_tab == 'users' %}active{% endif %}" href="{{ url_for('admin_dashboard', tab='users') }}">
+                            User Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_tab == 'analytics' %}active{% endif %}" href="{{ url_for('admin_dashboard', tab='analytics') }}">
+                            Analytics
+                        </a>
+                    </li>
+                </ul>
             </div>
         </div>
-        {% endfor %}
+
+        <!-- Main Content -->
+        <div class="col-md-10">
+            <!-- Overview Section -->
+            {% if active_tab == 'overview' or not active_tab %}
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Pending Events</h5>
+                            <h2>{{ stats.pending_events }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Users</h5>
+                            <h2>{{ stats.total_users }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Today's Events</h5>
+                            <h2>{{ stats.todays_events }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">New Users (24h)</h5>
+                            <h2>{{ stats.new_users_24h }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Event Management Section -->
+            {% if active_tab == 'events' %}
+            <div class="card">
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs">
+                        <li class="nav-item">
+                            <a class="nav-link {% if status == 'pending' %}active{% endif %}" 
+                               href="{{ url_for('admin_dashboard', tab='events', status='pending') }}">Pending</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if status == 'approved' %}active{% endif %}" 
+                               href="{{ url_for('admin_dashboard', tab='events', status='approved') }}">Approved</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if status == 'rejected' %}active{% endif %}" 
+                               href="{{ url_for('admin_dashboard', tab='events', status='rejected') }}">Rejected</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Date</th>
+                                    <th>Location</th>
+                                    <th>Organizer</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for event in events %}
+                                <tr>
+                                    <td>{{ event.title }}</td>
+                                    <td>{{ event.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>{{ event.city }}, {{ event.state }}</td>
+                                    <td>{{ event.organizer.email }}</td>
+                                    <td>
+                                        {% if event.status == 'pending' %}
+                                        <a href="{{ url_for('admin_approve_event', event_id=event.id) }}" 
+                                           class="btn btn-sm btn-success">Approve</a>
+                                        <a href="{{ url_for('admin_reject_event', event_id=event.id) }}" 
+                                           class="btn btn-sm btn-danger">Reject</a>
+                                        {% endif %}
+                                        <a href="{{ url_for('event_detail', event_id=event.id) }}" 
+                                           class="btn btn-sm btn-primary">View</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- User Management Section -->
+            {% if active_tab == 'users' %}
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Email</th>
+                                    <th>Joined</th>
+                                    <th>Events Posted</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr>
+                                    <td>{{ user.email }}</td>
+                                    <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ user.organized_events|length }}</td>
+                                    <td>
+                                        {% if user.account_active %}
+                                        <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if user.account_active %}
+                                        <a href="{{ url_for('admin_deactivate_user', user_id=user.id) }}" 
+                                           class="btn btn-sm btn-warning">Deactivate</a>
+                                        {% else %}
+                                        <a href="{{ url_for('admin_activate_user', user_id=user.id) }}" 
+                                           class="btn btn-sm btn-success">Activate</a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Analytics Section -->
+            {% if active_tab == 'analytics' %}
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Events by Category</h5>
+                            <canvas id="eventsByCategory"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">User Growth</h5>
+                            <canvas id="userGrowth"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+{% if active_tab == 'analytics' %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Add Chart.js initialization code here
+    const eventsByCategory = document.getElementById('eventsByCategory');
+    const userGrowth = document.getElementById('userGrowth');
+    
+    // Initialize charts with data from the backend
+    if (eventsByCategory) {
+        new Chart(eventsByCategory, {
+            type: 'pie',
+            data: {{ events_by_category | tojson | safe }}
+        });
+    }
+    
+    if (userGrowth) {
+        new Chart(userGrowth, {
+            type: 'line',
+            data: {{ user_growth_data | tojson | safe }}
+        });
+    }
+</script>
+{% endif %}
 {% endblock %}
