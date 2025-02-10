@@ -59,6 +59,9 @@ class Event(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
+    # Add relationship to User model
+    organizer = db.relationship('User', backref='organized_events')
+    
     def __repr__(self):
         return f'<Event {self.title}>'
 

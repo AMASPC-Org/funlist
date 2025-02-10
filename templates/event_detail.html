@@ -1,56 +1,92 @@
+
 {% extends "base.html" %}
 
 {% block content %}
-<h1 class="mb-4">{{ event.title }}</h1>
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-body">
+            <h1 class="card-title">{{ event.title }}</h1>
+            <div class="row mt-4">
+                <div class="col-md-8">
+                    <h5>Event Details</h5>
+                    <p class="card-text">{{ event.description }}</p>
+                    
+                    <div class="event-meta mt-4">
+                        <p><i class="fas fa-calendar"></i> <strong>Date:</strong> {{ event.date.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                        <p><i class="fas fa-map-marker-alt"></i> <strong>Location:</strong> {{ event.location }}</p>
+                        <p><i class="fas fa-tag"></i> <strong>Category:</strong> {{ event.category|capitalize }}</p>
+                        <p><i class="fas fa-users"></i> <strong>Target Audience:</strong> {{ event.target_audience|capitalize }}</p>
+                        <p><i class="fas fa-smile"></i> <strong>Fun Meter:</strong> 
+                            {% for i in range(event.fun_meter) %}
+                                ⭐
+                            {% endfor %}
+                            ({{ event.fun_meter }} / 5)
+                        </p>
+                    </div>
 
-<div class="card">
-    <div class="card-body">
-        <h5 class="card-title">Event Details</h5>
-        <p class="card-text"><strong>Date:</strong> {{ event.date.strftime('%B %d, %Y at %I:%M %p') }}</p>
-        <p class="card-text"><strong>Location:</strong> {{ event.location }}</p>
-        <p class="card-text"><strong>Category:</strong> {{ event.category|capitalize }}</p>
-        <p class="card-text"><strong>Description:</strong></p>
-        <p class="card-text">{{ event.description }}</p>
-        <p class="card-text"><strong>Fun Meter:</strong> {{ event.fun_meter }} / 5</p>
-        {% if current_user.is_authenticated %}
-            {% if event not in current_user.interested_events %}
-                <a href="{{ url_for('express_interest', event_id=event.id) }}" class="btn btn-primary">Express Interest</a>
-            {% else %}
-                <button class="btn btn-secondary" disabled>Interested</button>
-            {% endif %}
-            {% if event not in current_user.attended_events %}
-                <a href="{{ url_for('mark_attended', event_id=event.id) }}" class="btn btn-success">Mark as Attended</a>
-            {% else %}
-                <button class="btn btn-secondary" disabled>Attended</button>
-            {% endif %}
-        {% endif %}
+                    {% if current_user.is_authenticated %}
+                        <div class="mt-4">
+                            {% if event not in current_user.interested_events %}
+                                <a href="{{ url_for('express_interest', event_id=event.id) }}" class="btn btn-primary">
+                                    <i class="far fa-star"></i> Express Interest
+                                </a>
+                            {% else %}
+                                <button class="btn btn-secondary" disabled>
+                                    <i class="fas fa-star"></i> Interested
+                                </button>
+                            {% endif %}
+
+                            {% if event not in current_user.attended_events %}
+                                <a href="{{ url_for('mark_attended', event_id=event.id) }}" class="btn btn-success">
+                                    <i class="far fa-check-circle"></i> Mark as Attended
+                                </a>
+                            {% else %}
+                                <button class="btn btn-secondary" disabled>
+                                    <i class="fas fa-check-circle"></i> Attended
+                                </button>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Event Location</h5>
+                            <div id="eventMap" style="height: 300px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <h5>Organizer Information</h5>
+                <p><strong>Organized by:</strong> {{ event.organizer.username or 'Anonymous' }}</p>
+                {% if event.organizer.organizerprofile %}
+                    <p><strong>Company:</strong> {{ event.organizer.organizerprofile.company_name }}</p>
+                    {% if event.organizer.organizerprofile.website %}
+                        <p><strong>Website:</strong> <a href="{{ event.organizer.organizerprofile.website }}" target="_blank">{{ event.organizer.organizerprofile.website }}</a></p>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
     </div>
+
+    <a href="{{ url_for('events') }}" class="btn btn-secondary mt-4">
+        <i class="fas fa-arrow-left"></i> Back to Events
+    </a>
 </div>
 
-<div class="mt-4">
-    <h3>Organizer Information</h3>
-    <p><strong>Organized by:</strong> {{ event.organizer.username }}</p>
-    {% if event.organizer.organizerprofile %}
-        <p><strong>Company:</strong> {{ event.organizer.organizerprofile.company_name }}</p>
-        {% if event.organizer.organizerprofile.website %}
-            <p><strong>Website:</strong> <a href="{{ event.organizer.organizerprofile.website }}" target="_blank">{{ event.organizer.organizerprofile.website }}</a></p>
-        {% endif %}
-    {% endif %}
-</div>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 
-{% if event.organizer.organizerprofile %}
-    <div class="mt-4">
-        <h3>Sponsorship and Advertising Opportunities</h3>
-        {% if event.organizer.organizerprofile.advertising_opportunities %}
-            <h4>Advertising Opportunities</h4>
-            <p>{{ event.organizer.organizerprofile.advertising_opportunities }}</p>
-        {% endif %}
-        {% if event.organizer.organizerprofile.sponsorship_opportunities %}
-            <h4>Sponsorship Opportunities</h4>
-            <p>{{ event.organizer.organizerprofile.sponsorship_opportunities }}</p>
-        {% endif %}
-    </div>
-{% endif %}
-
-<a href="{{ url_for('events') }}" class="btn btn-secondary mt-4">Back to Events</a>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var map = L.map('eventMap').setView([{{ event.latitude }}, {{ event.longitude }}], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+    L.marker([{{ event.latitude }}, {{ event.longitude }}]).addTo(map);
+});
+</script>
 {% endblock %}
