@@ -8,20 +8,30 @@ logger = logging.getLogger(__name__)
 
 class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=False)
     date = db.Column(db.DateTime, nullable=False)
-    street = db.Column(db.String(100))
-    city = db.Column(db.String(50))
-    state = db.Column(db.String(2))
-    zip_code = db.Column(db.String(10))
-    latitude = db.Column(db.Float)
-    longitude = db.Column(db.Float)
-    category = db.Column(db.String(50))
-    target_audience = db.Column(db.String(50))
-    fun_meter = db.Column(db.Integer)
+    street = db.Column(db.String(200), nullable=False)
+    city = db.Column(db.String(100), nullable=False)
+    state = db.Column(db.String(50), nullable=False)
+    zip_code = db.Column(db.String(20), nullable=False)
+    latitude = db.Column(db.Float, nullable=False)
+    longitude = db.Column(db.Float, nullable=False)
+    category = db.Column(db.String(50), nullable=False)
+    target_audience = db.Column(db.String(50), nullable=False)
+    fun_meter = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    website = db.Column(db.String(200))
+    facebook = db.Column(db.String(200))
+    instagram = db.Column(db.String(200))
+    twitter = db.Column(db.String(200))
+
+    # Add relationship to User model
+    organizer = db.relationship('User', backref='organized_events')
+
+    def __repr__(self):
+        return f'<Event {self.title}>'
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -30,7 +40,7 @@ class User(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     account_active = db.Column(db.Boolean, default=True, nullable=False)
     last_login = db.Column(db.DateTime)
-    
+
     # Profile fields
     username = db.Column(db.String(50), unique=True)
     first_name = db.Column(db.String(50))
@@ -62,37 +72,10 @@ class User(UserMixin, db.Model):
     def __repr__(self):
         return f'<User {self.email}>'
 
-class Event(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200), nullable=False)
-    description = db.Column(db.Text, nullable=False)
-    date = db.Column(db.DateTime, nullable=False)
-    street = db.Column(db.String(200), nullable=False)
-    city = db.Column(db.String(100), nullable=False)
-    state = db.Column(db.String(50), nullable=False)
-    zip_code = db.Column(db.String(20), nullable=False)
-    latitude = db.Column(db.Float, nullable=False)
-    longitude = db.Column(db.Float, nullable=False)
-    category = db.Column(db.String(50), nullable=False)
-    target_audience = db.Column(db.String(50), nullable=False)
-    fun_meter = db.Column(db.Integer, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    website = db.Column(db.String(200))
-    facebook = db.Column(db.String(200))
-    instagram = db.Column(db.String(200))
-    twitter = db.Column(db.String(200))
-    
-    # Add relationship to User model
-    organizer = db.relationship('User', backref='organized_events')
-    
-    def __repr__(self):
-        return f'<Event {self.title}>'
-
 class Subscriber(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     subscribed_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
+
     def __repr__(self):
         return f'<Subscriber {self.email}>'
