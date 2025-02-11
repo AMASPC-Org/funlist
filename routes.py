@@ -285,6 +285,33 @@ def init_routes(app):
             flash('Invalid credentials or not an admin user.', 'danger')
         return render_template('admin_login.html', form=form)
 
+    @app.route('/admin/events')
+    @login_required
+    def admin_events():
+        if not current_user.is_admin:
+            flash('Access denied. Admin privileges required.', 'danger')
+            return redirect(url_for('index'))
+        events = Event.query.order_by(Event.date.desc()).all()
+        return render_template('admin_events.html', events=events)
+
+    @app.route('/admin/event/<int:event_id>/<action>', methods=['POST'])
+    @login_required
+    def admin_event_action(event_id, action):
+        if not current_user.is_admin:
+            return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+        
+        event = Event.query.get_or_404(event_id)
+        
+        if action == 'approve':
+            event.status = 'approved'
+        elif action == 'reject':
+            event.status = 'rejected'
+        elif action == 'delete':
+            db.session.delete(event)
+        
+        db.session.commit()
+        return jsonify({'success': True})
+
     @app.route('/admin/dashboard')
     @login_required
     def admin_dashboard():
