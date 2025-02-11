@@ -24,6 +24,11 @@
                         <a class="nav-link btn btn-success text-white px-3 mx-2" href="{{ url_for('submit_event') }}">Add Event</a>
                     </li>
                     {% if current_user.is_authenticated %}
+                        {% if current_user.is_admin %}
+                            <li class="nav-item">
+                                <a class="nav-link btn btn-warning text-white px-3 mx-2" href="{{ url_for('admin_dashboard') }}">Admin Dashboard</a>
+                            </li>
+                        {% endif %}
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('profile') }}">Profile</a>
                         </li>
