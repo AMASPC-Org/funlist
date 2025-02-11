@@ -294,6 +294,23 @@ def init_routes(app):
         events = Event.query.order_by(Event.date.desc()).all()
         return render_template('admin_events.html', events=events)
 
+    @app.route('/admin/users')
+    @login_required
+    def admin_users():
+        if not current_user.is_admin:
+            flash('Access denied. Admin privileges required.', 'danger')
+            return redirect(url_for('index'))
+        users = User.query.order_by(User.created_at.desc()).all()
+        return render_template('admin_users.html', users=users)
+
+    @app.route('/admin/analytics')
+    @login_required
+    def admin_analytics():
+        if not current_user.is_admin:
+            flash('Access denied. Admin privileges required.', 'danger')
+            return redirect(url_for('index'))
+        return render_template('admin_analytics.html')
+
     @app.route('/admin/event/<int:event_id>/<action>', methods=['POST'])
     @login_required
     def admin_event_action(event_id, action):
