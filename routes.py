@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 import json
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 def init_routes(app):
     @app.route('/subscribe', methods=['POST'])
