@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block content %}
@@ -13,7 +12,7 @@
                         <span class="badge bg-info">{{ event.target_audience|capitalize }}</span>
                         <span class="badge bg-warning">Fun Meter: {{ "⭐" * event.fun_meter }}</span>
                     </div>
-                    
+
                     <div class="event-description mb-4">
                         {{ event.description }}
                     </div>
@@ -49,7 +48,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="col-md-4">
             <div class="card mb-4">
                 <div class="card-body">
@@ -115,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function() {
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
-    
+
     L.marker([{{ event.latitude }}, {{ event.longitude }}])
         .bindPopup("{{ event.title }}")
         .addTo(map);
