@@ -50,7 +50,7 @@ def init_routes(app):
 
     @app.route('/')
     def index():
-        events = Event.query.order_by(Event.date.desc()).limit(6).all()
+        events = Event.query.order_by(Event.start_date.desc()).limit(6).all()
         return render_template('home.html', events=events, user=current_user)
 
     @app.route('/signup', methods=['GET', 'POST'])
@@ -208,7 +208,7 @@ def init_routes(app):
         if category:
             query = query.filter(Event.category == category)
         if date:
-            query = query.filter(db.func.date(Event.date) == date)
+            query = query.filter(db.func.date(Event.start_date) == date)
         if location:
             query = query.filter(Event.location.ilike(f'%{location}%'))
 
