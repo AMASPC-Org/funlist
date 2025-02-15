@@ -22,6 +22,14 @@ class Event(db.Model):
     street = db.Column(db.String(200), nullable=False)
     city = db.Column(db.String(100), nullable=False)
     state = db.Column(db.String(50), nullable=False)
+    zip_code = db.Column(db.String(20), nullable=False)
+    latitude = db.Column(db.Float)
+    longitude = db.Column(db.Float)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    category = db.Column(db.String(50), nullable=False)
+    target_audience = db.Column(db.String(50), nullable=False)
+    fun_meter = db.Column(db.Integer, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 class SourceWebsite(db.Model):
     id = db.Column(db.Integer, primary_key=True)
