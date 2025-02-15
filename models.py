@@ -1,3 +1,4 @@
+
 from flask_login import UserMixin
 from datetime import datetime
 from db_init import db
@@ -30,26 +31,6 @@ class Event(db.Model):
     target_audience = db.Column(db.String(50), nullable=False)
     fun_meter = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-
-class SourceWebsite(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    url = db.Column(db.String(200), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    events = db.relationship('Event', backref='source_website')
-
-    def __repr__(self):
-        return f'<SourceWebsite {self.name}>'
-
-
-    zip_code = db.Column(db.String(20), nullable=False)
-    latitude = db.Column(db.Float, nullable=False)
-    longitude = db.Column(db.Float, nullable=False)
-    category = db.Column(db.String(50), nullable=False)
-    target_audience = db.Column(db.String(50), nullable=False)
-    fun_meter = db.Column(db.Integer, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     website = db.Column(db.String(200))
     facebook = db.Column(db.String(200))
     instagram = db.Column(db.String(200))
@@ -64,12 +45,22 @@ class SourceWebsite(db.Model):
     needs_permission = db.Column(db.Boolean, default=False)
     permission_requested_at = db.Column(db.DateTime)
     permission_granted = db.Column(db.Boolean, default=False)
-
-    # Add relationship to User model
+    
+    # Add relationship to User and SourceWebsite models
     organizer = db.relationship('User', backref='organized_events')
+    source_website = db.relationship('SourceWebsite', backref='events')
 
     def __repr__(self):
         return f'<Event {self.title}>'
+
+class SourceWebsite(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    url = db.Column(db.String(200), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<SourceWebsite {self.name}>'
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
