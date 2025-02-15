@@ -1,3 +1,4 @@
+
 :root {
     --primary-color: #2B3990;    /* AMA Blue */
     --secondary-color: #00A651;   /* AMA Green */
@@ -6,54 +7,62 @@
     --light-color: #F5F5F5;       /* Off white */
 }
 
+/* Base styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
 body {
     font-family: 'Arial', sans-serif;
     line-height: 1.6;
     background-color: var(--light-color);
+    overflow-x: hidden;
 }
 
+/* Responsive navigation */
 .navbar {
     background-color: var(--primary-color);
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 0.5rem 1rem;
 }
 
 .navbar-brand, .nav-link {
     color: white !important;
 }
 
+.navbar-toggler {
+    border-color: rgba(255,255,255,0.5);
+}
+
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.7%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+/* Responsive containers */
+.container {
+    width: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+/* Hero section */
 .hero-section {
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     color: white;
-    padding: 4rem 0;
+    padding: 2rem 1rem;
     text-align: center;
 }
 
 .hero-section h1 {
-    font-size: 2.5rem;
+    font-size: clamp(1.5rem, 5vw, 2.5rem);
     margin-bottom: 1rem;
 }
 
-.search-container {
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-.btn-primary {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
-    color: white !important;
-}
-
-.mapboxgl-popup-content .btn-primary {
-    background-color: var(--secondary-color);
-    border-color: var(--secondary-color);
-    color: white !important;
-}
-
-.btn-primary:hover {
-    background-color: darken(var(--primary-color), 10%);
-}
-
+/* Cards and content */
 .event-card {
     background: white;
     border-radius: 8px;
@@ -61,35 +70,84 @@ body {
     margin-bottom: 1.5rem;
     padding: 1rem;
     transition: transform 0.2s;
+    width: 100%;
 }
 
 .event-card:hover {
     transform: translateY(-2px);
 }
 
+/* Forms */
+.form-control {
+    width: 100%;
+    padding: 0.375rem 0.75rem;
+}
+
+/* Buttons */
+.btn {
+    white-space: nowrap;
+    padding: 0.375rem 0.75rem;
+}
+
+/* Footer */
 .footer {
     background-color: var(--dark-color);
     color: white;
     padding: 1rem 0;
-    position: relative;
-    bottom: 0;
     width: 100%;
 }
 
-.footer a {
-    color: #0056b3;
-    text-decoration: none;
+/* Modal responsiveness */
+.modal-dialog {
+    margin: 1rem;
+    max-width: 500px;
 }
 
-.footer a:hover {
-    text-decoration: underline;
+/* Responsive utilities */
+.img-fluid {
+    max-width: 100%;
+    height: auto;
 }
 
-.footer p {
-    margin: 0;
-    text-align: center;
+/* Media Queries */
+@media (max-width: 768px) {
+    .navbar-nav {
+        padding: 1rem 0;
+    }
+    
+    .nav-item {
+        padding: 0.5rem 0;
+    }
+    
+    .btn {
+        width: 100%;
+        margin: 0.25rem 0;
+    }
+    
+    .hero-section {
+        padding: 2rem 1rem;
+    }
 }
 
+@media (min-width: 768px) {
+    .container {
+        max-width: 720px;
+    }
+}
+
+@media (min-width: 992px) {
+    .container {
+        max-width: 960px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .container {
+        max-width: 1140px;
+    }
+}
+
+/* AI assistant bubble responsiveness */
 .ai-assistant-bubble {
     position: fixed;
     bottom: 20px;
@@ -100,4 +158,12 @@ body {
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     cursor: pointer;
     z-index: 1000;
+}
+
+@media (max-width: 576px) {
+    .ai-assistant-bubble {
+        bottom: 10px;
+        right: 10px;
+        padding: 10px;
+    }
 }
