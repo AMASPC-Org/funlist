@@ -345,8 +345,8 @@ def init_routes(app):
             'pending_events': Event.query.filter_by(status='pending').count(),
             'total_users': User.query.count(),
             'todays_events': Event.query.filter(
-                Event.date >= datetime.now().date(),
-                Event.date < datetime.now().date() + timedelta(days=1)
+                Event.start_date >= datetime.now().date(),
+                Event.start_date < datetime.now().date() + timedelta(days=1)
             ).count(),
             'new_users_24h': User.query.filter(
                 User.created_at >= datetime.now() - timedelta(hours=24)
