@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, DateField, DateTimeLocalField, SelectField, FloatField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, DateField, TimeField, DateTimeLocalField, SelectField, FloatField
 from wtforms.validators import DataRequired, Email, Length, EqualTo, ValidationError, Regexp, Optional, NumberRange
 
 class SignupForm(FlaskForm):
