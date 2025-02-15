@@ -34,6 +34,37 @@ body {
 
 .navbar-toggler {
     border-color: rgba(255,255,255,0.5);
+    margin-left: auto;
+}
+
+.navbar .container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+@media (max-width: 991px) {
+    .navbar-collapse {
+        width: 100%;
+        padding-top: 1rem;
+    }
+    
+    .nav-item {
+        width: 100%;
+        text-align: center;
+        padding: 0.5rem 0;
+    }
+    
+    .nav-link {
+        display: inline-block;
+        width: auto;
+    }
+
+    .dropdown-menu {
+        position: static !important;
+        width: 100%;
+        text-align: center;
+    }
 }
 
 .navbar-toggler-icon {
