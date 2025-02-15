@@ -22,6 +22,18 @@ class Event(db.Model):
     street = db.Column(db.String(200), nullable=False)
     city = db.Column(db.String(100), nullable=False)
     state = db.Column(db.String(50), nullable=False)
+
+class SourceWebsite(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    url = db.Column(db.String(200), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    events = db.relationship('Event', backref='source_website')
+
+    def __repr__(self):
+        return f'<SourceWebsite {self.name}>'
+
+
     zip_code = db.Column(db.String(20), nullable=False)
     latitude = db.Column(db.Float, nullable=False)
     longitude = db.Column(db.Float, nullable=False)
@@ -34,7 +46,16 @@ class Event(db.Model):
     facebook = db.Column(db.String(200))
     instagram = db.Column(db.String(200))
     twitter = db.Column(db.String(200))
-    status = db.Column(db.String(20), default='pending')  # pending, approved, rejected
+    event_url = db.Column(db.String(200))
+    ticket_url = db.Column(db.String(200))
+    ticket_price = db.Column(db.String(100))
+    source_website_id = db.Column(db.Integer, db.ForeignKey('source_website.id'))
+    scraped_at = db.Column(db.DateTime)
+    last_updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+    is_validated = db.Column(db.Boolean, default=False)
+    needs_permission = db.Column(db.Boolean, default=False)
+    permission_requested_at = db.Column(db.DateTime)
+    permission_granted = db.Column(db.Boolean, default=False)
 
     # Add relationship to User model
     organizer = db.relationship('User', backref='organized_events')
