@@ -2,104 +2,112 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="card">
-        <div class="card-body">
-            <h1 class="card-title">{{ event.title }}</h1>
-            <div class="row mt-4">
-                <div class="col-md-8">
-                    <h5>Event Details</h5>
-                    <p class="card-text">{{ event.description }}</p>
+<div class="container my-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h1 class="card-title">{{ event.title }}</h1>
+                    <div class="event-meta mb-3">
+                        <span class="badge bg-primary">{{ event.category|capitalize }}</span>
+                        <span class="badge bg-info">{{ event.target_audience|capitalize }}</span>
+                        <span class="badge bg-warning">Fun Meter: {{ "⭐" * event.fun_meter }}</span>
+                    </div>
                     
-                    <div class="event-meta mt-4">
-                        <p><i class="fas fa-calendar"></i> <strong>Date:</strong> {{ event.date.strftime('%B %d, %Y at %I:%M %p') }}</p>
-                        <p><i class="fas fa-map-marker-alt"></i> <strong>Location:</strong> {{ event.location }}</p>
-                        <p><i class="fas fa-tag"></i> <strong>Category:</strong> {{ event.category|capitalize }}</p>
-                        <p><i class="fas fa-users"></i> <strong>Target Audience:</strong> {{ event.target_audience|capitalize }}</p>
-                        <p><i class="fas fa-smile"></i> <strong>Fun Meter:</strong> 
-                            {% for i in range(event.fun_meter) %}
-                                ⭐
-                            {% endfor %}
-                            ({{ event.fun_meter }} / 5)
-                        </p>
+                    <div class="event-description mb-4">
+                        {{ event.description }}
                     </div>
 
-                    {% if current_user.is_authenticated %}
-                        <div class="mt-4">
-                            {% if event not in current_user.interested_events %}
-                                <a href="{{ url_for('express_interest', event_id=event.id) }}" class="btn btn-primary">
-                                    <i class="far fa-star"></i> Express Interest
-                                </a>
-                            {% else %}
-                                <button class="btn btn-secondary" disabled>
-                                    <i class="fas fa-star"></i> Interested
-                                </button>
-                            {% endif %}
+                    <div class="event-details">
+                        <h4>Event Details</h4>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-calendar"></i> Start: {{ event.start_date.strftime('%B %d, %Y') }}
+                                {% if event.start_time %}at {{ event.start_time.strftime('%I:%M %p') }}{% endif %}</li>
+                            <li><i class="fas fa-calendar-check"></i> End: {{ event.end_date.strftime('%B %d, %Y') }}
+                                {% if event.end_time %}at {{ event.end_time.strftime('%I:%M %p') }}{% endif %}</li>
+                            <li><i class="fas fa-map-marker-alt"></i> {{ event.street }}, {{ event.city }}, {{ event.state }} {{ event.zip_code }}</li>
+                        </ul>
+                    </div>
 
-                            {% if event not in current_user.attended_events %}
-                                <a href="{{ url_for('mark_attended', event_id=event.id) }}" class="btn btn-success">
-                                    <i class="far fa-check-circle"></i> Mark as Attended
-                                </a>
-                            {% else %}
-                                <button class="btn btn-secondary" disabled>
-                                    <i class="fas fa-check-circle"></i> Attended
-                                </button>
-                            {% endif %}
-                        </div>
-                    {% endif %}
-                </div>
-                
-                <div class="col-md-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Event Location</h5>
-                            <div id="eventMap" style="height: 300px;"></div>
+                    <div class="social-share mt-4">
+                        <h4>Share This Event</h4>
+                        <div class="share-buttons">
+                            <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url|urlencode }}" 
+                               class="btn btn-facebook" target="_blank">
+                                <i class="fab fa-facebook"></i> Share
+                            </a>
+                            <a href="https://twitter.com/intent/tweet?text={{ event.title|urlencode }}&url={{ request.url|urlencode }}" 
+                               class="btn btn-twitter" target="_blank">
+                                <i class="fab fa-twitter"></i> Tweet
+                            </a>
+                            <a href="https://www.linkedin.com/shareArticle?mini=true&url={{ request.url|urlencode }}&title={{ event.title|urlencode }}" 
+                               class="btn btn-linkedin" target="_blank">
+                                <i class="fab fa-linkedin"></i> Share
+                            </a>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="mt-4">
-                <h5>Event Links & Social Media</h5>
-                <div class="social-links">
-                    {% if event.website %}
-                        <a href="{{ event.website }}" class="btn btn-outline-primary mb-2" target="_blank">
-                            <i class="fas fa-globe"></i> Visit Website
-                        </a>
-                    {% endif %}
-                    {% if event.facebook %}
-                        <a href="{{ event.facebook }}" class="btn btn-outline-primary mb-2" target="_blank">
-                            <i class="fab fa-facebook"></i> Facebook
-                        </a>
-                    {% endif %}
-                    {% if event.instagram %}
-                        <a href="{{ event.instagram }}" class="btn btn-outline-primary mb-2" target="_blank">
-                            <i class="fab fa-instagram"></i> Instagram
-                        </a>
-                    {% endif %}
-                    {% if event.twitter %}
-                        <a href="{{ event.twitter }}" class="btn btn-outline-primary mb-2" target="_blank">
-                            <i class="fab fa-twitter"></i> Twitter
-                        </a>
-                    {% endif %}
-                </div>
-
-                <h5 class="mt-4">Organizer Information</h5>
-                <p><strong>Organized by:</strong> {{ event.organizer.username or 'Anonymous' }}</p>
-                {% if event.organizer.organizerprofile %}
-                    <p><strong>Company:</strong> {{ event.organizer.organizerprofile.company_name }}</p>
-                {% endif %}
             </div>
         </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div id="eventMap" style="height: 300px;"></div>
+                </div>
+            </div>
+
+            {% if event.website or event.facebook or event.instagram or event.twitter %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Event Links</h5>
+                    <div class="event-links">
+                        {% if event.website %}
+                        <a href="{{ event.website }}" class="btn btn-outline-primary btn-block mb-2" target="_blank">
+                            <i class="fas fa-globe"></i> Official Website
+                        </a>
+                        {% endif %}
+                        {% if event.facebook %}
+                        <a href="{{ event.facebook }}" class="btn btn-outline-facebook btn-block mb-2" target="_blank">
+                            <i class="fab fa-facebook"></i> Facebook
+                        </a>
+                        {% endif %}
+                        {% if event.instagram %}
+                        <a href="{{ event.instagram }}" class="btn btn-outline-instagram btn-block mb-2" target="_blank">
+                            <i class="fab fa-instagram"></i> Instagram
+                        </a>
+                        {% endif %}
+                        {% if event.twitter %}
+                        <a href="{{ event.twitter }}" class="btn btn-outline-twitter btn-block" target="_blank">
+                            <i class="fab fa-twitter"></i> Twitter
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if current_user.is_authenticated %}
+            <div class="card">
+                <div class="card-body">
+                    <div class="event-actions">
+                        {% if event not in current_user.interested_events %}
+                        <a href="{{ url_for('express_interest', event_id=event.id) }}" class="btn btn-primary btn-block mb-2">
+                            <i class="far fa-star"></i> Express Interest
+                        </a>
+                        {% endif %}
+                        {% if event not in current_user.attended_events %}
+                        <a href="{{ url_for('mark_attended', event_id=event.id) }}" class="btn btn-success btn-block">
+                            <i class="far fa-check-circle"></i> Mark as Attended
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
     </div>
-
-    <a href="{{ url_for('events') }}" class="btn btn-secondary mt-4">
-        <i class="fas fa-arrow-left"></i> Back to Events
-    </a>
 </div>
-
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -107,7 +115,10 @@ document.addEventListener('DOMContentLoaded', function() {
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
-    L.marker([{{ event.latitude }}, {{ event.longitude }}]).addTo(map);
+    
+    L.marker([{{ event.latitude }}, {{ event.longitude }}])
+        .bindPopup("{{ event.title }}")
+        .addTo(map);
 });
 </script>
 {% endblock %}
