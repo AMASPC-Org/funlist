@@ -14,8 +14,42 @@
         {{ form.description(class="form-control", rows="5") }}
     </div>
     <div class="mb-3">
-        {{ form.date.label(class="form-label") }}
-        {{ form.date(class="form-control", type="datetime-local") }}
+        {{ form.all_day.label(class="form-label") }}
+        {{ form.all_day(class="form-check-input ms-2") }}
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-6">
+            {{ form.start_date.label(class="form-label") }}
+            {{ form.start_date(class="form-control", type="date") }}
+        </div>
+        <div class="col-md-6">
+            {{ form.end_date.label(class="form-label") }}
+            {{ form.end_date(class="form-control", type="date") }}
+        </div>
+    </div>
+    <div class="row mb-3 time-fields">
+        <div class="col-md-6">
+            {{ form.start_time.label(class="form-label") }}
+            {{ form.start_time(class="form-control", type="time") }}
+        </div>
+        <div class="col-md-6">
+            {{ form.end_time.label(class="form-label") }}
+            {{ form.end_time(class="form-control", type="time") }}
+        </div>
+    </div>
+    <div class="mb-3">
+        {{ form.recurring.label(class="form-label") }}
+        {{ form.recurring(class="form-check-input ms-2") }}
+    </div>
+    <div class="recurrence-fields" style="display: none;">
+        <div class="mb-3">
+            {{ form.recurrence_type.label(class="form-label") }}
+            {{ form.recurrence_type(class="form-select") }}
+        </div>
+        <div class="mb-3">
+            {{ form.recurrence_end_date.label(class="form-label") }}
+            {{ form.recurrence_end_date(class="form-control", type="date") }}
+        </div>
     </div>
     <div class="mb-3">
         {{ form.street.label(class="form-label") }}

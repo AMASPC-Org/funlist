@@ -76,7 +76,21 @@ class ProfileForm(FlaskForm):
 class EventForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
     description = TextAreaField('Description', validators=[DataRequired()])
-    date = DateTimeLocalField('Date and Time', format='%Y-%m-%dT%H:%M', validators=[DataRequired()])
+    start_date = DateField('Start Date', validators=[DataRequired()])
+    end_date = DateField('End Date', validators=[DataRequired()])
+    start_time = TimeField('Start Time')
+    end_time = TimeField('End Time')
+    all_day = BooleanField('All Day Event')
+    recurring = BooleanField('Recurring Event')
+    recurrence_type = SelectField('Recurrence Pattern', choices=[
+        ('none', 'One-time Event'),
+        ('daily', 'Daily'),
+        ('weekly', 'Weekly'),
+        ('monthly', 'Monthly'),
+        ('quarterly', 'Quarterly'),
+        ('annually', 'Annually')
+    ])
+    recurrence_end_date = DateField('Recurrence End Date')
     street = StringField('Street Address', validators=[DataRequired()])
     city = StringField('City', validators=[DataRequired()])
     state = StringField('State', validators=[DataRequired()])

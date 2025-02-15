@@ -40,3 +40,22 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+// Event form handling
+document.addEventListener('DOMContentLoaded', function() {
+    const allDayCheckbox = document.querySelector('input[name="all_day"]');
+    const timeFields = document.querySelector('.time-fields');
+    const recurringCheckbox = document.querySelector('input[name="recurring"]');
+    const recurrenceFields = document.querySelector('.recurrence-fields');
+
+    if (allDayCheckbox && timeFields) {
+        allDayCheckbox.addEventListener('change', function() {
+            timeFields.style.display = this.checked ? 'none' : 'flex';
+        });
+    }
+
+    if (recurringCheckbox && recurrenceFields) {
+        recurringCheckbox.addEventListener('change', function() {
+            recurrenceFields.style.display = this.checked ? 'block' : 'none';
+        });
+    }
+});
