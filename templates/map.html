@@ -1,15 +1,24 @@
 
 {% extends "base.html" %}
 
+{% block head %}
+<link rel="canonical" href="{{ url_for('map', _external=True) }}" />
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid">
     <h1 class="mb-4">Event Map</h1>
 
     <div class="row mb-4">
-        <div class="col-md-3">
-            <label class="filter-label" for="locationSearch">Location</label>
-            <input type="text" class="form-control" id="locationSearch" placeholder="Search location...">
-        </div>
+        <div class="col-md-9">
+            <div class="d-flex">
+                <div class="col-md-4">
+                    <label class="filter-label" for="locationSearch">Location</label>
+                    <input type="text" class="form-control" id="locationSearch" placeholder="Search location...">
+                </div>
+                <div class="ms-3 col-md-4">
+                    <label class="filter-label" for="categoryFilter">Category</label>
+                    <select class="form-select" id="categoryFilter">
         <div class="col-md-3">
             <label class="filter-label" for="categoryFilter">Category</label>
             <select class="form-select" id="categoryFilter">
@@ -33,6 +42,11 @@
                 <option value="2">⭐⭐ (2+)</option>
                 <option value="1">⭐ (1+)</option>
             </select>
+        </div>
+        <div class="col-md-3 text-end">
+            <a href="{{ url_for('events') }}" class="btn btn-outline-primary mt-4">
+                <i class="fas fa-list"></i> 📋 Switch to List View
+            </a>
         </div>
     </div>
 

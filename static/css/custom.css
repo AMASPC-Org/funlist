@@ -224,10 +224,27 @@ body {
     height: auto;
 }
 
+/* View Switcher Styles */
+.view-switcher {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: none;
+}
+
 /* Media Queries */
 @media (max-width: 768px) {
     .navbar-nav {
         padding: 1rem 0;
+    }
+    
+    .view-switcher {
+        display: block;
+    }
+    
+    .desktop-view-switch {
+        display: none;
     }
 
     .nav-item {
