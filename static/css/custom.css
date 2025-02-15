@@ -25,11 +25,51 @@ body {
 .navbar {
     background-color: var(--primary-color);
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    padding: 0.5rem 1rem;
+    padding: 1rem;
 }
 
-.navbar-brand, .nav-link {
+.navbar-brand {
     color: white !important;
+    font-size: 1.5rem;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    margin-right: 2rem;
+}
+
+.nav-link {
+    color: rgba(255,255,255,0.9) !important;
+    padding: 0.5rem 1rem !important;
+    margin: 0 0.25rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+    color: white !important;
+    background: rgba(255,255,255,0.1);
+}
+
+.navbar .btn-success {
+    padding: 0.5rem 1.25rem !important;
+    margin: 0 0.5rem;
+    font-weight: 500;
+    border: none;
+}
+
+.dropdown-menu {
+    border: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    padding: 0.5rem;
+}
+
+.dropdown-item {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+}
+
+.dropdown-item i {
+    width: 20px;
+    margin-right: 0.5rem;
 }
 
 .navbar-toggler {
