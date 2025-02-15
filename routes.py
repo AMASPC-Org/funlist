@@ -212,7 +212,7 @@ def init_routes(app):
         if location:
             query = query.filter(Event.location.ilike(f'%{location}%'))
 
-        events = query.order_by(Event.date).all()
+        events = query.order_by(Event.start_date).all()
         return render_template('events.html', events=events)
 
     @app.route('/map')
@@ -248,7 +248,8 @@ def init_routes(app):
             event = Event(
                 title=form.title.data,
                 description=form.description.data,
-                date=form.date.data,
+                start_date=form.date.data,
+                end_date=form.date.data,
                 street=form.street.data,
                 city=form.city.data,
                 state=form.state.data,
@@ -292,7 +293,7 @@ def init_routes(app):
         if not current_user.is_admin:
             flash('Access denied. Admin privileges required.', 'danger')
             return redirect(url_for('index'))
-        events = Event.query.order_by(Event.date.desc()).all()
+        events = Event.query.order_by(Event.start_date.desc()).all()
         return render_template('admin_events.html', events=events)
 
     @app.route('/admin/users')

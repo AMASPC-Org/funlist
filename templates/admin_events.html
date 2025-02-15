@@ -26,7 +26,7 @@
                             </span>
                         </td>
                         <td>{{ event.organizer.email }}</td>
-                        <td>{{ event.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ event.start_date.strftime('%Y-%m-%d') }}</td>
                         <td>
                             <div class="btn-group" role="group">
                                 <button onclick="approveEvent({{ event.id }})" class="btn btn-sm btn-outline-success {% if event.status == 'approved' %}active{% endif %}" title="Approve">
