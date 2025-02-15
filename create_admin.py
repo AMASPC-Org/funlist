@@ -12,13 +12,13 @@ def create_admin():
                 is_admin=True,
                 account_active=True
             )
-            admin.set_password('120M2025*')
+            admin.set_password('120M20225*v7')
             db.session.add(admin)
             db.session.commit()
             print("Admin user created successfully")
         else:
             admin.is_admin = True
-            admin.set_password('120M2025*')
+            admin.set_password('120M20225*v7')
             db.session.commit()
             print("Admin user updated successfully")
 
