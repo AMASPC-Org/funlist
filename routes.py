@@ -354,7 +354,7 @@ def init_routes(app):
         }
 
         # Get events for event management
-        events = Event.query.filter_by(status=status).order_by(Event.date).all()
+        events = Event.query.filter_by(status=status).order_by(Event.start_date).all()
 
         # Get users for user management
         users = User.query.order_by(User.created_at.desc()).all()
