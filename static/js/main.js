@@ -1,15 +1,20 @@
-// Email signup popup functionality
+// Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize Bootstrap tooltips
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
+    // Initialize floating CTA
+    initFloatingCTA();
 
-    // Floating CTA handling
-    const floatingCTA = document.getElementById('floatingCTA');
+    // Initialize dropdown functionality
+    initDropdowns();
+
+    // Initialize form handlers
+    initForms();
+});
+
+function initFloatingCTA() {
+    const floatingCTA = document.querySelector('.floating-cta');
     if (floatingCTA) {
-        window.addEventListener('scroll', function() {
+        // Show CTA after scrolling
+        window.addEventListener('scroll', () => {
             if (window.scrollY > 300) {
                 floatingCTA.classList.add('visible');
             } else {
@@ -17,73 +22,43 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+}
 
-    // Email signup form handling
+function initDropdowns() {
+    const dropdowns = document.querySelectorAll('.dropdown-toggle');
+    dropdowns.forEach(dropdown => {
+        dropdown.addEventListener('click', (e) => {
+            e.preventDefault();
+            const dropdownMenu = dropdown.nextElementSibling;
+            if (dropdownMenu) {
+                dropdownMenu.classList.toggle('show');
+            }
+        });
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.matches('.dropdown-toggle')) {
+            document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+                menu.classList.remove('show');
+            });
+        }
+    });
+}
+
+function initForms() {
     const emailSignupForm = document.getElementById('emailSignupForm');
     if (emailSignupForm) {
-        emailSignupForm.addEventListener('submit', function(e) {
+        emailSignupForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const email = document.getElementById('signupEmail').value;
-
-            fetch('/subscribe', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email: email })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('emailSignupModal'));
-                    modal.hide();
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+            // Here you would typically send this to your backend
+            console.log('Email signup:', email);
+            // Close modal after submission
+            const modal = bootstrap.Modal.getInstance(document.getElementById('emailSignupModal'));
+            if (modal) {
+                modal.hide();
+            }
         });
     }
-
-    // Character counter for form fields
-    function updateCharCount(input, counter, maxLength) {
-        if (!input || !counter) return;
-        const count = input.value.length;
-        counter.textContent = count;
-        counter.classList.toggle('text-danger', count > maxLength);
-    }
-
-    // Initialize character counters
-    const titleInput = document.querySelector('input[name="title"]');
-    const descriptionInput = document.querySelector('textarea[name="description"]');
-    const titleCounter = document.getElementById('titleCount');
-    const descriptionCounter = document.getElementById('descriptionCount');
-
-    if (titleInput && titleCounter) {
-        titleInput.addEventListener('input', () => updateCharCount(titleInput, titleCounter, 100));
-        updateCharCount(titleInput, titleCounter, 100);
-    }
-
-    if (descriptionInput && descriptionCounter) {
-        descriptionInput.addEventListener('input', () => updateCharCount(descriptionInput, descriptionCounter, 500));
-        updateCharCount(descriptionInput, descriptionCounter, 500);
-    }
-
-    // Form field toggles
-    const allDayCheckbox = document.querySelector('input[name="all_day"]');
-    const timeFields = document.querySelector('.time-fields');
-    const recurringCheckbox = document.querySelector('input[name="recurring"]');
-    const recurrenceFields = document.querySelector('.recurrence-fields');
-
-    if (allDayCheckbox && timeFields) {
-        allDayCheckbox.addEventListener('change', function() {
-            timeFields.style.display = this.checked ? 'none' : 'flex';
-        });
-    }
-
-    if (recurringCheckbox && recurrenceFields) {
-        recurringCheckbox.addEventListener('change', function() {
-            recurrenceFields.style.display = this.checked ? 'block' : 'none';
-        });
-    }
-});
+}
