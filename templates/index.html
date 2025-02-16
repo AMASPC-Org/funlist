@@ -1,19 +1,41 @@
 {% extends "base.html" %}
-{% block title %}Welcome{% endblock %}
+{% block title %}Welcome to FunList.ai{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h2 class="text-center mb-0">Welcome!</h2>
+<!-- Hero Section -->
+<section id="hero" class="hero-section">
+    <div class="hero-content">
+        <h1>Find the Best Events Near You – Rated for Fun!</h1>
+        <p class="lead">Sign up to get Fun-Rated events emailed to you every week!</p>
+        <div class="cta-group">
+            <button class="btn btn-primary btn-lg primary-cta" data-bs-toggle="modal" data-bs-target="#emailSignupModal">
+                Get My Weekly FunList
+            </button>
+            <div class="view-options mt-3">
+                <a href="{{ url_for('map') }}" class="btn btn-outline-primary mx-2">Map View</a>
+                <a href="{{ url_for('events') }}" class="btn btn-outline-primary mx-2">List View</a>
             </div>
-            <div class="card-body text-center">
-                <p>You are now logged in as {{ current_user.email }}</p>
-                <div class="d-grid gap-2">
-                    <a href="{{ url_for('logout') }}" class="btn btn-primary">Logout</a>
+        </div>
+    </div>
+</section>
+
+{% if current_user.is_authenticated %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="text-center mb-0">Welcome Back!</h2>
+                </div>
+                <div class="card-body text-center">
+                    <p>You are logged in as {{ current_user.email }}</p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('logout') }}" class="btn btn-primary">Logout</a>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+{% endif %}
 {% endblock %}
