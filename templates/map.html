@@ -6,6 +6,55 @@
 <link rel="canonical" href="{{ url_for('map_view', _external=True) }}" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<style>
+.map-container {
+    height: 700px;
+    margin-bottom: 2rem;
+}
+
+#map {
+    height: 100%;
+    width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.event-popup {
+    min-width: 200px;
+}
+
+.event-popup h5 {
+    margin-bottom: 10px;
+}
+
+.event-popup p {
+    margin-bottom: 5px;
+}
+
+.event-card {
+    transition: all 0.3s ease;
+}
+
+.event-card:hover {
+    background-color: #f8f9fa;
+}
+
+.event-card.highlighted {
+    background-color: #e9ecef;
+    border-color: var(--primary-color);
+}
+
+.fun-rating-section {
+    padding: 2rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin: 2rem 0;
+}
+
+.fun-meter-explanation {
+    margin: 1rem 0;
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -15,6 +64,20 @@
         <a href="{{ url_for('events') }}" class="btn btn-outline-primary">
             <i class="fas fa-list"></i> Switch to List View
         </a>
+    </div>
+
+    <div class="fun-rating-section">
+        <h3>Understanding Fun Ratings</h3>
+        <div class="fun-meter-explanation">
+            <h4>How We Rate Fun:</h4>
+            <ul>
+                <li>⭐⭐⭐⭐⭐ (5) - Exceptional: Must-attend events with unique experiences</li>
+                <li>⭐⭐⭐⭐ (4) - Great: High-energy events with lots of activities</li>
+                <li>⭐⭐⭐ (3) - Good: Solid events with enjoyable activities</li>
+                <li>⭐⭐ (2) - Fair: Basic events with limited activities</li>
+                <li>⭐ (1) - Basic: Simple events or gatherings</li>
+            </ul>
+        </div>
     </div>
 
     <div class="row mb-4">
@@ -70,8 +133,14 @@
                         <p class="card-text">
                             <small class="text-muted">{{ event.start_date.strftime('%B %d, %Y') }}</small>
                         </p>
-                        <p class="card-text"><small class="text-muted">{{ event.street }}, {{ event.city }}</small></p>
-                        <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-primary">View Details</a>
+                        <p class="card-text">
+                            <small class="text-muted">{{ event.street }}, {{ event.city }}</small>
+                        </p>
+                        <div class="fun-meter">
+                            Fun Rating: 
+                            {% for i in range(event.fun_meter) %}⭐{% endfor %}
+                        </div>
+                        <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-primary mt-2">View Details</a>
                     </div>
                 </div>
                 {% endfor %}
@@ -79,45 +148,6 @@
         </div>
     </div>
 </div>
-
-<style>
-.map-container {
-    height: 700px;
-    margin-bottom: 2rem;
-}
-
-#map {
-    height: 100%;
-    width: 100%;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.event-popup {
-    min-width: 200px;
-}
-
-.event-popup h5 {
-    margin-bottom: 10px;
-}
-
-.event-popup p {
-    margin-bottom: 5px;
-}
-
-.event-card {
-    transition: background-color 0.3s ease;
-}
-
-.event-card:hover {
-    background-color: #f8f9fa;
-}
-
-.event-card.highlighted {
-    background-color: #e9ecef;
-    border-color: var(--primary-color);
-}
-</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -148,7 +178,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Event card hover effects
     document.querySelectorAll('.event-card').forEach(card => {
         const eventId = parseInt(card.dataset.eventId, 10);
         card.addEventListener('mouseenter', function() {
@@ -165,7 +194,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Filter functionality
     const filterEvents = () => {
         const category = document.getElementById('categoryFilter').value;
         const date = document.getElementById('dateFilter').value;
@@ -190,12 +218,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     };
 
-    // Add filter event listeners
     document.getElementById('categoryFilter').addEventListener('change', filterEvents);
     document.getElementById('dateFilter').addEventListener('change', filterEvents);
     document.getElementById('funFilter').addEventListener('change', filterEvents);
 
-    // Try to get user location
     if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
             (position) => {
