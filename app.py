@@ -1,8 +1,10 @@
 import os
 import logging
 from datetime import timedelta
-from flask import Flask, session
+from flask import Flask, session, request
 from flask_login import LoginManager
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from flask_wtf.csrf import CSRFProtect
 from flask_session import Session
 from db_init import db
@@ -10,12 +12,28 @@ from db_init import db
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s - %(pathname)s:%(lineno)d'
 )
 logger = logging.getLogger(__name__)
 
+# Add request logging
+@app.before_request
+def log_request_info():
+    logger.info('Request: %s %s', request.method, request.url)
+
+@app.after_request
+def log_response_info(response):
+    logger.info('Response: %s %s %s', request.method, request.url, response.status)
+    return response
+
 # create the app
 app = Flask(__name__)
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://"
+)
 
 # setup configurations
 app.config["SECRET_KEY"] = os.environ.get("FLASK_SECRET_KEY", "dev_key")
