@@ -5,14 +5,27 @@
 <!-- Hero Section -->
 <section id="hero-section">
     <div class="hero-container">
+        <!-- Hero Background -->
         <div class="hero-background">
-            <img src="{{ url_for('static', filename='images/Have-Fun-FunList.ai-home.jpeg') }}" alt="Find Fun Events Near You">
+            <img src="{{ url_for('static', filename='images/Have-Fun-FunList.ai-home.jpeg') }}" 
+                 alt="Find Fun Events Near You"
+                 loading="lazy">
         </div>
+        <!-- Content Overlay -->
         <div class="hero-content">
             <h1>Find the Best Events Near You – Rated for Fun!</h1>
             <p>Sign up to get Fun-Rated events emailed to you every week!</p>
             <div class="cta-container">
-                <a href="#signup-form" class="cta-button">Subscribe Now</a>
+                <a href="#signup" class="cta-button">Get My Weekly FunList!</a>
+            </div>
+            <!-- Map & List Toggle -->
+            <div class="toggle-container">
+                <button class="toggle-button active" id="map-view">
+                    <i class="fas fa-map-marker-alt"></i> Map View
+                </button>
+                <button class="toggle-button" id="list-view">
+                    <i class="fas fa-list"></i> List View
+                </button>
             </div>
         </div>
     </div>
