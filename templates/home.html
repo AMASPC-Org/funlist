@@ -256,17 +256,13 @@
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 
 <script>
-    let map, markers = {}, userMarker = null;
-    let eventsData = [];
-    
-    try {
-        eventsData = {{ events_json|safe }} || [];
-    } catch(e) {
-        console.error("Error parsing events data:", e);
-        eventsData = [];
-    }
+    let map = null;
+    let markers = {};
+    let userMarker = null;
+    let eventsData = {{ events_json|safe if events_json else '[]' }};
     
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize map
@@ -276,12 +272,13 @@
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        // Add event markers if data exists
-        if (eventsData && eventsData.length) {
+        // Add event markers
+        if (Array.isArray(eventsData)) {
             eventsData.forEach(function(event) {
-            var marker = L.marker([event.latitude, event.longitude])
-                .bindPopup(`
-                    <div>
+                if (event.latitude && event.longitude) {
+                    let marker = L.marker([event.latitude, event.longitude])
+                        .bindPopup(`
+                            <div>
                         <h6>${event.title}</h6>
                         <p>${event.description}</p>
                         <p><strong>Date:</strong> ${event.date}</p>
