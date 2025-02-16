@@ -13,10 +13,6 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Run Flask App"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
 args = "Update Schema"
 
 [[workflows.workflow.tasks]]
@@ -29,22 +25,7 @@ args = "Create Test User"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Flask App"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
 args = "Flask Server"
-
-[[workflows.workflow]]
-name = "Run Flask App"
-author = "agent"
-
-[workflows.workflow.metadata]
-agentRequireRestartOnSave = false
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python app.py"
 
 [[workflows.workflow]]
 name = "Update Schema"
@@ -52,6 +33,9 @@ author = "agent"
 
 [workflows.workflow.metadata]
 agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
@@ -63,6 +47,9 @@ author = "agent"
 
 [workflows.workflow.metadata]
 agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
@@ -78,17 +65,6 @@ agentRequireRestartOnSave = false
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python create_test_user.py"
-
-[[workflows.workflow]]
-name = "Flask App"
-author = "agent"
-
-[workflows.workflow.metadata]
-agentRequireRestartOnSave = false
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python app.py"
 
 [[workflows.workflow]]
 name = "Run"
@@ -111,7 +87,7 @@ task = "packager.installForAll"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python app.py"
-waitForPort = 5001
+waitForPort = 5002
 
 [deployment]
 run = ["sh", "-c", "gunicorn --workers 4 --bind 0.0.0.0:8080 app:app"]
@@ -123,3 +99,7 @@ externalPort = 80
 [[ports]]
 localPort = 5001
 externalPort = 3000
+
+[[ports]]
+localPort = 5002
+externalPort = 3001

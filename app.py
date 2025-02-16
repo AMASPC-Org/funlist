@@ -7,7 +7,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_wtf.csrf import CSRFProtect
 from flask_session import Session
-from db_init import db
+from db_init import db, init_db
 
 # Configure logging
 logging.basicConfig(
@@ -26,24 +26,7 @@ limiter = Limiter(
 )
 
 # Add request logging
-from functools import wraps
-from werkzeug.exceptions import RequestTimeout
-import time
-
-def timeout_after(seconds):
-    def decorator(f):
-        @wraps(f)
-        def wrapper(*args, **kwargs):
-            start = time.time()
-            result = f(*args, **kwargs)
-            if time.time() - start > seconds:
-                raise RequestTimeout("Request timeout")
-            return result
-        return wrapper
-    return decorator
-
 @app.before_request
-@timeout_after(30)
 def log_request_info():
     logger.info('Request: %s %s', request.method, request.url)
 
@@ -79,6 +62,9 @@ db.init_app(app)
 csrf = CSRFProtect(app)
 Session(app)
 
+# Initialize database
+init_db(app)
+
 # Setup login manager
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -99,4 +85,4 @@ def load_user(user_id):
 init_routes(app)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001)
+    app.run(host='0.0.0.0', port=5002)

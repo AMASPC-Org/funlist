@@ -2,6 +2,9 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 from sqlalchemy.pool import QueuePool
 from sqlalchemy.orm import DeclarativeBase
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Base(DeclarativeBase):
     pass
@@ -11,7 +14,7 @@ db = SQLAlchemy(model_class=Base)
 def init_engine(app):
     from sqlalchemy.exc import OperationalError
     from time import sleep
-    
+
     for attempt in range(3):
         try:
             engine = create_engine(
@@ -32,4 +35,16 @@ def init_engine(app):
                 raise
             sleep(2 ** attempt)
 
-# Add error handling, logging, and rate limiting here.  This is a placeholder for the features omitted from the provided changes.
+def init_db(app):
+    """Initialize database and create all tables"""
+    try:
+        logger.info("Initializing database...")
+        with app.app_context():
+            # Import all models to ensure they are registered with SQLAlchemy
+            from models import User, Event, SourceWebsite, Subscriber
+            # Create all tables
+            db.create_all()
+            logger.info("Database tables created successfully")
+    except Exception as e:
+        logger.error(f"Error initializing database: {str(e)}")
+        raise

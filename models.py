@@ -1,4 +1,3 @@
-
 from flask_login import UserMixin
 from datetime import datetime
 from db_init import db
@@ -8,6 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 logger = logging.getLogger(__name__)
 
 class Event(db.Model):
+    __tablename__ = 'events'
     id = db.Column(db.Integer, primary_key=True)
     status = db.Column(db.String(20), default='pending')  # pending, approved, rejected
     title = db.Column(db.String(200), nullable=False)
@@ -30,7 +30,7 @@ class Event(db.Model):
     category = db.Column(db.String(50), nullable=False)
     target_audience = db.Column(db.String(50), nullable=False)
     fun_meter = db.Column(db.Integer, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     website = db.Column(db.String(200))
     facebook = db.Column(db.String(200))
     instagram = db.Column(db.String(200))
@@ -38,14 +38,14 @@ class Event(db.Model):
     event_url = db.Column(db.String(200))
     ticket_url = db.Column(db.String(200))
     ticket_price = db.Column(db.String(100))
-    source_website_id = db.Column(db.Integer, db.ForeignKey('source_website.id'))
+    source_website_id = db.Column(db.Integer, db.ForeignKey('source_websites.id'))
     scraped_at = db.Column(db.DateTime)
     last_updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
     is_validated = db.Column(db.Boolean, default=False)
     needs_permission = db.Column(db.Boolean, default=False)
     permission_requested_at = db.Column(db.DateTime)
     permission_granted = db.Column(db.Boolean, default=False)
-    
+
     # Add relationship to User and SourceWebsite models
     organizer = db.relationship('User', backref='organized_events')
     source_website = db.relationship('SourceWebsite', backref='events')
@@ -54,6 +54,7 @@ class Event(db.Model):
         return f'<Event {self.title}>'
 
 class SourceWebsite(db.Model):
+    __tablename__ = 'source_websites'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     url = db.Column(db.String(200), nullable=False)
@@ -63,6 +64,7 @@ class SourceWebsite(db.Model):
         return f'<SourceWebsite {self.name}>'
 
 class User(UserMixin, db.Model):
+    __tablename__ = 'users'  # Changed from default 'user' to avoid PostgreSQL reserved word
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(256), nullable=False)
@@ -103,6 +105,7 @@ class User(UserMixin, db.Model):
         return f'<User {self.email}>'
 
 class Subscriber(db.Model):
+    __tablename__ = 'subscribers'
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     subscribed_at = db.Column(db.DateTime, default=datetime.utcnow)
