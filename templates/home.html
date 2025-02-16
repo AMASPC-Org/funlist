@@ -259,18 +259,17 @@
 
 <script>
     var eventsData = {{ events_json|safe }};
+    var map, markers = {}, userMarker = null;
     
     document.addEventListener('DOMContentLoaded', function() {
-        var map = L.map('map').setView([47.0379, -122.9007], 12);
-        var markers = {};
-        var userMarker = null;
-
+        map = L.map('map').setView([47.0379, -122.9007], 12);
+        
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
         // Add event markers
-        events.forEach(function(event) {
+        eventsData.forEach(function(event) {
             var marker = L.marker([event.latitude, event.longitude])
                 .bindPopup(`
                     <div>
