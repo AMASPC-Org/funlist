@@ -236,7 +236,17 @@ def init_routes(app):
     @app.route('/map')
     def map():
         events = Event.query.all()
-        return render_template('map.html', events=events)
+        events_json = [{
+            'id': event.id,
+            'title': event.title,
+            'description': event.description[:100] + '...' if event.description else '',
+            'date': event.start_date.strftime('%B %d, %Y'),
+            'category': event.category,
+            'latitude': event.latitude,
+            'longitude': event.longitude,
+            'funMeter': event.fun_meter
+        } for event in events]
+        return render_template('map.html', events=events, events_json=events_json)
 
     @app.route('/event/<int:event_id>')
     def event_detail(event_id):
