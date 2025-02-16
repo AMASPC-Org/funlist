@@ -118,10 +118,34 @@
     document.addEventListener('DOMContentLoaded', function() {
         var map = L.map('map').setView([47.0379, -122.9007], 12);
         var markers = {};
+        var userMarker = null;
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
+
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                var userLat = position.coords.latitude;
+                var userLng = position.coords.longitude;
+
+                map.setView([userLat, userLng], 12);
+
+                if (userMarker) {
+                    map.removeLayer(userMarker);
+                }
+                userMarker = L.marker([userLat, userLng], {
+                    icon: L.divIcon({
+                        html: '📍',
+                        iconSize: [25, 25],
+                        className: 'user-location-marker'
+                    })
+                }).addTo(map);
+                userMarker.bindPopup("You are here!").openPopup();
+            }, function(error) {
+                console.error("Geolocation error:", error);
+            });
+        }
 
         var events = [
             {% for event in events %}

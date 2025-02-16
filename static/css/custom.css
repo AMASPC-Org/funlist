@@ -1,3 +1,12 @@
+
+.user-location-marker {
+    background: none;
+    border: none;
+    font-size: 25px;
+    text-align: center;
+    line-height: 1;
+}
+
 :root {
     --primary-color: #2B3990;    /* AMA Blue */
     --secondary-color: #00A651;   /* AMA Green */
