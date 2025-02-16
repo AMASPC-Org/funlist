@@ -5,48 +5,49 @@
 <!-- Hero Section -->
 <section id="hero-section">
     <div class="hero-container">
-        <div class="hero-background">
+        <!-- Hero Image Container -->
+        <div class="hero-image-container">
             <img src="{{ url_for('static', filename='images/Have-Fun-FunList.ai-home.jpeg') }}" 
-                 alt="Find Fun Events Near You"
+                 alt="Have Fun with FunList.ai"
                  class="hero-image">
         </div>
-        <div class="hero-content">
-            <h1>Find the Best Events Near You – Rated for Fun!</h1>
-            <p>Sign up to get Fun-Rated events emailed to you every week!</p>
-            <div class="cta-container">
-                <a href="#signup-form" class="cta-button">Subscribe Now</a>
+
+        <!-- Content Below Image -->
+        <div class="hero-content-wrapper">
+            <div class="hero-content">
+                <h1>Find the Best Events Near You – Rated for Fun!</h1>
+                <p class="lead">Sign up to get Fun-Rated events emailed to you every week!</p>
+                <div class="cta-container">
+                    <a href="#signup-form" class="cta-button">Subscribe Now</a>
+                    <p class="social-proof">
+                        <span class="counter">🎉 5,372</span> new events added this month!
+                    </p>
+                </div>
             </div>
         </div>
     </div>
 </section>
-{% endblock %}
 
-{% block content %}
 <style>
-.hero-fullwidth {
+/* Hero Section Styles */
+#hero-section {
+    margin-top: 55px;
     width: 100%;
-    height: 85vh;
-    position: relative;
-    overflow: hidden;
-    margin-top: 55px; /* Account for fixed navbar */
+    background-color: #fff;
 }
 
 .hero-container {
-    position: relative;
     width: 100%;
-    height: 100%;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
 }
 
-.hero-background {
-    position: absolute;
-    top: 0;
-    left: 0;
+.hero-image-container {
     width: 100%;
-    height: 100%;
-    z-index: 1;
+    height: 50vh;
+    overflow: hidden;
+    position: relative;
 }
 
 .hero-image {
@@ -56,24 +57,92 @@
     object-position: center;
 }
 
+.hero-content-wrapper {
+    width: 100%;
+    background: #f8f9fa;
+    padding: 2rem 0;
+    border-top: 1px solid rgba(0,0,0,0.1);
+}
+
 .hero-content {
-    position: relative;
-    z-index: 2;
-    background: rgba(255, 255, 255, 0.85);
-    max-width: 70%;
-    padding: 2rem;
-    border-radius: 15px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    max-width: 800px;
+    margin: 0 auto;
     text-align: center;
+    padding: 2rem;
+}
+
+.hero-content h1 {
+    color: #1E2D8F;
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+}
+
+.hero-content .lead {
+    font-size: 1.25rem;
+    color: #555;
+    margin-bottom: 2rem;
+}
+
+.cta-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.cta-button {
+    display: inline-block;
+    padding: 1rem 2rem;
+    font-size: 1.2rem;
+    font-weight: bold;
+    background: #1E2D8F;
+    color: white;
+    text-decoration: none;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+}
+
+.cta-button:hover {
+    background: #152069;
+    transform: scale(1.05);
+    color: white;
+}
+
+.social-proof {
+    font-size: 1.1rem;
+    color: #666;
+    margin: 1rem 0;
+}
+
+.counter {
+    color: #1E2D8F;
+    font-weight: bold;
+}
+
+/* Mobile Responsive Adjustments */
+@media (max-width: 768px) {
+    .hero-image-container {
+        height: 40vh;
+    }
+
+    .hero-content h1 {
+        font-size: 2rem;
+    }
+
+    .hero-content .lead {
+        font-size: 1.1rem;
+    }
+
+    .cta-button {
+        padding: 0.8rem 1.6rem;
+        font-size: 1.1rem;
+    }
 }
 </style>
+{% endblock %}
 
-<div class="floating-cta">
-    <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#emailSignupModal">
-        <i class="fas fa-bell me-2"></i>Get My Weekly FunList
-    </button>
-</div>
-
+{% block content %}
 <div class="container my-5 py-4">
     <div class="row">
         <div class="col-md-4 mb-4">

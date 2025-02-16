@@ -12,7 +12,7 @@ from db_init import db, init_db
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,  # Changed to DEBUG for more detailed logs
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
         logging.StreamHandler(sys.stdout),
@@ -29,36 +29,45 @@ def create_app():
 
     logger.info("Starting Flask application initialization...")
 
-    # Setup configurations
-    app.config["SECRET_KEY"] = os.environ.get("FLASK_SECRET_KEY", "dev_key")
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-        "pool_recycle": 300,
-        "pool_pre_ping": True,
-        "pool_timeout": 30,
-        "connect_args": {"connect_timeout": 10}
-    }
-
-    # Session configuration
-    app.config['SESSION_TYPE'] = 'filesystem'
-    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
-    app.config['SESSION_COOKIE_SECURE'] = True
-    app.config['SESSION_COOKIE_HTTPONLY'] = True
-    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-    app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=14)
-    app.config['REMEMBER_COOKIE_SECURE'] = True
-    app.config['REMEMBER_COOKIE_HTTPONLY'] = True
-    app.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
-
     try:
+        # Setup configurations
+        logger.debug("Setting up configurations...")
+        app.config["SECRET_KEY"] = os.environ.get("FLASK_SECRET_KEY", "dev_key")
+        app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+        app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+            "pool_recycle": 300,
+            "pool_pre_ping": True,
+            "pool_timeout": 30,
+            "connect_args": {"connect_timeout": 10}
+        }
+
+        # Session configuration
+        logger.debug("Configuring session...")
+        app.config['SESSION_TYPE'] = 'filesystem'
+        app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
+        app.config['SESSION_COOKIE_SECURE'] = True
+        app.config['SESSION_COOKIE_HTTPONLY'] = True
+        app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+        app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=14)
+        app.config['REMEMBER_COOKIE_SECURE'] = True
+        app.config['REMEMBER_COOKIE_HTTPONLY'] = True
+        app.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
+
         logger.info("Initializing Flask extensions...")
+
         # Initialize extensions
+        logger.debug("Initializing database...")
         db.init_app(app)
+
+        logger.debug("Initializing CSRF protection...")
         csrf = CSRFProtect(app)
+
+        logger.debug("Initializing session...")
         Session(app)
 
         # Setup login manager
+        logger.debug("Setting up login manager...")
         login_manager = LoginManager()
         login_manager.init_app(app)
         login_manager.login_view = "login"
@@ -76,22 +85,25 @@ def create_app():
             def load_user(user_id):
                 return db.session.get(User, int(user_id))
 
+            logger.debug("Initializing database tables...")
             init_db(app)
+
+            logger.debug("Initializing routes...")
             init_routes(app)
 
         logger.info("Application initialization completed successfully")
         return app
     except Exception as e:
-        logger.error(f"Failed to create app: {str(e)}")
+        logger.error(f"Failed to create app: {str(e)}", exc_info=True)  # Added exc_info for stack trace
         raise
 
 app = create_app()
 
 if __name__ == '__main__':
     try:
-        port = 5003  # Changed to use port 5003
+        port = 5001
         logger.info(f"Starting server on port {port}")
         app.run(host='0.0.0.0', port=port, debug=True)
     except Exception as e:
-        logger.error(f"Failed to start server: {str(e)}")
+        logger.error(f"Failed to start server: {str(e)}", exc_info=True)  # Added exc_info for stack trace
         sys.exit(1)
