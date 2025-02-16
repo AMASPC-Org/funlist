@@ -614,4 +614,18 @@ section, .container {
     }
 }
 
+/* Social Media Icons */
+.social-links {
+    margin-top: 1rem;
+}
+
+.social-icon {
+    color: white;
+    transition: color 0.3s ease;
+}
+
+.social-icon:hover {
+    color: var(--accent-color);
+}
+
 /* End of styles */
