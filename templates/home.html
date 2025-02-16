@@ -258,18 +258,27 @@
 <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
 
 <script>
-    var eventsData = {{ events_json|safe }};
+    // Initialize variables
     var map, markers = {}, userMarker = null;
+    var eventsData = [];
+    
+    try {
+        eventsData = {{ events_json|safe }} || [];
+    } catch(e) {
+        console.error("Error parsing events data:", e);
+    }
     
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialize map
         map = L.map('map').setView([47.0379, -122.9007], 12);
         
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        // Add event markers
-        eventsData.forEach(function(event) {
+        // Add event markers if data exists
+        if (eventsData && eventsData.length) {
+            eventsData.forEach(function(event) {
             var marker = L.marker([event.latitude, event.longitude])
                 .bindPopup(`
                     <div>
@@ -308,13 +317,18 @@
         }
 
 
+        }
+
         function addMarkers(filteredEvents) {
-            for (let id in markers) {
-                map.removeLayer(markers[id]);
-            }
+            // Clear existing markers
+            Object.values(markers).forEach(marker => {
+                map.removeLayer(marker);
+            });
             markers = {};
 
-            filteredEvents.forEach(event => {
+            // Add new markers if events exist
+            if (filteredEvents && Array.isArray(filteredEvents)) {
+                filteredEvents.forEach(event => {
                 var marker = L.marker([event.latitude, event.longitude])
                     .bindPopup(`
                         <div>
@@ -343,11 +357,11 @@
         }
 
         function filterEvents() {
-            var category = document.getElementById('categoryFilter').value;
-            var date = document.getElementById('dateFilter').value;
-            var funRating = document.getElementById('funFilter').value;
+            var category = document.getElementById('categoryFilter')?.value || '';
+            var date = document.getElementById('dateFilter')?.value || '';
+            var funRating = document.getElementById('funFilter')?.value || '';
 
-            var filteredEvents = eventsData;
+            var filteredEvents = eventsData || [];
 
             if (category) {
                 filteredEvents = filteredEvents.filter(event => event.category === category);
