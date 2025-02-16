@@ -26,29 +26,30 @@
                 <div class="ms-3 col-md-4">
                     <label class="filter-label" for="categoryFilter">Category</label>
                     <select class="form-select" id="categoryFilter">
-        <div class="col-md-3">
-            <label class="filter-label" for="categoryFilter">Category</label>
-            <select class="form-select" id="categoryFilter">
-                <option value="">All Categories</option>
-                <option value="music">Music</option>
-                <option value="sports">Sports</option>
-                <option value="arts">Arts</option>
-                <option value="food">Food</option>
-                <option value="other">Other</option>
-            </select>
-        </div>
-        <div class="col-md-3">
-            <input type="date" class="form-control" id="dateFilter">
-        </div>
-        <div class="col-md-3">
-            <select class="form-select" id="funFilter">
-                <option value="">All Fun Ratings</option>
-                <option value="5">⭐⭐⭐⭐⭐ (5)</option>
-                <option value="4">⭐⭐⭐⭐ (4+)</option>
-                <option value="3">⭐⭐⭐ (3+)</option>
-                <option value="2">⭐⭐ (2+)</option>
-                <option value="1">⭐ (1+)</option>
-            </select>
+                        <option value="">All Categories</option>
+                        <option value="music">Music</option>
+                        <option value="sports">Sports</option>
+                        <option value="arts">Arts</option>
+                        <option value="food">Food</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="filter-label" for="dateFilter">Date</label>
+                    <input type="date" class="form-control" id="dateFilter">
+                </div>
+                <div class="col-md-3">
+                    <label class="filter-label" for="funFilter">Fun Rating</label>
+                    <select class="form-select" id="funFilter">
+                        <option value="">All Fun Ratings</option>
+                        <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+                        <option value="4">⭐⭐⭐⭐ (4+)</option>
+                        <option value="3">⭐⭐⭐ (3+)</option>
+                        <option value="2">⭐⭐ (2+)</option>
+                        <option value="1">⭐ (1+)</option>
+                    </select>
+                </div>
+            </div>
         </div>
         <div class="col-md-3 text-end">
             <a href="{{ url_for('events') }}" class="btn btn-outline-primary mt-4">
@@ -60,8 +61,8 @@
     <div class="row">
         <div class="col-md-7">
             <div class="map-container">
-    <div id="map" style="height: 100%; width: 100%;" class="mb-4"></div>
-</div>
+                <div id="map" style="height: 100%; width: 100%;" class="mb-4"></div>
+            </div>
         </div>
         <div class="col-md-5">
             <div class="event-cards-container" style="height: 700px; overflow-y: auto;">
@@ -87,138 +88,150 @@
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 
 <script>
-    var map = L.map('map').setView([47.0379, -122.9007], 12);
-    var markers = {};
+    let map, markers = {}, userMarker = null;
+    let eventsData = {{ events_json|safe if events_json else '[]' }};
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
+    document.addEventListener('DOMContentLoaded', function() {
+        try {
+            // Initialize map
+            map = L.map('map', {
+                center: [47.0379, -122.9007],
+                zoom: 12
+            });
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
 
-    var events = [
-        {% for event in events %}
-        {
-            id: {{ event.id }},
-            title: "{{ event.title }}",
-            date: "{{ event.date.strftime('%B %d, %Y at %I:%M %p') }}",
-            category: "{{ event.category }}",
-            latitude: {{ event.latitude }},
-            longitude: {{ event.longitude }},
-            description: "{{ event.description|truncate(100) }}",
-            funMeter: {{ event.fun_meter }},
-            url: "{{ url_for('event_detail', event_id=event.id) }}"
-        },
-        {% endfor %}
-    ];
 
-    function highlightEventCard(eventId) {
-        document.querySelectorAll('.event-card').forEach(card => {
-            card.classList.remove('highlighted');
-        });
-        const card = document.querySelector(`.event-card[data-event-id="${eventId}"]`);
-        if (card) {
-            card.classList.add('highlighted');
-            card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-    }
+            var events = [
+                {% for event in events %}
+                {
+                    id: {{ event.id }},
+                    title: "{{ event.title }}",
+                    date: "{{ event.date.strftime('%B %d, %Y at %I:%M %p') }}",
+                    category: "{{ event.category }}",
+                    latitude: {{ event.latitude }},
+                    longitude: {{ event.longitude }},
+                    description: "{{ event.description|truncate(100) }}",
+                    funMeter: {{ event.fun_meter }},
+                    url: "{{ url_for('event_detail', event_id=event.id) }}"
+                },
+                {% endfor %}
+            ];
 
-    function addMarkers(filteredEvents) {
-        // Clear existing markers
-        for (let id in markers) {
-            map.removeLayer(markers[id]);
-        }
-        markers = {};
+            function highlightEventCard(eventId) {
+                document.querySelectorAll('.event-card').forEach(card => {
+                    card.classList.remove('highlighted');
+                });
+                const card = document.querySelector(`.event-card[data-event-id="${eventId}"]`);
+                if (card) {
+                    card.classList.add('highlighted');
+                    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }
 
-        // Add new markers
-        filteredEvents.forEach(event => {
-            var marker = L.marker([event.latitude, event.longitude])
-                .bindPopup(`
-                    <div class="event-popup">
-                        <h5>${event.title}</h5>
-                        <p>${event.date}</p>
-                        <p>${event.description}</p>
-                        <p><strong>Category:</strong> ${event.category}</p>
-                        <p><strong>Fun Meter:</strong> ${event.funMeter}/5</p>
-                        <a href="${event.url}" class="btn btn-primary btn-sm">View Details</a>
-                    </div>
-                `);
-            marker.on('click', () => highlightEventCard(event.id));
-            markers[event.id] = marker;
-            marker.addTo(map);
-        });
-    }
+            function addMarkers(filteredEvents) {
+                // Clear existing markers
+                for (let id in markers) {
+                    map.removeLayer(markers[id]);
+                }
+                markers = {};
 
-    function filterEvents() {
-        const category = document.getElementById('categoryFilter').value;
-        const date = document.getElementById('dateFilter').value;
-        const funRating = document.getElementById('funFilter').value;
+                // Add new markers
+                filteredEvents.forEach(event => {
+                    var marker = L.marker([event.latitude, event.longitude])
+                        .bindPopup(`
+                            <div class="event-popup">
+                                <h5>${event.title}</h5>
+                                <p>${event.date}</p>
+                                <p>${event.description}</p>
+                                <p><strong>Category:</strong> ${event.category}</p>
+                                <p><strong>Fun Meter:</strong> ${event.funMeter}/5</p>
+                                <a href="${event.url}" class="btn btn-primary btn-sm">View Details</a>
+                            </div>
+                        `);
+                    marker.on('click', () => highlightEventCard(event.id));
+                    markers[event.id] = marker;
+                    marker.addTo(map);
+                });
+            }
 
-        let filteredEvents = events;
+            function filterEvents() {
+                const category = document.getElementById('categoryFilter').value;
+                const date = document.getElementById('dateFilter').value;
+                const funRating = document.getElementById('funFilter').value;
 
-        if (category) {
-            filteredEvents = filteredEvents.filter(event => event.category === category);
-        }
+                let filteredEvents = events;
 
-        if (date) {
-            const selectedDate = new Date(date).toDateString();
-            filteredEvents = filteredEvents.filter(event => 
-                new Date(event.date).toDateString() === selectedDate
-            );
-        }
+                if (category) {
+                    filteredEvents = filteredEvents.filter(event => event.category === category);
+                }
 
-        if (funRating) {
-            filteredEvents = filteredEvents.filter(event => 
-                event.funMeter >= parseInt(funRating)
-            );
-        }
+                if (date) {
+                    const selectedDate = new Date(date).toDateString();
+                    filteredEvents = filteredEvents.filter(event =>
+                        new Date(event.date).toDateString() === selectedDate
+                    );
+                }
 
-        addMarkers(filteredEvents);
-    }
+                if (funRating) {
+                    filteredEvents = filteredEvents.filter(event =>
+                        event.funMeter >= parseInt(funRating)
+                    );
+                }
 
-    // Initialize markers
-    addMarkers(events);
+                addMarkers(filteredEvents);
+            }
 
-    // Add event listeners
-    document.getElementById('categoryFilter').addEventListener('change', filterEvents);
-    document.getElementById('dateFilter').addEventListener('change', filterEvents);
-    document.getElementById('funFilter').addEventListener('change', filterEvents);
+            // Initialize markers
+            addMarkers(events);
 
-    // Location search functionality
-    document.getElementById('locationSearch').addEventListener('input', debounce(function(e) {
-        const searchQuery = e.target.value;
-        if (searchQuery.length > 2) {
-            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.length > 0) {
-                        const location = data[0];
-                        map.setView([location.lat, location.lon], 12);
-                        filterEvents();
+            // Add event listeners
+            document.getElementById('categoryFilter').addEventListener('change', filterEvents);
+            document.getElementById('dateFilter').addEventListener('change', filterEvents);
+            document.getElementById('funFilter').addEventListener('change', filterEvents);
+
+            // Location search functionality
+            document.getElementById('locationSearch').addEventListener('input', debounce(function(e) {
+                const searchQuery = e.target.value;
+                if (searchQuery.length > 2) {
+                    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.length > 0) {
+                                const location = data[0];
+                                map.setView([location.lat, location.lon], 12);
+                                filterEvents();
+                            }
+                        });
+                }
+            }, 500));
+
+            // Debounce function to limit API calls
+            function debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
+
+            // Add hover effect for event cards
+            document.querySelectorAll('.event-card').forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                    const eventId = card.dataset.eventId;
+                    if (markers[eventId]) {
+                        markers[eventId].openPopup();
                     }
                 });
+            });
+        } catch (error) {
+            console.error("Error initializing map:", error);
         }
-    }, 500));
-
-    // Debounce function to limit API calls
-    function debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    }
-
-    // Add hover effect for event cards
-    document.querySelectorAll('.event-card').forEach(card => {
-        card.addEventListener('mouseenter', () => {
-            const eventId = card.dataset.eventId;
-            if (markers[eventId]) {
-                markers[eventId].openPopup();
-            }
-        });
     });
 </script>
 
