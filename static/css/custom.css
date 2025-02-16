@@ -21,11 +21,91 @@
     padding: 0;
 }
 
+:root {
+    --section-spacing: 4rem;
+    --element-spacing: 1.5rem;
+    --border-radius: 8px;
+}
+
 body {
     font-family: 'Arial', sans-serif;
     line-height: 1.6;
     background-color: var(--light-color);
     overflow-x: hidden;
+}
+
+/* Consistent spacing */
+section, .container {
+    margin-bottom: var(--section-spacing);
+    padding: var(--section-spacing) 0;
+}
+
+.card {
+    border-radius: var(--border-radius);
+    margin-bottom: var(--element-spacing);
+}
+
+.btn {
+    border-radius: var(--border-radius);
+    padding: 0.75rem 1.5rem;
+}
+
+/* Hero section styling */
+.hero-section {
+    padding: var(--section-spacing) 1rem;
+}
+
+.hero-section .btn-primary {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    padding: 1rem 2rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(247, 148, 29, 0.3);
+}
+
+.hero-section .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(247, 148, 29, 0.4);
+}
+
+/* Feature boxes */
+.card h3 {
+    text-align: left;
+    margin-bottom: var(--element-spacing);
+}
+
+/* Map container */
+#map {
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    :root {
+        --section-spacing: 2rem;
+        --element-spacing: 1rem;
+    }
+
+    .card h3 {
+        text-align: center;
+    }
+
+    .hero-section .btn-primary {
+        width: 100%;
+        margin-bottom: var(--element-spacing);
+    }
+
+    .explore-buttons .btn {
+        width: 100%;
+        margin: 0.5rem 0;
+    }
+
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
 }
 
 /* Responsive navigation */
