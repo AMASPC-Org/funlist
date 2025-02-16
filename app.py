@@ -1,109 +1,103 @@
+
 import os
 import logging
-import sys
 from datetime import timedelta
-from flask import Flask
+from flask import Flask, session, request
 from flask_login import LoginManager
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_wtf.csrf import CSRFProtect
 from flask_session import Session
-from db_init import db, init_db
+from db_init import db
 
 # Configure logging
 logging.basicConfig(
-    level=logging.DEBUG,  # Changed to DEBUG for more detailed logs
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.FileHandler('app.log')
-    ]
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s - %(pathname)s:%(lineno)d'
 )
 logger = logging.getLogger(__name__)
 
-def create_app():
-    # Create the app
-    app = Flask(__name__, 
-                static_url_path='/static',
-                static_folder='static')
+# create the app
+app = Flask(__name__)
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://"
+)
 
-    logger.info("Starting Flask application initialization...")
+# Add request logging
+from functools import wraps
+from werkzeug.exceptions import RequestTimeout
+import time
 
-    try:
-        # Setup configurations
-        logger.debug("Setting up configurations...")
-        app.config["SECRET_KEY"] = os.environ.get("FLASK_SECRET_KEY", "dev_key")
-        app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
-        app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-            "pool_recycle": 300,
-            "pool_pre_ping": True,
-            "pool_timeout": 30,
-            "connect_args": {"connect_timeout": 10}
-        }
+def timeout_after(seconds):
+    def decorator(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            start = time.time()
+            result = f(*args, **kwargs)
+            if time.time() - start > seconds:
+                raise RequestTimeout("Request timeout")
+            return result
+        return wrapper
+    return decorator
 
-        # Session configuration
-        logger.debug("Configuring session...")
-        app.config['SESSION_TYPE'] = 'filesystem'
-        app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
-        app.config['SESSION_COOKIE_SECURE'] = True
-        app.config['SESSION_COOKIE_HTTPONLY'] = True
-        app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-        app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=14)
-        app.config['REMEMBER_COOKIE_SECURE'] = True
-        app.config['REMEMBER_COOKIE_HTTPONLY'] = True
-        app.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
+@app.before_request
+@timeout_after(30)
+def log_request_info():
+    logger.info('Request: %s %s', request.method, request.url)
 
-        logger.info("Initializing Flask extensions...")
+@app.after_request
+def log_response_info(response):
+    logger.info('Response: %s %s %s', request.method, request.url, response.status)
+    return response
 
-        # Initialize extensions
-        logger.debug("Initializing database...")
-        db.init_app(app)
+# setup configurations
+app.config["SECRET_KEY"] = os.environ.get("FLASK_SECRET_KEY", "dev_key")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    "pool_recycle": 300,
+    "pool_pre_ping": True,
+    "pool_timeout": 30,
+    "connect_args": {"connect_timeout": 10}
+}
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-        logger.debug("Initializing CSRF protection...")
-        csrf = CSRFProtect(app)
+# Session configuration
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=14)
+app.config['REMEMBER_COOKIE_SECURE'] = True
+app.config['REMEMBER_COOKIE_HTTPONLY'] = True
+app.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
 
-        logger.debug("Initializing session...")
-        Session(app)
+# initialize extensions
+db.init_app(app)
+csrf = CSRFProtect(app)
+Session(app)
 
-        # Setup login manager
-        logger.debug("Setting up login manager...")
-        login_manager = LoginManager()
-        login_manager.init_app(app)
-        login_manager.login_view = "login"
-        login_manager.login_message = "Please log in to access this page."
-        login_manager.login_message_category = "info"
-        login_manager.session_protection = "strong"
+# Setup login manager
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
+login_manager.login_message = "Please log in to access this page."
+login_manager.login_message_category = "info"
+login_manager.session_protection = "strong"
 
-        logger.info("Setting up database and routes...")
-        # Import models and routes after app initialization
-        with app.app_context():
-            from models import User
-            from routes import init_routes
+# Import models and routes after app initialization to avoid circular imports
+from models import User
+from routes import init_routes
 
-            @login_manager.user_loader
-            def load_user(user_id):
-                return db.session.get(User, int(user_id))
+@login_manager.user_loader
+def load_user(user_id):
+    return db.session.get(User, int(user_id))
 
-            logger.debug("Initializing database tables...")
-            init_db(app)
-
-            logger.debug("Initializing routes...")
-            init_routes(app)
-
-        logger.info("Application initialization completed successfully")
-        return app
-    except Exception as e:
-        logger.error(f"Failed to create app: {str(e)}", exc_info=True)  # Added exc_info for stack trace
-        raise
-
-app = create_app()
+# Initialize routes
+init_routes(app)
 
 if __name__ == '__main__':
-    try:
-        port = 5001
-        logger.info(f"Starting server on port {port}")
-        app.run(host='0.0.0.0', port=port, debug=True)
-    except Exception as e:
-        logger.error(f"Failed to start server: {str(e)}", exc_info=True)  # Added exc_info for stack trace
-        sys.exit(1)
+    app.run(host='0.0.0.0', port=5000)

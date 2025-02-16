@@ -7,9 +7,20 @@ logger = logging.getLogger(__name__)
 
 def update_schema():
     with app.app_context():
-        # Create all tables
+        # Drop all tables and recreate them
+        db.drop_all()
         db.create_all()
         logger.info("Database schema updated successfully.")
 
 if __name__ == "__main__":
+    update_schema()
+from app import app, db
+
+def update_schema():
+    with app.app_context():
+        db.drop_all()
+        db.create_all()
+        print("Schema updated successfully")
+
+if __name__ == '__main__':
     update_schema()

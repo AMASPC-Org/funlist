@@ -1,15 +1,23 @@
-modules = ["python-3.11", "nodejs-20", "python3"]
+modules = ["python-3.11", "nodejs-20"]
 
 [nix]
 channel = "stable-24_05"
 
 [workflows]
-runButton = "Project"
+runButton = "Run"
 
 [[workflows.workflow]]
 name = "Project"
 mode = "parallel"
 author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Run Flask App"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Update Schema"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
@@ -21,7 +29,29 @@ args = "Create Test User"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Flask Server"
+args = "Flask App"
+
+[[workflows.workflow]]
+name = "Run Flask App"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python app.py"
+
+[[workflows.workflow]]
+name = "Update Schema"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python update_schema.py"
 
 [[workflows.workflow]]
 name = "Add Sample Events"
@@ -29,9 +59,6 @@ author = "agent"
 
 [workflows.workflow.metadata]
 agentRequireRestartOnSave = false
-
-[[workflows.workflow.tasks]]
-task = "packager.installForAll"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
@@ -45,11 +72,19 @@ author = "agent"
 agentRequireRestartOnSave = false
 
 [[workflows.workflow.tasks]]
-task = "packager.installForAll"
+task = "shell.exec"
+args = "python create_test_user.py"
+
+[[workflows.workflow]]
+name = "Flask App"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python create_test_user.py"
+args = "python app.py"
 
 [[workflows.workflow]]
 name = "Run"
@@ -59,40 +94,9 @@ author = 36270944
 task = "shell.exec"
 args = "python app.py"
 
-[[workflows.workflow]]
-name = "Flask Server"
-author = "agent"
-
-[workflows.workflow.metadata]
-agentRequireRestartOnSave = false
-
-[[workflows.workflow.tasks]]
-task = "packager.installForAll"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python app.py"
-waitForPort = 5001
-
 [deployment]
-run = ["sh", "-c", "python app.py"]
+run = ["sh", "-c", "gunicorn --workers 4 --bind 0.0.0.0:8080 app:app"]
 
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 5001
-externalPort = 3000
-
-[[ports]]
-localPort = 5002
-externalPort = 3001
-
-[[ports]]
-localPort = 5003
-externalPort = 3002
-
-[[ports]]
-localPort = 5004
-externalPort = 3003
