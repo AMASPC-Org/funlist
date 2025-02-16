@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block head %}
@@ -122,13 +121,13 @@
 document.addEventListener('DOMContentLoaded', function() {
     const eventsData = {{ events_json|safe }};
     const map = L.map('map').setView([47.0379, -122.9007], 12);
-    
+
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
     const markers = {};
-    
+
     eventsData.forEach(event => {
         const marker = L.marker([event.latitude, event.longitude])
             .bindPopup(`
@@ -160,16 +159,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const category = document.getElementById('categoryFilter').value;
         const date = document.getElementById('dateFilter').value;
         const funRating = document.getElementById('funFilter').value;
-        
+
         eventsData.forEach(event => {
             const marker = markers[event.id];
             const card = document.querySelector(`.event-card[data-event-id="${event.id}"]`);
-            
+
             let show = true;
             if (category && event.category !== category) show = false;
             if (date && event.date !== date) show = false;
             if (funRating && event.funMeter < parseInt(funRating)) show = false;
-            
+
             if (show) {
                 marker.addTo(map);
                 if (card) card.style.display = 'block';
