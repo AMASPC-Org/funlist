@@ -135,7 +135,7 @@ section, .container {
 .navbar {
     background-color: var(--primary-color);
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    padding: 0.75rem 1rem;
+    padding: 0.4rem 1rem;
     transition: all 0.3s ease;
 }
 
