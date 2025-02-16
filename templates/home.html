@@ -1,30 +1,66 @@
 {% extends "base.html" %}
 
 {% block content %}
-<section id="hero-section">
+<section id="hero-section" class="hero-fullwidth">
     <div class="hero-container">
-        <img src="{{ url_for('static', filename='images/Have-Fun-FunList.ai-home.jpeg') }}" 
-             alt="Find Fun Events Near You"
-             class="hero-image"
-             style="width: 100%; height: auto; max-height: 600px; object-fit: cover;">
+        <div class="hero-background">
+            <img src="{{ url_for('static', filename='images/Have-Fun-FunList.ai-home.html') }}" 
+                 alt="Find Fun Events Near You" 
+                 class="hero-image">
+        </div>
+        <div class="hero-content">
+            <h1>Find the Best Events Near You – Rated for Fun!</h1>
+            <p>Sign up to get Fun-Rated events emailed to you every week!</p>
+            <div class="cta-container">
+                <a href="#signup-form" class="cta-button">Subscribe Now</a>
+            </div>
+        </div>
     </div>
 </section>
 
 <style>
-.hero-container {
+.hero-fullwidth {
     width: 100%;
-    max-width: 100%;
-    overflow: hidden;
+    height: 85vh;
     position: relative;
-    height: auto;
-    max-height: 600px;
+    overflow: hidden;
+    margin-top: 55px; /* Account for fixed navbar */
+}
+
+.hero-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hero-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
 }
 
 .hero-image {
-    display: block;
     width: 100%;
-    height: auto;
+    height: 100%;
     object-fit: cover;
+    object-position: center;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    background: rgba(255, 255, 255, 0.85);
+    max-width: 70%;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
 }
 </style>
 

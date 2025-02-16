@@ -1,4 +1,4 @@
-modules = ["python-3.11", "nodejs-20"]
+modules = ["python-3.11", "nodejs-20", "python3"]
 
 [nix]
 channel = "stable-24_05"
@@ -13,10 +13,6 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Update Schema"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
 args = "Add Sample Events"
 
 [[workflows.workflow.tasks]]
@@ -26,20 +22,6 @@ args = "Create Test User"
 [[workflows.workflow.tasks]]
 task = "workflow.run"
 args = "Flask Server"
-
-[[workflows.workflow]]
-name = "Update Schema"
-author = "agent"
-
-[workflows.workflow.metadata]
-agentRequireRestartOnSave = false
-
-[[workflows.workflow.tasks]]
-task = "packager.installForAll"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python update_schema.py"
 
 [[workflows.workflow]]
 name = "Add Sample Events"
@@ -89,11 +71,11 @@ task = "packager.installForAll"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "FLASK_DEBUG=1 python app.py"
-waitForPort = 5000
+args = "PORT=5001 FLASK_DEBUG=1 python app.py"
+waitForPort = 5001
 
 [deployment]
-run = ["sh", "-c", "gunicorn --workers 4 --bind 0.0.0.0:8080 app:app"]
+run = ["sh", "-c", "PORT=5001 FLASK_DEBUG=1 python app.py"]
 
 [[ports]]
 localPort = 5000
