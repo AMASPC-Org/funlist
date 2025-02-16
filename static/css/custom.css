@@ -21,6 +21,46 @@
     padding: 0;
 }
 
+/* Map styles */
+#map {
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+.map-container {
+    position: relative;
+    height: 700px;
+    margin-bottom: 2rem;
+}
+
+/* Section spacing */
+.section {
+    margin-bottom: 3rem;
+    padding: 2rem 0;
+}
+
+.example-ratings {
+    margin-bottom: 2rem;
+}
+
+.faq-item {
+    margin-bottom: 1rem;
+}
+
+.accordion-item {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+}
+
+.event-cta {
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+    padding: 2rem;
+    text-align: center;
+}
+
 body {
     font-family: 'Arial', sans-serif;
     line-height: 1.6;
