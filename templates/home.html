@@ -253,19 +253,20 @@
     </div>
 </section>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" defer></script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialize map
         var map = L.map('map').setView([47.0379, -122.9007], 12);
         
+        // Add tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
+        // Initialize variables
         var events = {{ events_json|safe }};
         var markers = {};
         var userMarker = null;
@@ -285,8 +286,6 @@
             markers[event.id] = marker;
             marker.addTo(map);
         });
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
 
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(function(position) {
