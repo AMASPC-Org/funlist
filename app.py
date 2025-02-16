@@ -27,7 +27,24 @@ limiter = Limiter(
 )
 
 # Add request logging
+from functools import wraps
+from werkzeug.exceptions import RequestTimeout
+import time
+
+def timeout_after(seconds):
+    def decorator(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            start = time.time()
+            result = f(*args, **kwargs)
+            if time.time() - start > seconds:
+                raise RequestTimeout("Request timeout")
+            return result
+        return wrapper
+    return decorator
+
 @app.before_request
+@timeout_after(30)
 def log_request_info():
     logger.info('Request: %s %s', request.method, request.url)
 
