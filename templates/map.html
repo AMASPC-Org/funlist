@@ -1,19 +1,22 @@
+
 {% extends "base.html" %}
 
 {% block head %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-<link rel="canonical" href="{{ url_for('map', _external=True) }}" />
+<link rel="canonical" href="{{ url_for('map_view', _external=True) }}" />
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Events Map</h1>
-        <a href="{{ url_for('events') }}" class="btn btn-outline-primary">
-            <i class="fas fa-list"></i> Switch to List View
-        </a>
+        <div class="view-toggle">
+            <a href="{{ url_for('events') }}" class="btn btn-outline-primary">
+                <i class="fas fa-list"></i> Switch to List View
+            </a>
+        </div>
     </div>
 
     <div class="row mb-4">
@@ -59,7 +62,11 @@
                         <p class="card-text">
                             <small class="text-muted">{{ event.start_date.strftime('%B %d, %Y') }}</small>
                         </p>
-                        <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-primary btn-sm">View Details</a>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-primary">{{ event.category }}</span>
+                            <span class="badge bg-warning text-dark">Fun Rating: {{ event.fun_meter }}/5</span>
+                        </div>
+                        <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-primary btn-sm mt-2">View Details</a>
                     </div>
                 </div>
                 {% endfor %}
@@ -70,40 +77,77 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    let map;
+    let markers = {};
+    let eventsData = {{ events_json|safe }};
+
     // Initialize map
-    const map = L.map('map');
-    const eventsData = {{ events_json|safe }};
-    console.log('Events data:', eventsData);
+    function initMap() {
+        map = L.map('map').setView([47.0379, -122.9007], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        
+        // Try to get user location
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    map.setView([position.coords.latitude, position.coords.longitude], 12);
+                    addUserMarker(position.coords.latitude, position.coords.longitude);
+                },
+                (error) => {
+                    console.error('Geolocation error:', error);
+                }
+            );
+        }
+    }
 
-    // Set default view
-    map.setView([47.0379, -122.9007], 12);
+    function addUserMarker(lat, lng) {
+        L.marker([lat, lng], {
+            icon: L.divIcon({
+                html: '📍',
+                iconSize: [25, 25],
+                className: 'user-location-marker'
+            })
+        }).addTo(map).bindPopup('Your location').openPopup();
+    }
 
-    // Add tile layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
+    function createMarker(event) {
+        const marker = L.marker([event.latitude, event.longitude])
+            .bindPopup(`
+                <div class="event-popup">
+                    <h5>${event.title}</h5>
+                    <p>${event.description}</p>
+                    <p><strong>Date:</strong> ${event.date}</p>
+                    <p><strong>Fun Rating:</strong> ${event.funMeter}/5</p>
+                    <a href="/event/${event.id}" class="btn btn-primary btn-sm">View Details</a>
+                </div>
+            `);
+        markers[event.id] = marker;
+        marker.addTo(map);
+        
+        marker.on('click', () => highlightEventCard(event.id));
+    }
 
-    // Store markers
-    const markers = {};
+    function clearMarkers() {
+        Object.values(markers).forEach(marker => map.removeLayer(marker));
+        markers = {};
+    }
 
     function addMarkers(events) {
-        // Clear existing markers
-        Object.values(markers).forEach(marker => marker.remove());
+        clearMarkers();
+        events.forEach(event => createMarker(event));
+    }
 
-        events.forEach(event => {
-            const marker = L.marker([event.latitude, event.longitude])
-                .bindPopup(`
-                    <div class="event-popup">
-                        <h5>${event.title}</h5>
-                        <p>${event.description}</p>
-                        <p><strong>Date:</strong> ${event.date}</p>
-                        <p><strong>Fun Rating:</strong> ${event.funMeter}/5</p>
-                        <a href="/event/${event.id}" class="btn btn-primary btn-sm">View Details</a>
-                    </div>
-                `);
-            markers[event.id] = marker;
-            marker.addTo(map);
+    function highlightEventCard(eventId) {
+        document.querySelectorAll('.event-card').forEach(card => {
+            card.classList.remove('highlighted');
         });
+        const card = document.querySelector(`.event-card[data-event-id="${eventId}"]`);
+        if (card) {
+            card.classList.add('highlighted');
+            card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
     }
 
     function filterEvents() {
@@ -114,7 +158,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let filtered = eventsData;
 
         if (category) {
-            filtered = filtered.filter(event => event.category === category);
+            filtered = filtered.filter(event => event.category.toLowerCase() === category.toLowerCase());
         }
         if (date) {
             const selectedDate = new Date(date).toDateString();
@@ -125,9 +169,33 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         addMarkers(filtered);
+        updateEventCards(filtered);
     }
 
-    // Initialize markers
+    function updateEventCards(filteredEvents) {
+        const container = document.querySelector('.event-cards-container');
+        container.innerHTML = filteredEvents.map(event => `
+            <div class="card mb-3 event-card" data-event-id="${event.id}">
+                <div class="card-body">
+                    <h5 class="card-title">${event.title}</h5>
+                    <p class="card-text">${event.description}</p>
+                    <p class="card-text">
+                        <small class="text-muted">${event.date}</small>
+                    </p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="badge bg-primary">${event.category}</span>
+                        <span class="badge bg-warning text-dark">Fun Rating: ${event.funMeter}/5</span>
+                    </div>
+                    <a href="/event/${event.id}" class="btn btn-primary btn-sm mt-2">View Details</a>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Initialize map
+    initMap();
+    
+    // Add initial markers
     addMarkers(eventsData);
 
     // Add event listeners
@@ -135,17 +203,16 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('dateFilter').addEventListener('change', filterEvents);
     document.getElementById('funFilter').addEventListener('change', filterEvents);
 
-    // Try to get user location
-    if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                map.setView([position.coords.latitude, position.coords.longitude], 12);
-            },
-            (error) => {
-                console.error('Geolocation error:', error);
+    // Add event card hover effect
+    document.querySelector('.event-cards-container').addEventListener('mouseover', (e) => {
+        const card = e.target.closest('.event-card');
+        if (card) {
+            const eventId = card.dataset.eventId;
+            if (markers[eventId]) {
+                markers[eventId].openPopup();
             }
-        );
-    }
+        }
+    });
 });
 </script>
 
@@ -165,6 +232,10 @@ document.addEventListener('DOMContentLoaded', function() {
 .event-card.highlighted {
     background-color: #e9ecef;
     border-color: #0d6efd;
+}
+.user-location-marker {
+    background: none;
+    border: none;
 }
 </style>
 {% endblock %}
