@@ -5,9 +5,28 @@
     <div class="hero-container">
         <img src="{{ url_for('static', filename='images/Have-Fun-FunList.ai-home.jpeg') }}" 
              alt="Find Fun Events Near You"
-             class="hero-image">
+             class="hero-image"
+             style="width: 100%; height: auto; max-height: 600px; object-fit: cover;">
     </div>
 </section>
+
+<style>
+.hero-container {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    position: relative;
+    height: auto;
+    max-height: 600px;
+}
+
+.hero-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+}
+</style>
 
 <div class="floating-cta">
     <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#emailSignupModal">
