@@ -1,3 +1,36 @@
+Replit AI Agent Instructions: Implement Hero Image with Best Practices
+Key Requirements
+Use the Provided Hero Image (Have-Fun-FunList.ai-home.jpeg)
+Follow Best Practices for Readability & Conversion Optimization
+Keep existing title and subheading intact:
+Title: Find the Best Events Near You – Rated for Fun!
+Subheading: Sign up to get Fun-Rated events emailed to you every week!
+Do NOT overlay text directly on the image’s existing text.
+Ensure proper contrast and readability with clean spacing.
+Ensure Mobile & Desktop Responsiveness
+Image should be full-width while maintaining aspect ratio.
+On desktop, maintain a hero image + content layout.
+On mobile, ensure the image scales properly while keeping CTA visible.
+Call-to-Action (CTA) for Conversion
+Position CTA below the hero image for best visibility.
+Use contrasting colors to ensure the CTA stands out.
+Optimize for Performance
+Compress the image for fast loading.
+Use lazy loading to improve site speed.
+Files to Update
+The following files need modifications:
+✅ base.html (Ensure correct placement of the hero section)
+✅ index.html (Modify hero section structure)
+✅ custom.css (Adjust hero image & CTA styling)
+✅ main.js (Ensure smooth scrolling & user interaction)
+
+1️⃣ Modify base.html
+Ensure the hero section is properly placed by adding {% block hero %}{% endblock %} below the navbar.
+
+Updated base.html
+html
+Copy
+Edit
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -73,3 +106,60 @@
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>
+2️⃣ Modify index.html
+Update index.html to define the hero section inside {% block hero %}.
+
+Updated index.html
+html
+Copy
+Edit
+{% extends "base.html" %}
+{% block title %}Welcome{% endblock %}
+
+{% block hero %}
+<!-- Hero Section -->
+<section id="hero-section">
+    <div class="hero-container">
+        <div class="hero-background">
+            <img src="{{ url_for('static', filename='images/Have-Fun-FunList.ai-home.jpeg') }}" alt="Find Fun Events Near You">
+        </div>
+        <div class="hero-content">
+            <h1>Find the Best Events Near You – Rated for Fun!</h1>
+            <p>Sign up to get Fun-Rated events emailed to you every week!</p>
+            <div class="cta-container">
+                <a href="#signup-form" class="cta-button">Subscribe Now</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+<!-- Signup Form -->
+<section id="signup-form">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="text-center mb-0">Join the Weekly FunList</h2>
+                    </div>
+                    <div class="card-body text-center">
+                        <form id="emailSignupForm">
+                            <input type="email" id="signupEmail" class="form-control mb-3" placeholder="Enter your email" required>
+                            <button type="submit" class="btn btn-primary">Subscribe</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+Next Steps for Replit AI Agent
+1️⃣ Implement the above updates in base.html and index.html.
+2️⃣ Ensure hero image placement is correct and text does not overlap existing image text.
+3️⃣ Verify responsive scaling on desktop and mobile.
+4️⃣ Ensure CTA button links smoothly to the signup form.
+
+🚀 Execute these updates now and confirm everything works as expected! 🚀
