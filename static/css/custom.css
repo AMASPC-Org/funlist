@@ -54,7 +54,7 @@ body {
     color: rgba(255,255,255,0.95) !important;
     padding: 0.65rem 1.25rem !important;
     margin: 0 0.35rem;
-    border-radius: 6px;
+    border-radius: 8px;
     font-weight: 500;
     transition: all 0.2s ease;
     position: relative;
@@ -170,9 +170,19 @@ body {
 }
 
 /* Cards and content */
+.event-card,
+.card,
+.btn,
+.form-control,
+.dropdown-menu,
+.dropdown-item,
+.accordion-item,
+.fun-rating-scale {
+    border-radius: 8px;
+}
+
 .event-card {
     background: white;
-    border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     margin-bottom: 1.5rem;
     padding: 1rem;
