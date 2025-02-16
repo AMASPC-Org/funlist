@@ -1,52 +1,3 @@
-
-/* Optimized CTA Styles */
-.main-cta .btn-lg {
-    padding: 15px 30px;
-    font-size: 1.25rem;
-    font-weight: 600;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-
-.view-toggle {
-    margin-top: 1rem;
-}
-
-.view-toggle .btn-group {
-    border-radius: 50px;
-    overflow: hidden;
-}
-
-.view-toggle .btn {
-    padding: 8px 20px;
-    border-radius: 50px;
-}
-
-.sticky-cta {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: white;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-    z-index: 1000;
-}
-
-.close-btn {
-    position: absolute;
-    top: -10px;
-    right: -10px;
-    background: #6c757d;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    line-height: 24px;
-    text-align: center;
-    cursor: pointer;
-}
-
 .user-location-marker {
     background: none;
     border: none;
@@ -68,46 +19,6 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-}
-
-/* Map styles */
-#map {
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-bottom: 2rem;
-}
-
-.map-container {
-    position: relative;
-    height: 700px;
-    margin-bottom: 2rem;
-}
-
-/* Section spacing */
-.section {
-    margin-bottom: 3rem;
-    padding: 2rem 0;
-}
-
-.example-ratings {
-    margin-bottom: 2rem;
-}
-
-.faq-item {
-    margin-bottom: 1rem;
-}
-
-.accordion-item {
-    padding: 1rem;
-    margin-bottom: 1rem;
-    border-radius: 8px;
-}
-
-.event-cta {
-    margin-top: 3rem;
-    margin-bottom: 3rem;
-    padding: 2rem;
-    text-align: center;
 }
 
 body {
@@ -143,7 +54,7 @@ body {
     color: rgba(255,255,255,0.95) !important;
     padding: 0.65rem 1.25rem !important;
     margin: 0 0.35rem;
-    border-radius: 8px;
+    border-radius: 6px;
     font-weight: 500;
     transition: all 0.2s ease;
     position: relative;
@@ -259,19 +170,9 @@ body {
 }
 
 /* Cards and content */
-.event-card,
-.card,
-.btn,
-.form-control,
-.dropdown-menu,
-.dropdown-item,
-.accordion-item,
-.fun-rating-scale {
-    border-radius: 8px;
-}
-
 .event-card {
     background: white;
+    border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     margin-bottom: 1.5rem;
     padding: 1rem;
@@ -610,86 +511,9 @@ body {
 @media (max-width: 768px) {
     .card-title {
         text-align: center;
-        width: 100%;
-        display: block;
-        margin-bottom: 1.5rem;
     }
     
     .card-body {
         text-align: center;
-        padding: 2rem 1.5rem;
-    }
-
-    .hero-section h1,
-    .hero-section .lead,
-    .section-title,
-    .container h2,
-    .container h3 {
-        text-align: center;
-        width: 100%;
-        display: block;
-        margin-bottom: 1.5rem;
-    }
-
-    .text-center-mobile {
-        text-align: center !important;
-    }
-
-    .container section {
-        margin-bottom: 3rem;
-    }
-
-    .container h2 {
-        margin-top: 2rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .container h3 {
-        margin-top: 1.5rem;
-        margin-bottom: 1rem;
-    }
-
-    .rating-item {
-        margin-bottom: 1.5rem;
-    }
-
-    .fun-rating-scale {
-        padding: 2rem 1rem;
-        margin: 2rem 0;
-    }
-
-    .accordion-item {
-        margin-bottom: 1rem;
-    }
-
-    .social-links {
-        margin-top: 1.5rem;
-    }
-
-    .profile-section,
-    .fun-assistant-features {
-        margin-bottom: 2rem;
-    }
-
-    #ratingFAQ .accordion-item {
-        margin-bottom: 1.5rem;
-    }
-
-    #ratingFAQ .accordion-button {
-        padding: 1.25rem;
-    }
-
-    #ratingFAQ .accordion-body {
-        padding: 1.25rem;
-    }
-
-    .text-center.mt-4 {
-        margin-top: 3rem !important;
-        padding-top: 2rem;
-        border-top: 1px solid #eee;
-    }
-
-    .text-center.mt-4 h3 {
-        margin-bottom: 2rem !important;
     }
 }

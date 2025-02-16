@@ -108,19 +108,3 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
-// Sticky CTA behavior
-document.addEventListener("DOMContentLoaded", function() {
-    const popupCTA = document.getElementById("stickyFunListCTA");
-    if (!popupCTA) return;
-
-    window.addEventListener("scroll", function() {
-        if (window.scrollY > 500 && !sessionStorage.getItem("ctaDismissed")) {
-            popupCTA.classList.remove("d-none");
-        }
-    });
-
-    document.getElementById("closeCTA").addEventListener("click", function() {
-        popupCTA.classList.add("d-none");
-        sessionStorage.setItem("ctaDismissed", "true");
-    });
-});

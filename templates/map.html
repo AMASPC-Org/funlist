@@ -1,104 +1,65 @@
-
 {% extends "base.html" %}
 
 {% block head %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="canonical" href="{{ url_for('map_view', _external=True) }}" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-<style>
-.map-container {
-    height: 700px;
-    margin-bottom: 2rem;
-}
-
-#map {
-    height: 100%;
-    width: 100%;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.fun-rating-section {
-    padding: 2rem;
-    background: #f8f9fa;
-    border-radius: 8px;
-    margin: 2rem 0;
-}
-
-.fun-meter-explanation {
-    margin: 1rem 0;
-}
-
-.faq-section {
-    margin-top: 2rem;
-}
-
-.accordion-item {
-    margin-bottom: 1rem;
-    border-radius: 8px;
-}
-</style>
+<link rel="canonical" href="{{ url_for('map', _external=True) }}" />
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="fun-rating-section">
-                <h3>Understanding Fun Ratings</h3>
-                <div class="fun-meter-explanation">
-                    <h4>How We Rate Fun:</h4>
-                    <ul>
-                        <li>⭐⭐⭐⭐⭐ (5) - Exceptional: Must-attend events with unique experiences</li>
-                        <li>⭐⭐⭐⭐ (4) - Great: High-energy events with lots of activities</li>
-                        <li>⭐⭐⭐ (3) - Good: Solid events with enjoyable activities</li>
-                        <li>⭐⭐ (2) - Fair: Basic events with limited activities</li>
-                        <li>⭐ (1) - Basic: Simple events or gatherings</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Events Map</h1>
+        <a href="{{ url_for('events') }}" class="btn btn-outline-primary desktop-view-switch">
+            <i class="fas fa-list"></i> 📋 Switch to List View
+        </a>
+        <a href="{{ url_for('events') }}" class="btn btn-outline-primary view-switcher">
+            <i class="fas fa-list"></i>
+        </a>
     </div>
 
     <div class="row mb-4">
         <div class="col-md-9">
-            <div class="d-flex gap-3">
+            <div class="d-flex">
                 <div class="col-md-4">
                     <label class="filter-label" for="locationSearch">Location</label>
                     <input type="text" class="form-control" id="locationSearch" placeholder="Search location...">
                 </div>
-                <div class="col-md-4">
+                <div class="ms-3 col-md-4">
                     <label class="filter-label" for="categoryFilter">Category</label>
                     <select class="form-select" id="categoryFilter">
-                        <option value="">All Categories</option>
-                        <option value="music">Music</option>
-                        <option value="sports">Sports</option>
-                        <option value="arts">Arts</option>
-                        <option value="food">Food</option>
-                        <option value="other">Other</option>
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label class="filter-label" for="funFilter">Fun Rating</label>
-                    <select class="form-select" id="funFilter">
-                        <option value="">All Fun Ratings</option>
-                        <option value="5">⭐⭐⭐⭐⭐ (5)</option>
-                        <option value="4">⭐⭐⭐⭐ (4+)</option>
-                        <option value="3">⭐⭐⭐ (3+)</option>
-                        <option value="2">⭐⭐ (2+)</option>
-                        <option value="1">⭐ (1+)</option>
-                    </select>
-                </div>
-            </div>
+        <div class="col-md-3">
+            <label class="filter-label" for="categoryFilter">Category</label>
+            <select class="form-select" id="categoryFilter">
+                <option value="">All Categories</option>
+                <option value="music">Music</option>
+                <option value="sports">Sports</option>
+                <option value="arts">Arts</option>
+                <option value="food">Food</option>
+                <option value="other">Other</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <input type="date" class="form-control" id="dateFilter">
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" id="funFilter">
+                <option value="">All Fun Ratings</option>
+                <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+                <option value="4">⭐⭐⭐⭐ (4+)</option>
+                <option value="3">⭐⭐⭐ (3+)</option>
+                <option value="2">⭐⭐ (2+)</option>
+                <option value="1">⭐ (1+)</option>
+            </select>
+        </div>
+        <div class="col-md-3 text-end">
+            <a href="{{ url_for('events') }}" class="btn btn-outline-primary mt-4">
+                <i class="fas fa-list"></i> 📋 Switch to List View
+            </a>
         </div>
     </div>
 
     <div class="row">
         <div class="col-md-7">
-            <div class="map-container">
-                <div id="map"></div>
-            </div>
+            <div id="map" style="height: 700px;" class="mb-4"></div>
         </div>
         <div class="col-md-5">
             <div class="event-cards-container" style="height: 700px; overflow-y: auto;">
@@ -107,80 +68,67 @@
                     <div class="card-body">
                         <h5 class="card-title">{{ event.title }}</h5>
                         <p class="card-text">{{ event.description|truncate(100) }}</p>
-                        <div class="fun-meter">
-                            Fun Rating: 
-                            {% for i in range(event.fun_meter) %}⭐{% endfor %}
-                        </div>
-                        <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-primary mt-2">View Details</a>
+                        <p class="card-text">
+                            <small class="text-muted">{{ event.date.strftime('%B %d, %Y at %I:%M %p') }}</small>
+                        </p>
+                        <p class="card-text"><small class="text-muted">{{ event.location }}</small></p>
+                        <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-primary">View Details</a>
                     </div>
                 </div>
                 {% endfor %}
             </div>
         </div>
     </div>
-
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="faq-section">
-                <h3>Frequently Asked Questions</h3>
-                <div class="accordion" id="faqAccordion">
-                    <div class="accordion-item">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
-                                How is the Fun Rating calculated?
-                            </button>
-                        </h2>
-                        <div id="faq1" class="accordion-collapse collapse show">
-                            <div class="accordion-body">
-                                Our Fun Rating system combines multiple factors including event interactivity, uniqueness, audience engagement, and community feedback to generate a score from 1 to 5 stars.
-                            </div>
-                        </div>
-                    </div>
-                    <div class="accordion-item">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
-                                Can I suggest changes to a Fun Rating?
-                            </button>
-                        </h2>
-                        <div id="faq2" class="accordion-collapse collapse">
-                            <div class="accordion-body">
-                                Yes! After attending an event, you can submit your own rating and feedback. This helps us maintain accurate and community-driven Fun Ratings.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const eventsData = {{ events_json|safe }};
-    const map = L.map('map');
-    
-    if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                map.setView([position.coords.latitude, position.coords.longitude], 12);
-            },
-            () => {
-                map.setView([47.0379, -122.9007], 12);
-            }
-        );
-    } else {
-        map.setView([47.0379, -122.9007], 12);
-    }
+    var map = L.map('map').setView([47.0379, -122.9007], 12);
+    var markers = {};
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-    const markers = {};
+    var events = [
+        {% for event in events %}
+        {
+            id: {{ event.id }},
+            title: "{{ event.title }}",
+            date: "{{ event.date.strftime('%B %d, %Y at %I:%M %p') }}",
+            category: "{{ event.category }}",
+            latitude: {{ event.latitude }},
+            longitude: {{ event.longitude }},
+            description: "{{ event.description|truncate(100) }}",
+            funMeter: {{ event.fun_meter }},
+            url: "{{ url_for('event_detail', event_id=event.id) }}"
+        },
+        {% endfor %}
+    ];
 
-    eventsData.forEach(event => {
-        if (event.latitude && event.longitude) {
-            const marker = L.marker([event.latitude, event.longitude])
+    function highlightEventCard(eventId) {
+        document.querySelectorAll('.event-card').forEach(card => {
+            card.classList.remove('highlighted');
+        });
+        const card = document.querySelector(`.event-card[data-event-id="${eventId}"]`);
+        if (card) {
+            card.classList.add('highlighted');
+            card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+
+    function addMarkers(filteredEvents) {
+        // Clear existing markers
+        for (let id in markers) {
+            map.removeLayer(markers[id]);
+        }
+        markers = {};
+
+        // Add new markers
+        filteredEvents.forEach(event => {
+            var marker = L.marker([event.latitude, event.longitude])
                 .bindPopup(`
                     <div class="event-popup">
                         <h5>${event.title}</h5>
@@ -191,53 +139,106 @@ document.addEventListener('DOMContentLoaded', function() {
                         <a href="${event.url}" class="btn btn-primary btn-sm">View Details</a>
                     </div>
                 `);
-            marker.addTo(map);
+            marker.on('click', () => highlightEventCard(event.id));
             markers[event.id] = marker;
-        }
-    });
-
-    // Event card hover effects
-    document.querySelectorAll('.event-card').forEach(card => {
-        const eventId = parseInt(card.dataset.eventId, 10);
-        card.addEventListener('mouseenter', () => {
-            if (markers[eventId]) {
-                markers[eventId].openPopup();
-                card.classList.add('highlighted');
-            }
-        });
-        card.addEventListener('mouseleave', () => {
-            if (markers[eventId]) {
-                markers[eventId].closePopup();
-                card.classList.remove('highlighted');
-            }
-        });
-    });
-
-    // Filter functionality
-    function filterEvents() {
-        const category = document.getElementById('categoryFilter').value;
-        const funRating = parseInt(document.getElementById('funFilter').value) || 0;
-
-        eventsData.forEach(event => {
-            const marker = markers[event.id];
-            const card = document.querySelector(`.event-card[data-event-id="${event.id}"]`);
-
-            let show = true;
-            if (category && event.category !== category) show = false;
-            if (funRating && event.funMeter < funRating) show = false;
-
-            if (show) {
-                if (marker) marker.addTo(map);
-                if (card) card.style.display = 'block';
-            } else {
-                if (marker) marker.remove();
-                if (card) card.style.display = 'none';
-            }
+            marker.addTo(map);
         });
     }
 
+    function filterEvents() {
+        const category = document.getElementById('categoryFilter').value;
+        const date = document.getElementById('dateFilter').value;
+        const funRating = document.getElementById('funFilter').value;
+
+        let filteredEvents = events;
+
+        if (category) {
+            filteredEvents = filteredEvents.filter(event => event.category === category);
+        }
+
+        if (date) {
+            const selectedDate = new Date(date).toDateString();
+            filteredEvents = filteredEvents.filter(event => 
+                new Date(event.date).toDateString() === selectedDate
+            );
+        }
+
+        if (funRating) {
+            filteredEvents = filteredEvents.filter(event => 
+                event.funMeter >= parseInt(funRating)
+            );
+        }
+
+        addMarkers(filteredEvents);
+    }
+
+    // Initialize markers
+    addMarkers(events);
+
+    // Add event listeners
     document.getElementById('categoryFilter').addEventListener('change', filterEvents);
+    document.getElementById('dateFilter').addEventListener('change', filterEvents);
     document.getElementById('funFilter').addEventListener('change', filterEvents);
-});
+
+    // Location search functionality
+    document.getElementById('locationSearch').addEventListener('input', debounce(function(e) {
+        const searchQuery = e.target.value;
+        if (searchQuery.length > 2) {
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length > 0) {
+                        const location = data[0];
+                        map.setView([location.lat, location.lon], 12);
+                        filterEvents();
+                    }
+                });
+        }
+    }, 500));
+
+    // Debounce function to limit API calls
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    // Add hover effect for event cards
+    document.querySelectorAll('.event-card').forEach(card => {
+        card.addEventListener('mouseenter', () => {
+            const eventId = card.dataset.eventId;
+            if (markers[eventId]) {
+                markers[eventId].openPopup();
+            }
+        });
+    });
 </script>
+
+<style>
+.event-popup {
+    min-width: 200px;
+}
+.event-popup h5 {
+    margin-bottom: 10px;
+}
+.event-popup p {
+    margin-bottom: 5px;
+}
+.event-card {
+    transition: background-color 0.3s ease;
+}
+.event-card:hover {
+    background-color: #f8f9fa;
+}
+.event-card.highlighted {
+    background-color: #e9ecef;
+    border-color: var(--primary-color);
+}
+</style>
 {% endblock %}

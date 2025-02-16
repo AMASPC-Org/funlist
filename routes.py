@@ -2,7 +2,7 @@ from flask import render_template, flash, redirect, url_for, request, session, j
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user, login_required, login_user, logout_user
 from forms import SignupForm, LoginForm, ProfileForm, EventForm
-from models import User, Event, Subscriber  # Ensure all models are imported
+from models import User, Event # Added Event import
 from db_init import db
 from utils import geocode_address
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
@@ -14,34 +14,6 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 def init_routes(app):
-    @app.route('/signup', methods=['GET', 'POST'])
-    def signup():
-        form = SignupForm()
-        if form.validate_on_submit():
-            user = User(email=form.email.data)
-            user.set_password(form.password.data)
-            db.session.add(user)
-            try:
-                db.session.commit()
-                login_user(user)
-                flash('Welcome! Your account has been created.', 'success')
-                return redirect(url_for('index'))
-            except Exception as e:
-                db.session.rollback()
-                flash('An error occurred. Please try again.', 'error')
-        return render_template('signup.html', form=form)
-
-    @app.route('/login', methods=['GET', 'POST'])
-    def login():
-        form = LoginForm()
-        if form.validate_on_submit():
-            user = User.query.filter_by(email=form.email.data).first()
-            if user and user.check_password(form.password.data):
-                login_user(user)
-                return redirect(url_for('index'))
-            flash('Invalid email or password', 'error')
-        return render_template('login.html', form=form)
-
     @app.route('/subscribe', methods=['POST'])
     def subscribe():
         try:
@@ -86,20 +58,162 @@ def init_routes(app):
     @app.route('/')
     def index():
         events = Event.query.order_by(Event.start_date.desc()).all()
-        events_json = json.dumps([
-            {
-                'id': event.id,
-                'title': event.title,
-                'date': event.start_date.strftime('%B %d, %Y'),
-                'category': event.category,
-                'latitude': event.latitude,
-                'longitude': event.longitude,
-                'description': event.description[:100],
-                'funMeter': event.fun_meter,
-                'url': url_for('event_detail', event_id=event.id)
-            } for event in events
-        ])
-        return render_template('home.html', events=events, events_json=events_json, user=current_user)
+        events_json = [{
+            'id': event.id,
+            'title': event.title,
+            'date': event.start_date.strftime('%B %d, %Y'),
+            'category': event.category,
+            'latitude': event.latitude,
+            'longitude': event.longitude,
+            'description': event.description[:100],
+            'funMeter': event.fun_meter,
+            'url': url_for('event_detail', event_id=event.id)
+        } for event in events]
+        return render_template('home.html', events=events, events_json=json.dumps(events_json), user=current_user)
+
+    @app.route('/signup', methods=['GET', 'POST'])
+    def signup():
+        if current_user.is_authenticated:
+            return redirect(url_for('index'))
+
+        form = SignupForm()
+        if form.validate_on_submit():
+            try:
+                user = User()
+                user.email = form.email.data
+                user.set_password(form.password.data)
+                user.account_active = True
+
+                db.session.add(user)
+                db.session.commit()
+
+                flash('Account created successfully! You can now log in.', 'success')
+                return redirect(url_for('login'))
+
+            except IntegrityError as e:
+                db.session.rollback()
+                logger.error(f"Database integrity error during sign up: {str(e)}")
+                error_msg = str(e).lower()
+
+                if 'email' in error_msg and 'unique constraint' in error_msg:
+                    flash('This email address is already registered. Please use a different email or try logging in.', 'danger')
+                    form.email.errors = list(form.email.errors) + ['Email already registered']
+                else:
+                    flash('There was a problem with your sign up. Please verify your information and try again.', 'danger')
+
+            except SQLAlchemyError as e:
+                db.session.rollback()
+                logger.error(f"Database error during sign up: {str(e)}")
+                flash('We encountered a technical issue. Our team has been notified. Please try again later.', 'danger')
+
+            except Exception as e:
+                db.session.rollback()
+                logger.error(f"Unexpected error during sign up: {str(e)}")
+                flash('An unexpected error occurred. Please try again. If the problem persists, contact support.', 'danger')
+
+        return render_template('signup.html', form=form)
+
+    @app.route('/login', methods=['GET', 'POST'])
+    def login():
+        if current_user.is_authenticated:
+            return redirect(url_for('index'))
+
+        form = LoginForm()
+        if form.validate_on_submit():
+            try:
+                user = User.query.filter_by(email=form.email.data).first()
+
+                if user and user.check_password(form.password.data):
+                    if form.remember_me.data:
+                        session.permanent = True
+
+                    session['user_id'] = user.id
+                    session['login_time'] = datetime.utcnow().isoformat()
+                    session['last_activity'] = datetime.utcnow().isoformat()
+
+                    login_user(user, remember=form.remember_me.data)
+                    user.last_login = db.func.now()
+                    db.session.commit()
+
+                    flash('Logged in successfully!', 'success')
+                    next_page = request.args.get('next')
+                    return redirect(next_page or url_for('index'))
+                else:
+                    logger.warning(f"Failed login attempt for email: {form.email.data}")
+                    flash('Invalid email or password. Please try again.', 'danger')
+
+            except SQLAlchemyError as e:
+                db.session.rollback()
+                logger.error(f"Database error during login: {str(e)}")
+                flash('We encountered a technical issue. Please try again later.', 'danger')
+
+            except Exception as e:
+                logger.error(f"Unexpected error during login: {str(e)}")
+                flash('An unexpected error occurred. Please try again.', 'danger')
+
+        return render_template('login.html', form=form)
+
+    @app.route('/logout')
+    @login_required
+    def logout():
+        session.clear()
+        logout_user()
+        flash('You have been logged out successfully.', 'info')
+        return redirect(url_for('index'))
+
+    @app.route('/profile', methods=['GET'])
+    @login_required
+    def profile():
+        return render_template('profile.html', user=current_user)
+
+    @app.route('/profile/edit', methods=['GET', 'POST'])
+    @login_required
+    def edit_profile():
+        form = ProfileForm()
+        form.user_id = current_user.id
+
+        if request.method == 'GET':
+            form.username.data = current_user.username
+            form.first_name.data = current_user.first_name
+            form.last_name.data = current_user.last_name
+            form.bio.data = current_user.bio
+            form.location.data = current_user.location
+            form.interests.data = current_user.interests
+            form.birth_date.data = current_user.birth_date
+
+        if form.validate_on_submit():
+            try:
+                profile_data = {
+                    'username': form.username.data,
+                    'first_name': form.first_name.data,
+                    'last_name': form.last_name.data,
+                    'bio': form.bio.data,
+                    'location': form.location.data,
+                    'interests': form.interests.data,
+                    'birth_date': form.birth_date.data
+                }
+
+                current_user.update_profile(profile_data)
+                db.session.commit()
+                flash('Profile updated successfully!', 'success')
+                return redirect(url_for('profile'))
+
+            except IntegrityError as e:
+                db.session.rollback()
+                logger.error(f"Database integrity error during profile update: {str(e)}")
+                flash('There was a problem updating your profile. Please try again.', 'danger')
+
+            except SQLAlchemyError as e:
+                db.session.rollback()
+                logger.error(f"Database error during profile update: {str(e)}")
+                flash('We encountered a technical issue. Please try again later.', 'danger')
+
+            except Exception as e:
+                db.session.rollback()
+                logger.error(f"Unexpected error during profile update: {str(e)}")
+                flash('An unexpected error occurred. Please try again.', 'danger')
+
+        return render_template('edit_profile.html', form=form)
 
     @app.route('/events')
     def events():
@@ -119,79 +233,103 @@ def init_routes(app):
         events = query.order_by(Event.start_date).all()
         return render_template('events.html', events=events)
 
-    @app.route('/submit_event', methods=['GET', 'POST'])
-    def submit_event():
-        form = EventForm()
-        if form.validate_on_submit():
-            event = Event(
-                title=form.title.data,
-                description=form.description.data,
-                start_date=form.start_date.data,
-                end_date=form.end_date.data,
-                start_time=form.start_time.data,
-                end_time=form.end_time.data,
-                all_day=form.all_day.data,
-                recurring=form.recurring.data,
-                recurrence_type=form.recurrence_type.data,
-                street=form.street.data,
-                city=form.city.data,
-                state=form.state.data,
-                zip_code=form.zip_code.data,
-                category=form.category.data,
-                target_audience=form.target_audience.data,
-                fun_meter=int(form.fun_meter.data),
-                user_id=current_user.id
-            )
-            db.session.add(event)
-            db.session.commit()
-            flash('Event submitted successfully!', 'success')
-            return redirect(url_for('events'))
-        return render_template('submit_event.html', form=form)
-
     @app.route('/map')
-    def map_view():
+    def map():
         events = Event.query.all()
-        events_json = json.dumps([
-            {
-                'id': event.id,
-                'title': event.title,
-                'date': event.start_date.strftime('%B %d, %Y'),
-                'category': event.category,
-                'latitude': event.latitude,
-                'longitude': event.longitude,
-                'description': event.description[:100],
-                'funMeter': event.fun_meter,
-                'url': url_for('event_detail', event_id=event.id)
-            } for event in events
-        ])
-        return render_template('map.html', events=events, events_json=events_json, user=current_user)
+        return render_template('map.html', events=events)
 
     @app.route('/event/<int:event_id>')
     def event_detail(event_id):
         event = Event.query.get_or_404(event_id)
         return render_template('event_detail.html', event=event)
 
-    @app.route('/admin/dashboard')
+    @app.errorhandler(404)
+    def not_found_error(error):
+        return render_template('404.html'), 404
+
+    @app.route('/submit-event', methods=['GET', 'POST'])
     @login_required
-    def admin_dashboard():
+    def submit_event():
+        form = EventForm()
+        if form.validate_on_submit():
+            coordinates = geocode_address(
+                form.street.data,
+                form.city.data,
+                form.state.data,
+                form.zip_code.data
+            )
+
+            if not coordinates:
+                flash('Could not geocode address. Please verify the address is correct.', 'danger')
+                return render_template('submit_event.html', form=form)
+
+            event = Event(
+                title=form.title.data,
+                description=form.description.data,
+                start_date=form.date.data,
+                end_date=form.date.data,
+                street=form.street.data,
+                city=form.city.data,
+                state=form.state.data,
+                zip_code=form.zip_code.data,
+                latitude=coordinates[0],
+                longitude=coordinates[1],
+                category=form.category.data,
+                target_audience=form.target_audience.data,
+                fun_meter=form.fun_meter.data,
+                user_id=current_user.id,
+                status='pending' #Added status field
+            )
+            db.session.add(event)
+            db.session.commit()
+            flash('Event created successfully!', 'success')
+            return redirect(url_for('events'))
+        return render_template('submit_event.html', form=form)
+
+    @app.errorhandler(500)
+    def internal_error(error):
+        db.session.rollback()
+        return render_template('500.html'), 500
+
+    @app.route('/admin/login', methods=['GET', 'POST'])
+    def admin_login():
+        if current_user.is_authenticated and current_user.is_admin:
+            return redirect(url_for('admin_dashboard'))
+
+        form = LoginForm()
+        if form.validate_on_submit():
+            user = User.query.filter_by(email=form.email.data).first()
+            if user and user.check_password(form.password.data) and user.is_admin:
+                login_user(user)
+                return redirect(url_for('admin_dashboard'))
+            flash('Invalid credentials or not an admin user.', 'danger')
+        return render_template('admin_login.html', form=form)
+
+    @app.route('/admin/events')
+    @login_required
+    def admin_events():
         if not current_user.is_admin:
             flash('Access denied. Admin privileges required.', 'danger')
             return redirect(url_for('index'))
+        events = Event.query.order_by(Event.start_date.desc()).all()
+        return render_template('admin_events.html', events=events)
 
-        status = request.args.get('status', 'pending')
+    @app.route('/admin/users')
+    @login_required
+    def admin_users():
+        if not current_user.is_admin:
+            flash('Access denied. Admin privileges required.', 'danger')
+            return redirect(url_for('index'))
+        users = User.query.order_by(User.created_at.desc()).all()
+        return render_template('admin_users.html', users=users)
 
-        stats = {
-            'pending_events': Event.query.filter_by(status='pending').count(),
-            'total_users': User.query.count(),
-            'todays_events': Event.query.filter(
-                Event.start_date >= datetime.now().date(),
-                Event.start_date < datetime.now().date() + timedelta(days=1)
-            ).count(),
-        }
-
-        events = Event.query.filter_by(status=status).order_by(Event.start_date).all()
-
-        return render_template('admin_dashboard.html', stats=stats, events=events, status=status)
+    @app.route('/admin/analytics')
+    @login_required
+    def admin_analytics():
+        if not current_user.is_admin:
+            flash('Access denied. Admin privileges required.', 'danger')
+            return redirect(url_for('index'))
+        return render_template('admin_analytics.html')
 
     @app.route('/admin/event/<int:event_id>/<action>', methods=['POST'])
     @login_required
@@ -211,11 +349,92 @@ def init_routes(app):
         db.session.commit()
         return jsonify({'success': True})
 
-    @app.errorhandler(404)
-    def not_found_error(error):
-        return render_template('404.html'), 404
+    @app.route('/admin/dashboard')
+    @login_required
+    def admin_dashboard():
+        if not current_user.is_admin:
+            flash('Access denied. Admin privileges required.', 'danger')
+            return redirect(url_for('index'))
 
-    @app.errorhandler(500)
-    def internal_error(error):
-        db.session.rollback()
-        return render_template('500.html'), 500
+        tab = request.args.get('tab', 'overview')
+        status = request.args.get('status', 'pending')
+
+        # Get statistics for overview
+        stats = {
+            'pending_events': Event.query.filter_by(status='pending').count(),
+            'total_users': User.query.count(),
+            'todays_events': Event.query.filter(
+                Event.start_date >= datetime.now().date(),
+                Event.start_date < datetime.now().date() + timedelta(days=1)
+            ).count(),
+            'new_users_24h': User.query.filter(
+                User.created_at >= datetime.now() - timedelta(hours=24)
+            ).count()
+        }
+
+        # Get events for event management
+        events = Event.query.filter_by(status=status).order_by(Event.start_date).all()
+
+        # Get users for user management
+        users = User.query.order_by(User.created_at.desc()).all()
+
+        # Get analytics data
+        events_by_category = {
+            'labels': ['Sports', 'Music', 'Arts', 'Food', 'Other'],
+            'datasets': [{
+                'data': [
+                    Event.query.filter_by(category='Sports').count(),
+                    Event.query.filter_by(category='Music').count(),
+                    Event.query.filter_by(category='Arts').count(),
+                    Event.query.filter_by(category='Food').count(),
+                    Event.query.filter_by(category='Other').count()
+                ]
+            }]
+        }
+
+        # User growth data (last 7 days)
+        user_growth_data = {
+            'labels': [(datetime.now() - timedelta(days=x)).strftime('%Y-%m-%d') for x in range(7)],
+            'datasets': [{
+                'label': 'New Users',
+                'data': [
+                    User.query.filter(
+                        User.created_at >= datetime.now().date() - timedelta(days=x),
+                        User.created_at < datetime.now().date() - timedelta(days=x-1)
+                    ).count() for x in range(7)
+                ]
+            }]
+        }
+
+        return render_template('admin_dashboard.html',
+                             active_tab=tab,
+                             stats=stats,
+                             events=events,
+                             users=users,
+                             status=status,
+                             events_by_category=events_by_category,
+                             user_growth_data=user_growth_data)
+
+    @app.route('/admin/user/<int:user_id>/deactivate')
+    @login_required
+    def admin_deactivate_user(user_id):
+        if not current_user.is_admin:
+            return jsonify({'error': 'Unauthorized'}), 403
+
+        user = User.query.get_or_404(user_id)
+        user.account_active = False
+        db.session.commit()
+        flash('User account deactivated.', 'success')
+        return redirect(url_for('admin_dashboard', tab='users'))
+
+    @app.route('/admin/user/<int:user_id>/activate')
+    @login_required
+    def admin_activate_user(user_id):
+        if not current_user.is_admin:
+            return jsonify({'error': 'Unauthorized'}), 403
+
+        user = User.query.get_or_404(user_id)
+        user.account_active = True
+        db.session.commit()
+        flash('User account activated.', 'success')
+        return redirect(url_for('admin_dashboard', tab='users'))
