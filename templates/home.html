@@ -257,18 +257,15 @@
 <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
 
 <script>
-    var map = L.map('map').setView([47.0379, -122.9007], 12);
-    var markers = {};
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
-
-    var events = {{ events_json|safe }};
-
     document.addEventListener('DOMContentLoaded', function() {
         var map = L.map('map').setView([47.0379, -122.9007], 12);
         var markers = {};
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        var events = {{ events_json|safe }};
         var userMarker = null;
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
