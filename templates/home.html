@@ -10,14 +10,16 @@
         <h2>Sign up to get Fun-Rated events emailed to you every week!</h2>
         <div class="cta-group">
             <button class="btn btn-primary btn-lg primary-cta" data-bs-toggle="modal" data-bs-target="#emailSignupModal">
-                Get My Weekly FunList
+                Try Fun Assistant Now
             </button>
-            <div class="view-options mt-3">
-                <a href="{{ url_for('map') }}" class="btn btn-outline-primary mx-2">Map View</a>
-                <a href="{{ url_for('events') }}" class="btn btn-outline-primary mx-2">List View</a>
-            </div>
         </div>
     </div>
+</div>
+
+<div class="floating-cta">
+    <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#emailSignupModal">
+        <i class="fas fa-bell me-2"></i>Get My Weekly FunList
+    </button>
 </div>
 
 <div class="container my-5 py-4">
