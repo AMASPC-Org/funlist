@@ -10,29 +10,26 @@
 
 /* Hero Section */
 #hero.hero-section {
+    background: url("../../attached_assets/Have-Fun-FunList.ai-home.jpeg") center center / cover no-repeat;
+    background-color: var(--light-color);  /* Fallback */
+    padding: 60px 0;
     position: relative;
     text-align: center;
-    padding: 0;
-}
-
-#hero.hero-section::before {
-    content: "";
-    background: url("../../attached_assets/Have-Fun-FunList.ai-home.jpeg") center center / cover no-repeat;
-    display: block;
-    width: 100%;
-    padding-top: 40%; /* Adjust this value to control image height */
+    color: var(--light-color);
 }
 
 #hero.hero-section .hero-content {
     max-width: 800px;
-    margin: 2rem auto;
+    margin: 0 auto;
     padding: 2rem;
     position: relative;
+    z-index: 2;
 }
 
 #hero.hero-section h1,
 #hero.hero-section p {
-    color: var(--dark-color);
+    color: var(--light-color);
+    text-shadow: 0 0 5px rgba(0,0,0,0.5);
 }
 
 /* Header Styles */
