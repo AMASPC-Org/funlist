@@ -257,32 +257,46 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Initialize map
-        var map = L.map('map').setView([47.0379, -122.9007], 12);
-        var markers = {};
+        let map = L.map('map').setView([47.0379, -122.9007], 12);
+        let markers = {};
+        let userMarker = null;
+        let eventsData = {{ events_json|safe if events_json else '[]' }};
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        var eventsData = {{ events_json|safe if events_json else '[]' }};
+        function addMarkers(events) {
+            // Clear existing markers
+            Object.values(markers).forEach(marker => map.removeLayer(marker));
+            markers = {};
 
-        // Add event markers
-        if (Array.isArray(eventsData)) {
-            eventsData.forEach(function(event) {
-                if (event.latitude && event.longitude) {
-                    var marker = L.marker([event.latitude, event.longitude])
-                        .bindPopup('<div><h6>' + event.title + '</h6><p>' + event.description + '</p></div>')
-                        .addTo(map);
-                    markers[event.id] = marker;
-                }
-            });
+            if (Array.isArray(events)) {
+                events.forEach(event => {
+                    if (event.latitude && event.longitude) {
+                        let marker = L.marker([event.latitude, event.longitude])
+                            .bindPopup(`
+                                <div>
+                                    <h6>${event.title}</h6>
+                                    <p>${event.description}</p>
+                                    <p><strong>Date:</strong> ${event.date}</p>
+                                    <a href="/event/${event.id}" class="btn btn-primary btn-sm">View Details</a>
+                                </div>
+                            `);
+                        markers[event.id] = marker;
+                        marker.addTo(map);
+                    }
+                });
+            }
         }
+
+        // Add initial markers
+        addMarkers(eventsData);
 
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(function(position) {
-                var userLat = position.coords.latitude;
-                var userLng = position.coords.longitude;
+                let userLat = position.coords.latitude;
+                let userLng = position.coords.longitude;
 
                 map.setView([userLat, userLng], 12);
 
@@ -302,8 +316,51 @@
             });
         }
 
+        // Event filtering
+        function filterEvents() {
+            let category = document.getElementById('categoryFilter')?.value || '';
+            let date = document.getElementById('dateFilter')?.value || '';
+            let funRating = document.getElementById('funFilter')?.value || '';
 
+            let filtered = eventsData;
+
+            if (category) {
+                filtered = filtered.filter(event => event.category === category);
+            }
+            if (date) {
+                const selectedDate = new Date(date).toDateString();
+                filtered = filtered.filter(event => 
+                    new Date(event.date).toDateString() === selectedDate
+                );
+            }
+            if (funRating) {
+                filtered = filtered.filter(event => 
+                    event.funMeter >= parseInt(funRating)
+                );
+            }
+
+            addMarkers(filtered);
         }
+
+        // Add filter event listeners
+        const filters = ['categoryFilter', 'dateFilter', 'funFilter'];
+        filters.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('change', filterEvents);
+            }
+        });
+
+        // Add hover effect for event cards
+        document.querySelectorAll('.event-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                const eventId = card.dataset.eventId;
+                if (markers[eventId]) {
+                    markers[eventId].openPopup();
+                }
+            });
+        });
+    });
 
         function addMarkers(filteredEvents) {
             // Clear existing markers
