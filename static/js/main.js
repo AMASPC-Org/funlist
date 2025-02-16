@@ -1,5 +1,15 @@
 // Email signup popup functionality
 document.addEventListener('DOMContentLoaded', function() {
+    // Smooth scroll for Fun Rating Learn More button
+    const learnMoreBtn = document.querySelector('a[href="#fun-rating-section"]');
+    if (learnMoreBtn) {
+        learnMoreBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.querySelector('#fun-rating-section').scrollIntoView({
+                behavior: 'smooth'
+            });
+        });
+    }
     // Check if user has seen the popup before
     if (!localStorage.getItem('popupShown')) {
         // Show popup after 7 seconds (best practice to not be too intrusive)
@@ -65,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Character counters
     const titleInput = document.querySelector('input[name="title"]');
     const descriptionInput = document.querySelector('textarea[name="description"]');
-    
+
     if (titleInput && document.getElementById('titleCount')) {
         titleInput.addEventListener('input', () => {
             updateCharCount(titleInput, document.getElementById('titleCount'), 100);
@@ -73,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Initial count
         updateCharCount(titleInput, document.getElementById('titleCount'), 100);
     }
-    
+
     if (descriptionInput && document.getElementById('descriptionCount')) {
         descriptionInput.addEventListener('input', () => {
             updateCharCount(descriptionInput, document.getElementById('descriptionCount'), 500);
