@@ -14,6 +14,23 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 def init_routes(app):
+    @app.route('/signup', methods=['GET', 'POST'])
+    def signup():
+        form = SignupForm()
+        if form.validate_on_submit():
+            user = User(email=form.email.data)
+            user.set_password(form.password.data)
+            db.session.add(user)
+            try:
+                db.session.commit()
+                login_user(user)
+                flash('Welcome! Your account has been created.', 'success')
+                return redirect(url_for('index'))
+            except Exception as e:
+                db.session.rollback()
+                flash('An error occurred. Please try again.', 'error')
+        return render_template('signup.html', form=form)
+
     @app.route('/login', methods=['GET', 'POST'])
     def login():
         form = LoginForm()
