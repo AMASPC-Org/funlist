@@ -119,4 +119,8 @@ class EventForm(FlaskForm):
     facebook = StringField('Facebook')
     instagram = StringField('Instagram')
     twitter = StringField('Twitter')
+    ticket_url = StringField('Purchase Tickets URL', 
+        validators=[Optional(), URL(message="Please enter a valid URL")])
+    terms_accepted = BooleanField('I accept the Terms and Conditions', 
+        validators=[DataRequired(message="You must accept the terms and conditions")])
     submit = SubmitField('Create Event')

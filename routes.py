@@ -241,6 +241,7 @@ def init_routes(app):
     def submit_event():
         form = EventForm()
         if form.validate_on_submit():
+            is_draft = request.form.get('is_draft', 'false') == 'true'
             coordinates = geocode_address(
                 form.street.data,
                 form.city.data,
@@ -255,6 +256,7 @@ def init_routes(app):
             event = Event(
                 title=form.title.data,
                 description=form.description.data,
+                status='draft' if is_draft else 'pending',
                 start_date=form.date.data,
                 end_date=form.date.data,
                 street=form.street.data,
