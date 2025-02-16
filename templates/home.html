@@ -254,21 +254,37 @@
 </section>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" defer></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         var map = L.map('map').setView([47.0379, -122.9007], 12);
-        var markers = {};
-
+        
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
         var events = {{ events_json|safe }};
+        var markers = {};
         var userMarker = null;
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        // Add event markers
+        events.forEach(function(event) {
+            var marker = L.marker([event.latitude, event.longitude])
+                .bindPopup(`
+                    <div>
+                        <h6>${event.title}</h6>
+                        <p>${event.description}</p>
+                        <p><strong>Date:</strong> ${event.date}</p>
+                        <p><strong>Fun Meter:</strong> ${event.funMeter}/5</p>
+                        <a href="${event.url}" class="btn btn-primary btn-sm">View Details</a>
+                    </div>
+                `);
+            markers[event.id] = marker;
+            marker.addTo(map);
+        });
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
