@@ -19,31 +19,6 @@
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.event-popup {
-    min-width: 200px;
-}
-
-.event-popup h5 {
-    margin-bottom: 10px;
-}
-
-.event-popup p {
-    margin-bottom: 5px;
-}
-
-.event-card {
-    transition: all 0.3s ease;
-}
-
-.event-card:hover {
-    background-color: #f8f9fa;
-}
-
-.event-card.highlighted {
-    background-color: #e9ecef;
-    border-color: var(--primary-color);
-}
-
 .fun-rating-section {
     padding: 2rem;
     background: #f8f9fa;
@@ -54,40 +29,46 @@
 .fun-meter-explanation {
     margin: 1rem 0;
 }
+
+.faq-section {
+    margin-top: 2rem;
+}
+
+.accordion-item {
+    margin-bottom: 1rem;
+    border-radius: 8px;
+}
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Events Map</h1>
-        <a href="{{ url_for('events') }}" class="btn btn-outline-primary">
-            <i class="fas fa-list"></i> Switch to List View
-        </a>
-    </div>
-
-    <div class="fun-rating-section">
-        <h3>Understanding Fun Ratings</h3>
-        <div class="fun-meter-explanation">
-            <h4>How We Rate Fun:</h4>
-            <ul>
-                <li>⭐⭐⭐⭐⭐ (5) - Exceptional: Must-attend events with unique experiences</li>
-                <li>⭐⭐⭐⭐ (4) - Great: High-energy events with lots of activities</li>
-                <li>⭐⭐⭐ (3) - Good: Solid events with enjoyable activities</li>
-                <li>⭐⭐ (2) - Fair: Basic events with limited activities</li>
-                <li>⭐ (1) - Basic: Simple events or gatherings</li>
-            </ul>
+    <div class="row">
+        <div class="col-12">
+            <div class="fun-rating-section">
+                <h3>Understanding Fun Ratings</h3>
+                <div class="fun-meter-explanation">
+                    <h4>How We Rate Fun:</h4>
+                    <ul>
+                        <li>⭐⭐⭐⭐⭐ (5) - Exceptional: Must-attend events with unique experiences</li>
+                        <li>⭐⭐⭐⭐ (4) - Great: High-energy events with lots of activities</li>
+                        <li>⭐⭐⭐ (3) - Good: Solid events with enjoyable activities</li>
+                        <li>⭐⭐ (2) - Fair: Basic events with limited activities</li>
+                        <li>⭐ (1) - Basic: Simple events or gatherings</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
     <div class="row mb-4">
         <div class="col-md-9">
-            <div class="d-flex">
+            <div class="d-flex gap-3">
                 <div class="col-md-4">
                     <label class="filter-label" for="locationSearch">Location</label>
                     <input type="text" class="form-control" id="locationSearch" placeholder="Search location...">
                 </div>
-                <div class="ms-3 col-md-4">
+                <div class="col-md-4">
                     <label class="filter-label" for="categoryFilter">Category</label>
                     <select class="form-select" id="categoryFilter">
                         <option value="">All Categories</option>
@@ -98,11 +79,7 @@
                         <option value="other">Other</option>
                     </select>
                 </div>
-                <div class="col-md-3">
-                    <label class="filter-label" for="dateFilter">Date</label>
-                    <input type="date" class="form-control" id="dateFilter">
-                </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <label class="filter-label" for="funFilter">Fun Rating</label>
                     <select class="form-select" id="funFilter">
                         <option value="">All Fun Ratings</option>
@@ -130,12 +107,6 @@
                     <div class="card-body">
                         <h5 class="card-title">{{ event.title }}</h5>
                         <p class="card-text">{{ event.description|truncate(100) }}</p>
-                        <p class="card-text">
-                            <small class="text-muted">{{ event.start_date.strftime('%B %d, %Y') }}</small>
-                        </p>
-                        <p class="card-text">
-                            <small class="text-muted">{{ event.street }}, {{ event.city }}</small>
-                        </p>
                         <div class="fun-meter">
                             Fun Rating: 
                             {% for i in range(event.fun_meter) %}⭐{% endfor %}
@@ -147,13 +118,59 @@
             </div>
         </div>
     </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="faq-section">
+                <h3>Frequently Asked Questions</h3>
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                How is the Fun Rating calculated?
+                            </button>
+                        </h2>
+                        <div id="faq1" class="accordion-collapse collapse show">
+                            <div class="accordion-body">
+                                Our Fun Rating system combines multiple factors including event interactivity, uniqueness, audience engagement, and community feedback to generate a score from 1 to 5 stars.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                Can I suggest changes to a Fun Rating?
+                            </button>
+                        </h2>
+                        <div id="faq2" class="accordion-collapse collapse">
+                            <div class="accordion-body">
+                                Yes! After attending an event, you can submit your own rating and feedback. This helps us maintain accurate and community-driven Fun Ratings.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const eventsData = {{ events_json|safe }};
-    const defaultLocation = [47.0379, -122.9007];
-    const map = L.map('map').setView(defaultLocation, 12);
+    const map = L.map('map');
+    
+    if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                map.setView([position.coords.latitude, position.coords.longitude], 12);
+            },
+            () => {
+                map.setView([47.0379, -122.9007], 12);
+            }
+        );
+    } else {
+        map.setView([47.0379, -122.9007], 12);
+    }
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -179,15 +196,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Event card hover effects
     document.querySelectorAll('.event-card').forEach(card => {
         const eventId = parseInt(card.dataset.eventId, 10);
-        card.addEventListener('mouseenter', function() {
+        card.addEventListener('mouseenter', () => {
             if (markers[eventId]) {
                 markers[eventId].openPopup();
                 card.classList.add('highlighted');
             }
         });
-        card.addEventListener('mouseleave', function() {
+        card.addEventListener('mouseleave', () => {
             if (markers[eventId]) {
                 markers[eventId].closePopup();
                 card.classList.remove('highlighted');
@@ -195,9 +213,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Filter functionality
     function filterEvents() {
         const category = document.getElementById('categoryFilter').value;
-        const date = document.getElementById('dateFilter').value;
         const funRating = parseInt(document.getElementById('funFilter').value) || 0;
 
         eventsData.forEach(event => {
@@ -206,8 +224,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             let show = true;
             if (category && event.category !== category) show = false;
-            if (date && event.date !== date) show = false;
-            if (funRating && event.funMeter < parseInt(funRating)) show = false;
+            if (funRating && event.funMeter < funRating) show = false;
 
             if (show) {
                 if (marker) marker.addTo(map);
@@ -217,22 +234,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (card) card.style.display = 'none';
             }
         });
-    };
+    }
 
     document.getElementById('categoryFilter').addEventListener('change', filterEvents);
-    document.getElementById('dateFilter').addEventListener('change', filterEvents);
     document.getElementById('funFilter').addEventListener('change', filterEvents);
-
-    if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                map.setView([position.coords.latitude, position.coords.longitude], 12);
-            },
-            () => {
-                console.log("Geolocation failed, using default location");
-            }
-        );
-    }
 });
 </script>
 {% endblock %}
