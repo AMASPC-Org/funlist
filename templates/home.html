@@ -1,20 +1,35 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="hero-section">
-    <div class="hero-content">
-        <div class="hero-image">
-            <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87" alt="People enjoying a local event">
+<section id="hero-section">
+    <div class="hero-container">
+        <!-- Hero Background -->
+        <div class="hero-background">
+            <img src="{{ url_for('static', filename='images/hero-background.jpg') }}" alt="Have Fun with FunList.ai">
         </div>
-        <h1>Find the Best Events Near You – Rated for Fun!</h1>
-        <h2>Sign up to get Fun-Rated events emailed to you every week!</h2>
-        <div class="cta-group">
-            <button class="btn btn-primary btn-lg primary-cta" data-bs-toggle="modal" data-bs-target="#emailSignupModal">
-                Try Fun Assistant Now
-            </button>
+
+        <!-- Content Overlay -->
+        <div class="hero-content">
+            <h1>Find the Best Events Near You – Rated for Fun!</h1>
+            <p>Sign up to get Fun-Rated events emailed to you every week!</p>
+
+            <!-- Primary CTA -->
+            <div class="cta-container">
+                <a href="#signup" class="cta-button">Get My Weekly FunList!</a>
+            </div>
+
+            <!-- Map & List Toggle -->
+            <div class="toggle-container">
+                <button class="toggle-button active" id="map-view">
+                    <i class="fas fa-map-marker-alt"></i> Map View
+                </button>
+                <button class="toggle-button" id="list-view">
+                    <i class="fas fa-list"></i> List View
+                </button>
+            </div>
         </div>
     </div>
-</div>
+</section>
 
 <div class="floating-cta">
     <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#emailSignupModal">
