@@ -2,36 +2,76 @@
 
 {% block head %}
 <link rel="canonical" href="{{ url_for('map', _external=True) }}" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Events Map</h1>
-        <a href="{{ url_for('events') }}" class="btn btn-outline-primary">
-            <i class="fas fa-list"></i> Switch to List View
+        <a href="{{ url_for('events') }}" class="btn btn-outline-primary desktop-view-switch">
+            <i class="fas fa-list"></i> 📋 Switch to List View
         </a>
+        <a href="{{ url_for('events') }}" class="btn btn-outline-primary view-switcher">
+            <i class="fas fa-list"></i>
+        </a>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-9">
+            <div class="d-flex">
+                <div class="col-md-4">
+                    <label class="filter-label" for="locationSearch">Location</label>
+                    <input type="text" class="form-control" id="locationSearch" placeholder="Search location...">
+                </div>
+                <div class="ms-3 col-md-4">
+                    <label class="filter-label" for="categoryFilter">Category</label>
+                    <select class="form-select" id="categoryFilter">
+        <div class="col-md-3">
+            <label class="filter-label" for="categoryFilter">Category</label>
+            <select class="form-select" id="categoryFilter">
+                <option value="">All Categories</option>
+                <option value="music">Music</option>
+                <option value="sports">Sports</option>
+                <option value="arts">Arts</option>
+                <option value="food">Food</option>
+                <option value="other">Other</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <input type="date" class="form-control" id="dateFilter">
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" id="funFilter">
+                <option value="">All Fun Ratings</option>
+                <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+                <option value="4">⭐⭐⭐⭐ (4+)</option>
+                <option value="3">⭐⭐⭐ (3+)</option>
+                <option value="2">⭐⭐ (2+)</option>
+                <option value="1">⭐ (1+)</option>
+            </select>
+        </div>
+        <div class="col-md-3 text-end">
+            <a href="{{ url_for('events') }}" class="btn btn-outline-primary mt-4">
+                <i class="fas fa-list"></i> 📋 Switch to List View
+            </a>
+        </div>
     </div>
 
     <div class="row">
         <div class="col-md-7">
-            <div class="map-container">
-                <div id="map" style="height: 600px; width: 100%;"></div>
-            </div>
+            <div id="map" style="height: 700px;" class="mb-4"></div>
         </div>
         <div class="col-md-5">
-            <div class="event-cards-container" style="height: 600px; overflow-y: auto;">
+            <div class="event-cards-container" style="height: 700px; overflow-y: auto;">
                 {% for event in events %}
                 <div class="card mb-3 event-card" data-event-id="{{ event.id }}">
                     <div class="card-body">
                         <h5 class="card-title">{{ event.title }}</h5>
                         <p class="card-text">{{ event.description|truncate(100) }}</p>
                         <p class="card-text">
-                            <small class="text-muted">{{ event.start_date.strftime('%B %d, %Y') }}</small>
+                            <small class="text-muted">{{ event.date.strftime('%B %d, %Y at %I:%M %p') }}</small>
                         </p>
-                        <p class="card-text"><small class="text-muted">{{ event.street }}, {{ event.city }}</small></p>
+                        <p class="card-text"><small class="text-muted">{{ event.location }}</small></p>
                         <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-primary">View Details</a>
                     </div>
                 </div>
@@ -41,134 +81,164 @@
     </div>
 </div>
 
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
 <script>
-    let map; // Declare map globally
-    let markers = {}; // Declare markers globally
+    var map = L.map('map').setView([47.0379, -122.9007], 12);
+    var markers = {};
 
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize the map *after* the DOM is loaded
-        map = L.map('map').setView([47.0379, -122.9007], 12); // Default to Olympia, WA
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
+    var events = [
+        {% for event in events %}
+        {
+            id: {{ event.id }},
+            title: "{{ event.title }}",
+            date: "{{ event.date.strftime('%B %d, %Y at %I:%M %p') }}",
+            category: "{{ event.category }}",
+            latitude: {{ event.latitude }},
+            longitude: {{ event.longitude }},
+            description: "{{ event.description|truncate(100) }}",
+            funMeter: {{ event.fun_meter }},
+            url: "{{ url_for('event_detail', event_id=event.id) }}"
+        },
+        {% endfor %}
+    ];
 
-        // Get the events data (passed from Flask)
-        let eventsData = {{ events_json|safe if events_json else '[]' }}; //CRITICAL:  Use the Jinja2 variable
-
-        // Check if eventsData is valid *before* proceeding
-        if (!Array.isArray(eventsData)) {
-            console.error("eventsData is not an array:", eventsData);
-            eventsData = []; // Set to an empty array to prevent further errors
-        }
-
-        if (eventsData.length === 0) {
-            console.warn("No event data found for map.");
-        }
-
-        // Add initial markers
-        addMarkers(eventsData);
-
-        // Try to center the map on the user's location
-        centerMapOnUser();
-
-        // Add filter event listeners (using nullish coalescing for safety)
-        document.getElementById('categoryFilter')?.addEventListener('change', filterEvents);
-        document.getElementById('dateFilter')?.addEventListener('change', filterEvents);
-        document.getElementById('funFilter')?.addEventListener('change', filterEvents);
-
-        // Add hover effect for event cards
+    function highlightEventCard(eventId) {
         document.querySelectorAll('.event-card').forEach(card => {
-            card.addEventListener('mouseenter', () => {
-                const eventId = parseInt(card.dataset.eventId, 10); // Parse as integer
-                if (markers[eventId]) {
-                    markers[eventId].openPopup();
-                }
-            });
-             card.addEventListener('mouseleave', () => {  // NEW: Close popup on mouseleave
-                const eventId = parseInt(card.dataset.eventId, 10);
-                if (markers[eventId]) {
-                    markers[eventId].closePopup();
-                }
-            });
+            card.classList.remove('highlighted');
         });
-    });
+        const card = document.querySelector(`.event-card[data-event-id="${eventId}"]`);
+        if (card) {
+            card.classList.add('highlighted');
+            card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
 
-    function addMarkers(events) {
+    function addMarkers(filteredEvents) {
         // Clear existing markers
         for (let id in markers) {
-            if (markers.hasOwnProperty(id)) { // Good practice to check this
-                map.removeLayer(markers[id]);
-            }
+            map.removeLayer(markers[id]);
         }
-        markers = {}; // Reset the markers object
+        markers = {};
 
-        events.forEach(event => {
-            if (event.latitude && event.longitude) {
-                let marker = L.marker([event.latitude, event.longitude]).addTo(map)
-                    .bindPopup(
-                        `<div>
-                            <h5>${event.title}</h5>
-                            <p>${event.description}</p>
-                            <p><strong>Date:</strong> ${formatDate(event.start_date)}</p>  
-                            <p><strong>Fun Rating:</strong> ${event.fun_meter || 'N/A'}</p>
-                            <a href="/event/${event.id}" class="btn btn-primary btn-sm">View Details</a>
-                        </div>`
-                    );
-                markers[event.id] = marker;
-            } else {
-                console.warn("Event missing coordinates:", event); // Log events without coordinates
-            }
+        // Add new markers
+        filteredEvents.forEach(event => {
+            var marker = L.marker([event.latitude, event.longitude])
+                .bindPopup(`
+                    <div class="event-popup">
+                        <h5>${event.title}</h5>
+                        <p>${event.date}</p>
+                        <p>${event.description}</p>
+                        <p><strong>Category:</strong> ${event.category}</p>
+                        <p><strong>Fun Meter:</strong> ${event.funMeter}/5</p>
+                        <a href="${event.url}" class="btn btn-primary btn-sm">View Details</a>
+                    </div>
+                `);
+            marker.on('click', () => highlightEventCard(event.id));
+            markers[event.id] = marker;
+            marker.addTo(map);
         });
     }
-
-     // Function to get user location and center the map
-    function centerMapOnUser() {
-        if ("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition(function(position) {
-                var userLat = position.coords.latitude;
-                var userLng = position.coords.longitude;
-
-                map.setView([userLat, userLng], 12);
-
-                L.marker([userLat, userLng]).addTo(map)
-                    .bindPopup("You are here!").openPopup();
-            }, function(error) {
-                console.error("Geolocation error:", error);
-                // Fallback to a default location (e.g., Olympia, WA) is already handled in map init
-            });
-        } else {
-            console.log("Geolocation is not supported by this browser.");
-            // Fallback to a default location if not supported is already handled
-        }
-    }
-
 
     function filterEvents() {
-        const category = document.getElementById('categoryFilter')?.value;
-        const date = document.getElementById('dateFilter')?.value;
-        const funRating = document.getElementById('funFilter')?.value;
+        const category = document.getElementById('categoryFilter').value;
+        const date = document.getElementById('dateFilter').value;
+        const funRating = document.getElementById('funFilter').value;
 
-        // Combine checks for more concise filtering
-        const filteredEvents = eventsData.filter(event => {
-            return (!category || event.category === category) &&
-                   (!date || new Date(event.start_date).toDateString() === new Date(date).toDateString()) &&
-                   (!funRating || event.fun_meter >= parseInt(funRating));
-        });
+        let filteredEvents = events;
+
+        if (category) {
+            filteredEvents = filteredEvents.filter(event => event.category === category);
+        }
+
+        if (date) {
+            const selectedDate = new Date(date).toDateString();
+            filteredEvents = filteredEvents.filter(event => 
+                new Date(event.date).toDateString() === selectedDate
+            );
+        }
+
+        if (funRating) {
+            filteredEvents = filteredEvents.filter(event => 
+                event.funMeter >= parseInt(funRating)
+            );
+        }
 
         addMarkers(filteredEvents);
     }
-    
-    // Helper function to format the date (more robust)
-    function formatDate(dateString) {
-        try {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-        } catch (error) {
-            console.error("Error formatting date:", dateString, error);
-            return 'Invalid Date'; // Return a fallback value
+
+    // Initialize markers
+    addMarkers(events);
+
+    // Add event listeners
+    document.getElementById('categoryFilter').addEventListener('change', filterEvents);
+    document.getElementById('dateFilter').addEventListener('change', filterEvents);
+    document.getElementById('funFilter').addEventListener('change', filterEvents);
+
+    // Location search functionality
+    document.getElementById('locationSearch').addEventListener('input', debounce(function(e) {
+        const searchQuery = e.target.value;
+        if (searchQuery.length > 2) {
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length > 0) {
+                        const location = data[0];
+                        map.setView([location.lat, location.lon], 12);
+                        filterEvents();
+                    }
+                });
         }
+    }, 500));
+
+    // Debounce function to limit API calls
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
     }
 
+    // Add hover effect for event cards
+    document.querySelectorAll('.event-card').forEach(card => {
+        card.addEventListener('mouseenter', () => {
+            const eventId = card.dataset.eventId;
+            if (markers[eventId]) {
+                markers[eventId].openPopup();
+            }
+        });
+    });
 </script>
+
+<style>
+.event-popup {
+    min-width: 200px;
+}
+.event-popup h5 {
+    margin-bottom: 10px;
+}
+.event-popup p {
+    margin-bottom: 5px;
+}
+.event-card {
+    transition: background-color 0.3s ease;
+}
+.event-card:hover {
+    background-color: #f8f9fa;
+}
+.event-card.highlighted {
+    background-color: #e9ecef;
+    border-color: var(--primary-color);
+}
+</style>
 {% endblock %}

@@ -20,33 +20,27 @@
         <div class="col-md-4 mb-4">
             <div class="card h-100">
                 <div class="card-body">
-                    <h3>AI-Driven Curation</h3>
+                    <h3><a href="#ai-curation-section" class="text-decoration-none text-dark">AI-Driven Curation</a></h3>
                     <p>Our AI analyzes thousands of events to recommend the perfect activities for you based on your interests and preferences.</p>
-                    <div class="text-center">
-                        <a href="#ai-curation-section" class="btn btn-primary mt-2">Learn More</a>
-                    </div>
+                    <a href="#ai-curation-section" class="btn btn-primary mt-2">Learn More</a>
                 </div>
             </div>
         </div>
         <div class="col-md-4 mb-4">
             <div class="card h-100">
                 <div class="card-body">
-                    <h3>Fun Rating System</h3>
-                    <p>Every event gets a Fun Rating from 1-5 (with half-point precision) based on its activities, engagement, and community ratings.</p>
-                    <div class="text-center">
-                        <a href="#fun-rating-section" class="btn btn-primary mt-2">Learn More</a>
-                    </div>
+                    <h3><a href="#fun-rating-section" class="text-decoration-none text-dark">Fun Score System</a></h3>
+                    <p>Every event gets a Fun Score from 1-5 (with half-point precision) based on its activities, engagement, and community ratings.</p>
+                    <a href="#fun-rating-section" class="btn btn-primary mt-2">Learn More</a>
                 </div>
             </div>
         </div>
         <div class="col-md-4 mb-4">
             <div class="card h-100">
                 <div class="card-body">
-                    <h3>Fun Assistant</h3>
+                    <h3><a href="#fun-assistant-section" class="text-decoration-none text-dark">Fun Assistant</a></h3>
                     <p>Get personalized event recommendations based on your interests, whether you're looking for family activities, singles events, or business networking.</p>
-                    <div class="text-center">
-                        <a href="#fun-assistant-section" class="btn btn-primary mt-2">Learn More</a>
-                    </div>
+                    <a href="#fun-assistant-section" class="btn btn-primary mt-2">Learn More</a>
                 </div>
             </div>
         </div>
@@ -106,12 +100,7 @@
         </div>
     </div>
 </div>
-<div class="container-fluid mt-5">
-    <div class="row">
-        <div class="col-12">
-            <h2 class="mb-4">Find Events Near You</h2>
-        </div>
-    </div>
+<div class="container-fluid">
     <div class="row mb-4">
         <div class="col-md-3">
             <input type="text" class="form-control" id="locationSearch" placeholder="Search location...">
@@ -143,7 +132,7 @@
 
     <div class="row">
         <div class="col-md-8">
-            <div id="map" style="height: 700px; width: 100%;" class="mb-4 border rounded"></div>
+            <div id="map" style="height: 700px;" class="mb-4"></div>
         </div>
         <div class="col-md-4" style="max-height: 700px; overflow-y: auto;">
             <div class="event-list">
@@ -254,44 +243,16 @@
 </section>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-<script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
 
 <script>
-    // Initialize variables
-    var map, markers = {}, userMarker = null;
-    var eventsData = [];
-    
-    try {
-        eventsData = {{ events_json|safe }} || [];
-    } catch(e) {
-        console.error("Error parsing events data:", e);
-    }
-    
     document.addEventListener('DOMContentLoaded', function() {
-        // Initialize map
-        map = L.map('map').setView([47.0379, -122.9007], 12);
-        
+        var map = L.map('map').setView([47.0379, -122.9007], 12);
+        var markers = {};
+        var userMarker = null;
+
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
-
-        // Add event markers if data exists
-        if (eventsData && eventsData.length) {
-            eventsData.forEach(function(event) {
-            var marker = L.marker([event.latitude, event.longitude])
-                .bindPopup(`
-                    <div>
-                        <h6>${event.title}</h6>
-                        <p>${event.description}</p>
-                        <p><strong>Date:</strong> ${event.date}</p>
-                        <p><strong>Fun Meter:</strong> ${event.funMeter}/5</p>
-                        <a href="${event.url}" class="btn btn-primary btn-sm">View Details</a>
-                    </div>
-                `);
-            markers[event.id] = marker;
-            marker.addTo(map);
-        });
 
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(function(position) {
@@ -316,19 +277,29 @@
             });
         }
 
-
-        }
+        var events = [
+            {% for event in events %}
+            {
+                id: {{ event.id }},
+                title: "{{ event.title }}",
+                date: "{{ event.start_date.strftime('%B %d, %Y') }}",
+                category: "{{ event.category }}",
+                latitude: {{ event.latitude }},
+                longitude: {{ event.longitude }},
+                description: "{{ event.description|truncate(100) }}",
+                funMeter: {{ event.fun_meter }},
+                url: "{{ url_for('event_detail', event_id=event.id) }}"
+            },
+            {% endfor %}
+        ];
 
         function addMarkers(filteredEvents) {
-            // Clear existing markers
-            Object.values(markers).forEach(marker => {
-                map.removeLayer(marker);
-            });
+            for (let id in markers) {
+                map.removeLayer(markers[id]);
+            }
             markers = {};
 
-            // Add new markers if events exist
-            if (filteredEvents && Array.isArray(filteredEvents)) {
-                filteredEvents.forEach(event => {
+            filteredEvents.forEach(event => {
                 var marker = L.marker([event.latitude, event.longitude])
                     .bindPopup(`
                         <div>
@@ -357,11 +328,11 @@
         }
 
         function filterEvents() {
-            var category = document.getElementById('categoryFilter')?.value || '';
-            var date = document.getElementById('dateFilter')?.value || '';
-            var funRating = document.getElementById('funFilter')?.value || '';
+            const category = document.getElementById('categoryFilter').value;
+            const date = document.getElementById('dateFilter').value;
+            const funRating = document.getElementById('funFilter').value;
 
-            var filteredEvents = eventsData || [];
+            let filteredEvents = events;
 
             if (category) {
                 filteredEvents = filteredEvents.filter(event => event.category === category);
@@ -399,30 +370,4 @@
         });
     });
 </script>
-
-<!-- Social Media Footer -->
-<div class="container-fluid bg-dark text-white py-4 mt-5">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-12 text-center">
-                <h5 class="mb-3">Connect With Us</h5>
-                <div class="social-links">
-                    <a href="#" class="btn btn-outline-light mx-2 mb-2">
-                        <i class="fab fa-facebook-f"></i>
-                    </a>
-                    <a href="#" class="btn btn-outline-light mx-2 mb-2">
-                        <i class="fab fa-twitter"></i>
-                    </a>
-                    <a href="#" class="btn btn-outline-light mx-2 mb-2">
-                        <i class="fab fa-instagram"></i>
-                    </a>
-                    <a href="#" class="btn btn-outline-light mx-2 mb-2">
-                        <i class="fab fa-tiktok"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 {% endblock %}
