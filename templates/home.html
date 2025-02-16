@@ -1,17 +1,26 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="hero-section text-center py-5">
-    <h1>Find the Best Events Near You – Rated for Fun!</h1>
-    <p class="lead">Sign up to get Fun-Rated events emailed to you every week!</p>
-    <a href="#signup" class="btn btn-primary btn-lg mb-4">🔔 Get My Weekly FunList</a>
-    <div class="explore-buttons mt-4">
-        <a href="{{ url_for('map') }}" class="btn btn-primary btn-lg me-3">
-            <i class="fas fa-map-marker-alt"></i> Map View
-        </a>
-        <a href="{{ url_for('events') }}" class="btn btn-primary btn-lg">
-            <i class="fas fa-list"></i> List View
-        </a>
+<div class="container-fluid hero-section">
+    <div class="row">
+        <div class="col-md-12 text-center">
+            <h1>Find the Best Events Near You – Rated for Fun!</h1>
+            <div class="main-cta mb-4">
+                <a href="#newsletter" class="btn btn-warning btn-lg">Get My Weekly FunList</a>
+            </div>
+            <div class="view-toggle">
+                <div class="btn-group" role="group">
+                    <a href="{{ url_for('map') }}" class="btn btn-outline-primary btn-sm">Map View</a>
+                    <a href="{{ url_for('events') }}" class="btn btn-outline-primary btn-sm">List View</a>
+                </div>
+            </div>
+            {% if not current_user.is_authenticated %}
+            <div id="stickyFunListCTA" class="sticky-cta d-none">
+                <button id="closeCTA" class="close-btn">&times;</button>
+                <a href="#newsletter" class="btn btn-warning">Get My Weekly FunList</a>
+            </div>
+            {% endif %}
+        </div>
     </div>
 </div>
 
@@ -262,7 +271,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize map
         map = L.map('map').setView([47.0379, -122.9007], 12);
-        
+
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
@@ -346,45 +355,6 @@
         // Add filter event listeners
         const filters = ['categoryFilter', 'dateFilter', 'funFilter'];
         filters.forEach(id => {
-            const element = document.getElementById(id);
-            if (element) {
-                element.addEventListener('change', filterEvents);
-            }
-        });
-
-        // Add hover effect for event cards
-        document.querySelectorAll('.event-card').forEach(card => {
-            card.addEventListener('mouseenter', () => {
-                const eventId = card.dataset.eventId;
-                if (markers[eventId]) {
-                    markers[eventId].openPopup();
-                }
-            });
-        });
-    });
-
-        // Function definitions moved to appropriate scope
-        // Add markers for events
-        if (Array.isArray(eventsData)) {
-            eventsData.forEach(event => {
-                if (event.latitude && event.longitude) {
-                    let marker = L.marker([event.latitude, event.longitude])
-                        .bindPopup(`
-                            <div>
-                                <h6>${event.title}</h6>
-                                <p>${event.description}</p>
-                                <p><strong>Date:</strong> ${event.date}</p>
-                                <a href="/event/${event.id}" class="btn btn-primary btn-sm">View Details</a>
-                            </div>
-                        `);
-                    markers[event.id] = marker;
-                    marker.addTo(map);
-                }
-            });
-        }
-
-        // Add filter event listeners
-        ['categoryFilter', 'dateFilter', 'funFilter'].forEach(id => {
             const element = document.getElementById(id);
             if (element) {
                 element.addEventListener('change', filterEvents);
