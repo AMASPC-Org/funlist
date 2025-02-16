@@ -15,11 +15,17 @@ def add_sample_events():
             db.session.commit()
 
         # Sample events with coordinates and social media links
+        start_date = datetime.now() + timedelta(days=7)
         events = [
             {
                 "title": "Olympia Music Festival",
                 "description": "A weekend of live music performances featuring local and national artists.",
-                "date": datetime.now() + timedelta(days=7),
+                "start_date": start_date.date(),
+                "end_date": (start_date + timedelta(days=2)).date(),
+                "start_time": datetime.strptime('10:00', '%H:%M').time(),
+                "end_time": datetime.strptime('22:00', '%H:%M').time(),
+                "all_day": False,
+                "recurring": False,
                 "street": "416 Washington St SE",
                 "city": "Olympia",
                 "state": "WA",
@@ -32,12 +38,18 @@ def add_sample_events():
                 "website": "https://olympiamusicfest.com",
                 "facebook": "https://facebook.com/olympiamusicfest",
                 "instagram": "https://instagram.com/olympiamusicfest",
-                "twitter": "https://twitter.com/olympiamusicfest"
+                "twitter": "https://twitter.com/olympiamusicfest",
+                "status": "approved"
             },
             {
                 "title": "Thurston County Fair",
                 "description": "Annual county fair with rides, games, food, and exhibitions.",
-                "date": datetime.now() + timedelta(days=14),
+                "start_date": (datetime.now() + timedelta(days=14)).date(),
+                "end_date": (datetime.now() + timedelta(days=19)).date(),
+                "start_time": datetime.strptime('09:00', '%H:%M').time(),
+                "end_time": datetime.strptime('21:00', '%H:%M').time(),
+                "all_day": False,
+                "recurring": False,
                 "street": "3054 Carpenter Rd SE",
                 "city": "Lacey",
                 "state": "WA",
@@ -50,7 +62,8 @@ def add_sample_events():
                 "website": "https://thurstoncountyfair.com",
                 "facebook": "https://facebook.com/thurstoncountyfair",
                 "instagram": "https://instagram.com/thurstoncountyfair",
-                "twitter": "https://twitter.com/thurstoncountyfair"
+                "twitter": "https://twitter.com/thurstoncountyfair",
+                "status": "approved"
             }
         ]
 
