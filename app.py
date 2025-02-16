@@ -1,3 +1,4 @@
+
 import os
 import logging
 from datetime import timedelta
@@ -16,6 +17,15 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# create the app
+app = Flask(__name__)
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://"
+)
+
 # Add request logging
 @app.before_request
 def log_request_info():
@@ -25,15 +35,6 @@ def log_request_info():
 def log_response_info(response):
     logger.info('Response: %s %s %s', request.method, request.url, response.status)
     return response
-
-# create the app
-app = Flask(__name__)
-limiter = Limiter(
-    app=app,
-    key_func=get_remote_address,
-    default_limits=["200 per day", "50 per hour"],
-    storage_uri="memory://"
-)
 
 # setup configurations
 app.config["SECRET_KEY"] = os.environ.get("FLASK_SECRET_KEY", "dev_key")
@@ -46,19 +47,19 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Session configuration
 app.config['SESSION_TYPE'] = 'filesystem'
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)  # Session timeout after 30 minutes
-app.config['SESSION_COOKIE_SECURE'] = True  # Only send cookies over HTTPS
-app.config['SESSION_COOKIE_HTTPONLY'] = True  # Prevent JavaScript access to session cookie
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # CSRF protection
-app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=14)  # Remember me duration
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=14)
 app.config['REMEMBER_COOKIE_SECURE'] = True
 app.config['REMEMBER_COOKIE_HTTPONLY'] = True
 app.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
 
 # initialize extensions
 db.init_app(app)
-csrf = CSRFProtect(app)  # Initialize CSRF protection
-Session(app)  # Initialize Flask-Session
+csrf = CSRFProtect(app)
+Session(app)
 
 # Setup login manager
 login_manager = LoginManager()
@@ -66,11 +67,11 @@ login_manager.init_app(app)
 login_manager.login_view = "login"
 login_manager.login_message = "Please log in to access this page."
 login_manager.login_message_category = "info"
-login_manager.session_protection = "strong"  # Enable strong session protection
+login_manager.session_protection = "strong"
 
 # Import models and routes after app initialization to avoid circular imports
-from models import User  # noqa: E402
-from routes import init_routes  # noqa: E402
+from models import User
+from routes import init_routes
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -79,7 +80,5 @@ def load_user(user_id):
 # Initialize routes
 init_routes(app)
 
-# Tables are managed by update_schema.py
-
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True, use_debugger=True, use_reloader=True)
+    app.run(host='0.0.0.0', port=5000)
