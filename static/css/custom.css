@@ -196,9 +196,13 @@ section, .container {
 .navbar {
     background-color: var(--primary-color);
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    padding: 0.2rem 1rem;
+    padding: 0.5rem 1rem;
     transition: all 0.3s ease;
-    min-height: 48px;
+    min-height: 60px;
+    width: 100%;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
 
 .navbar-brand {

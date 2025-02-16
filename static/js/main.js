@@ -58,6 +58,24 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+
+    // Initialize Bootstrap tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    //Improved Floating CTA handling.  Uses querySelector to handle potential null.
+    const floatingCTA = document.getElementById('floatingCTA');
+    if (floatingCTA) {
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 300) {
+                floatingCTA.classList.add('visible');
+            } else {
+                floatingCTA.classList.remove('visible');
+            }
+        });
+    }
 });
 // Character counter for event form
 function updateCharCount(input, counter, maxLength) {
@@ -70,22 +88,6 @@ function updateCharCount(input, counter, maxLength) {
     }
 }
 
-// Floating CTA handling
-const floatingCTA = document.getElementById('floatingCTA');
-let lastScrollPosition = 0;
-
-window.addEventListener('scroll', () => {
-    const currentScroll = window.pageYOffset;
-    
-    // Show after scrolling down 300px
-    if (currentScroll > 300) {
-        floatingCTA.classList.add('visible');
-    } else {
-        floatingCTA.classList.remove('visible');
-    }
-    
-    lastScrollPosition = currentScroll;
-});
 
 // Event form handling
 document.addEventListener('DOMContentLoaded', function() {
