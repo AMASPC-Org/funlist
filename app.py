@@ -5,7 +5,7 @@ from flask import Flask, session
 from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect
 from flask_session import Session
-from db_init import db
+from db import db, init_db  # Updated import
 
 # Configure logging
 logging.basicConfig(
@@ -38,7 +38,7 @@ app.config['REMEMBER_COOKIE_HTTPONLY'] = True
 app.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
 
 # initialize extensions
-db.init_app(app)
+init_db(app)  # Initialize database
 csrf = CSRFProtect(app)  # Initialize CSRF protection
 Session(app)  # Initialize Flask-Session
 
@@ -61,7 +61,5 @@ def load_user(user_id):
 # Initialize routes
 init_routes(app)
 
-# Tables are managed by update_schema.py
-
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True, use_debugger=True, use_reloader=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
