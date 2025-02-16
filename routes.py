@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 def init_routes(app):
-
     @app.route('/subscribe', methods=['POST'])
     def subscribe():
         try:
