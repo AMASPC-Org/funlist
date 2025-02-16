@@ -1,17 +1,22 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="hero-section text-center py-5">
-    <h1>Find the Best Events Near You – Rated for Fun!</h1>
-    <p class="lead">Sign up to get Fun-Rated events emailed to you every week!</p>
-    <a href="#signup" class="btn btn-primary btn-lg mb-4">🔔 Get My Weekly FunList</a>
-    <div class="explore-buttons mt-4">
-        <a href="{{ url_for('map') }}" class="btn btn-primary btn-lg me-3">
-            <i class="fas fa-map-marker-alt"></i> Map View
-        </a>
-        <a href="{{ url_for('events') }}" class="btn btn-primary btn-lg">
-            <i class="fas fa-list"></i> List View
-        </a>
+<div class="hero-section">
+    <div class="hero-content">
+        <div class="hero-image">
+            <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87" alt="People enjoying a local event">
+        </div>
+        <h1>Discover Fun Local Events</h1>
+        <p>Get weekly event recommendations, hand-picked just for you</p>
+        <div class="cta-group">
+            <button class="btn btn-primary btn-lg primary-cta" data-bs-toggle="modal" data-bs-target="#emailSignupModal">
+                Get My Weekly FunList
+            </button>
+            <div class="view-options mt-3">
+                <a href="{{ url_for('map') }}" class="btn btn-outline-primary mx-2">Map View</a>
+                <a href="{{ url_for('events') }}" class="btn btn-outline-primary mx-2">List View</a>
+            </div>
+        </div>
     </div>
 </div>
 
