@@ -233,6 +233,34 @@ body {
     display: none;
 }
 
+/* View Switcher Styles */
+.view-switcher {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.desktop-view-switch {
+    display: inline-block;
+}
+
+/* Hero Section Styles */
+.hero-section {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 4rem 1rem;
+}
+
 /* Media Queries */
 @media (max-width: 768px) {
     .navbar-nav {

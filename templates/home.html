@@ -1,12 +1,65 @@
-
 {% extends "base.html" %}
 
 {% block content %}
-<div class="hero-section text-center py-3">
-    <h1>Welcome to FunList.ai</h1>
-    <p class="lead">Discover local events on the map below!</p>
+<div class="hero-section text-center py-5">
+    <h1>Discover the Best Events in Thurston County with FunList.ai</h1>
+    <p class="lead">Sign up to get handpicked, high-rated events delivered weekly!</p>
+    <a href="#signup" class="btn btn-primary btn-lg mb-4">🔔 Get My Weekly FunList</a>
+    <div class="explore-buttons">
+        <a href="{{ url_for('map') }}" class="btn btn-outline-primary btn-lg me-3">
+            <i class="fas fa-map-marker-alt"></i> Map View
+        </a>
+        <a href="{{ url_for('events') }}" class="btn btn-outline-primary btn-lg">
+            <i class="fas fa-list"></i> List View
+        </a>
+    </div>
 </div>
 
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3>AI-Driven Curation</h3>
+                    <p>Our AI analyzes thousands of events to recommend the perfect activities for you based on your interests and preferences.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3>Fun Score System</h3>
+                    <p>Every event gets a Fun Score from 1-5 (with half-point precision) based on activities, engagement, and community ratings.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3>Fun Assistant</h3>
+                    <p>Get personalized event recommendations based on your interests, whether you're looking for family activities, singles events, or business networking.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="signup" class="container-fluid bg-light py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 text-center">
+                <h2>Never Miss the Fun!</h2>
+                <p class="lead mb-4">Join our weekly newsletter for curated events.</p>
+                <form class="signup-form">
+                    <div class="input-group mb-3">
+                        <input type="email" class="form-control" placeholder="Enter your email">
+                        <button class="btn btn-primary" type="submit">Sign Up</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 <div class="container-fluid">
     <div class="row mb-4">
         <div class="col-md-3">
@@ -124,26 +177,26 @@
             const category = document.getElementById('categoryFilter').value;
             const date = document.getElementById('dateFilter').value;
             const funRating = document.getElementById('funFilter').value;
-            
+
             let filteredEvents = events;
-            
+
             if (category) {
                 filteredEvents = filteredEvents.filter(event => event.category === category);
             }
-            
+
             if (date) {
                 const selectedDate = new Date(date).toDateString();
-                filteredEvents = filteredEvents.filter(event => 
+                filteredEvents = filteredEvents.filter(event =>
                     new Date(event.date).toDateString() === selectedDate
                 );
             }
 
             if (funRating) {
-                filteredEvents = filteredEvents.filter(event => 
+                filteredEvents = filteredEvents.filter(event =>
                     event.funMeter >= parseInt(funRating)
                 );
             }
-            
+
             addMarkers(filteredEvents);
         }
 
