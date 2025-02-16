@@ -4,7 +4,7 @@ modules = ["python-3.11", "nodejs-20"]
 channel = "stable-24_05"
 
 [workflows]
-runButton = "Run Flask App"
+runButton = "Run"
 
 [[workflows.workflow]]
 name = "Project"
@@ -81,6 +81,14 @@ author = "agent"
 
 [workflows.workflow.metadata]
 agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python app.py"
+
+[[workflows.workflow]]
+name = "Run"
+author = 36270944
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
