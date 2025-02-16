@@ -256,12 +256,13 @@
 <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        let map = L.map('map').setView([47.0379, -122.9007], 12);
-        let markers = {};
-        let userMarker = null;
-        let eventsData = {{ events_json|safe if events_json else '[]' }};
+    let map, markers = {}, userMarker = null;
+    let eventsData = {{ events_json|safe if events_json else '[]' }};
 
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize map
+        map = L.map('map').setView([47.0379, -122.9007], 12);
+        
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
@@ -362,31 +363,39 @@
         });
     });
 
-        function addMarkers(filteredEvents) {
-            // Clear existing markers
-            Object.values(markers).forEach(marker => {
-                map.removeLayer(marker);
+        // Function definitions moved to appropriate scope
+        function highlightEventCard(eventId) {
+            document.querySelectorAll('.event-card').forEach(card => {
+                card.classList.remove('highlighted');
             });
-            markers = {};
-
-            // Add new markers if events exist
-            if (filteredEvents && Array.isArray(filteredEvents)) {
-                filteredEvents.forEach(event => {
-                var marker = L.marker([event.latitude, event.longitude])
-                    .bindPopup(`
-                        <div>
-                            <h6>${event.title}</h6>
-                            <p>${event.description}</p>
-                            <p><strong>Date:</strong> ${event.date}</p>
-                            <p><strong>Fun Meter:</strong> ${event.funMeter}/5</p>
-                            <a href="${event.url}" class="btn btn-primary btn-sm">View Details</a>
-                        </div>
-                    `);
-                marker.on('click', () => highlightEventCard(event.id));
-                markers[event.id] = marker;
-                marker.addTo(map);
-            });
+            const card = document.querySelector(`.event-card[data-event-id="${eventId}"]`);
+            if (card) {
+                card.classList.add('highlighted');
+                card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
         }
+
+        // Initialize markers
+        addMarkers(eventsData);
+
+        // Add filter event listeners
+        ['categoryFilter', 'dateFilter', 'funFilter'].forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('change', filterEvents);
+            }
+        });
+
+        // Add hover effect for event cards
+        document.querySelectorAll('.event-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                const eventId = card.dataset.eventId;
+                if (markers[eventId]) {
+                    markers[eventId].openPopup();
+                }
+            });
+        });
+    });
 
         function highlightEventCard(eventId) {
             document.querySelectorAll('.event-card').forEach(card => {
