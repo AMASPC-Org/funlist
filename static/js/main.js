@@ -49,8 +49,38 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+// Character counter for event form
+function updateCharCount(input, counter, maxLength) {
+    const count = input.value.length;
+    counter.textContent = count;
+    if (count > maxLength) {
+        counter.classList.add('text-danger');
+    } else {
+        counter.classList.remove('text-danger');
+    }
+}
+
 // Event form handling
 document.addEventListener('DOMContentLoaded', function() {
+    // Character counters
+    const titleInput = document.querySelector('input[name="title"]');
+    const descriptionInput = document.querySelector('textarea[name="description"]');
+    
+    if (titleInput && document.getElementById('titleCount')) {
+        titleInput.addEventListener('input', () => {
+            updateCharCount(titleInput, document.getElementById('titleCount'), 100);
+        });
+        // Initial count
+        updateCharCount(titleInput, document.getElementById('titleCount'), 100);
+    }
+    
+    if (descriptionInput && document.getElementById('descriptionCount')) {
+        descriptionInput.addEventListener('input', () => {
+            updateCharCount(descriptionInput, document.getElementById('descriptionCount'), 500);
+        });
+        // Initial count
+        updateCharCount(descriptionInput, document.getElementById('descriptionCount'), 500);
+    }
     const allDayCheckbox = document.querySelector('input[name="all_day"]');
     const timeFields = document.querySelector('.time-fields');
     const recurringCheckbox = document.querySelector('input[name="recurring"]');

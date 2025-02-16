@@ -8,10 +8,12 @@
     <div class="mb-3">
         {{ form.title.label(class="form-label") }}
         {{ form.title(class="form-control") }}
+        <small class="text-muted"><span id="titleCount">0</span>/100 characters</small>
     </div>
     <div class="mb-3">
         {{ form.description.label(class="form-label") }}
         {{ form.description(class="form-control", rows="5") }}
+        <small class="text-muted"><span id="descriptionCount">0</span>/500 characters</small>
     </div>
     <div class="mb-3">
         {{ form.all_day.label(class="form-label") }}
