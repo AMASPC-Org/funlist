@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block head %}
@@ -8,7 +7,7 @@
 {% block content %}
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Event Map</h1>
+        <h1>Events Map</h1>
         <a href="{{ url_for('events') }}" class="btn btn-outline-primary desktop-view-switch">
             <i class="fas fa-list"></i> 📋 Switch to List View
         </a>
@@ -150,13 +149,13 @@
         const category = document.getElementById('categoryFilter').value;
         const date = document.getElementById('dateFilter').value;
         const funRating = document.getElementById('funFilter').value;
-        
+
         let filteredEvents = events;
-        
+
         if (category) {
             filteredEvents = filteredEvents.filter(event => event.category === category);
         }
-        
+
         if (date) {
             const selectedDate = new Date(date).toDateString();
             filteredEvents = filteredEvents.filter(event => 
@@ -169,7 +168,7 @@
                 event.funMeter >= parseInt(funRating)
             );
         }
-        
+
         addMarkers(filteredEvents);
     }
 
@@ -180,7 +179,7 @@
     document.getElementById('categoryFilter').addEventListener('change', filterEvents);
     document.getElementById('dateFilter').addEventListener('change', filterEvents);
     document.getElementById('funFilter').addEventListener('change', filterEvents);
-    
+
     // Location search functionality
     document.getElementById('locationSearch').addEventListener('input', debounce(function(e) {
         const searchQuery = e.target.value;
