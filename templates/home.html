@@ -258,14 +258,14 @@
 <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
 
 <script>
-    // Initialize variables
-    var map, markers = {}, userMarker = null;
-    var eventsData = [];
+    let map, markers = {}, userMarker = null;
+    let eventsData = [];
     
     try {
         eventsData = {{ events_json|safe }} || [];
     } catch(e) {
         console.error("Error parsing events data:", e);
+        eventsData = [];
     }
     
     document.addEventListener('DOMContentLoaded', function() {
@@ -383,11 +383,15 @@
             addMarkers(filteredEvents);
         }
 
-        addMarkers(events);
+        addMarkers(eventsData);
 
-        document.getElementById('categoryFilter').addEventListener('change', filterEvents);
-        document.getElementById('dateFilter').addEventListener('change', filterEvents);
-        document.getElementById('funFilter').addEventListener('change', filterEvents);
+        const categoryFilter = document.getElementById('categoryFilter');
+        const dateFilter = document.getElementById('dateFilter');
+        const funFilter = document.getElementById('funFilter');
+
+        if (categoryFilter) categoryFilter.addEventListener('change', filterEvents);
+        if (dateFilter) dateFilter.addEventListener('change', filterEvents);
+        if (funFilter) funFilter.addEventListener('change', filterEvents);
 
         document.querySelectorAll('.event-card').forEach(card => {
             card.addEventListener('mouseenter', () => {
