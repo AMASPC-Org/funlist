@@ -261,6 +261,18 @@ body {
     padding: 4rem 1rem;
 }
 
+.explore-buttons .btn {
+    min-width: 160px;
+    font-weight: 600;
+    border-width: 2px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.explore-buttons .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+}
+
 /* Media Queries */
 @media (max-width: 768px) {
     .navbar-nav {
