@@ -252,6 +252,7 @@
         <a href="{{ url_for('submit_event') }}" class="btn btn-primary btn-lg">Submit Your Event</a>
     </div>
 </section>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
 
@@ -364,19 +365,24 @@
     });
 
         // Function definitions moved to appropriate scope
-        function highlightEventCard(eventId) {
-            document.querySelectorAll('.event-card').forEach(card => {
-                card.classList.remove('highlighted');
+        // Add markers for events
+        if (Array.isArray(eventsData)) {
+            eventsData.forEach(event => {
+                if (event.latitude && event.longitude) {
+                    let marker = L.marker([event.latitude, event.longitude])
+                        .bindPopup(`
+                            <div>
+                                <h6>${event.title}</h6>
+                                <p>${event.description}</p>
+                                <p><strong>Date:</strong> ${event.date}</p>
+                                <a href="/event/${event.id}" class="btn btn-primary btn-sm">View Details</a>
+                            </div>
+                        `);
+                    markers[event.id] = marker;
+                    marker.addTo(map);
+                }
             });
-            const card = document.querySelector(`.event-card[data-event-id="${eventId}"]`);
-            if (card) {
-                card.classList.add('highlighted');
-                card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }
         }
-
-        // Initialize markers
-        addMarkers(eventsData);
 
         // Add filter event listeners
         ['categoryFilter', 'dateFilter', 'funFilter'].forEach(id => {
@@ -396,9 +402,6 @@
             });
         });
     });
-
-        function highlightEventCard(eventId) {
-            document.querySelectorAll('.event-card').forEach(card => {
                 card.classList.remove('highlighted');
             });
             const card = document.querySelector(`.event-card[data-event-id="${eventId}"]`);
