@@ -254,15 +254,11 @@
 </section>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
-<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 
 <script>
-    let map = null;
-    let markers = {};
-    let userMarker = null;
-    let eventsData = {{ events_json|safe if events_json else '[]' }};
+    var map, markers = {}, userMarker = null;
+    var eventsData = {{ events_json|safe if events_json else '[]' }};
     
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize map
@@ -273,12 +269,11 @@
         }).addTo(map);
 
         // Add event markers
-        if (Array.isArray(eventsData)) {
-            eventsData.forEach(function(event) {
-                if (event.latitude && event.longitude) {
-                    let marker = L.marker([event.latitude, event.longitude])
-                        .bindPopup(`
-                            <div>
+        eventsData.forEach(function(event) {
+            if (event.latitude && event.longitude) {
+                var marker = L.marker([event.latitude, event.longitude])
+                    .bindPopup(`
+                        <div>
                         <h6>${event.title}</h6>
                         <p>${event.description}</p>
                         <p><strong>Date:</strong> ${event.date}</p>
