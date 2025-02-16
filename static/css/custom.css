@@ -511,9 +511,26 @@ body {
 @media (max-width: 768px) {
     .card-title {
         text-align: center;
+        width: 100%;
+        display: block;
     }
     
     .card-body {
         text-align: center;
+        padding: 1.5rem;
+    }
+
+    .hero-section h1,
+    .hero-section .lead,
+    .section-title,
+    .container h2,
+    .container h3 {
+        text-align: center;
+        width: 100%;
+        display: block;
+    }
+
+    .text-center-mobile {
+        text-align: center !important;
     }
 }
