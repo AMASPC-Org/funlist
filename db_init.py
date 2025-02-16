@@ -12,10 +12,12 @@ def init_engine(app):
     return create_engine(
         app.config['SQLALCHEMY_DATABASE_URI'],
         poolclass=QueuePool,
-        pool_size=10,
-        max_overflow=20,
+        pool_size=20,
+        max_overflow=30,
         pool_timeout=30,
-        pool_recycle=1800
+        pool_recycle=300,
+        pool_pre_ping=True,
+        echo_pool=True
     )
 
 # Add error handling, logging, and rate limiting here.  This is a placeholder for the features omitted from the provided changes.
