@@ -1,11 +1,13 @@
 {% extends "base.html" %}
+{% block title %}Welcome{% endblock %}
 
-{% block content %}
-<section id="hero-section" class="hero-fullwidth">
+{% block hero %}
+<!-- Hero Section -->
+<section id="hero-section">
     <div class="hero-container">
         <div class="hero-background">
-            <img src="{{ url_for('static', filename='images/Have-Fun-FunList.ai-home.html') }}" 
-                 alt="Find Fun Events Near You" 
+            <img src="{{ url_for('static', filename='images/Have-Fun-FunList.ai-home.jpeg') }}" 
+                 alt="Find Fun Events Near You"
                  class="hero-image">
         </div>
         <div class="hero-content">
@@ -17,7 +19,9 @@
         </div>
     </div>
 </section>
+{% endblock %}
 
+{% block content %}
 <style>
 .hero-fullwidth {
     width: 100%;

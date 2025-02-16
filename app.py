@@ -23,7 +23,11 @@ logger = logging.getLogger(__name__)
 
 def create_app():
     # Create the app
-    app = Flask(__name__)
+    app = Flask(__name__, 
+                static_url_path='/static',
+                static_folder='static')
+
+    logger.info("Starting Flask application initialization...")
 
     # Setup configurations
     app.config["SECRET_KEY"] = os.environ.get("FLASK_SECRET_KEY", "dev_key")
@@ -48,6 +52,7 @@ def create_app():
     app.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
 
     try:
+        logger.info("Initializing Flask extensions...")
         # Initialize extensions
         db.init_app(app)
         csrf = CSRFProtect(app)
@@ -61,6 +66,7 @@ def create_app():
         login_manager.login_message_category = "info"
         login_manager.session_protection = "strong"
 
+        logger.info("Setting up database and routes...")
         # Import models and routes after app initialization
         with app.app_context():
             from models import User
@@ -73,6 +79,7 @@ def create_app():
             init_db(app)
             init_routes(app)
 
+        logger.info("Application initialization completed successfully")
         return app
     except Exception as e:
         logger.error(f"Failed to create app: {str(e)}")
@@ -82,7 +89,8 @@ app = create_app()
 
 if __name__ == '__main__':
     try:
-        port = int(os.environ.get("PORT", 5001))
+        port = 5003  # Changed to use port 5003
+        logger.info(f"Starting server on port {port}")
         app.run(host='0.0.0.0', port=port, debug=True)
     except Exception as e:
         logger.error(f"Failed to start server: {str(e)}")
