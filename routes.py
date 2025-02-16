@@ -91,6 +91,35 @@ def init_routes(app):
         events = query.order_by(Event.start_date).all()
         return render_template('events.html', events=events)
 
+    @app.route('/submit_event', methods=['GET', 'POST'])
+    def submit_event():
+        form = EventForm()
+        if form.validate_on_submit():
+            event = Event(
+                title=form.title.data,
+                description=form.description.data,
+                start_date=form.start_date.data,
+                end_date=form.end_date.data,
+                start_time=form.start_time.data,
+                end_time=form.end_time.data,
+                all_day=form.all_day.data,
+                recurring=form.recurring.data,
+                recurrence_type=form.recurrence_type.data,
+                street=form.street.data,
+                city=form.city.data,
+                state=form.state.data,
+                zip_code=form.zip_code.data,
+                category=form.category.data,
+                target_audience=form.target_audience.data,
+                fun_meter=int(form.fun_meter.data),
+                user_id=current_user.id
+            )
+            db.session.add(event)
+            db.session.commit()
+            flash('Event submitted successfully!', 'success')
+            return redirect(url_for('events'))
+        return render_template('submit_event.html', form=form)
+
     @app.route('/map')
     def map_view():
         events = Event.query.all()
