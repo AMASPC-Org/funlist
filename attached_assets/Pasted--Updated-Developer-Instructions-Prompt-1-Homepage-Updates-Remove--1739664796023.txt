@@ -1,0 +1,85 @@
+### **Updated Developer Instructions (Prompt)**  
+
+📌 **1. Homepage (`/`) Updates**  
+- **Remove the event map from the homepage** (the map belongs on `/map`).  
+- **Hero Section:**
+  - **Headline:** “Discover the Best Events in [Your Area] with FunList.ai”  
+  - **Subtext:** "Sign up to get handpicked, high-rated events delivered weekly!"  
+  - **Call-to-Action Button:** “🔔 Get My Weekly FunList” → Leads to email sign-up form.  
+- **Add an "Explore Events" button**  
+  - A toggle for **Map View (`/map`) vs. List View (`/events`)**  
+  - Button text should dynamically adjust based on the current view.  
+- **Add an "About FunList.ai" Section** explaining:  
+  - What makes FunList.ai unique (AI-driven event curation, Fun Rating system).  
+  - How Fun Ratings work.  
+  - How event personalization works via the Fun Assistant.  
+
+---
+
+📌 **2. Event Pages (`/map` and `/events`) Updates**  
+- **Ensure `/map` and `/events` remain separate pages** (avoid AJAX toggles).  
+- **"Switch View" Button:**  
+  - On **`/map`**, add a button labeled **"📋 Switch to List View"** → Links to `/events`.  
+  - On **`/events`**, add a button labeled **"📍 Switch to Map View"** → Links to `/map`.  
+  - Place the button at the **top right** of the page.  
+  - On **mobile**, use a **floating button (FAB)** for easy access.  
+- **Ensure SEO-friendly canonical tags** are correctly implemented.  
+
+---
+
+📌 **3. Implement the Fun Score System (1-5 Scale, Half-Point Increments Allowed)**  
+- **Rename "Fun Rating" to "Fun Score"** (after verifying trademark availability).  
+- **Adopt a 1-5 rating scale** with half-point increments (e.g., 3.5, 4.5).  
+- **Fun Score logic:**  
+  - Scores are determined based on **number & variety of activities** an event offers.  
+  - Example mapping (already outlined for Adult, Family, Singles, Business, etc.).  
+- **Display the Fun Score prominently on event listings & detail pages.**  
+
+---
+
+📌 **4. Event Submission & Monetization Flow**  
+- **Submit Event Page (`/add-event`)**
+  - Ensure event submissions are saved correctly in the database.  
+  - Redirect paid promotions to **LocalMarketingTool.ai** for advertising, sponsorship, & vendor opportunities.  
+- **Event Categorization:**
+  - Ensure events can be tagged based on **audience preferences** (e.g., Family, Adult, Senior, Single).  
+  - Users should be able to filter events based on these tags in `/map` and `/events`.  
+
+---
+
+📌 **5. User Sign-Up & Personalized Event Curation**  
+- **Ensure users can sign up and select event interests (e.g., Family, Singles, Business).**  
+- **Enable Fun Assistant (Later Integration)**
+  - Not required immediately, but ensure user preferences are stored in the database.  
+  - These preferences should later be used for **personalized event recommendations**.  
+
+---
+
+📌 **6. Admin Dashboard & Database Fixes**  
+- **Ensure database correctly saves:**  
+  - Users & their event preferences.  
+  - Event submissions with all metadata (Fun Score, categories, etc.).  
+- **Fix any remaining AttributeErrors in admin routes & templates.**  
+- **Ensure `/admin/login` works correctly** with:  
+  - Email: `ryan@funlist.ai`  
+  - Password: `120M2025*v7`  
+
+---
+
+### **Final Deliverables**  
+✅ Updated homepage with **clear messaging, Fun Score explanation, and CTAs**.  
+✅ **Switch View button added** to `/map` & `/events`, with correct UX positioning.  
+✅ **Fun Score system implemented** with 1-5 scale & half-point increments.  
+✅ **Event submission fully functional**, with paid promotions redirected to LocalMarketingTool.ai.  
+✅ **User preferences stored** for future AI-powered Fun Assistant.  
+✅ **Database & admin panel fixes** applied to ensure stability.  
+
+---
+
+**Next Steps:**  
+🚀 **Step 1:** Implement homepage & navigation changes.  
+🚀 **Step 2:** Develop the Fun Score system & display it on events.  
+🚀 **Step 3:** Ensure user preferences are captured & stored correctly.  
+🚀 **Step 4:** Confirm database is functioning as expected.  
+
+This prompt ensures **all discussed updates** are executed systematically while keeping future integrations in mind. 🚀
