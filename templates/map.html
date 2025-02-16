@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 
 {% block head %}
@@ -80,7 +81,6 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize map
     const map = L.map('map').setView([47.0379, -122.9007], 12);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const markers = {};
 
     {% for event in events %}
-    const marker{{ event.id }} = L.marker([{{ event.latitude }}, {{ event.longitude }}])
+    const marker = L.marker([{{ event.latitude }}, {{ event.longitude }}])
         .bindPopup(
             '<div class="event-popup">' +
             '<h5>{{ event.title }}</h5>' +
@@ -100,11 +100,10 @@ document.addEventListener('DOMContentLoaded', function() {
             '<a href="{{ url_for("event_detail", event_id=event.id) }}" class="btn btn-primary btn-sm">View Details</a>' +
             '</div>'
         );
-    marker{{ event.id }}.addTo(map);
-    markers[{{ event.id }}] = marker{{ event.id }};
+    marker.addTo(map);
+    markers[{{ event.id }}] = marker;
     {% endfor %}
 
-    // Event card hover effect
     document.querySelectorAll('.event-card').forEach(card => {
         card.addEventListener('mouseenter', function() {
             const eventId = parseInt(this.dataset.eventId, 10);
@@ -113,21 +112,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-});
-</script>
-
-    // Event card hover effect
-    document.querySelectorAll('.event-card').forEach(card => {
-        card.addEventListener('mouseenter', () => {
-            const eventId = parseInt(card.dataset.eventId);
-            if (markers[eventId]) {
-                markers[eventId].openPopup();
-            }
-        });
-    });
 
     // Filter functionality
-    function filterEvents() {
+    const filterEvents = () => {
         const category = document.getElementById('categoryFilter').value;
         const date = document.getElementById('dateFilter').value;
         const funRating = document.getElementById('funFilter').value;
@@ -136,7 +123,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Add your filter logic here
             card.style.display = 'block';
         });
-    }
+    };
 
     document.getElementById('categoryFilter').addEventListener('change', filterEvents);
     document.getElementById('dateFilter').addEventListener('change', filterEvents);
