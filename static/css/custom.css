@@ -457,12 +457,12 @@ section, .container {
     .hero-section {
         padding: 2rem 1rem;
     }
-    
+
     .view-options {
         flex-direction: column;
         width: 100%;
     }
-    
+
     .view-options .btn {
         width: 100%;
         margin: 0.25rem 0;
@@ -762,7 +762,7 @@ section, .container {
         right: 20px;
         left: 20px;
     }
-    
+
     .floating-cta .btn {
         width: 100%;
     }
