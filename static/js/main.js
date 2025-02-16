@@ -1,4 +1,3 @@
-
 // Email signup popup functionality
 document.addEventListener('DOMContentLoaded', function() {
     // Check if user has seen the popup before
@@ -17,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
         emailSignupForm.addEventListener('submit', function(e) {
             e.preventDefault();
             const email = document.getElementById('signupEmail').value;
-            
+
             // Here you would typically send this to your backend
             fetch('/subscribe', {
                 method: 'POST',
@@ -29,13 +28,23 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('Thank you for subscribing!');
-                    bootstrap.Modal.getInstance(document.getElementById('emailSignupModal')).hide();
+                    const signupBtn = document.querySelector('.signup-form button');
+                    signupBtn.textContent = '✓ Subscribed!';
+                    signupBtn.disabled = true;
+                    setTimeout(() => {
+                        bootstrap.Modal.getInstance(document.getElementById('emailSignupModal')).hide();
+                    }, 1500);
+                } else {
+                    throw new Error(data.message || 'Subscription failed');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('There was an error. Please try again.');
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'alert alert-danger mt-2';
+                errorMsg.textContent = error.message || 'There was an error. Please try again.';
+                document.querySelector('.signup-form').appendChild(errorMsg);
+                setTimeout(() => errorMsg.remove(), 3000);
             });
         });
     }

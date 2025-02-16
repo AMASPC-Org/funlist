@@ -19,13 +19,20 @@ def init_routes(app):
         try:
             data = request.get_json()
             email = data.get('email')
-            if email:
-                # Here you would typically save this to your database
-                # For now, we'll just return success
-                return jsonify({'success': True, 'message': 'Subscription successful'})
-            return jsonify({'success': False, 'message': 'Email is required'}), 400
+            if not email:
+                return jsonify({'success': False, 'message': 'Email is required'}), 400
+            
+            if Subscriber.query.filter_by(email=email).first():
+                return jsonify({'success': False, 'message': 'Email already subscribed'}), 400
+                
+            subscriber = Subscriber(email=email)
+            db.session.add(subscriber)
+            db.session.commit()
+            
+            return jsonify({'success': True, 'message': 'Subscription successful'})
         except Exception as e:
             logger.error(f"Subscription error: {str(e)}")
+            db.session.rollback()
             return jsonify({'success': False, 'message': 'An error occurred'}), 500
 
     @app.before_request
