@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 
 {% block head %}
@@ -120,22 +121,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const eventsData = {{ events_json|safe }};
-    const map = L.map('map');
-            
-            // Try to get user location
-            if ("geolocation" in navigator) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        map.setView([position.coords.latitude, position.coords.longitude], 12);
-                    },
-                    () => {
-                        // Default view if geolocation fails
-                        map.setView([47.0379, -122.9007], 12);
-                    }
-                );
-            } else {
-                map.setView([47.0379, -122.9007], 12);
-            }
+    const map = L.map('map').setView([47.0379, -122.9007], 12);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -144,27 +130,36 @@ document.addEventListener('DOMContentLoaded', function() {
     const markers = {};
 
     eventsData.forEach(event => {
-        const marker = L.marker([event.latitude, event.longitude])
-            .bindPopup(`
-                <div class="event-popup">
-                    <h5>${event.title}</h5>
-                    <p>${event.date}</p>
-                    <p>${event.description}</p>
-                    <p><strong>Category:</strong> ${event.category}</p>
-                    <p><strong>Fun Meter:</strong> ${event.funMeter}/5</p>
-                    <a href="${event.url}" class="btn btn-primary btn-sm">View Details</a>
-                </div>
-            `);
-        marker.addTo(map);
-        markers[event.id] = marker;
+        if (event.latitude && event.longitude) {
+            const marker = L.marker([event.latitude, event.longitude])
+                .bindPopup(`
+                    <div class="event-popup">
+                        <h5>${event.title}</h5>
+                        <p>${event.date}</p>
+                        <p>${event.description}</p>
+                        <p><strong>Category:</strong> ${event.category}</p>
+                        <p><strong>Fun Meter:</strong> ${event.funMeter}/5</p>
+                        <a href="${event.url}" class="btn btn-primary btn-sm">View Details</a>
+                    </div>
+                `);
+            marker.addTo(map);
+            markers[event.id] = marker;
+        }
     });
 
     // Event card hover effects
     document.querySelectorAll('.event-card').forEach(card => {
+        const eventId = parseInt(card.dataset.eventId, 10);
         card.addEventListener('mouseenter', function() {
-            const eventId = parseInt(this.dataset.eventId, 10);
             if (markers[eventId]) {
                 markers[eventId].openPopup();
+                card.classList.add('highlighted');
+            }
+        });
+        card.addEventListener('mouseleave', function() {
+            if (markers[eventId]) {
+                markers[eventId].closePopup();
+                card.classList.remove('highlighted');
             }
         });
     });
@@ -185,18 +180,31 @@ document.addEventListener('DOMContentLoaded', function() {
             if (funRating && event.funMeter < parseInt(funRating)) show = false;
 
             if (show) {
-                marker.addTo(map);
+                if (marker) marker.addTo(map);
                 if (card) card.style.display = 'block';
             } else {
-                marker.remove();
+                if (marker) marker.remove();
                 if (card) card.style.display = 'none';
             }
         });
     };
 
+    // Add filter event listeners
     document.getElementById('categoryFilter').addEventListener('change', filterEvents);
     document.getElementById('dateFilter').addEventListener('change', filterEvents);
     document.getElementById('funFilter').addEventListener('change', filterEvents);
+
+    // Try to get user location
+    if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                map.setView([position.coords.latitude, position.coords.longitude], 12);
+            },
+            () => {
+                console.log("Geolocation failed, using default location");
+            }
+        );
+    }
 });
 </script>
 {% endblock %}
