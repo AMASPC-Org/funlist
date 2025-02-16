@@ -575,4 +575,43 @@ section, .container {
     margin-left: auto;
 }
 
+/* Floating CTA */
+.floating-cta {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 1000;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+    display: none;
+}
+
+.floating-cta.visible {
+    opacity: 1;
+    transform: translateY(0);
+    display: block;
+}
+
+.floating-cta .btn {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.floating-cta .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+}
+
+@media (max-width: 768px) {
+    .floating-cta {
+        bottom: 20px;
+        right: 20px;
+        left: 20px;
+    }
+    
+    .floating-cta .btn {
+        width: 100%;
+    }
+}
+
 /* End of styles */

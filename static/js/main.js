@@ -70,6 +70,23 @@ function updateCharCount(input, counter, maxLength) {
     }
 }
 
+// Floating CTA handling
+const floatingCTA = document.getElementById('floatingCTA');
+let lastScrollPosition = 0;
+
+window.addEventListener('scroll', () => {
+    const currentScroll = window.pageYOffset;
+    
+    // Show after scrolling down 300px
+    if (currentScroll > 300) {
+        floatingCTA.classList.add('visible');
+    } else {
+        floatingCTA.classList.remove('visible');
+    }
+    
+    lastScrollPosition = currentScroll;
+});
+
 // Event form handling
 document.addEventListener('DOMContentLoaded', function() {
     // Character counters
