@@ -494,3 +494,26 @@ body {
 .card .btn {
     min-width: 120px;
 }
+
+.card-title {
+    text-align: left;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+    transition: text-align 0.3s ease;
+}
+
+.card-body {
+    padding: 1.5rem;
+    transition: text-align 0.3s ease;
+}
+
+@media (max-width: 768px) {
+    .card-title {
+        text-align: center;
+    }
+    
+    .card-body {
+        text-align: center;
+    }
+}
