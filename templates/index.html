@@ -5,6 +5,27 @@
 <!-- Hero Section -->
 <section id="hero" class="hero-section"></section>
 
+<!-- Email Signup Modal -->
+<div class="modal fade" id="emailSignupModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Get Weekly Fun Updates</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="emailSignupForm">
+                    <div class="mb-3">
+                        <label for="signupEmail" class="form-label">Email address</label>
+                        <input type="email" class="form-control" id="signupEmail" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Subscribe</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <section class="content-section text-center py-5">
     <div class="container">
         <h1>Find the Best Events Near You – Rated for Fun!</h1>
@@ -103,4 +124,42 @@
     </div>
 </section>
 
+<!-- Map Section -->
+<section class="map-preview mb-5">
+    <div class="container">
+        <div id="map" style="height: 400px;"></div>
+    </div>
+</section>
+
+<!-- Never Miss Section -->
+<section id="never-miss" class="bg-light py-5">
+    <div class="container text-center">
+        <h2>Never Miss the Fun!</h2>
+        <p class="lead mb-4">Get our weekly updates to stay informed about local events.</p>
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <form id="footerEmailForm" class="mb-3">
+                    <div class="input-group">
+                        <input type="email" class="form-control" placeholder="Your email address" required>
+                        <button class="btn btn-primary" type="submit">Sign Up</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const map = L.map('map').setView([47.0379, -122.9007], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+    });
+</script>
 {% endblock %}
