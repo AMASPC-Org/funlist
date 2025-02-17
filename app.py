@@ -1,3 +1,4 @@
+
 import os
 import logging
 from datetime import timedelta
@@ -24,14 +25,12 @@ from flask_wtf.csrf import CSRFProtect
 from flask_session import Session
 from db_init import db
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s - %(pathname)s:%(lineno)d'
 )
 logger = logging.getLogger(__name__)
 
-# create the app
 app = Flask(__name__)
 limiter = Limiter(
     app=app,
@@ -39,11 +38,6 @@ limiter = Limiter(
     default_limits=["200 per day", "50 per hour"],
     storage_uri="memory://"
 )
-
-# Add request logging
-from functools import wraps
-from werkzeug.exceptions import RequestTimeout
-import time
 
 def timeout_after(seconds):
     def decorator(f):
@@ -67,7 +61,6 @@ def log_response_info(response):
     logger.info('Response: %s %s %s', request.method, request.url, response.status)
     return response
 
-# setup configurations
 app.config["SECRET_KEY"] = os.environ.get("FLASK_SECRET_KEY", "dev_key")
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
@@ -78,7 +71,6 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 }
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# Session configuration
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
 app.config['SESSION_COOKIE_SECURE'] = True
@@ -89,12 +81,10 @@ app.config['REMEMBER_COOKIE_SECURE'] = True
 app.config['REMEMBER_COOKIE_HTTPONLY'] = True
 app.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
 
-# initialize extensions
 db.init_app(app)
 csrf = CSRFProtect(app)
 Session(app)
 
-# Setup login manager
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
@@ -102,7 +92,6 @@ login_manager.login_message = "Please log in to access this page."
 login_manager.login_message_category = "info"
 login_manager.session_protection = "strong"
 
-# Import models and routes after app initialization to avoid circular imports
 from models import User
 from routes import init_routes
 
@@ -110,7 +99,6 @@ from routes import init_routes
 def load_user(user_id):
     return db.session.get(User, int(user_id))
 
-# Initialize routes
 init_routes(app)
 
 if __name__ == "__main__":
