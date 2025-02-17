@@ -1,14 +1,5 @@
 
 from app import app
-import logging
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
-    try:
-        port = 8080
-        logger.info(f"Starting server on port {port}")
-        app.run(host='0.0.0.0', port=port, debug=True, use_reloader=False)
-    except Exception as e:
-        logger.error(f"Failed to start server: {str(e)}", exc_info=True)
+    app.run(host='0.0.0.0', port=8080, debug=True)
