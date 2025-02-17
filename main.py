@@ -1,4 +1,3 @@
-
 import logging
 import psutil
 from app import app
@@ -13,16 +12,29 @@ def check_port_usage(port):
             return True
     return False
 
+def is_port_in_use(port):
+    import socket
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        try:
+            s.bind(('0.0.0.0', port))
+            return False
+        except socket.error:
+            return True
+
 if __name__ == "__main__":
     port = 8080
-    logger.info(f"Attempting to start server on port {port}")
-    
-    if check_port_usage(port):
-        logger.error(f"Port {port} is already in use")
+    max_retries = 3
+
+    for retry in range(max_retries):
+        if not is_port_in_use(port):
+            print(f"Starting server on port {port}")
+            try:
+                app.run(host='0.0.0.0', port=port, debug=True)
+                break
+            except Exception as e:
+                print(f"Failed to start server: {e}")
+        else:
+            print(f"Port {port} is in use, trying port {port + 1}")
+            port += 1
     else:
-        logger.info(f"Port {port} is available")
-        
-    try:
-        app.run(host="0.0.0.0", port=port, debug=True)
-    except Exception as e:
-        logger.error(f"Failed to start server: {str(e)}", exc_info=True)
+        print(f"Could not find available port after {max_retries} attempts")
