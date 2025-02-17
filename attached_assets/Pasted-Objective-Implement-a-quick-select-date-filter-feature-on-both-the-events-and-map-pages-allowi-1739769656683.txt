@@ -1,0 +1,56 @@
+Objective:
+Implement a “quick select” date filter feature on both the /events and /map pages, allowing users to choose from preset date ranges (e.g., “Today,” “This Weekend,” “Next 7 Days,” “All Dates”) or select a custom date range using a date picker. Ensure that the UI is fully responsive and works seamlessly on both mobile and desktop devices.
+
+Key Requirements & Steps:
+
+Add a Date Filter Dropdown
+
+Create a dropdown labeled “Dates” or “All Dates” that appears on both the /events and /map pages.
+Include options for:
+All Dates (default)
+Today
+This Weekend
+Next 7 Days
+Custom Range…
+Handle Preset Ranges
+
+When a user selects a preset, automatically map it to start_date and end_date. For example:
+Today: Set both start_date and end_date to the current date.
+This Weekend: Calculate the upcoming Friday (or appropriate day) as the start and the following Sunday as the end date.
+Next 7 Days: Set start_date to today and end_date to today + 7 days.
+Pass these dates to the Flask backend via GET parameters (e.g., ?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD).
+Custom Range Date Picker
+
+If the user selects “Custom Range…,” display a date range picker (e.g., Flatpickr in range mode or a similar lightweight alternative).
+Collect the two dates (start_date and end_date) from the user and include them in the GET request to the backend.
+Responsive Design:
+Ensure the date picker and dropdown work effectively on mobile (touch-friendly, responsive layout) and on desktop.
+Use Bootstrap 5’s grid and responsive classes to adjust the UI as needed.
+Flask Backend Query
+
+In your Flask routes for both /events and /map, retrieve the date parameters from the request.
+If start_date and end_date are provided, use SQLAlchemy to filter events:
+python
+Copy
+events = Event.query.filter(Event.event_date >= start_date,
+                            Event.event_date <= end_date).all()
+If no date range is selected (or “All Dates”), default to returning all events or a broader time window as appropriate.
+Performance & Security
+
+Ensure the event_date column is indexed in PostgreSQL for optimal query performance.
+Validate user inputs server-side (e.g., confirming that start_date is not later than end_date).
+Continue using CSRF protection (via Flask-WTF) and rate limiting (via Flask-Limiter).
+UI/UX & Cross-Page Consistency
+
+Consistency: Apply the same date filter UI changes to both the /events and /map pages.
+Mobile and Desktop:
+Test and adjust the layout to ensure it looks good and functions properly on both mobile and desktop devices.
+Use responsive design techniques (Bootstrap classes, media queries) so that the filter dropdown and date picker are optimized for different screen sizes.
+User Guidance:
+Provide clear labeling and tooltips or placeholder text (e.g., “Select a date range or choose a preset”) to help users understand how to use the filter.
+Testing
+
+Thoroughly test the feature on both pages and across devices:
+Presets: Verify that selecting a preset correctly updates the query.
+Custom Range: Check that the date picker works on mobile and desktop, and that the custom range is correctly passed to the backend.
+Edge Cases: Validate behavior when no date is selected, invalid ranges are entered, etc.

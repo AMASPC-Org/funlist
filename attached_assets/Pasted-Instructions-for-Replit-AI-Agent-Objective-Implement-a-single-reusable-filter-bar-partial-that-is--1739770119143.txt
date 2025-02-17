@@ -1,0 +1,65 @@
+Instructions for Replit AI Agent
+Objective:
+Implement a single, reusable filter bar partial that is shared by both the /events and /map pages. This filter bar includes all dropdowns and input fields (e.g., search location, category dropdown, date input/range picker, fun ratings dropdown) and is fully responsive for both mobile and desktop.
+
+Steps to Implement:
+
+Create the Partial Template:
+
+In your project’s templates/partials/ directory, create a file named filter_bar.html.
+Move the complete filter bar markup (HTML) into this file. This should include:
+A text input for “Search location”
+A dropdown for “Category”
+A date input or date range picker (depending on your existing design)
+A dropdown for “Fun Ratings”
+A submit button for filtering
+Ensure that each field uses consistent name attributes (e.g., search_location, category, date, fun_rating) so that both routes can process them identically.
+Integrate the Partial into Both Pages:
+
+In the /events template (e.g., events.html), include the partial by adding:
+jinja
+Copy
+{% extends "base.html" %}
+{% block content %}
+  <h1>Explore Events</h1>
+  {% include "partials/filter_bar.html" %}
+  <!-- Additional /events page content -->
+{% endblock %}
+In the /map template (e.g., map.html), include the partial similarly:
+jinja
+Copy
+{% extends "base.html" %}
+{% block content %}
+  <h1>Explore Events on the Map</h1>
+  {% include "partials/filter_bar.html" %}
+  <!-- Additional /map page content (e.g., Leaflet map container) -->
+{% endblock %}
+Ensure Responsive & Consistent Design:
+
+Use Bootstrap 5 grid classes and responsive utilities in your partial template to ensure the filter bar renders well on both mobile and desktop devices.
+Test the layout on various screen sizes to confirm that the filter bar elements are displayed correctly.
+Handle Backend Integration:
+
+Verify that form submissions from the filter bar correctly pass GET parameters (e.g., search_location, category, date, fun_rating) to your Flask routes for both /events and /map.
+In your Flask backend (e.g., in app.py), ensure each route retrieves these parameters using:
+python
+Copy
+search_location = request.args.get('search_location', '')
+category = request.args.get('category', '')
+date = request.args.get('date', '')
+fun_rating = request.args.get('fun_rating', '')
+Apply the corresponding query logic (using SQLAlchemy) to filter events based on the provided parameters.
+Security and Validation:
+
+If applicable, include CSRF tokens in your form using Flask-WTF.
+Validate all inputs server-side, particularly the date values, ensuring they meet expected formats and logic.
+Testing and QA:
+
+Confirm that the filter bar appears identically on both the /events and /map pages.
+Test all filter scenarios (e.g., valid inputs, empty inputs, invalid date ranges) to ensure the back end processes the parameters correctly.
+Check the responsiveness of the filter bar on different devices and screen sizes.
+Final Note:
+
+Please implement this shared partial template approach in the Replit environment, ensuring that all logic and styling remain consistent across both pages. Once completed, run thorough tests to verify that the filter bar works correctly on both /events and /map.
+
+Let me know if any adjustments or further details are needed.
