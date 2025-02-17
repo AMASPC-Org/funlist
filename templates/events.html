@@ -6,17 +6,23 @@
 
 {% block content %}
 <div class="container">
-    <h2 class="mb-4">Find Local Events</h2>
-    
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Local Events</h2>
+        <h2>Find Local Events</h2>
         <div class="view-switcher">
             <a href="{{ url_for('map') }}" class="btn btn-outline-primary">Switch to Map View</a>
         </div>
     </div>
 
 <form class="mb-4" method="get" action="{{ url_for('events') }}">
-    <div class="row g-3">
+    <!-- Featured Events Carousel -->
+<div class="featured-events-section mb-4">
+    <h3 class="mb-3">Featured Events</h3>
+    <div class="row" id="featured-events">
+        <!-- Featured events will be dynamically populated here -->
+    </div>
+</div>
+
+<div class="row g-3">
         <div class="col-md-3">
             <label for="category" class="form-label">Category</label>
             <select class="form-select" id="category" name="category">
