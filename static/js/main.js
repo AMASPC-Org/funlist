@@ -82,10 +82,57 @@ function initCharCount() {
     }
 }
 
+// Event list filtering
+function filterEventsList() {
+    const category = document.getElementById('categoryFilter')?.value || '';
+    const dateRange = document.getElementById('dateRange')?.value || '';
+    const location = document.getElementById('locationFilter')?.value.toLowerCase();
+    
+    document.querySelectorAll('.event-card').forEach(card => {
+        const cardCategory = card.dataset.category?.toLowerCase();
+        const cardDate = card.dataset.date;
+        const cardLocation = card.dataset.location?.toLowerCase();
+        
+        let showCard = true;
+        
+        if (category && cardCategory !== category.toLowerCase()) showCard = false;
+        if (dateRange) {
+            // Add date range logic here similar to map.html
+            const eventDate = new Date(cardDate);
+            const today = new Date();
+            
+            switch(dateRange) {
+                case 'today':
+                    if (eventDate.toDateString() !== today.toDateString()) showCard = false;
+                    break;
+                case 'weekend':
+                    // Add weekend logic
+                    break;
+                // Add other date range cases
+            }
+        }
+        if (location && !cardLocation?.includes(location)) showCard = false;
+        
+        card.style.display = showCard ? 'block' : 'none';
+    });
+}
+
 // Initialize everything when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     initFloatingCTA();
     initCharCount();
+    
+    // Set up event listeners for filters
+    const filters = ['categoryFilter', 'dateRange', 'locationFilter'];
+    filters.forEach(filterId => {
+        const element = document.getElementById(filterId);
+        if (element) {
+            element.addEventListener('change', filterEventsList);
+            if (element.tagName === 'INPUT') {
+                element.addEventListener('input', filterEventsList);
+            }
+        }
+    });
 
     // Location handling
     const locationModal = document.getElementById('locationModal');
