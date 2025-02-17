@@ -364,6 +364,18 @@ main {
 }
 
 
+/* View Switcher */
+.view-switcher {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.view-switcher .btn {
+    min-width: 150px;
+    text-align: center;
+}
+
 /* Map Section */
 .map-section {
     margin-bottom: 2rem;
