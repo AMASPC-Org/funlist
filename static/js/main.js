@@ -125,17 +125,29 @@ function filterEventsList() {
 
 // Handle date range changes
 function handleDateRangeChange(select) {
-    const isMobile = select.closest('.filter-bar-mobile') !== null;
-    const specificDateId = isMobile ? 'specificDate-mobile' : 'specificDate';
-    const specificDateInput = document.getElementById(specificDateId);
-
+    const specificDateInput = document.getElementById('specificDate');
     if (specificDateInput) {
         specificDateInput.style.display = select.value === 'specific' ? 'block' : 'none';
-        if (select.value !== 'specific' && select.form) {
+        if (select.value === 'specific') {
+            specificDateInput.focus();
+        } else if (select.form) {
             select.form.submit();
         }
     }
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const dateRange = document.getElementById('dateRange');
+    const specificDate = document.getElementById('specificDate');
+    
+    if (specificDate) {
+        specificDate.addEventListener('change', function() {
+            if (this.form) {
+                this.form.submit();
+            }
+        });
+    }
+});
 
 // Initialize everything when DOM is loaded
 // Create a single event handler to avoid duplicates
