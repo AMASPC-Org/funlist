@@ -64,26 +64,31 @@ function initFloatingCTA() {
 
 // Handle form field visibility
 function initEventForm() {
-    const allDayCheckbox = document.getElementById('all_day');
-    const timeFields = document.querySelector('.time-fields');
-    const recurringCheckbox = document.getElementById('recurring');
-    const recurrenceFields = document.querySelector('.recurrence-fields');
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('eventForm');
+        if (!form) return;
 
-    if (allDayCheckbox) {
-        allDayCheckbox.addEventListener('change', function() {
-            if (timeFields) {
+        const allDayCheckbox = form.querySelector('#all_day');
+        const timeFields = form.querySelector('.time-fields');
+        const recurringCheckbox = form.querySelector('#recurring');
+        const recurrenceFields = form.querySelector('.recurrence-fields');
+
+        if (allDayCheckbox && timeFields) {
+            allDayCheckbox.addEventListener('change', function() {
                 timeFields.style.display = this.checked ? 'none' : 'block';
-            }
-        });
-    }
+            });
+            // Initialize state
+            timeFields.style.display = allDayCheckbox.checked ? 'none' : 'block';
+        }
 
-    if (recurringCheckbox) {
-        recurringCheckbox.addEventListener('change', function() {
-            if (recurrenceFields) {
+        if (recurringCheckbox && recurrenceFields) {
+            recurringCheckbox.addEventListener('change', function() {
                 recurrenceFields.style.display = this.checked ? 'block' : 'none';
-            }
-        });
-    }
+            });
+            // Initialize state
+            recurrenceFields.style.display = recurringCheckbox.checked ? 'block' : 'none';
+        }
+    });
 }
 
 // Form character count
@@ -185,29 +190,25 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.querySelector('form#eventForm')) {
         initEventForm();
         const form = document.querySelector('form#eventForm');
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            try {
-                const response = await fetch(form.action, {
-                    method: 'POST',
-                    body: new FormData(form)
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const result = await response.json();
-                if (result.success) {
-                    window.location.href = result.redirect;
-                } else {
-                    alert(result.message || 'Error submitting event');
-                }
-            } catch (error) {
-                console.error('Error submitting form:', error);
-                alert('Error submitting event. Please try again.');
-            }
-        });
+        form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(form);
+    fetch(form.action, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (response.redirected) {
+            window.location.href = response.url;
+        } else {
+            return response.text();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error submitting form. Please try again.');
+    });
+});
     }
 
     if (document.getElementById('title') || document.getElementById('description')) {
