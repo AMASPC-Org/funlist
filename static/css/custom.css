@@ -191,9 +191,38 @@
 .navbar-brand {
     color: var(--primary-color);
     font-weight: 600;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
+}
+
+/* Center brand on mobile only */
+@media (max-width: 991px) {
+    .navbar-brand {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    
+    .navbar .dropdown {
+        margin-left: auto;
+    }
+    
+    .navbar-collapse {
+        margin-top: 1rem;
+    }
+}
+
+/* Desktop specific styles */
+@media (min-width: 992px) {
+    .navbar-brand {
+        margin-right: 2rem;
+    }
+    
+    .navbar-nav.mx-auto {
+        margin: 0 auto !important;
+    }
+    
+    .navbar .nav-item {
+        margin: 0 0.5rem;
+    }
 }
 
 .navbar .nav-link {
