@@ -200,6 +200,7 @@
     color: var(--text-primary) !important;
     font-weight: 500;
     padding: 0.5rem 1rem;
+    transition: color 0.2s ease;
 }
 
 .navbar .nav-link:hover {
@@ -209,6 +210,31 @@
 .navbar .dropdown-menu {
     border: none;
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    min-width: 200px;
+}
+
+@media (max-width: 991px) {
+    .navbar-collapse {
+        position: fixed;
+        top: 70px;
+        left: 0;
+        padding-left: 15px;
+        padding-right: 15px;
+        padding-bottom: 15px;
+        width: 100%;
+        height: auto;
+        background-color: white;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+
+    .navbar-collapse.collapsing,
+    .navbar-collapse.show {
+        transition: all 0.3s ease;
+    }
+
+    .navbar-nav {
+        margin-top: 1rem;
+    }
 }
 
 .navbar .dropdown-item:hover {

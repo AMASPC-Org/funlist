@@ -9,8 +9,9 @@
     <!-- Logo/Brand -->
     <a class="navbar-brand text-center mx-auto" href="{{ url_for('index') }}">FunList.ai</a>
 
+    <!-- User Menu (Desktop & Mobile) -->
     {% if current_user.is_authenticated %}
-    <div class="d-flex align-items-center">
+    <div class="d-flex align-items-center order-lg-last">
       <div class="dropdown">
         <a class="nav-link" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
           <i class="fas fa-user nav-icon"></i>
@@ -32,9 +33,9 @@
     </div>
     {% endif %}
 
-    <!-- Desktop Nav + Mobile Dropdown -->
+    <!-- Main Navigation -->
     <div class="collapse navbar-collapse" id="navbarContent">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+      <ul class="navbar-nav mx-auto">
         <li class="nav-item">
           <a class="nav-link" href="{{ url_for('events') }}">Events</a>
         </li>
@@ -43,16 +44,17 @@
         </li>
       </ul>
 
-      <ul class="navbar-nav">
-        {% if not current_user.is_authenticated %}
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('login') }}">Sign In</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('signup') }}">Sign Up</a>
-          </li>
-        {% endif %}
+      <!-- Auth Links (Only show when not logged in) -->
+      {% if not current_user.is_authenticated %}
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('login') }}">Sign In</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('signup') }}">Sign Up</a>
+        </li>
       </ul>
+      {% endif %}
     </div>
   </div>
 </nav>
