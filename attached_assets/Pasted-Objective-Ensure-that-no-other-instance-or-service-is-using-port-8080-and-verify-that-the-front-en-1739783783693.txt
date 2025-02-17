@@ -1,0 +1,38 @@
+Objective:
+Ensure that no other instance or service is using port 8080, and verify that the front-end (including any Webview configuration) correctly points to the active server port—with proper CORS/network settings—to resolve loading issues.
+
+Instructions:
+
+Port Availability and Conflict Resolution
+
+Check for Port 8080 Usage:
+Update the app.py file to perform a check using a socket (as currently implemented) to detect if port 8080 is already in use.
+If port 8080 is occupied, log an appropriate message (e.g., "Port 8080 is already in use") and automatically switch to an alternate port (e.g., 8081).
+Ensure that if any other instance of the application is running, it is either shut down or the conflict is handled gracefully by switching ports.
+Instructions for Developers:
+Include clear logging messages so that during startup, it is evident which port the server is binding to.
+Optionally, add a note or script that developers can run locally to list processes using port 8080 (e.g., using lsof -i :8080 on Unix-based systems) to aid debugging.
+Webview and Front-End Configuration
+
+Verify API/Webview Endpoint:
+Ensure that any front-end code (JavaScript, HTML, or Webview configuration) references the correct port number that the Flask server is using.
+If the front-end is hard-coded to use port 8080, update it to dynamically use the correct port (based on an environment variable or configuration setting) or to match the one chosen at runtime.
+CORS and Network Settings:
+Check that CORS headers are properly configured in your Flask app (consider adding Flask-CORS if necessary) so that cross-origin requests from the Webview are allowed.
+Verify that there are no network/firewall issues on Replit that might block connections to the chosen port.
+Test that API calls from the Webview successfully reach the backend and that responses are properly received.
+Testing and Validation
+
+Local Testing:
+Run the application in your Replit workspace and observe the logs to ensure that the port-check logic correctly identifies if port 8080 is in use and switches to an alternative if needed.
+Webview Testing:
+Confirm that the Webview correctly points to the active server port.
+Test for any CORS errors or network issues in the browser’s console and address them accordingly.
+Documentation:
+Update any relevant documentation (or comments in the code) to describe the new behavior regarding port selection and Webview configuration.
+Please implement these changes and thoroughly test the application in Replit to confirm that:
+
+No conflicting process is using port 8080 (or that the conflict is resolved automatically).
+The server correctly starts on the intended port.
+The front-end/Webview is configured to connect to the correct port with no CORS or network issues.
+Let me know if you require additional files or further clarifications.
