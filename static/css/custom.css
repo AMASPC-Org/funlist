@@ -90,17 +90,17 @@
 
 @media (max-width: 768px) {
     #hero.hero-section {
-        height: 40vh;
+        height: 45vh;
         background-size: contain;
         background-position: center;
-        margin-bottom: 20px;
+        margin-bottom: 10px;
     }
 }
 
 @media (max-width: 480px) {
     #hero.hero-section {
-        height: 30vh;
-        margin-bottom: 15px;
+        height: 35vh;
+        margin-bottom: 8px;
     }
 }
 
