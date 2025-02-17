@@ -5,18 +5,20 @@
 {% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container map-container-wrapper">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Find Local Events</h2>
+        <h2>Explore Events</h2>
         <div class="view-switcher">
             <a href="{{ url_for('map') }}" class="btn btn-outline-primary">Switch to Map View</a>
         </div>
     </div>
 
-<div class="row g-3">
-        <div class="col-md-3">
-            <label for="category" class="form-label">Category</label>
-            <select class="form-select" id="categoryFilter" name="category">
+    <div class="row mb-4">
+        <div class="col-md-3 mb-2">
+            <input type="text" class="form-control" id="locationFilter" placeholder="Search location...">
+        </div>
+        <div class="col-md-3 mb-2">
+            <select class="form-select" id="categoryFilter">
                 <option value="">All Categories</option>
                 <option value="music">Music</option>
                 <option value="sports">Sports</option>
@@ -25,28 +27,18 @@
                 <option value="other">Other</option>
             </select>
         </div>
-        <div class="col-md-3">
-            <label for="dateRange" class="form-label">Date Range</label>
-            <select class="form-select" id="dateRange" name="dateRange" onchange="handleDateRangeChange(this)">
+        <div class="col-md-3 mb-2">
+            <input type="date" class="form-control" id="dateFilter">
+        </div>
+        <div class="col-md-3 mb-2">
+            <select class="form-select" id="funFilter">
                 <option value="">All Dates</option>
-                <option value="specific">Pick a Date</option>
-                <option value="today">Today</option>
-
-<!-- Hidden date picker input -->
-<input type="date" id="specificDate" style="display: none;" class="form-control mt-2" onchange="filterEventsList()">
-
-<!-- Featured Events Carousel -->
-<div class="featured-events-section mb-4">
-    <h3 class="mb-3">Featured Events</h3>
-    <div class="row" id="featured-events">
-        <!-- Featured events will be dynamically populated here -->
-    </div>
-</div>
-
-                <option value="tomorrow">Tomorrow</option>
-                <option value="weekend">This Weekend</option>
-                <option value="week">This Week</option>
-                <option value="month">This Month</option>
+                <option value="">All Fun Ratings</option>
+                <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+                <option value="4">⭐⭐⭐⭐ (4+)</option>
+                <option value="3">⭐⭐⭐ (3+)</option>
+                <option value="2">⭐⭐ (2+)</option>
+                <option value="1">⭐ (1+)</option>
             </select>
         </div>
         <div class="col-md-3">
