@@ -30,7 +30,7 @@
     <div class="container">
         <h1>Find the Best Events Near You – Rated for Fun!</h1>
         <p class="lead">Discover fun-rated events in your area</p>
-        
+
         <div class="search-container mb-4">
             <form action="{{ url_for('map') }}" method="GET" class="search-form">
                 <div class="input-group">
@@ -50,6 +50,35 @@
         <button class="btn btn-outline-primary btn-lg mt-3" data-bs-toggle="modal" data-bs-target="#emailSignupModal">
             Get My Weekly FunList
         </button>
+    </div>
+</section>
+
+<!-- Location Modal -->
+<div class="modal fade" id="locationModal" tabindex="-1" aria-labelledby="locationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="locationModalLabel">Enable Location Services</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Allow us to access your location to show you local featured events.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="denyLocation">Not Now</button>
+                <button type="button" class="btn btn-primary" id="allowLocation">Allow Location</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Featured Events Section -->
+<section class="featured-events-section py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-4">Featured Events Near You</h2>
+        <div class="row" id="featured-events">
+            <!-- Featured events will be dynamically populated here -->
+        </div>
     </div>
 </section>
 
@@ -153,7 +182,7 @@
 
         <div class="rating-details mt-5">
             <h3 class="mb-4">How Are Ratings Assigned?</h3>
-            
+
             <div class="accordion" id="ratingAccordion">
                 <div class="accordion-item">
                     <h2 class="accordion-header">
@@ -167,7 +196,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="accordion-item">
                     <h2 class="accordion-header">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#canAdjust">
@@ -180,7 +209,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="accordion-item">
                     <h2 class="accordion-header">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#highlyRated">
@@ -228,7 +257,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         const map = L.map('map').setView([47.0379, -122.9007], 12);
         const markers = {};
-        
+
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
