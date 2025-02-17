@@ -369,7 +369,39 @@ def init_routes(app):
         if not current_user.is_admin:
             flash('Access denied. Admin privileges required.', 'danger')
             return redirect(url_for('index'))
-        return render_template('admin_analytics.html')
+
+        # Get events by category data
+        events_by_category = {
+            'labels': ['Sports', 'Music', 'Arts', 'Food', 'Other'],
+            'datasets': [{
+                'data': [
+                    Event.query.filter_by(category='Sports').count(),
+                    Event.query.filter_by(category='Music').count(),
+                    Event.query.filter_by(category='Arts').count(),
+                    Event.query.filter_by(category='Food').count(),
+                    Event.query.filter_by(category='Other').count()
+                ]
+            }]
+        }
+
+        # Get user growth data (last 7 days)
+        from datetime import datetime, timedelta
+        user_growth_data = {
+            'labels': [(datetime.now() - timedelta(days=x)).strftime('%Y-%m-%d') for x in range(7)],
+            'datasets': [{
+                'label': 'New Users',
+                'data': [
+                    User.query.filter(
+                        User.created_at >= datetime.now().date() - timedelta(days=x),
+                        User.created_at < datetime.now().date() - timedelta(days=x-1)
+                    ).count() for x in range(7)
+                ]
+            }]
+        }
+
+        return render_template('admin_analytics.html', 
+                             events_by_category=events_by_category,
+                             user_growth_data=user_growth_data)
 
     @app.route('/admin/event/<int:event_id>/<action>', methods=['POST'])
     @login_required
