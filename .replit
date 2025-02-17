@@ -12,7 +12,7 @@ author = 36270944
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python app.py"
+args = "pkill python || python app.py"
 
 [[workflows.workflow]]
 name = "Run"
@@ -28,3 +28,7 @@ run = ["sh", "-c", "python app.py"]
 [[ports]]
 localPort = 3000
 externalPort = 80
+
+[[ports]]
+localPort = 8080
+externalPort = 8080

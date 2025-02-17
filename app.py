@@ -1,11 +1,18 @@
-
 import os
 import logging
 from datetime import timedelta
-from flask import Flask
+from flask import Flask, session, request
+from flask_login import LoginManager
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from flask_wtf.csrf import CSRFProtect
+from flask_session import Session
+from db_init import db
 import logging
 from logging.handlers import RotatingFileHandler
-import os
+from functools import wraps
+import time
+
 
 # Configure logging
 logging.basicConfig(
@@ -16,19 +23,7 @@ logging.basicConfig(
         logging.StreamHandler()
     ]
 )
-from flask import session, request
-logger = logging.getLogger(__name__)
-from flask_login import LoginManager
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
-from flask_wtf.csrf import CSRFProtect
-from flask_session import Session
-from db_init import db
-
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s - %(pathname)s:%(lineno)d'
-)
+from functools import wraps
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
@@ -76,10 +71,6 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
 app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=14)
-app.config['REMEMBER_COOKIE_SECURE'] = True
-app.config['REMEMBER_COOKIE_HTTPONLY'] = True
-app.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
 
 db.init_app(app)
 csrf = CSRFProtect(app)
@@ -88,7 +79,6 @@ Session(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
-login_manager.login_message = "Please log in to access this page."
 login_manager.login_message_category = "info"
 login_manager.session_protection = "strong"
 
@@ -102,4 +92,7 @@ def load_user(user_id):
 init_routes(app)
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=3000, debug=True)
+    app.run(host='0.0.0.0', port=8080, debug=True)
+
+class RequestTimeout(Exception):
+    pass
