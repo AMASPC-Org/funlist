@@ -1,0 +1,86 @@
+I need help identifying and fixing potential memory leaks and performance issues in a web application built with Next.js and React.  The application is experiencing a large number of errors and warnings in the browser console, indicating problems with event listeners, asynchronous operations, and network requests. The attached text file contains a sample of the browser's developer console output.
+
+**Primary Goals:**
+
+1.  **Identify and fix memory leaks caused by unremoved event listeners:**
+    *   The console output shows numerous `MaxListenersExceededWarning` messages. This *strongly* indicates that event listeners are being added but not removed.
+    *   Focus on finding all instances of `addEventListener`, `.on()`, `.addListener`, or any other event listener attachment methods.  For *each* instance, ensure there is a corresponding `removeEventListener` (or equivalent) that is called when the component unmounts or the listener is no longer needed.
+    *   Pay *particular* attention to code within `useEffect` hooks in React components.  The cleanup function within `useEffect` is the correct place to remove listeners.  Make sure the cleanup function is actually being called (use console logs or the debugger to verify).
+        * Example of a GOOD `useEffect`:
+          ```javascript
+          useEffect(() => {
+            const handler = () => { /* ... */ };
+            window.addEventListener('resize', handler);
+            return () => { // Cleanup function!
+              window.removeEventListener('resize', handler);
+            };
+          }, []); // Empty dependency array = runs on mount and unmount
+          ```
+          Example of a BAD `useEffect` (missing cleanup):
+          ```javascript
+          useEffect(() => {
+            window.addEventListener('resize', () => { /* ... */ });
+            // MISSING CLEANUP!  This will leak memory.
+          });
+          ```
+        * Example of a BAD useEffect (incorrect dependencies)
+         ```javascript
+            useEffect(() => {
+                const handleClick = (event) => { console.log(event.clientX, event.clientY)}
+                document.addEventListener("click", handleClick)
+            })
+        ```
+    *   If anonymous functions are used as event listeners, refactor the code to use named functions so they can be properly removed.
+    *   Consider using a utility function or custom hook to manage event listeners, ensuring automatic cleanup.
+    * If event emitters are being used and there's an off() or removeListener() method, use it.
+
+2.  **Fix `Uncaught (in promise)` Errors:**
+    *   The console output shows a very large number of `Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received`.  This is a high priority.
+    *   Examine all asynchronous code (Promises, `async/await`, `fetch`, `setTimeout`, `setInterval`, WebSocket interactions) for proper error handling.
+        *   Every `.then()` should have a corresponding `.catch()` to handle rejections.
+        *   Every `async` function should have a `try...catch` block to handle errors.
+        *   Ensure that WebSocket connections are properly closed and event listeners are removed when no longer needed.
+        *   Check for race conditions where a component might be unmounted before an asynchronous operation completes, leading to attempts to update state on an unmounted component.
+3. **Address and fix Invalid href Errors:**
+    * The following error is consistently repeated in the console logs:
+    * `Invalid href 'https://bb2afc4e-e780-47cf-9519-605ec6fb181c-00-g6uexhd3hcj5.janeway.replit.dev:3001//...' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.`.
+    * Please find the place in the `_app-*.js` file where the router is used with invalid links and correct it.
+
+4.  **Address Network Errors and Warnings:**
+    *   Multiple "Failed to load resource" errors with status codes 401 (Unauthorized) and various `net::ERR_` codes indicate problems with network requests.
+        *   Identify the API endpoints being called that are returning 401 errors and ensure the user is properly authenticated. Check session management.
+        *   Investigate `net::ERR_NAME_NOT_RESOLVED` errors – these are DNS resolution problems. Make sure the domains are correctly configured and reachable.
+        *   Investigate `net::ERR_NETWORK_CHANGED` and `net::ERR_CONNECTION_CLOSED` errors. These could be related to server instability or network interruptions.
+        *  Address the 404 errors by identifying and fixing the missing assets.
+        * Address any 500 errors by checking for server-side problems.
+        * Address any 429 errors (too many requests) by checking for too many requests.
+
+5. **Other considerations:**
+    * Pay attention to any warnings related to deprecated features, such as WebGL fallback and the `apple-mobile-web-app-capable` meta tag, and update the code to use the recommended alternatives.
+     * Fix any other errors such as`Uncaught ReferenceError: TermsModal is not defined`
+     * Address the aria-hidden issue
+
+**Provide the Following:**
+
+1.  **Modified Code:** Provide the corrected code files.
+2.  **Explanation:** For *each* fix, provide a clear, concise explanation of:
+    *   What the problem was.
+    *   What specific code changes were made to fix it.
+    *   Why the fix works.
+
+**Prioritization:**
+
+Address the issues in the following order of priority (highest to lowest):
+
+1.  `Uncaught (in promise)` errors.
+2.  `MaxListenersExceededWarning` memory leaks.
+3.  `Invalid href` routing errors.
+4.  Network errors (401, 404, 500, `net::ERR_*`).
+5. WebGL and other deprecation warnings.
+
+**Tools and Techniques:**
+
+*   Use the browser's developer tools (especially the Memory and Performance tabs) to identify memory leaks and performance bottlenecks.
+*   Use the debugger and console logs extensively to trace execution flow and pinpoint the source of errors.
+*   Use a linter (like ESLint) with appropriate rules for React and asynchronous code to catch potential issues.
+*   Perform thorough code reviews.
