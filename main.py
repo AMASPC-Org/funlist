@@ -6,7 +6,7 @@ from app import app
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-def find_available_port(start_port=8080, max_retries=3):
+def find_available_port(start_port=3000, max_retries=3):
     """Find an available port starting from start_port"""
     for port in range(start_port, start_port + max_retries):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
