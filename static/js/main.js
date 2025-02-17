@@ -41,6 +41,33 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Initialize location handling
+    document.addEventListener('DOMContentLoaded', () => {
+      const storedLocation = localStorage.getItem('userLocation');
+      const locationModal = new bootstrap.Modal(document.getElementById('locationModal'));
+
+      if (storedLocation) {
+        updateFeaturedEvents(JSON.parse(storedLocation));
+      } else {
+        locationModal.show();
+
+        // Handle location modal buttons
+        document.querySelector('#allowLocation').addEventListener('click', () => {
+          getUserLocation();
+          locationModal.hide();
+        });
+
+        document.querySelector('#denyLocation').addEventListener('click', () => {
+          // Use default location (e.g., city center)
+          const defaultLocation = { lat: 47.0379, lng: -122.9007 };
+          localStorage.setItem('userLocation', JSON.stringify(defaultLocation));
+          updateFeaturedEvents(defaultLocation);
+          locationModal.hide();
+        });
+      }
+    });
+
+
     // Initialize everything
     initFloatingCTA();
     initCharCount();

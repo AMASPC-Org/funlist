@@ -313,6 +313,37 @@ def init_routes(app):
         users = User.query.order_by(User.created_at.desc()).all()
         return render_template('admin_users.html', users=users)
 
+    @app.route('/api/featured-events')
+    def featured_events_api():
+        lat = request.args.get('lat', type=float)
+        lng = request.args.get('lng', type=float)
+        
+        if not lat or not lng:
+            return jsonify({'error': 'Location required'}), 400
+            
+        # Get events within 50km radius and with high fun ratings
+        events = Event.query.filter(
+            Event.latitude.isnot(None),
+            Event.longitude.isnot(None),
+            Event.fun_meter >= 4,
+            Event.status == 'approved'
+        ).all()
+        
+        # Calculate distances and sort by fun_meter and distance
+        featured = []
+        for event in events:
+            distance = ((event.latitude - lat) ** 2 + (event.longitude - lng) ** 2) ** 0.5
+            if distance <= 0.45:  # Roughly 50km
+                featured.append({
+                    'id': event.id,
+                    'title': event.title,
+                    'description': event.description,
+                    'date': event.start_date.strftime('%Y-%m-%d'),
+                    'fun_meter': event.fun_meter
+                })
+                
+        return jsonify(sorted(featured, key=lambda x: (-x['fun_meter'], x['date']))[:5])
+
     @app.route('/admin/analytics')
     @login_required
     def admin_analytics():
