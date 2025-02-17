@@ -97,11 +97,17 @@ function filterEventsList() {
         
         if (category && cardCategory !== category.toLowerCase()) showCard = false;
         if (dateRange) {
-            // Add date range logic here similar to map.html
             const eventDate = new Date(cardDate);
             const today = new Date();
             
             switch(dateRange) {
+                case 'specific':
+                    const specificDate = document.getElementById('specificDate').value;
+                    if (specificDate) {
+                        const selectedDate = new Date(specificDate);
+                        if (eventDate.toDateString() !== selectedDate.toDateString()) showCard = false;
+                    }
+                    break;
                 case 'today':
                     if (eventDate.toDateString() !== today.toDateString()) showCard = false;
                     break;
@@ -151,6 +157,17 @@ document.addEventListener('DOMContentLoaded', () => {
             allowLocationBtn.addEventListener('click', () => {
                 getUserLocation();
                 modal.hide();
+
+function handleDateRangeChange(select) {
+    const specificDateInput = document.getElementById('specificDate');
+    if (select.value === 'specific') {
+        specificDateInput.style.display = 'block';
+    } else {
+        specificDateInput.style.display = 'none';
+    }
+    filterEventsList();
+}
+
             });
         }
 

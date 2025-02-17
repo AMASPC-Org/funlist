@@ -27,9 +27,13 @@
         </div>
         <div class="col-md-3">
             <label for="dateRange" class="form-label">Date Range</label>
-            <select class="form-select" id="dateRange" name="dateRange">
+            <select class="form-select" id="dateRange" name="dateRange" onchange="handleDateRangeChange(this)">
                 <option value="">All Dates</option>
+                <option value="specific">Pick a Date</option>
                 <option value="today">Today</option>
+
+<!-- Hidden date picker input -->
+<input type="date" id="specificDate" style="display: none;" class="form-control mt-2" onchange="filterEventsList()">
 
 <!-- Featured Events Carousel -->
 <div class="featured-events-section mb-4">
