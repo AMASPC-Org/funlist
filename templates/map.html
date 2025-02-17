@@ -91,8 +91,21 @@
             }
         }
 
+        let markerListeners = new Map();
+
+        function cleanupMarkerListeners() {
+            markerListeners.forEach((handler, markerId) => {
+                const marker = markers[markerId];
+                if (marker) {
+                    marker.off('click', handler);
+                }
+            });
+            markerListeners.clear();
+        }
+
         function addMarkers(filteredEvents) {
-            // Clear existing markers
+            // Clean up existing markers and listeners
+            cleanupMarkerListeners();
             for (let id in markers) {
                 map.removeLayer(markers[id]);
             }
@@ -100,7 +113,7 @@
 
             // Add new markers
             filteredEvents.forEach(event => {
-                var marker = L.marker([event.latitude, event.longitude])
+                const marker = L.marker([event.latitude, event.longitude])
                     .bindPopup(`
                         <div class="event-popup">
                             <h5>${event.title}</h5>
@@ -111,11 +124,22 @@
                             <a href="${event.url}" class="btn btn-primary btn-sm">View Details</a>
                         </div>
                     `);
-                marker.on('click', () => highlightEventCard(event.id));
+                const clickHandler = () => highlightEventCard(event.id);
+                marker.on('click', clickHandler);
+                markerListeners.set(event.id, clickHandler);
                 markers[event.id] = marker;
                 marker.addTo(map);
             });
         }
+
+        // Clean up when the map is destroyed
+        map.on('unload', () => {
+            cleanupMarkerListeners();
+            for (let id in markers) {
+                map.removeLayer(markers[id]);
+            }
+            markers = {};
+        });
 
         function filterEvents() {
             const category = document.getElementById('categoryFilter').value;

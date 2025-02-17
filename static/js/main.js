@@ -124,18 +124,29 @@ function filterEventsList() {
 }
 
 // Initialize everything when DOM is loaded
+// Create a single event handler to avoid duplicates
+const eventListeners = new Map();
+
 document.addEventListener('DOMContentLoaded', () => {
     initFloatingCTA();
     initCharCount();
-
-    // Set up event listeners for filters - with null checks
-    const filters = ['categoryFilter', 'dateRange', 'locationFilter', 'specificDate']; //Added specificDate
+    
+    // Clean up any existing listeners
+    cleanupEventListeners();
+    
+    // Set up event listeners for filters with cleanup
+    const filters = ['categoryFilter', 'dateRange', 'locationFilter', 'specificDate'];
     filters.forEach(filterId => {
         const element = document.getElementById(filterId);
         if (element) {
-            element.addEventListener('change', filterEventsList);
+            const handler = () => filterEventsList();
+            element.addEventListener('change', handler);
+            eventListeners.set(`${filterId}_change`, { element, type: 'change', handler });
+            
             if (element.tagName === 'INPUT') {
-                element.addEventListener('input', filterEventsList);
+                const inputHandler = () => filterEventsList();
+                element.addEventListener('input', inputHandler);
+                eventListeners.set(`${filterId}_input`, { element, type: 'input', handler: inputHandler });
             }
         }
     });
@@ -172,12 +183,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+function cleanupEventListeners() {
+    // Remove all tracked event listeners
+    eventListeners.forEach(({ element, type, handler }) => {
+        if (element && element.removeEventListener) {
+            element.removeEventListener(type, handler);
+        }
+    });
+    eventListeners.clear();
+}
+
 function handleDateRangeChange(select) {
     const specificDateInput = document.getElementById('specificDate');
-    if (select.value === 'specific') {
-        specificDateInput.style.display = 'block';
-    } else {
-        specificDateInput.style.display = 'none';
-        select.form.submit();
+    if (specificDateInput) {
+        if (select.value === 'specific') {
+            specificDateInput.style.display = 'block';
+        } else {
+            specificDateInput.style.display = 'none';
+            if (select.form) select.form.submit();
+        }
     }
 }
+
+// Clean up listeners when page unloads
+window.addEventListener('unload', cleanupEventListeners);
