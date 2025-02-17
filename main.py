@@ -27,12 +27,12 @@ if __name__ == "__main__":
 
     for retry in range(max_retries):
         if not is_port_in_use(port):
-            print(f"Starting server on port {port}")
+            logger.info(f"Starting server on port {port}")
             try:
                 app.run(host='0.0.0.0', port=port, debug=True)
                 break
             except Exception as e:
-                print(f"Failed to start server: {e}")
+                logger.error(f"Failed to start server: {e}", exc_info=True)
         else:
             print(f"Port {port} is in use, trying port {port + 1}")
             port += 1
