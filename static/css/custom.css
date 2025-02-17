@@ -191,6 +191,9 @@
 .navbar-brand {
     color: var(--primary-color);
     font-weight: 600;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 .navbar .nav-link {
