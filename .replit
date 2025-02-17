@@ -26,5 +26,5 @@ args = "python app.py"
 run = ["sh", "-c", "python app.py"]
 
 [[ports]]
-localPort = 5000
+localPort = 3000
 externalPort = 80
