@@ -56,6 +56,29 @@
     box-shadow: 0 6px 16px rgba(255,138,0,0.15);
 }
 
+/* Advertising Page Styles */
+.ad-specs table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.ad-specs th, .ad-specs td {
+    padding: 12px;
+    border: 1px solid #ddd;
+}
+
+.pricing-card {
+    transition: transform 0.3s ease;
+}
+
+.pricing-card:hover {
+    transform: translateY(-5px);
+}
+
+.border-primary {
+    border-width: 2px !important;
+}
+
 /* Enhanced Buttons */
 .btn.btn-primary {
     background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
