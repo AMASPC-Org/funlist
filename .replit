@@ -110,7 +110,7 @@ task = "shell.exec"
 args = "python app.py"
 
 [deployment]
-run = ["sh", "-c", "gunicorn --workers 4 --bind 0.0.0.0:8080 app:app"]
+run = ["sh", "-c", "python app.py"]
 
 [[ports]]
 localPort = 5000
