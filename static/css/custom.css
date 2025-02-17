@@ -423,6 +423,17 @@ main {
     padding-right: 2rem;
 }
 
+@media (max-width: 768px) {
+    .search-form .btn {
+        padding-left: 1rem;
+        padding-right: 1rem;
+        font-size: 0.9rem;
+    }
+    .search-form .input-group {
+        flex-wrap: nowrap;
+    }
+}
+
 .map-container-wrapper {
     padding-top: 1rem;
 }
