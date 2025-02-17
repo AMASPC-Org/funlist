@@ -4,7 +4,7 @@ modules = ["python-3.11", "nodejs-20"]
 channel = "stable-24_05"
 
 [workflows]
-runButton = "Run Flask"
+runButton = "Run"
 
 [[workflows.workflow]]
 name = "Flask App"
@@ -20,7 +20,7 @@ author = 36270944
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python app.py"
+args = "python main.py"
 
 [[workflows.workflow]]
 name = "Run Flask"
