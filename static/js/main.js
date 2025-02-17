@@ -164,8 +164,8 @@ function handleDateRangeChange(select) {
         specificDateInput.style.display = 'block';
     } else {
         specificDateInput.style.display = 'none';
+        select.form.submit();
     }
-    filterEventsList();
 }
 
             });
