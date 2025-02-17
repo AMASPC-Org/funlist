@@ -1096,7 +1096,34 @@ main {
 .container form {
     padding: 1rem;
     max-width: 800px;
-    margin: 0 auto;
+    margin: 2rem auto 0;
+}
+
+/* Alert positioning */
+.alert {
+    position: fixed;
+    top: 70px;
+    left: 0;
+    right: 0;
+    z-index: 1020;
+    margin: 0;
+    border-radius: 0;
+}
+
+/* Adjust main content when alert is present */
+.alert + main {
+    padding-top: 120px !important;
+}
+
+/* Form pages specific spacing */
+.auth-form-container {
+    margin-top: 2rem;
+}
+
+@media (max-width: 768px) {
+    .alert + main {
+        padding-top: 140px !important;
+    }
 }
 
 margin-bottom: 0.5rem;
