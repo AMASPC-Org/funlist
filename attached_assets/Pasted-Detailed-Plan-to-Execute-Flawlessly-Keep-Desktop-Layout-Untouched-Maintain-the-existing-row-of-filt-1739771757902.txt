@@ -1,0 +1,77 @@
+Detailed Plan to Execute Flawlessly
+Keep Desktop Layout Untouched
+
+Maintain the existing row of filters in a partial template (e.g., filter_bar.html).
+This partial is fully visible on screens above a certain breakpoint (e.g., md or lg).
+Desktop users see the same layout they currently have.
+Introduce a Mobile-Specific Layout
+
+At smaller breakpoints (< md in Bootstrap), hide the row-based filter bar and display a simplified layout:
+One wide search field at the top.
+One ‘Filter’ button next to or below it.
+A collapsible panel (or modal) that contains the advanced dropdowns (category, date, rating).
+Achieve this via Bootstrap classes:
+d-none d-md-flex to show the desktop row only on md+ screens.
+d-flex d-md-none to show the mobile layout only on small screens.
+Filter Button & Collapsible/Modal
+
+In the mobile layout, the user taps “Filter” → reveals the advanced fields.
+If you use Bootstrap Collapse:
+Add an ID to a <div> containing the filters, and tie it to the button’s data-bs-toggle="collapse" attribute.
+If you use a modal:
+A button triggers a modal containing the dropdowns.
+Either way, ensure the form fields still submit properly.
+Map vs. List Toggle
+
+Replace the “Switch to List View” / “Switch to Map View” button with a btn-group or a toggle switch featuring icons.
+Example:
+html
+Copy
+<div class="btn-group" role="group" aria-label="View Toggle">
+  <button type="button" class="btn btn-outline-primary" onclick="window.location.href='/map'">
+    <i class="bi bi-geo-alt"></i> <!-- Map Icon -->
+  </button>
+  <button type="button" class="btn btn-outline-primary" onclick="window.location.href='/events'">
+    <i class="bi bi-list-ul"></i> <!-- List Icon -->
+  </button>
+</div>
+On mobile, you might only show the icons; on desktop, you could include short labels or rely on tooltips.
+Thorough Testing
+
+Mobile: Check iPhone, Android, etc., ensuring the filter button works, the collapsible panel (or modal) appears, and all fields are submittable.
+Desktop: Confirm the horizontal layout remains intact, the new toggle works, and nothing “broke” visually.
+Edge Cases:
+Filter panel open/close states.
+Searching empty fields.
+Switching between map and list after applying filters.
+Implementation Tips
+
+Keep all the logic in one partial if possible, with separate sections for mobile vs. desktop.
+Alternatively, you can create two partials: one for desktop, one for mobile, and show/hide them via Bootstrap’s responsive classes. But that can lead to duplication if you’re not careful.
+Make sure to coordinate with QA to test after each small iteration.
+3. Final Recommendation
+Adopt a Responsive Strategy:
+
+Desktop: Retain your “dialed-in” row of filters exactly as is.
+Mobile: Show a single wide search bar and a ‘Filter’ button that reveals the advanced fields in a collapsible panel or modal.
+Implement a Clean Map/List Toggle:
+
+Use icons (and optional text) in a toggle or btn-group.
+Keep the link-based approach (window.location.href = '/map' or '/events') unless you have a dynamic SPA approach.
+Use Bootstrap Classes:
+
+Hide the desktop row on small screens with d-none d-md-flex.
+Show the mobile layout with d-flex d-md-none.
+Ensure consistent naming for the form fields so the back-end logic remains unchanged.
+Test Thoroughly:
+
+Confirm no layout breakage on desktop.
+Validate the new collapsible or modal approach on various mobile devices.
+Conclusion
+Following this plan should give you a clean, user-friendly mobile experience without disrupting the established desktop layout. The toggling approach for map vs. list (with icons) will also streamline navigation across devices. By carefully managing Bootstrap’s responsive classes and thoroughly testing each breakpoint, you can execute these changes flawlessly.
+
+
+
+
+
+
