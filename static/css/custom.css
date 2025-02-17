@@ -83,10 +83,10 @@
 #hero.hero-section {
     background: url("/static/images/Have-Fun-FunList.ai-home.jpeg") center center / contain no-repeat;
     background-color: var(--light-color);  /* Fallback */
-    height: 55vh;
+    height: 50vh;
     margin: 0;
     padding: 0;
-    margin-bottom: -40px;
+    margin-bottom: -60px;
     max-width: 100vw;
 }
 
