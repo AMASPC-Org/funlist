@@ -815,3 +815,32 @@ main {
     border-radius: 8px;
     margin-bottom: 2rem;
 }
+
+.filter-bar {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.filter-form .form-control,
+.filter-form .form-select {
+    border: 1px solid #dee2e6;
+    transition: all 0.2s ease;
+}
+
+.filter-form .form-control:focus,
+.filter-form .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(255, 138, 0, 0.25);
+}
+
+@media (max-width: 768px) {
+    .filter-bar {
+        padding: 1rem;
+    }
+    
+    .filter-form .row > div {
+        margin-bottom: 0.5rem;
+    }
+}

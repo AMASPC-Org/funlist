@@ -13,35 +13,7 @@
         </div>
     </div>
 
-    <div class="row mb-4">
-        <div class="col-md-3 mb-2">
-            <input type="text" class="form-control" id="locationFilter" placeholder="Search location...">
-        </div>
-        <div class="col-md-3 mb-2">
-            <select class="form-select" id="categoryFilter">
-                <option value="">All Categories</option>
-                <option value="music">Music</option>
-                <option value="sports">Sports</option>
-                <option value="arts">Arts</option>
-                <option value="food">Food</option>
-                <option value="other">Other</option>
-            </select>
-        </div>
-        <div class="col-md-3 mb-2">
-            <input type="date" class="form-control" id="dateFilter">
-        </div>
-        <div class="col-md-3 mb-2">
-            <select class="form-select" id="funFilter">
-                <option value="">All Dates</option>
-                <option value="">All Fun Ratings</option>
-                <option value="5">⭐⭐⭐⭐⭐ (5)</option>
-                <option value="4">⭐⭐⭐⭐ (4+)</option>
-                <option value="3">⭐⭐⭐ (3+)</option>
-                <option value="2">⭐⭐ (2+)</option>
-                <option value="1">⭐ (1+)</option>
-            </select>
-        </div>
-    </div>
+    {% include "partials/filter_bar.html" %}
 
 <div class="row row-cols-1 row-cols-md-3 g-4">
     {% for event in events %}
