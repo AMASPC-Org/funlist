@@ -29,16 +29,27 @@
 <section class="content-section text-center py-5">
     <div class="container">
         <h1>Find the Best Events Near You – Rated for Fun!</h1>
-        <p class="lead">Sign up to get Fun-Rated events emailed to you every week!</p>
-        <div class="cta-group">
-            <button class="btn btn-primary btn-lg primary-cta" data-bs-toggle="modal" data-bs-target="#emailSignupModal">
-                Get My Weekly FunList
-            </button>
-            <div class="view-options mt-3">
-                <a href="{{ url_for('map') }}" class="btn btn-outline-primary mx-2">Map View</a>
-                <a href="{{ url_for('events') }}" class="btn btn-outline-primary mx-2">List View</a>
+        <p class="lead">Discover fun-rated events in your area</p>
+        
+        <div class="search-container mb-4">
+            <form action="{{ url_for('map') }}" method="GET" class="search-form">
+                <div class="input-group">
+                    <input type="text" name="location" class="form-control form-control-lg" placeholder="Enter your location...">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-search"></i> Find Events
+                    </button>
+                </div>
+            </form>
+            <div class="text-center mt-2">
+                <a href="{{ url_for('map') }}" class="btn btn-link">View Full Map</a>
+                <span class="mx-2">|</span>
+                <a href="{{ url_for('events') }}" class="btn btn-link">Browse All Events</a>
             </div>
         </div>
+
+        <button class="btn btn-primary btn-lg primary-cta mt-3" data-bs-toggle="modal" data-bs-target="#emailSignupModal">
+            Get My Weekly FunList
+        </button>
     </div>
 </section>
 
