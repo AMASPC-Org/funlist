@@ -147,13 +147,18 @@
         // Initialize markers
         addMarkers(events);
 
-        // Add event listeners
-        document.getElementById('categoryFilter').addEventListener('change', filterEvents);
-        document.getElementById('dateFilter').addEventListener('change', filterEvents);
-        document.getElementById('funFilter').addEventListener('change', filterEvents);
+        // Add event listeners if elements exist
+        const categoryFilter = document.getElementById('categoryFilter');
+        const dateFilter = document.getElementById('dateFilter');
+        const funFilter = document.getElementById('funFilter');
+        const locationSearch = document.getElementById('locationSearch');
+
+        if (categoryFilter) categoryFilter.addEventListener('change', filterEvents);
+        if (dateFilter) dateFilter.addEventListener('change', filterEvents);
+        if (funFilter) funFilter.addEventListener('change', filterEvents);
 
         // Location search functionality
-        document.getElementById('locationSearch').addEventListener('input', debounce(function(e) {
+        if (locationSearch) locationSearch.addEventListener('input', debounce(function(e) {
             const searchQuery = e.target.value;
             if (searchQuery.length > 2) {
                 fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`)
