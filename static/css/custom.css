@@ -12,10 +12,19 @@
 #hero.hero-section {
     background: url("/static/images/Have-Fun-FunList.ai-home.jpeg") center center / cover no-repeat;
     background-color: var(--light-color);  /* Fallback */
-    padding: 10vh 0; /* Increased padding for better spacing */
-    text-align: center;
-    color: var(--light-color);
-    min-height: 100dvh;
+    height: 70vh;
+    margin: 0;
+    padding: 0;
+}
+
+.content-section {
+    background-color: var(--light-color);
+    color: var(--text-primary);
+}
+
+.content-section h1 {
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
 }
 
 @media (max-width: 768px) {
