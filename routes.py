@@ -321,7 +321,7 @@ def init_routes(app):
         if not lat or not lng:
             return jsonify({'error': 'Location required'}), 400
             
-        # Get events within 50km radius and with high fun ratings
+        # Get events within 15 miles radius and with high fun ratings
         events = Event.query.filter(
             Event.latitude.isnot(None),
             Event.longitude.isnot(None),
@@ -332,8 +332,9 @@ def init_routes(app):
         # Calculate distances and sort by fun_meter and distance
         featured = []
         for event in events:
-            distance = ((event.latitude - lat) ** 2 + (event.longitude - lng) ** 2) ** 0.5
-            if distance <= 0.45:  # Roughly 50km
+            # Convert to miles (1 degree ≈ 69 miles)
+            distance = ((event.latitude - lat) ** 2 + (event.longitude - lng) ** 2) ** 0.5 * 69
+            if distance <= 15:  # 15 miles radius
                 featured.append({
                     'id': event.id,
                     'title': event.title,
