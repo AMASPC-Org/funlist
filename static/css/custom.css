@@ -357,6 +357,13 @@ main {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.view-switcher .btn:hover {
+    background-color: var(--accent-color);
+    color: white;
 }
 
 /* Mobile Optimizations */
