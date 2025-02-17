@@ -12,7 +12,7 @@ author = 36270944
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "pkill python || python app.py"
+args = "python app.py"
 
 [[workflows.workflow]]
 name = "Run"
