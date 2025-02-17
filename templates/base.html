@@ -14,11 +14,6 @@
         <nav class="navbar navbar-expand-lg navbar-light">
             <div class="container">
                 <a class="navbar-brand" href="{{ url_for('index') }}">FunList.ai</a>
-                {% if request.endpoint == 'map' %}
-                <div class="banner-ad">
-                    <img src="https://via.placeholder.com/728x90" alt="Advertisement" class="img-fluid">
-                </div>
-                {% endif %}
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -49,6 +44,15 @@
                 </div>
             </div>
         </nav>
+        {% if request.endpoint in ['map', 'events'] %}
+        <div class="banner-container">
+            <div class="container">
+                <div class="banner-ad">
+                    <img src="https://via.placeholder.com/728x90" alt="Advertisement" class="img-fluid">
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </header>
 
     <main>
