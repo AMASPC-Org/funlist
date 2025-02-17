@@ -222,6 +222,29 @@
         border-radius: 0.5rem;
         margin-top: 0.5rem;
         box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        position: absolute;
+        width: 200px;
+        left: 1rem;
+        top: 100%;
+    }
+    
+    .navbar-nav {
+        gap: 0.5rem;
+    }
+    
+    .navbar-nav .nav-item {
+        width: 100%;
+    }
+    
+    .navbar-nav .nav-link {
+        padding: 0.75rem 1rem;
+        display: block;
+        text-align: left;
+        border-radius: 4px;
+    }
+    
+    .navbar-nav .nav-link:hover {
+        background-color: rgba(255, 138, 0, 0.1);
     }
 }
 
