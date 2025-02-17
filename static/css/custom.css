@@ -655,6 +655,19 @@ main {
     padding-bottom: 2rem;
 }
 
+/* Consistent top spacing for map and events pages */
+.map-container-wrapper {
+    margin-top: 2rem;
+    padding-top: 2rem;
+}
+
+@media (max-width: 768px) {
+    .map-container-wrapper {
+        margin-top: 1rem;
+        padding-top: 1rem;
+    }
+}
+
 /* Ensure hero section buttons stand out */
 .primary-cta {
     background-color: var(--accent-color);
