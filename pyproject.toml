@@ -21,4 +21,5 @@ dependencies = [
     "geopy>=2.4.1",
     "requests>=2.32.3",
     "flask-limiter>=3.10.1",
+    "psutil>=7.0.0",
 ]
