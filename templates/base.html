@@ -44,11 +44,12 @@
                 </div>
             </div>
         </nav>
-        {% if request.endpoint in ['map', 'events'] %}
+        {% if request.endpoint in ['map', 'events', 'index'] %}
         <div class="banner-container">
             <div class="container">
-                <div class="banner-ad">
-                    <img src="https://via.placeholder.com/728x90" alt="Advertisement" class="img-fluid">
+                <div class="banner-ad featured-sponsor">
+                    <div class="ad-label">Featured Sponsor</div>
+                    <div class="ad-slot" data-ad-type="banner" data-ad-size="728x90"></div>
                 </div>
             </div>
         </div>
