@@ -246,28 +246,28 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Initialize map with Olympia coordinates
-        const map = L.map('map', {
-            center: [47.0379, -122.9007],
-            zoom: 12,
-            scrollWheelZoom: true
-        });
+        try {
+            let mapInstance = L.map('map', {
+                center: [47.0379, -122.9007],
+                zoom: 12,
+                scrollWheelZoom: true
+            });
 
-        // Add OpenStreetMap tiles
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(mapInstance);
 
-        // Force a map refresh after initialization
-        setTimeout(() => {
-            map.invalidateSize();
-        }, 100);
+            setTimeout(() => {
+                mapInstance.invalidateSize();
+            }, 100);
 
-        // Add a marker for demonstration
-        L.marker([47.0379, -122.9007])
-            .bindPopup('Welcome to Olympia!')
-            .addTo(map);
+            L.marker([47.0379, -122.9007])
+                .bindPopup('Welcome to Olympia!')
+                .addTo(mapInstance);
+        } catch(e) {
+            console.error('Map initialization error:', e);
+        }
     });
 </script>
 {% endblock %}
