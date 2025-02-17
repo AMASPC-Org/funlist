@@ -123,6 +123,20 @@ function filterEventsList() {
     });
 }
 
+// Handle date range changes
+function handleDateRangeChange(select) {
+    const isMobile = select.closest('.filter-bar-mobile') !== null;
+    const specificDateId = isMobile ? 'specificDate-mobile' : 'specificDate';
+    const specificDateInput = document.getElementById(specificDateId);
+
+    if (specificDateInput) {
+        specificDateInput.style.display = select.value === 'specific' ? 'block' : 'none';
+        if (select.value !== 'specific' && select.form) {
+            select.form.submit();
+        }
+    }
+}
+
 // Initialize everything when DOM is loaded
 // Create a single event handler to avoid duplicates
 let eventListeners = new Map();
@@ -131,23 +145,23 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.querySelector('.floating-cta')) {
         initFloatingCTA();
     }
-    
+
     if (document.getElementById('title') || document.getElementById('description')) {
         initCharCount();
     }
-    
+
     // Clean up any existing listeners
     cleanupEventListeners();
-    
+
     // Set up event listeners for filters with cleanup
-    const filters = ['categoryFilter', 'dateRange', 'locationFilter', 'specificDate'];
+    const filters = ['categoryFilter', 'dateRange', 'locationFilter', 'specificDate', 'specificDate-mobile'];
     filters.forEach(filterId => {
         const element = document.getElementById(filterId);
         if (element) {
             const handler = () => filterEventsList();
             element.addEventListener('change', handler);
             eventListeners.set(`${filterId}_change`, { element, type: 'change', handler });
-            
+
             if (element.tagName === 'INPUT') {
                 const inputHandler = () => filterEventsList();
                 element.addEventListener('input', inputHandler);
@@ -198,28 +212,6 @@ function cleanupEventListeners() {
     eventListeners.clear();
 }
 
-function handleDateRangeChange(select) {
-    const specificDateInput = document.getElementById('specificDate');
-    if (specificDateInput) {
-        if (select.value === 'specific') {
-            specificDateInput.style.display = 'block';
-        } else {
-            specificDateInput.style.display = 'none';
-            if (select.form) select.form.submit();
-        }
-    }
-}
-
-// Handle date range changes
-function handleDateRangeChange(select) {
-    const specificDateInput = document.getElementById('specificDate');
-    if (specificDateInput) {
-        specificDateInput.style.display = select.value === 'specific' ? 'block' : 'none';
-        if (select.value !== 'specific' && select.form) {
-            select.form.submit();
-        }
-    }
-}
 
 // Clean up listeners when page unloads
 window.addEventListener('unload', cleanupEventListeners);
