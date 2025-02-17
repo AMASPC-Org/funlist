@@ -7,12 +7,47 @@
 {% block content %}
 <div class="container map-container-wrapper">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Explore Events on Map</h2>
-        <div class="view-switcher">
-            <a href="{{ url_for('events') }}" class="btn btn-outline-primary">Switch to List View</a>
+        <h2>Explore Events</h2>
+        <div class="view-toggle btn-group" role="group">
+            <a href="{{ url_for('map') }}" class="btn btn-primary active">Map</a>
+            <a href="{{ url_for('events') }}" class="btn btn-outline-primary">List</a>
         </div>
     </div>
-    {% include "partials/filter_bar.html" %}
+    
+    <div class="filter-bar mb-4">
+        <div class="row g-3">
+            <div class="col-md">
+                <input type="text" class="form-control" placeholder="Search location...">
+            </div>
+            <div class="col-md">
+                <select class="form-select">
+                    <option selected>All Categories</option>
+                    <option>Sports</option>
+                    <option>Music</option>
+                    <option>Arts</option>
+                    <option>Food</option>
+                    <option>Other</option>
+                </select>
+            </div>
+            <div class="col-md">
+                <select class="form-select">
+                    <option selected>Any Date</option>
+                    <option>Today</option>
+                    <option>Tomorrow</option>
+                    <option>This Weekend</option>
+                    <option>Next Week</option>
+                </select>
+            </div>
+            <div class="col-md">
+                <select class="form-select">
+                    <option selected>All Fun Ratings</option>
+                    <option>⭐⭐⭐⭐⭐ (5)</option>
+                    <option>⭐⭐⭐⭐ (4+)</option>
+                    <option>⭐⭐⭐ (3+)</option>
+                </select>
+            </div>
+        </div>
+    </div>
 
     <div class="row">
         <div class="col-md-7">
