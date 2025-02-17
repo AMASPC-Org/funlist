@@ -1,61 +1,66 @@
-{% extends "base.html" %}
 
-{% block content %}
-<!-- Hero Section -->
-<section id="hero" class="hero-section" aria-label="Hero section" style="background-image: url('/static/images/hero-bg.jpg'); background-size: cover; background-position: center;">
-    <div class="hero-placeholder text-center">
-        <p>Loading awesome events...</p>
-    </div>
-</section>
-
-<!-- Hero Content (Moved outside hero-section) -->
-<div class="container text-center mt-5 hero-container">
-    <div class="hero-content">
-        <h1>Find the Best Events Near You – Rated for Fun!</h1>
-        <p class="lead">Sign up to get Fun-Rated events emailed to you every week!</p>
-        <div class="cta-group" aria-label="Call to action buttons">
-            <button class="btn btn-primary btn-lg primary-cta" data-bs-toggle="modal" data-bs-target="#emailSignupModal">
-                Get My Weekly FunList
-            </button>
-            <div class="view-options mt-3">
-                <a href="{{ url_for('map') }}" class="btn btn-outline-primary mx-2">Map View</a>
-                <a href="{{ url_for('events') }}" class="btn btn-outline-primary mx-2">List View</a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Features Section -->
-<div class="container my-5 py-4">
-    <div class="row">
-        <div class="col-md-4 mb-4">
-            <div class="card h-100 feature-card" style="min-height: 100%;">
-                <div class="card-body">
-                    <h3 id="ai-curation-section"><a href="#ai-curation-section" class="text-decoration-none text-dark">AI-Driven Curation</a></h3>
-                    <p>Our AI analyzes thousands of events to recommend the perfect activities for you based on your interests and preferences.</p>
-                    <a href="#ai-curation-section" class="btn btn-primary mt-2">Learn More</a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}FunList.ai{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/custom.css') }}" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light">
+            <div class="container">
+                <a class="navbar-brand" href="{{ url_for('index') }}">FunList.ai</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('events') }}">Events</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('map') }}">Map</a>
+                        </li>
+                        {% if current_user.is_authenticated %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('profile') }}">Profile</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link btn btn-success" href="{{ url_for('signup') }}">Sign Up</a>
+                            </li>
+                        {% endif %}
+                    </ul>
                 </div>
             </div>
-        </div>
-        <div class="col-md-4 mb-4">
-            <div class="card h-100 feature-card">
-                <div class="card-body">
-                    <h3><a href="#fun-rating-section" class="text-decoration-none text-dark">How the Fun Rating System Works</a></h3>
-                    <p>Each event is rated on a 1-5 scale, with half-point precision, based on its activities, engagement level, and attendee experience.</p>
-                    <a href="#fun-rating-section" class="btn btn-primary mt-2">Learn More</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-4">
-            <div class="card h-100 feature-card">
-                <div class="card-body">
-                    <h3><a href="#fun-assistant-section" class="text-decoration-none text-dark">Fun Assistant</a></h3>
-                    <p>Get personalized event recommendations based on your interests, whether you're looking for family activities, singles events, or business networking.</p>
-                    <a href="#fun-assistant-section" class="btn btn-primary mt-2" aria-label="Learn more about Fun Assistant">Learn More</a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+        </nav>
+    </header>
 
-{% endblock %}
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
