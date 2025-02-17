@@ -5,52 +5,38 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid map-container-wrapper">
+<div class="container map-container-wrapper">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Events Map</h1>
-        <a href="{{ url_for('events') }}" class="btn btn-outline-primary desktop-view-switch">
-            <i class="fas fa-list"></i> Switch to List View
-        </a>
-        <a href="{{ url_for('events') }}" class="btn btn-outline-primary view-switcher">
-            <i class="fas fa-list"></i>
-        </a>
+        <h2>Explore Events</h2>
+        <a href="{{ url_for('events') }}" class="btn btn-outline-primary">Switch to List View</a>
     </div>
-
+    
     <div class="row mb-4">
-        <div class="col-md-9">
-            <div class="d-flex">
-                <div class="col-md-4">
-                    <input type="text" class="form-control" id="locationSearch" placeholder="Search location...">
-                </div>
-                <div class="ms-3 col-md-4">
-                    <select class="form-select" id="categoryFilter">
-                        <option value="">All Categories</option>
-                        <option value="music">Music</option>
-                        <option value="sports">Sports</option>
-                        <option value="arts">Arts</option>
-                        <option value="food">Food</option>
-                        <option value="other">Other</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <input type="date" class="form-control" id="dateFilter">
-                </div>
-                <div class="col-md-2">
-                    <select class="form-select" id="funFilter">
-                        <option value="">All Fun Ratings</option>
-                        <option value="5">⭐⭐⭐⭐⭐ (5)</option>
-                        <option value="4">⭐⭐⭐⭐ (4+)</option>
-                        <option value="3">⭐⭐⭐ (3+)</option>
-                        <option value="2">⭐⭐ (2+)</option>
-                        <option value="1">⭐ (1+)</option>
-                    </select>
-                </div>
-            </div>
+        <div class="col-md-3 mb-2">
+            <input type="text" class="form-control" id="locationSearch" placeholder="Search location...">
         </div>
-        <div class="col-md-3 text-end">
-            <a href="{{ url_for('events') }}" class="btn btn-primary mt-4">
-                <i class="fas fa-list"></i> Switch to List View
-            </a>
+        <div class="col-md-3 mb-2">
+            <select class="form-select" id="categoryFilter">
+                <option value="">All Categories</option>
+                <option value="music">Music</option>
+                <option value="sports">Sports</option>
+                <option value="arts">Arts</option>
+                <option value="food">Food</option>
+                <option value="other">Other</option>
+            </select>
+        </div>
+        <div class="col-md-3 mb-2">
+            <input type="date" class="form-control" id="dateFilter">
+        </div>
+        <div class="col-md-3 mb-2">
+            <select class="form-select" id="funFilter">
+                <option value="">All Fun Ratings</option>
+                <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+                <option value="4">⭐⭐⭐⭐ (4+)</option>
+                <option value="3">⭐⭐⭐ (3+)</option>
+                <option value="2">⭐⭐ (2+)</option>
+                <option value="1">⭐ (1+)</option>
+            </select>
         </div>
     </div>
 
