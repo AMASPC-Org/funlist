@@ -1,85 +1,82 @@
+
 // Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
     let markers = {};
-
-    // Event listener setup with debouncing
-    function debounce(func, wait) {
-        let timeout;
-        return function(...args) {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(this, args), wait);
-        };
-    }
-
-    const filterElem = document.getElementById('categoryFilter');
-    if (filterElem) {
-        filterElem.removeEventListener('change', filterEvents);
-        filterElem.addEventListener('change', debounce(filterEvents, 500));
-    }
-
-    function filterEvents(e) {
-        // Filter implementation
-    }
-
+    
     // Initialize floating CTA
-    initFloatingCTA();
-
-    // Initialize dropdown functionality
-    initDropdowns();
-
-    // Initialize form handlers
-    initForms();
-});
-
-function initFloatingCTA() {
-    const floatingCTA = document.querySelector('.floating-cta');
-    if (floatingCTA) {
-        // Show CTA after scrolling
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 300) {
-                floatingCTA.classList.add('visible');
-            } else {
-                floatingCTA.classList.remove('visible');
-            }
-        });
-    }
-}
-
-function initDropdowns() {
-    const dropdowns = document.querySelectorAll('.dropdown-toggle');
-    dropdowns.forEach(dropdown => {
-        dropdown.addEventListener('click', (e) => {
-            e.preventDefault();
-            const dropdownMenu = dropdown.nextElementSibling;
-            if (dropdownMenu) {
-                dropdownMenu.classList.toggle('show');
-            }
-        });
-    });
-
-    // Close dropdowns when clicking outside
-    document.addEventListener('click', (e) => {
-        if (!e.target.matches('.dropdown-toggle')) {
-            document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
-                menu.classList.remove('show');
+    function initFloatingCTA() {
+        let lastScrollTop = 0;
+        const floatingCTA = document.querySelector('.floating-cta');
+        
+        if (floatingCTA) {
+            window.addEventListener('scroll', function() {
+                let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                if (scrollTop > lastScrollTop) {
+                    floatingCTA.classList.add('hide');
+                } else {
+                    floatingCTA.classList.remove('hide');
+                }
+                lastScrollTop = scrollTop;
             });
         }
-    });
-}
+    }
 
-function initForms() {
-    let emailSignupForm = document.getElementById('emailSignupForm');
-    if (emailSignupForm) {
-        emailSignupForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            let email = document.getElementById('signupEmail').value;
-            // Here you would typically send this to your backend
-            console.log('Email signup:', email);
-            // Close modal after submission
-            let modal = bootstrap.Modal.getInstance(document.getElementById('emailSignupModal'));
-            if (modal) {
-                modal.hide();
+    // Form character count
+    function initCharCount() {
+        const titleInput = document.getElementById('title');
+        const descriptionInput = document.getElementById('description');
+        
+        if (titleInput) {
+            titleInput.addEventListener('input', function() {
+                document.getElementById('titleCount').textContent = this.value.length;
+            });
+        }
+        
+        if (descriptionInput) {
+            descriptionInput.addEventListener('input', function() {
+                document.getElementById('descriptionCount').textContent = this.value.length;
+            });
+        }
+    }
+
+    // Initialize forms
+    function initForms() {
+        let emailSignupForm = document.getElementById('emailSignupForm');
+        if (emailSignupForm) {
+            emailSignupForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                let email = document.getElementById('signupEmail').value;
+                console.log('Email signup:', email);
+                let modal = bootstrap.Modal.getInstance(document.getElementById('emailSignupModal'));
+                if (modal) {
+                    modal.hide();
+                }
+            });
+        }
+    }
+
+    // Event filtering
+    function filterEvents(e) {
+        let category = e.target.value;
+        let eventElements = document.querySelectorAll('.event-card');
+        
+        eventElements.forEach(event => {
+            if (category === 'all' || event.dataset.category === category) {
+                event.style.display = 'block';
+            } else {
+                event.style.display = 'none';
             }
         });
     }
-}
+
+    // Initialize all functions
+    initFloatingCTA();
+    initCharCount();
+    initForms();
+
+    // Set up event listeners
+    const filterElem = document.getElementById('categoryFilter');
+    if (filterElem) {
+        filterElem.addEventListener('change', filterEvents);
+    }
+});
