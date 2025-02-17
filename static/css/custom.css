@@ -235,6 +235,26 @@ main {
     border-color: var(--accent-color) !important;
 }
 
+/* Banner Ad Styles */
+.banner-ad {
+    max-width: 728px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+.banner-ad img {
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+}
+
+/* Featured Events Carousel */
+.featured-events-section {
+    background: linear-gradient(135deg, rgba(255,138,0,0.05) 0%, rgba(0,212,224,0.05) 100%);
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
 /* Button Styles */
 .btn.btn-primary {
     background-color: var(--primary-color);
