@@ -328,6 +328,12 @@ main {
     overflow-x: hidden;
 }
 
+@media (max-width: 768px) {
+    main {
+        padding-top: 100px;
+    }
+}
+
 /* Extra padding for auth pages */
 .row.justify-content-center {
     margin-top: 2rem;
@@ -642,7 +648,15 @@ main {
 }
 
 .map-container-wrapper {
-    padding-top: 1rem;
+    padding-top: 2rem;
+    margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+    .map-container-wrapper {
+        padding-top: 1.5rem;
+        margin-top: 1.5rem;
+    }
 }
 
 .map-container {
