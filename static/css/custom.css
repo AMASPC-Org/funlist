@@ -651,6 +651,8 @@ main {
     padding-left: 15px;
     margin-right: auto;
     margin-left: auto;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
 }
 
 /* Ensure hero section buttons stand out */
@@ -716,4 +718,29 @@ main {
 
 .sponsored-content {
     min-height: 120px;
+}
+
+.event-card {
+    transition: background-color 0.3s ease;
+    margin-bottom: 1.5rem;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.event-card:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.search-filters {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
 }
