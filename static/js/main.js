@@ -125,11 +125,16 @@ function filterEventsList() {
 
 // Initialize everything when DOM is loaded
 // Create a single event handler to avoid duplicates
-const eventListeners = new Map();
+let eventListeners = new Map();
 
 document.addEventListener('DOMContentLoaded', () => {
-    initFloatingCTA();
-    initCharCount();
+    if (document.querySelector('.floating-cta')) {
+        initFloatingCTA();
+    }
+    
+    if (document.getElementById('title') || document.getElementById('description')) {
+        initCharCount();
+    }
     
     // Clean up any existing listeners
     cleanupEventListeners();
@@ -201,6 +206,17 @@ function handleDateRangeChange(select) {
         } else {
             specificDateInput.style.display = 'none';
             if (select.form) select.form.submit();
+        }
+    }
+}
+
+// Handle date range changes
+function handleDateRangeChange(select) {
+    const specificDateInput = document.getElementById('specificDate');
+    if (specificDateInput) {
+        specificDateInput.style.display = select.value === 'specific' ? 'block' : 'none';
+        if (select.value !== 'specific' && select.form) {
+            select.form.submit();
         }
     }
 }
