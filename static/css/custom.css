@@ -148,15 +148,25 @@
 
 /* Header Styles */
 header {
-    background-color: rgba(255, 255, 255, 0.8) !important; /* Slightly transparent background */
-    box-shadow: 0px 2px 12px rgba(0,0,0,0.25);  /* Light shadow for depth */
+    background-color: rgba(255, 255, 255, 0.95) !important;
+    box-shadow: 0px 2px 12px rgba(0,0,0,0.25);
     padding: 15px 20px;
     position: fixed;
     width: 100%;
     top: 0;
     left: 0;
-    z-index: 1000;
-    backdrop-filter: blur(4px); /* Ensures smooth blending with the hero section */
+    z-index: 9999;
+    backdrop-filter: blur(4px);
+}
+
+/* Add padding to main content to prevent navbar overlap */
+main {
+    padding-top: 80px;
+}
+
+/* Special handling for hero section */
+#hero.hero-section {
+    margin-top: -80px;
 }
 
 .navbar .nav-link {
@@ -343,9 +353,12 @@ main {
 
 /* Map Section */
 .map-section {
-    margin-top: 2rem;
     margin-bottom: 2rem;
-    padding: 2rem 0;
+    padding: 1rem 0;
+}
+
+.map-container-wrapper {
+    padding-top: 1rem;
 }
 
 .map-container {
