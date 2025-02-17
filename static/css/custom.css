@@ -251,6 +251,11 @@ main {
     overflow-x: hidden;
 }
 
+/* Extra padding for auth pages */
+.row.justify-content-center {
+    margin-top: 2rem;
+}
+
 /* Special handling for hero section */
 #hero.hero-section {
     margin-top: 0;
