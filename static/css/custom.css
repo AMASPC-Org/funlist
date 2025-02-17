@@ -253,22 +253,22 @@
         left: 1rem;
         top: 100%;
     }
-    
+
     .navbar-nav {
         gap: 0.5rem;
     }
-    
+
     .navbar-nav .nav-item {
         width: 100%;
     }
-    
+
     .navbar-nav .nav-link {
         padding: 0.75rem 1rem;
         display: block;
         text-align: left;
         border-radius: 4px;
     }
-    
+
     .navbar-nav .nav-link:hover {
         background-color: rgba(255, 138, 0, 0.1);
     }
@@ -989,5 +989,27 @@ main {
 
     .filter-form .row > div {
         margin-bottom: 0.5rem;
+    }
+}
+
+.search-container {
+    margin-bottom: 2.5rem;
+}
+
+.search-container .text-center {
+    margin-top: 1.5rem;
+}
+
+.view-full-map-link {
+    margin-top: 2.5rem; /* Increased spacing */
+}
+
+.add-event-link { /* Added for desktop navigation */
+    margin-right: 1rem; /* Adjust spacing as needed */
+}
+
+@media (max-width: 991px) {
+    .add-event-mobile { /* Added for mobile navigation */
+        margin-bottom: 1rem;
     }
 }

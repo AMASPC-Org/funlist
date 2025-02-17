@@ -1,0 +1,87 @@
+Final Prompt for Replit AI Agent
+High-Level Objective
+Create a responsive, unified navigation bar that adjusts based on:
+Mobile vs. Desktop screens
+Logged-In vs. Logged-Out user state
+Admin vs. Non-Admin user roles
+1. Common Nav Elements (All Pages)
+FunList.ai Text/Logo in the Middle (Mobile Only)
+On mobile, center the “FunList.ai” text or logo in the nav bar.
+On desktop, place it in a standard position (e.g., top-left) or wherever your current design has it.
+Hamburger Menu (Left)
+On mobile, show a hamburger icon (<i class="bi bi-list"></i> or similar) on the left side.
+Tapping the hamburger reveals a dropdown or collapsible menu containing links to:
+Events (goes to /events)
+Map (goes to /map)
+On desktop, these links can be part of a standard horizontal nav or remain behind a hamburger if desired. (Typically, desktop nav is expanded, but you may keep a hamburger if that suits your design.)
+Logged-Out vs. Logged-In (Right Side)
+Logged-Out Users (Mobile):
+Show “Sign In” and “Sign Up” (text links or buttons) on the right side of the nav bar.
+No person icon, because the user isn’t authenticated.
+Logged-Out Users (Desktop):
+Similar approach: “Sign In” and “Sign Up” on the right side, or wherever they currently reside in your desktop design.
+Logged-In Users (Mobile):
+Hide “Sign In / Sign Up.”
+Display a person icon (<i class="bi bi-person"></i>) on the right side. This icon opens a dropdown with user-specific links (see below).
+Logged-In Users (Desktop):
+A person icon or “Profile” text (depending on your preference) on the right side. The dropdown is also accessible here.
+2. Person Icon Dropdown (Logged-In Users Only)
+Default User Links (All Logged-In Users)
+Edit Profile
+My Events (events the user posted via “Add Event”)
+Saved Events (bookmarked/favorited events)
+Admin-Only Links (Conditionally Visible)
+Event Management
+User Management
+Analytics
+Shown only if current_user.is_admin (or equivalent role check).
+Logout (If applicable)
+Optionally include a “Logout” link in this dropdown if that’s your standard approach.
+3. Layout & Spacing Fixes
+No Overlap on Any Page
+Compare your homepage, /events, /map, admin pages, profile pages, etc.
+Ensure consistent use of Bootstrap classes (.navbar, .container, .mt-4, etc.) so the nav bar never overlaps page content.
+Check the top margin/padding so the main content starts below the nav bar.
+Responsive Classes
+Use Bootstrap’s built-in classes like d-none d-md-block (desktop only) or d-md-none (mobile only) if you need to show/hide elements in different breakpoints.
+Or rely on the official navbar-toggler / collapse pattern for a single nav bar that transitions smoothly between mobile and desktop.
+4. Implementation Tips
+Partial Template
+Place the nav bar in a single partial (e.g., templates/partials/navbar.html) if using Flask + Jinja2. Include it in every page template so changes propagate site-wide.
+Conditional Logic
+Logged-In vs. Logged-Out:
+jinja
+Copy
+{% if current_user.is_authenticated %}
+  <!-- Show person icon, hide Sign In / Sign Up -->
+{% else %}
+  <!-- Show Sign In / Sign Up, hide person icon -->
+{% endif %}
+Admin vs. Non-Admin:
+jinja
+Copy
+{% if current_user.is_authenticated and current_user.is_admin %}
+  <!-- Admin links in the dropdown -->
+{% endif %}
+Mobile Centered Title
+Use .text-center or a Bootstrap utility class to center the “FunList.ai” text/logo on mobile.
+Hide or reposition it on desktop as needed.
+5. Testing & Validation
+Device Testing
+Mobile: iOS, Android—ensure the hamburger on the left, “FunList.ai” in the middle, person icon or sign in/up on the right, no overlap.
+Desktop: Confirm the standard layout is intact, with no overlap, and all dropdowns function properly.
+User Roles
+Admin: Sees “Event Management,” “User Management,” “Analytics” in the dropdown.
+Non-Admin: Sees only “Edit Profile,” “My Events,” “Saved Events.”
+Logged-Out: Sees “Sign In” and “Sign Up,” but no person icon or admin links.
+No Overlapping
+Check every page template to confirm the nav bar is properly spaced from the content below it.
+Action
+Please implement the above instructions in Replit, ensuring that:
+
+The nav bar is responsive for mobile vs. desktop.
+Hamburger (left) + FunList.ai (middle) + Person Icon or Sign In/Up (right) appear correctly on mobile.
+Desktop layout remains consistent with no overlap or spacing issues.
+Admin links appear only for admin users, while all logged-in users see “My Events,” “Saved Events,” and “Edit Profile.”
+Logged-out users see “Sign In / Sign Up” instead of the person icon.
+After implementing, thoroughly test each scenario (mobile vs. desktop, logged in vs. logged out, admin vs. non-admin) across all site pages to confirm a flawless, unified user experience.
