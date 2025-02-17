@@ -317,9 +317,11 @@ main {
 /* Rating System */
 .fun-rating-scale {
     display: flex;
-    justify-content: space-around;
-    margin: 2rem 0;
+    flex-direction: row;
+    justify-content: space-between;
+    flex-wrap: nowrap;
     gap: 1rem;
+    margin: 2rem 0;
 }
 
 .rating-stack {
