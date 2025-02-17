@@ -10,7 +10,7 @@
 
 /* Hero Section */
 #hero.hero-section {
-    background: url("/static/attached_assets/Have-Fun-FunList.ai-home.jpeg") center center / cover no-repeat;
+    background: url("attached_assets/Have-Fun-FunList.ai-home.jpeg") center center / cover no-repeat;
     background-color: var(--light-color);  /* Fallback */
     padding: 10vh 0; /* Increased padding for better spacing */
     text-align: center;
