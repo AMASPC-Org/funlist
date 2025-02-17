@@ -1,5 +1,26 @@
 // Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
+    let markers = {};
+
+    // Event listener setup with debouncing
+    function debounce(func, wait) {
+        let timeout;
+        return function(...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+        };
+    }
+
+    const filterElem = document.getElementById('categoryFilter');
+    if (filterElem) {
+        filterElem.removeEventListener('change', filterEvents);
+        filterElem.addEventListener('change', debounce(filterEvents, 500));
+    }
+
+    function filterEvents(e) {
+        // Filter implementation
+    }
+
     // Initialize floating CTA
     initFloatingCTA();
 
@@ -47,15 +68,15 @@ function initDropdowns() {
 }
 
 function initForms() {
-    const emailSignupForm = document.getElementById('emailSignupForm');
+    let emailSignupForm = document.getElementById('emailSignupForm');
     if (emailSignupForm) {
         emailSignupForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const email = document.getElementById('signupEmail').value;
+            let email = document.getElementById('signupEmail').value;
             // Here you would typically send this to your backend
             console.log('Email signup:', email);
             // Close modal after submission
-            const modal = bootstrap.Modal.getInstance(document.getElementById('emailSignupModal'));
+            let modal = bootstrap.Modal.getInstance(document.getElementById('emailSignupModal'));
             if (modal) {
                 modal.hide();
             }
