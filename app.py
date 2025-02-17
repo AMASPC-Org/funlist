@@ -92,31 +92,5 @@ def log_response_info(response):
     logger.info('Response: %s %s %s', request.method, request.url, response.status)
     return response
 
-if __name__ == "__main__":
-    import logging
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
-    logger = logging.getLogger(__name__)
-    
-    try:
-        port = int(os.environ.get("PORT", 8080))
-        logger.info(f"Attempting to start server on port {port}")
-        
-        import socket
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        result = sock.connect_ex(('0.0.0.0', port))
-        if result == 0:
-            logger.error(f"Port {port} is already in use")
-            sock.close()
-            port = 8081  # Try alternate port
-        sock.close()
-        
-        logger.info(f"Starting server on port {port}")
-        app.run(host='0.0.0.0', port=port, debug=True)
-    except Exception as e:
-        logger.error(f"Failed to start server: {str(e)}", exc_info=True)
-
 class RequestTimeout(Exception):
     pass
