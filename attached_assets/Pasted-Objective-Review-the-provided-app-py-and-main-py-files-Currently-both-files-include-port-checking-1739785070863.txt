@@ -1,0 +1,45 @@
+Objective:
+Review the provided app.py and main.py files. Currently, both files include port-checking logic and attempt to start the Flask application. Our goal is to unify the application startup into a single entry point, eliminate redundant port-checking logic, and ensure that the server starts on an available port (preferably 8080) so that the Webview loads correctly without conflicts.
+
+Requirements:
+
+Unify the Entry Point:
+
+Decide whether to use app.py or main.py as the single entry point.
+Remove or refactor redundant port-checking code so that only one mechanism is in place.
+Ensure that the final version starts the Flask server once and logs the chosen port.
+Port-Checking Logic:
+
+Consolidate the port-checking logic (currently implemented in both app.py and main.py).
+Use a robust mechanism (e.g., using the socket module or psutil) to check if port 8080 is in use.
+If port 8080 is occupied, automatically switch to an alternate port (e.g., 8081) and log the change.
+Ensure that the final code properly closes any sockets or resources used during the check.
+Webview and Environment Consistency:
+
+Verify that the Flask app always starts on a known port and that the Webview configuration points to that port.
+Confirm that debug mode is enabled only when appropriate (e.g., for development) and that logging is consistent.
+Make sure the environment variables (such as PORT) are respected.
+Code Cleanup and Consistency:
+
+Remove duplicate or conflicting startup code so that there is only one block that calls app.run(...).
+Maintain consistent logging across the unified file.
+Ensure that the custom decorator (timeout_after) and other middleware (e.g., request/response logging) remain intact.
+Action Items:
+
+Step 1: Review both app.py and main.py to identify duplicate logic.
+Step 2: Choose one file (e.g., app.py) as the main entry point and merge the necessary port-checking logic from main.py into it. Alternatively, create a new consolidated file (e.g., run.py) that imports app from app.py and includes the refined port-checking and startup logic.
+Step 3: Remove any redundant if __name__ == "__main__": blocks so that the app starts only once.
+Step 4: Test the final integrated version to ensure that:
+The app starts on port 8080 if available, or on port 8081 (or another alternate) if 8080 is in use.
+The Webview loads the application without errors.
+Logging outputs clearly indicate which port the server is running on.
+Files Provided:
+
+app.py:
+(Contains full Flask app setup, configuration, logging, session, CSRF, and a port-check block that runs app.run(...).)
+
+main.py:
+(Contains alternative port-checking logic using psutil and socket, then calls app.run(...).)
+
+Please produce a final, unified version of the startup code that meets the above requirements and eliminates any redundancy or conflict between app.py and main.py.
+
