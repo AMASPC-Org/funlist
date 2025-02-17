@@ -1,11 +1,67 @@
 :root {
-    --primary-color: #FFAB00;    /* Vibrant Orange */
-    --secondary-color: #00BBD4;  /* Teal */
-    --accent-color: #e09a00;     /* Darker Orange */
-    --dark-color: #333333;       /* Dark Gray */
+    --primary-color: #FF8A00;    /* Brighter Orange from image */
+    --secondary-color: #00D4E0;  /* Bright Teal */
+    --accent-color: #FF6B00;     /* Deeper Orange */
+    --dark-color: #1A1A1A;       /* Darker Gray for contrast */
     --light-color: #ffffff;      /* White */
-    --text-primary: #333333;     /* Main text color */
-    --text-secondary: #666666;   /* Secondary text color */
+    --text-primary: #1A1A1A;     /* Main text color */
+    --text-secondary: #4A4A4A;   /* Secondary text color */
+}
+
+/* Enhanced Feature Boxes */
+.feature-box {
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.feature-box:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary-color);
+    box-shadow: 0 8px 24px rgba(255, 138, 0, 0.15);
+}
+
+/* Enhanced Fun Assistant Section */
+.fun-assistant-section {
+    background: linear-gradient(135deg, rgba(255,138,0,0.05) 0%, rgba(0,212,224,0.05) 100%);
+}
+
+/* Enhanced Rating System */
+.rating-scale .rating-item {
+    padding: 1.5rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.rating-scale .rating-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(255,138,0,0.15);
+}
+
+/* Enhanced Buttons */
+.btn.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+    border: none;
+    box-shadow: 0 4px 12px rgba(255,138,0,0.2);
+}
+
+.btn.btn-primary:hover {
+    background: linear-gradient(135deg, var(--accent-color) 0%, var(--primary-color) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(255,138,0,0.3);
+}
+
+.btn.btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    color: white;
 }
 
 /* Hero Section */
