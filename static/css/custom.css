@@ -254,13 +254,68 @@ main {
     }
 }
 
+.social-icons {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: flex-start;
+    margin-bottom: 2rem;
+}
+
 .social-icons a {
     font-size: 1.5rem;
     color: var(--text-secondary);
+    transition: color 0.2s ease;
 }
 
 .social-icons a:hover {
     color: var(--primary-color);
+}
+
+.chat-message {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.chat-message.user {
+    background-color: #f8f9fa;
+}
+
+.chat-message.assistant {
+    background-color: #e9ecef;
+}
+
+@media (max-width: 768px) {
+    .feature-box {
+        margin-bottom: 2rem;
+        padding: 2rem !important;
+    }
+    
+    .footer {
+        text-align: center;
+        padding: 3rem 1rem;
+    }
+    
+    .footer .col-md-4 {
+        margin-bottom: 2rem;
+    }
+    
+    .social-icons {
+        justify-content: center;
+    }
+    
+    .chat-demo {
+        margin-top: 2rem;
+    }
+    
+    .fun-assistant-section .btn {
+        width: 100%;
+        margin-bottom: 2rem;
+    }
+    
+    .feature-list {
+        margin-left: 1rem;
+    }
 }
 
 .container {
