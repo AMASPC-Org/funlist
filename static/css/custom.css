@@ -93,7 +93,7 @@
 
 @media (max-width: 768px) {
     #hero.hero-section {
-        height: 65vh;
+        height: 45vh;
         background-size: 300%;
         background-position: center 40%;
         margin-bottom: 0;
@@ -107,7 +107,7 @@
 
 @media (max-width: 480px) {
     #hero.hero-section {
-        height: 55vh;
+        height: 35vh;
         margin-bottom: 8px;
         background-size: 250%;
         background-position: center 45%;
