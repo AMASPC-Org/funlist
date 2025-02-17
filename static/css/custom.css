@@ -366,6 +366,20 @@ main {
     color: white;
 }
 
+/* Map Styles */
+.event-popup {
+    min-width: 200px;
+}
+
+.event-popup h5 {
+    margin-bottom: 10px;
+    color: var(--primary-color);
+}
+
+.event-popup p {
+    margin-bottom: 5px;
+}
+
 /* Mobile Optimizations */
 @media (max-width: 768px) {
     .map-container {
