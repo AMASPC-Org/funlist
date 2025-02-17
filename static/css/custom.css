@@ -94,38 +94,38 @@
     .container {
         text-align: center;
     }
-    
+
     .cta-group {
         display: flex;
         flex-direction: column;
         align-items: center;
     }
-    
+
     .view-options {
         display: flex;
         flex-direction: column;
         gap: 10px;
     }
-    
+
     .view-options .btn {
         width: 200px;
         margin: 5px auto;
     }
-    
+
     .primary-cta {
         width: 200px;
         margin: 10px auto;
     }
-    
+
     .fun-rating-scale {
         padding: 0 15px;
     }
-    
+
     .rating-row {
         flex-direction: column;
         gap: 15px;
     }
-    
+
     .rating-item {
         width: 100%;
         text-align: center;
@@ -287,7 +287,7 @@ main {
     .feature-box {
         padding-bottom: 70px;
     }
-    
+
     .feature-box .btn {
         bottom: 15px;
         left: 15px;
@@ -317,13 +317,13 @@ main {
 /* Rating System */
 .fun-rating-scale {
     display: flex;
-    justify-content: center;
+    justify-content: space-around;
     margin: 2rem 0;
+    gap: 1rem;
 }
 
 .rating-stack {
     display: flex;
-    flex-direction: column-reverse;
     gap: 1.5rem;
     align-items: center;
 }
@@ -350,6 +350,17 @@ main {
     margin-bottom: 0.5rem;
     display: block;
 }
+
+@media (max-width: 768px) {
+    .rating-scale {
+        flex-direction: column;
+    }
+
+    .rating-item {
+        margin-bottom: 1rem;
+    }
+}
+
 
 /* Map Section */
 .map-section {
@@ -420,31 +431,22 @@ main {
     .map-container {
         height: 400px;
     }
-    
+
     .view-switcher {
         margin-top: 1rem;
         width: 100%;
     }
-    
+
     .view-switcher .btn {
         width: 100%;
         justify-content: center;
     }
-    
+
     .filter-label {
         margin-top: 0.5rem;
     }
 }
 
-@media (max-width: 768px) {
-    .rating-scale {
-        flex-direction: column;
-    }
-    
-    .rating-item {
-        margin-bottom: 1rem;
-    }
-}
 
 .social-icons {
     display: flex;
@@ -482,29 +484,29 @@ main {
         margin-bottom: 2rem;
         padding: 2rem !important;
     }
-    
+
     .footer {
         text-align: center;
         padding: 3rem 1rem;
     }
-    
+
     .footer .col-md-4 {
         margin-bottom: 2rem;
     }
-    
+
     .social-icons {
         justify-content: center;
     }
-    
+
     .chat-demo {
         margin-top: 2rem;
     }
-    
+
     .fun-assistant-section .btn {
         width: 100%;
         margin-bottom: 2rem;
     }
-    
+
     .feature-list {
         margin-left: 1rem;
     }
