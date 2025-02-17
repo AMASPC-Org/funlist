@@ -376,10 +376,27 @@ main {
     text-align: center;
 }
 
-/* Map Section */
-.map-section {
+/* Search Section */
+.search-section {
     margin-bottom: 2rem;
-    padding: 1rem 0;
+    padding: 2rem 0;
+    background: linear-gradient(135deg, rgba(255,138,0,0.05) 0%, rgba(0,212,224,0.05) 100%);
+}
+
+.search-form .input-group {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.search-form .form-control {
+    border: none;
+    padding: 1rem 1.5rem;
+}
+
+.search-form .btn {
+    padding-left: 2rem;
+    padding-right: 2rem;
 }
 
 .map-container-wrapper {
