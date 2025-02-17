@@ -191,14 +191,13 @@
 .navbar-brand {
     color: var(--primary-color);
     font-weight: 600;
+    z-index: 1030;
 }
 
-/* Center brand on mobile only */
+/* Ensure brand stays centered on all screens */
 @media (max-width: 991px) {
     .navbar-brand {
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
+        z-index: 1030;
     }
     
     .navbar .dropdown {
