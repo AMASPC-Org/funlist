@@ -45,6 +45,151 @@ function updateFeaturedEvents(location) {
         .catch(error => console.error('Error fetching featured events:', error));
 }
 
+
+// DOM Elements
+document.addEventListener('DOMContentLoaded', function() {
+    // Featured Events
+    getFeaturedEvents();
+
+    // Email signup form handling
+    const emailSignupForm = document.getElementById('emailSignupForm');
+    if (emailSignupForm) {
+        emailSignupForm.addEventListener('submit', handleEmailSignup);
+    }
+
+    // Location handling
+    const locationModal = document.getElementById('locationModal');
+    if (locationModal) {
+        const allowLocationBtn = document.getElementById('allowLocation');
+        const denyLocationBtn = document.getElementById('denyLocation');
+
+        if (allowLocationBtn) {
+            allowLocationBtn.addEventListener('click', handleLocationPermission);
+        }
+        if (denyLocationBtn) {
+            denyLocationBtn.addEventListener('click', () => {
+                locationModal.style.display = 'none';
+            });
+        }
+    }
+
+    // Date range handling
+    const dateRangeSelect = document.getElementById('date_range');
+    if (dateRangeSelect) {
+        dateRangeSelect.addEventListener('change', handleDateRangeChange);
+    }
+});
+
+// Featured Events
+function getFeaturedEvents() {
+    if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+            position => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                fetchFeaturedEvents(lat, lng);
+            },
+            error => {
+                console.log("Error getting location:", error);
+                // Default coordinates as fallback
+                fetchFeaturedEvents(47.0379, -122.9007);
+            }
+        );
+    }
+}
+
+function fetchFeaturedEvents(lat, lng) {
+    fetch(`/api/featured-events?lat=${lat}&lng=${lng}`)
+        .then(response => response.json())
+        .then(events => {
+            const container = document.getElementById('featured-events');
+            if (container) {
+                displayFeaturedEvents(container, events);
+            }
+        })
+        .catch(error => {
+            console.error("Error fetching featured events:", error);
+        });
+}
+
+function displayFeaturedEvents(container, events) {
+    if (!events.length) {
+        container.innerHTML = '<p class="text-center">No featured events found in your area.</p>';
+        return;
+    }
+
+    const eventsHTML = events.map(event => `
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">${event.title}</h5>
+                    <p class="card-text">${event.description}</p>
+                    <p class="text-muted">${event.date}</p>
+                    <div class="fun-rating">
+                        ${'★'.repeat(event.fun_meter)}${'☆'.repeat(5-event.fun_meter)}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+
+    container.innerHTML = eventsHTML;
+}
+
+// Email Signup
+function handleEmailSignup(e) {
+    e.preventDefault();
+    const email = document.getElementById('signupEmail').value;
+
+    fetch('/subscribe', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Thank you for subscribing!');
+            const modal = bootstrap.Modal.getInstance(document.getElementById('emailSignupModal'));
+            if (modal) modal.hide();
+        } else {
+            alert(data.message || 'Subscription failed. Please try again.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again later.');
+    });
+}
+
+// Location Handling
+function handleLocationPermission() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            position => {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('locationModal'));
+                if (modal) modal.hide();
+                // Update featured events with user's location
+                getFeaturedEvents();
+            },
+            error => {
+                console.error("Error getting location:", error);
+                alert('Unable to get your location. Please try again.');
+            }
+        );
+    }
+}
+
+// Date Range Handling
+function handleDateRangeChange(e) {
+    const specificDateInput = document.getElementById('specific_date');
+    if (specificDateInput) {
+        specificDateInput.style.display = e.target.value === 'specific' ? 'block' : 'none';
+    }
+}
+
 // Initialize floating CTA
 function initFloatingCTA() {
     const floatingCTA = document.querySelector('.floating-cta');
@@ -131,7 +276,7 @@ function filterEventsList() {
 
             switch(dateRange) {
                 case 'specific':
-                    const specificDate = document.getElementById('specificDate')?.value; //Added null check
+                    const specificDate = document.getElementById('specificDate')?.value; 
                     if (specificDate) {
                         const selectedDate = new Date(specificDate);
                         if (eventDate.toDateString() !== selectedDate.toDateString()) showCard = false;
@@ -165,18 +310,6 @@ function handleDateRangeChange(select) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    const dateRange = document.getElementById('dateRange');
-    const specificDate = document.getElementById('specificDate');
-    
-    if (specificDate) {
-        specificDate.addEventListener('change', function() {
-            if (this.form) {
-                this.form.submit();
-            }
-        });
-    }
-});
 
 // Initialize everything when DOM is loaded
 // Create a single event handler to avoid duplicates
@@ -210,7 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
     }
-
+    
     if (document.getElementById('title') || document.getElementById('description')) {
         initCharCount();
     }
@@ -235,36 +368,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Location handling
-    const locationModal = document.getElementById('locationModal');
-    if (locationModal) {
-        const modal = new bootstrap.Modal(locationModal);
-        const storedLocation = localStorage.getItem('userLocation');
+    // Location handling (moved to the top-level DOMContentLoaded)
 
-        if (storedLocation) {
-            updateFeaturedEvents(JSON.parse(storedLocation));
-        } else {
-            modal.show();
-        }
-
-        const allowLocationBtn = document.querySelector('#allowLocation');
-        if (allowLocationBtn) {
-            allowLocationBtn.addEventListener('click', () => {
-                getUserLocation();
-                modal.hide();
-            });
-        }
-
-        const denyLocationBtn = document.querySelector('#denyLocation');
-        if (denyLocationBtn) {
-            denyLocationBtn.addEventListener('click', () => {
-                const defaultLocation = { lat: 47.0379, lng: -122.9007 };
-                localStorage.setItem('userLocation', JSON.stringify(defaultLocation));
-                updateFeaturedEvents(defaultLocation);
-                modal.hide();
-            });
-        }
-    }
 });
 
 function cleanupEventListeners() {
