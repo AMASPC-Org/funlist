@@ -21,14 +21,14 @@ def init_routes(app):
             email = data.get('email')
             if not email:
                 return jsonify({'success': False, 'message': 'Email is required'}), 400
-            
+
             if Subscriber.query.filter_by(email=email).first():
                 return jsonify({'success': False, 'message': 'Email already subscribed'}), 400
-                
+
             subscriber = Subscriber(email=email)
             db.session.add(subscriber)
             db.session.commit()
-            
+
             return jsonify({'success': True, 'message': 'Subscription successful'})
         except Exception as e:
             logger.error(f"Subscription error: {str(e)}")
@@ -58,7 +58,7 @@ def init_routes(app):
     @app.route('/')
     def index():
         events = Event.query.order_by(Event.start_date.desc()).all()
-        return render_template('home.html', events=events, user=current_user)
+        return render_template('index.html', events=events, user=current_user)
 
     @app.route('/signup', methods=['GET', 'POST'])
     def signup():
@@ -326,16 +326,16 @@ def init_routes(app):
     def admin_event_action(event_id, action):
         if not current_user.is_admin:
             return jsonify({'success': False, 'message': 'Unauthorized'}), 403
-        
+
         event = Event.query.get_or_404(event_id)
-        
+
         if action == 'approve':
             event.status = 'approved'
         elif action == 'reject':
             event.status = 'rejected'
         elif action == 'delete':
             db.session.delete(event)
-        
+
         db.session.commit()
         return jsonify({'success': True})
 
