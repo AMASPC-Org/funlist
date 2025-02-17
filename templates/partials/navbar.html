@@ -1,0 +1,55 @@
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+  <div class="container">
+    <!-- Mobile Only: Hamburger -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+      <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Logo/Brand -->
+    <a class="navbar-brand d-lg-none text-center mx-auto" href="{{ url_for('index') }}">FunList.ai</a>
+    <a class="navbar-brand d-none d-lg-block" href="{{ url_for('index') }}">FunList.ai</a>
+
+    <!-- Desktop Nav + Mobile Dropdown -->
+    <div class="collapse navbar-collapse" id="navbarContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('events') }}">Events</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('map') }}">Map</a>
+        </li>
+      </ul>
+
+      <ul class="navbar-nav">
+        {% if current_user.is_authenticated %}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+              <i class="bi bi-person"></i>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="{{ url_for('edit_profile') }}">Edit Profile</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('events') }}?filter=my_events">My Events</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('events') }}?filter=saved">Saved Events</a></li>
+              {% if current_user.is_admin %}
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{{ url_for('admin_events') }}">Event Management</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('admin_users') }}">User Management</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('admin_analytics') }}">Analytics</a></li>
+              {% endif %}
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+            </ul>
+          </li>
+        {% else %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('login') }}">Sign In</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('signup') }}">Sign Up</a>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
