@@ -244,30 +244,23 @@
 {% block scripts %}
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        try {
-            let mapInstance = L.map('map', {
-                center: [47.0379, -122.9007],
-                zoom: 12,
-                scrollWheelZoom: true
-            });
+        const map = L.map('map').setView([47.0379, -122.9007], 12);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(mapInstance);
+        L.marker([47.0379, -122.9007])
+            .bindPopup('Welcome to Olympia!')
+            .addTo(map);
 
-            setTimeout(() => {
-                mapInstance.invalidateSize();
-            }, 100);
-
-            L.marker([47.0379, -122.9007])
-                .bindPopup('Welcome to Olympia!')
-                .addTo(mapInstance);
-        } catch(e) {
-            console.error('Map initialization error:', e);
-        }
+        // Force map to recalculate its container size
+        setTimeout(function() {
+            map.invalidateSize();
+        }, 100);
     });
 </script>
 {% endblock %}
