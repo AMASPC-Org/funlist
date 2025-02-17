@@ -1,0 +1,75 @@
+Updated Prompt for Implementing "Featured Events"
+
+Objective:
+Implement a "Featured Events" feature that dynamically populates events based on the user's location, user state, and underlying algorithm. Additionally, create sample events for demonstration purposes.
+
+Instructions:
+
+User Location Access & Handling:
+
+Prompt for Location:
+For first-time visitors or users not logged in: Display a clear prompt asking for permission to access the user's location.
+Example Text: "Allow us to access your location to show you local featured events."
+For logged-in returning users:
+If the user has previously granted location permission or saved a preferred location, use the stored value.
+If not, prompt as above.
+Handling Denial or No Response:
+Use a default location (e.g., a central or major city) or prompt the user to manually enter their location.
+Algorithm & Event Population:
+
+Use the obtained location (or fallback/default) along with any stored user preferences to run an algorithm that:
+Determines relevant featured events based on proximity.
+Considers factors like event popularity, category, and timing.
+Populate a "Featured Events" section on the homepage with the selected events.
+Sample Events Creation:
+Create a set of sample events with details such as Event Name, Description, Location (address and/or map coordinates), Date/Time, and a sample image/icon for demonstration purposes.
+User State Considerations:
+
+Logged In vs. Not Logged In:
+Logged In:
+Leverage stored user data (location, event preferences) to personalize the "Featured Events."
+Optionally, offer additional features like favoriting events or personalized recommendations.
+Not Logged In:
+Prompt for location and use a default or manual entry fallback.
+Consider a gentle call-to-action encouraging sign-up for enhanced personalization.
+Returning vs. First-Time Users:
+Returning Users:
+If location data and user preferences are already saved, skip the initial prompt and load featured events directly.
+First-Time Users:
+Present the location prompt and a brief explanation of the benefit ("See local events near you").
+Mobile vs. Desktop:
+Mobile:
+Ensure the UI is optimized for smaller screens (responsive design, larger tap targets for the location prompt).
+Use mobile-friendly sizes for banners and event cards.
+Desktop:
+Use a layout that takes advantage of the larger screen real estate, such as a grid or carousel for featured events.
+Adjust the location prompt styling to fit within your existing design.
+Integration with the Current Tech Stack:
+
+Backend:
+Python 3.11+ with Flask 3.0.3, using PostgreSQL via SQLAlchemy 2.0.35.
+Frontend:
+HTML/CSS/JavaScript and Bootstrap components for responsiveness.
+Ensure compatibility with the current UI, particularly the handling of the hero image and transitional sections.
+Security & Performance:
+Maintain CSRF protection, secure session management, and proper rate limiting.
+Optimize geolocation handling and event querying to keep performance high.
+Code Quality & Documentation:
+
+Write clean, modular code with inline comments for key sections.
+Document any new endpoints, data models, and API integrations.
+Provide clear instructions for testing across user states (logged in, returning, mobile).
+Team Review & Improvement:
+
+Focus Areas for Review:
+User Experience:
+Evaluate the flow for different user states (logged in, first-time, mobile, desktop).
+Confirm that the location prompt and fallback mechanism are intuitive and non-intrusive.
+Algorithm Integration:
+Validate that event selection is effectively personalized.
+Design Consistency:
+Ensure the "Featured Events" section aligns well with the overall homepage design, especially given the colorful hero image.
+Performance & Security:
+Review for any potential bottlenecks or security concerns.
+Feedback Request:
+"Please review these updated instructions and the user flow for the 'Featured Events' feature. Let me know if any adjustments are needed or if you require access to existing files for further context."
