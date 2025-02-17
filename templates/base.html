@@ -1,120 +1,61 @@
+{% extends "base.html" %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>FunList.ai - Your AI Guide to Local Events!</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg sticky-top">
-        <div class="container">
-            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index') }}">
-                <i class="fas fa-calendar-alt me-2"></i>FunList.ai
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
+{% block content %}
+<!-- Hero Section -->
+<section id="hero" class="hero-section" aria-label="Hero section" style="background-image: url('/static/images/hero-bg.jpg'); background-size: cover; background-position: center;">
+    <div class="hero-placeholder text-center">
+        <p>Loading awesome events...</p>
+    </div>
+</section>
+
+<!-- Hero Content (Moved outside hero-section) -->
+<div class="container text-center mt-5 hero-container">
+    <div class="hero-content">
+        <h1>Find the Best Events Near You – Rated for Fun!</h1>
+        <p class="lead">Sign up to get Fun-Rated events emailed to you every week!</p>
+        <div class="cta-group" aria-label="Call to action buttons">
+            <button class="btn btn-primary btn-lg primary-cta" data-bs-toggle="modal" data-bs-target="#emailSignupModal">
+                Get My Weekly FunList
             </button>
-            <div class="collapse navbar-collapse" id="navbarContent">
-                <ul class="navbar-nav ms-auto align-items-center">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('map') }}"><i class="fas fa-map-marker-alt"></i> Map</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link btn btn-success text-white px-3 mx-2" href="{{ url_for('submit_event') }}">Add Event</a>
-                    </li>
-                    {% if current_user.is_authenticated %}
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-user"></i>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                {% if current_user.is_admin %}
-                                    <li><h6 class="dropdown-header">Admin Controls</h6></li>
-                                    <li><a class="dropdown-item" href="{{ url_for('admin_events') }}"><i class="fas fa-calendar-check"></i> Manage Events</a></li>
-                                    <li><a class="dropdown-item" href="{{ url_for('admin_users') }}"><i class="fas fa-users"></i> Manage Users</a></li>
-                                    <li><a class="dropdown-item" href="{{ url_for('admin_analytics') }}"><i class="fas fa-chart-line"></i> Analytics</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                {% endif %}
-                                <li><h6 class="dropdown-header">Navigation</h6></li>
-                                <li><a class="dropdown-item" href="{{ url_for('events') }}"><i class="fas fa-calendar"></i> Events</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('map') }}"><i class="fas fa-map-marker-alt"></i> Map</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('submit_event') }}"><i class="fas fa-plus-circle"></i> Add Event</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><h6 class="dropdown-header">Account</h6></li>
-                                <li><a class="dropdown-item" href="{{ url_for('profile') }}"><i class="fas fa-user-circle"></i> Profile</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-                            </ul>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('login') }}">Login</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('signup') }}">Sign Up</a>
-                        </li>
-                    {% endif %}
-                </ul>
+            <div class="view-options mt-3">
+                <a href="{{ url_for('map') }}" class="btn btn-outline-primary mx-2">Map View</a>
+                <a href="{{ url_for('events') }}" class="btn btn-outline-primary mx-2">List View</a>
             </div>
         </div>
-    </nav>
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
-    <div class="container mt-4">
-        {% block content %}{% endblock %}
     </div>
+</div>
 
-    <div class="floating-cta" id="floatingCTA">
-        <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#emailSignupModal">
-            <i class="fas fa-bell me-2"></i>Get My Weekly FunList
-        </button>
-    </div>
-
-    <footer class="footer mt-5">
-        <div class="container text-center">
-            <div class="social-links mb-3">
-                <a href="https://facebook.com/funlist" target="_blank" class="social-icon mx-2"><i class="fab fa-facebook fa-lg"></i></a>
-                <a href="https://twitter.com/funlist" target="_blank" class="social-icon mx-2"><i class="fab fa-twitter fa-lg"></i></a>
-                <a href="https://instagram.com/funlist" target="_blank" class="social-icon mx-2"><i class="fab fa-instagram fa-lg"></i></a>
-                <a href="https://tiktok.com/@funlist" target="_blank" class="social-icon mx-2"><i class="fab fa-tiktok fa-lg"></i></a>
-            </div>
-            <p>© 2025 FunList.ai - <a href="https://americanmarketingalliance.com" target="_blank">Part of the American Marketing Alliance Network</a></p>
-        </div>
-    </footer>
-
-    <!-- Email Signup Popup -->
-    <div class="modal fade" id="emailSignupModal" tabindex="-1" aria-labelledby="emailSignupModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="emailSignupModalLabel">Get Your Weekly Fun List!</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<!-- Features Section -->
+<div class="container my-5 py-4">
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 feature-card" style="min-height: 100%;">
+                <div class="card-body">
+                    <h3 id="ai-curation-section"><a href="#ai-curation-section" class="text-decoration-none text-dark">AI-Driven Curation</a></h3>
+                    <p>Our AI analyzes thousands of events to recommend the perfect activities for you based on your interests and preferences.</p>
+                    <a href="#ai-curation-section" class="btn btn-primary mt-2">Learn More</a>
                 </div>
-                <div class="modal-body">
-                    <p>Never miss out on the best local events! Sign up for our weekly newsletter.</p>
-                    <form id="emailSignupForm">
-                        <div class="mb-3">
-                            <input type="email" class="form-control" id="signupEmail" placeholder="Enter your email">
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">Subscribe</button>
-                    </form>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 feature-card">
+                <div class="card-body">
+                    <h3><a href="#fun-rating-section" class="text-decoration-none text-dark">How the Fun Rating System Works</a></h3>
+                    <p>Each event is rated on a 1-5 scale, with half-point precision, based on its activities, engagement level, and attendee experience.</p>
+                    <a href="#fun-rating-section" class="btn btn-primary mt-2">Learn More</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 feature-card">
+                <div class="card-body">
+                    <h3><a href="#fun-assistant-section" class="text-decoration-none text-dark">Fun Assistant</a></h3>
+                    <p>Get personalized event recommendations based on your interests, whether you're looking for family activities, singles events, or business networking.</p>
+                    <a href="#fun-assistant-section" class="btn btn-primary mt-2" aria-label="Learn more about Fun Assistant">Learn More</a>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-</body>
-</html>
+{% endblock %}
