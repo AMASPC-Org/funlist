@@ -75,39 +75,44 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-3">
-                    <h5>FunList.ai</h5>
-                    <p>Find the Best Events Near You – Rated for Fun!</p>
-                    <div class="social-icons">
-                        <a href="#"><i class="fab fa-facebook"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <h5>Quick Links</h5>
+                    <h5>COMPANY</h5>
                     <ul class="list-unstyled">
-                        <a href="{{ url_for('advertising') }}" class="btn btn-outline-primary mb-2">List Ad Space</a>
-                        <a href="{{ url_for('submit_event') }}" class="btn btn-outline-primary mb-2">Add Event</a>
+                        <li><a href="{{ url_for('about') }}">About Us</a></li>
+                        <li><a href="{{ url_for('help_center') }}">Help Center</a></li>
+                        <li><a href="{{ url_for('advertising') }}">Advertising</a></li>
                     </ul>
                 </div>
                 <div class="col-md-3">
-                    <h5>Contact Us</h5>
+                    <h5>CONNECT</h5>
                     <ul class="list-unstyled">
-                        <li><i class="fas fa-phone"></i> (360) 200-8768</li>
-                        <li><i class="fas fa-envelope"></i> help@funlist.ai</li>
+                        <li><a href="tel:3602008768"><i class="fas fa-phone"></i> (360) 200-8768</a></li>
+                        <li><a href="mailto:help@funlist.ai"><i class="fas fa-envelope"></i> help@funlist.ai</a></li>
+                        <li>Seattle, WA</li>
                     </ul>
                 </div>
                 <div class="col-md-3">
-                    <h5>Stay Updated</h5>
-                    <form class="subscribe-form">
-                        <div class="input-group mb-3">
-                            <input type="email" class="form-control" placeholder="Enter email">
-                            <button class="btn btn-primary" type="submit">Subscribe</button>
-                        </div>
-                    </form>
-                    <small><a href="#">Cookie Policy</a></small>
+                    <h5>ACCOUNT</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{{ url_for('login') }}">Sign In</a></li>
+                        <li><a href="{{ url_for('signup') }}">Sign Up</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5>LEGAL</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{{ url_for('privacy') }}">Privacy Policy</a></li>
+                        <li><a href="{{ url_for('terms') }}">Terms of Service</a></li>
+                        <li><a href="#" class="cookie-settings">Cookie Settings</a></li>
+                    </ul>
                 </div>
             </div>
+            <div class="row mt-3">
+                <div class="col text-center">
+                    <p class="small text-muted">© 2024 FunList.ai. A service of American Marketing Alliance SPC</p>
+                </div>
+            </div>
+        </div>
+    </footer>
             <div class="row mt-3">
                 <div class="col text-center">
                     <small class="text-muted">© 2024 FunList.ai. A service of American Marketing Alliance</small>
