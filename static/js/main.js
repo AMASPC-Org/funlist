@@ -1,13 +1,12 @@
-
 // Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
     let markers = {};
-    
+
     // Initialize floating CTA
     function initFloatingCTA() {
         let lastScrollTop = 0;
         const floatingCTA = document.querySelector('.floating-cta');
-        
+
         if (floatingCTA) {
             window.addEventListener('scroll', function() {
                 let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
@@ -25,13 +24,13 @@ document.addEventListener('DOMContentLoaded', function() {
     function initCharCount() {
         const titleInput = document.getElementById('title');
         const descriptionInput = document.getElementById('description');
-        
+
         if (titleInput) {
             titleInput.addEventListener('input', function() {
                 document.getElementById('titleCount').textContent = this.value.length;
             });
         }
-        
+
         if (descriptionInput) {
             descriptionInput.addEventListener('input', function() {
                 document.getElementById('descriptionCount').textContent = this.value.length;
@@ -59,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function filterEvents(e) {
         let category = e.target.value;
         let eventElements = document.querySelectorAll('.event-card');
-        
+
         eventElements.forEach(event => {
             if (category === 'all' || event.dataset.category === category) {
                 event.style.display = 'block';
