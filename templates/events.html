@@ -14,13 +14,6 @@
     </div>
 
 <form class="mb-4" method="get" action="{{ url_for('events') }}">
-    <!-- Featured Events Carousel -->
-<div class="featured-events-section mb-4">
-    <h3 class="mb-3">Featured Events</h3>
-    <div class="row" id="featured-events">
-        <!-- Featured events will be dynamically populated here -->
-    </div>
-</div>
 
 <div class="row g-3">
         <div class="col-md-3">
@@ -39,6 +32,15 @@
             <select class="form-select" id="dateRange" name="dateRange">
                 <option value="">All Dates</option>
                 <option value="today">Today</option>
+
+<!-- Featured Events Carousel -->
+<div class="featured-events-section mb-4">
+    <h3 class="mb-3">Featured Events</h3>
+    <div class="row" id="featured-events">
+        <!-- Featured events will be dynamically populated here -->
+    </div>
+</div>
+
                 <option value="tomorrow">Tomorrow</option>
                 <option value="weekend">This Weekend</option>
                 <option value="week">This Week</option>

@@ -1,4 +1,3 @@
-
 // Core functionality for location handling
 function getUserLocation() {
     if (navigator.geolocation) {
