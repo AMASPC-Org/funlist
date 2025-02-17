@@ -349,7 +349,15 @@ main {
 
 @media (max-width: 768px) {
     main {
-        padding-top: 110px;
+        padding-top: 90px;
+    }
+    .map-container-wrapper,
+    .events-container {
+        padding-top: 1rem;
+        margin-top: 1rem;
+    }
+    .page-header {
+        margin-top: 1rem;
     }
     .alert + main {
         padding-top: 150px !important;
@@ -828,8 +836,14 @@ main {
     padding-left: 15px;
     margin-right: auto;
     margin-left: auto;
-    padding-top: 2rem;
+    padding-top: 1rem;
     padding-bottom: 2rem;
+}
+
+@media (min-width: 769px) {
+    .container {
+        padding-top: 2rem;
+    }
 }
 
 /* Consistent top spacing for map and events pages */
