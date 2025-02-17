@@ -10,11 +10,18 @@
 
 /* Hero Section */
 #hero.hero-section {
-    background: url("/static/images/Have-Fun-FunList.ai-home.jpeg") center center / cover no-repeat;
+    background: url("/static/images/Have-Fun-FunList.ai-home.jpeg") center center / contain no-repeat;
     background-color: var(--light-color);  /* Fallback */
     height: 70vh;
     margin: 0;
     padding: 0;
+}
+
+@media (max-width: 768px) {
+    #hero.hero-section {
+        height: 50vh;
+        background-size: cover;
+    }
 }
 
 .content-section {
@@ -28,8 +35,44 @@
 }
 
 @media (max-width: 768px) {
-    #hero.hero-section {
-        padding: 60px 0; /* Adjust padding for smaller screens */
+    .container {
+        text-align: center;
+    }
+    
+    .cta-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .view-options {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .view-options .btn {
+        width: 200px;
+        margin: 5px auto;
+    }
+    
+    .primary-cta {
+        width: 200px;
+        margin: 10px auto;
+    }
+    
+    .fun-rating-scale {
+        padding: 0 15px;
+    }
+    
+    .rating-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .rating-item {
+        width: 100%;
+        text-align: center;
     }
 }
 
