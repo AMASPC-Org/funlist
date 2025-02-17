@@ -218,11 +218,11 @@
     .navbar-brand {
         z-index: 1030;
     }
-    
+
     .navbar .dropdown {
         margin-left: auto;
     }
-    
+
     .navbar-collapse {
         margin-top: 1rem;
     }
@@ -233,11 +233,11 @@
     .navbar-brand {
         margin-right: 2rem;
     }
-    
+
     .navbar-nav.mx-auto {
         margin: 0 auto !important;
     }
-    
+
     .navbar .nav-item {
         margin: 0 0.5rem;
     }
@@ -1077,3 +1077,15 @@ main {
         margin-bottom: 1rem;
     }
 }
+
+/* Submit Event Form Container */
+.container form {
+    padding: 0 15px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+margin-bottom: 0.5rem;
+}
+
+.event-card {
