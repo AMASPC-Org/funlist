@@ -699,3 +699,21 @@ main {
     border: 1px solid rgba(255, 138, 0, 0.2);
     margin-bottom: 0.5rem;
 }
+
+.event-card.highlighted {
+    background-color: #e9ecef;
+    border-color: var(--primary-color);
+}
+
+.sponsored-card {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+}
+
+.sponsored-card .card-body {
+    padding: 1rem;
+}
+
+.sponsored-content {
+    min-height: 120px;
+}

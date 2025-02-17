@@ -6,12 +6,7 @@
 
 {% block content %}
 <div class="container">
-    <section class="featured-events-section py-4">
-        <h3 class="text-center mb-4">Featured Events</h3>
-        <div class="row" id="featured-events">
-            <!-- Featured events will be dynamically populated here -->
-        </div>
-    </section>
+    <h2 class="mb-4">Find Local Events</h2>
     
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Local Events</h2>
@@ -34,8 +29,11 @@
             </select>
         </div>
         <div class="col-md-3">
-            <label for="date" class="form-label">Date</label>
-            <input type="date" class="form-control" id="date" name="date">
+            <label class="form-label">Date Range</label>
+            <div class="d-flex gap-2">
+                <input type="date" class="form-control" id="start_date" name="start_date" placeholder="From">
+                <input type="date" class="form-control" id="end_date" name="end_date" placeholder="To">
+            </div>
         </div>
         <div class="col-md-3">
             <label for="location" class="form-label">Location</label>

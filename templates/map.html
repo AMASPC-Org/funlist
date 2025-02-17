@@ -12,7 +12,7 @@
             <a href="{{ url_for('events') }}" class="btn btn-outline-primary">Switch to List View</a>
         </div>
     </div>
-    
+
     <div class="row mb-4">
         <div class="col-md-3 mb-2">
             <input type="text" class="form-control" id="locationSearch" placeholder="Search location...">
@@ -49,17 +49,31 @@
         <div class="col-md-5">
             <div class="event-cards-container" style="height: 700px; overflow-y: auto;">
                 {% for event in events %}
-                <div class="card mb-3 event-card" data-event-id="{{ event.id }}">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ event.title }}</h5>
-                        <p class="card-text">{{ event.description|truncate(100) }}</p>
-                        <p class="card-text">
-                            <small class="text-muted">{{ event.date.strftime('%B %d, %Y at %I:%M %p') }}</small>
-                        </p>
-                        <p class="card-text"><small class="text-muted">{{ event.location }}</small></p>
-                        <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-primary">View Details</a>
+                    {% if loop.index == 3 %}
+                    <div class="card mb-3 sponsored-card">
+                        <div class="card-body">
+                            <div class="text-muted small mb-2">Advertisement</div>
+                            <div class="sponsored-content">
+                                <!-- Ad content will go here -->
+                                <div class="text-center p-3">
+                                    <h5>Sponsored Content</h5>
+                                    <p>Advertisement space available</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                    {% endif %}
+                    <div class="card mb-3 event-card" data-event-id="{{ event.id }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ event.title }}</h5>
+                            <p class="card-text">{{ event.description|truncate(100) }}</p>
+                            <p class="card-text">
+                                <small class="text-muted">{{ event.date.strftime('%B %d, %Y at %I:%M %p') }}</small>
+                            </p>
+                            <p class="card-text"><small class="text-muted">{{ event.location }}</small></p>
+                            <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-primary">View Details</a>
+                        </div>
+                    </div>
                 {% endfor %}
             </div>
         </div>
@@ -226,6 +240,13 @@
 .event-card.highlighted {
     background-color: #e9ecef;
     border-color: var(--primary-color);
+}
+.sponsored-card {
+    border: 1px dashed #ccc;
+}
+.sponsored-content {
+    padding: 1rem;
+    background-color: #f9f9f9;
 }
 </style>
 {% endblock %}
