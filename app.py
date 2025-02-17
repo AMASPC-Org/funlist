@@ -24,6 +24,7 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 app = Flask(__name__)
+app.config['SERVER_NAME'] = None
 
 # Security configurations
 app.config["SECRET_KEY"] = os.environ.get("FLASK_SECRET_KEY", "dev_key")
