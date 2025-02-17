@@ -1,32 +1,35 @@
 
 <div class="filter-bar mb-4">
-    <form method="GET" class="filter-form">
-        <div class="row g-3">
-            <div class="col-md-3 col-sm-6">
-                <input type="text" class="form-control" id="search_location" name="search_location" placeholder="Search location...">
+    <form method="GET" action="" class="filter-form">
+        <div class="row g-2">
+            <div class="col">
+                <input type="text" class="form-control" id="search_location" name="search_location" placeholder="Search location..." value="{{ request.args.get('search_location', '') }}">
             </div>
-            <div class="col-md-3 col-sm-6">
+            <div class="col">
                 <select class="form-select" id="category" name="category">
                     <option value="">All Categories</option>
-                    <option value="music">Music</option>
-                    <option value="sports">Sports</option>
-                    <option value="arts">Arts</option>
-                    <option value="food">Food</option>
-                    <option value="other">Other</option>
+                    <option value="music" {% if request.args.get('category') == 'music' %}selected{% endif %}>Music</option>
+                    <option value="sports" {% if request.args.get('category') == 'sports' %}selected{% endif %}>Sports</option>
+                    <option value="arts" {% if request.args.get('category') == 'arts' %}selected{% endif %}>Arts</option>
+                    <option value="food" {% if request.args.get('category') == 'food' %}selected{% endif %}>Food</option>
+                    <option value="other" {% if request.args.get('category') == 'other' %}selected{% endif %}>Other</option>
                 </select>
             </div>
-            <div class="col-md-3 col-sm-6">
-                <input type="date" class="form-control" id="date" name="date">
+            <div class="col">
+                <input type="date" class="form-control" id="date" name="date" value="{{ request.args.get('date', '') }}">
             </div>
-            <div class="col-md-3 col-sm-6">
+            <div class="col">
                 <select class="form-select" id="fun_rating" name="fun_rating">
                     <option value="">All Fun Ratings</option>
-                    <option value="5">⭐⭐⭐⭐⭐ (5)</option>
-                    <option value="4">⭐⭐⭐⭐ (4+)</option>
-                    <option value="3">⭐⭐⭐ (3+)</option>
-                    <option value="2">⭐⭐ (2+)</option>
-                    <option value="1">⭐ (1+)</option>
+                    <option value="5" {% if request.args.get('fun_rating') == '5' %}selected{% endif %}>⭐⭐⭐⭐⭐ (5)</option>
+                    <option value="4" {% if request.args.get('fun_rating') == '4' %}selected{% endif %}>⭐⭐⭐⭐ (4+)</option>
+                    <option value="3" {% if request.args.get('fun_rating') == '3' %}selected{% endif %}>⭐⭐⭐ (3+)</option>
+                    <option value="2" {% if request.args.get('fun_rating') == '2' %}selected{% endif %}>⭐⭐ (2+)</option>
+                    <option value="1" {% if request.args.get('fun_rating') == '1' %}selected{% endif %}>⭐ (1+)</option>
                 </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">Filter</button>
             </div>
         </div>
     </form>
