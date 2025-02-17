@@ -258,40 +258,56 @@ def init_routes(app):
     @login_required
     def submit_event():
         form = EventForm()
-        if form.validate_on_submit():
-            is_draft = request.form.get('is_draft', 'false') == 'true'
-            coordinates = geocode_address(
-                form.street.data,
-                form.city.data,
-                form.state.data,
-                form.zip_code.data
-            )
+        if request.method == 'POST':
+            try:
+                if form.validate_on_submit():
+                    is_draft = request.form.get('is_draft', 'false') == 'true'
+                    coordinates = geocode_address(
+                        form.street.data,
+                        form.city.data,
+                        form.state.data,
+                        form.zip_code.data
+                    )
 
-            if not coordinates:
-                flash('Could not geocode address. Please verify the address is correct.', 'danger')
+                    if not coordinates:
+                        flash('Could not geocode address. Please verify the address is correct.', 'danger')
+                        return render_template('submit_event.html', form=form)
+
+                    event = Event(
+                        title=form.title.data,
+                        description=form.description.data,
+                        status='draft' if is_draft else 'pending',
+                        start_date=form.date.data,
+                        end_date=form.date.data,
+                        street=form.street.data,
+                        city=form.city.data,
+                        state=form.state.data,
+                        zip_code=form.zip_code.data,
+                        latitude=coordinates[0],
+                        longitude=coordinates[1],
+                        category=form.category.data,
+                        target_audience=form.target_audience.data,
+                        fun_meter=form.fun_meter.data,
+                        user_id=current_user.id
+                    )
+                    db.session.add(event)
+                    db.session.commit()
+                    flash('Event created successfully!', 'success')
+                    return redirect(url_for('events'))
+                else:
+                    flash('Form submission failed. Please check your inputs.', 'danger') #Added flash message for form validation errors
+                    return render_template('submit_event.html', form=form)
+            except SQLAlchemyError as e:
+                db.session.rollback()
+                logger.exception(f"Database error during event submission: {str(e)}") #Improved logging
+                flash('A database error occurred. Please try again later.', 'danger')
+                return render_template('submit_event.html', form=form)
+            except Exception as e:
+                db.session.rollback()
+                logger.exception(f"Unexpected error during event submission: {str(e)}") #Improved logging
+                flash('An unexpected error occurred. Please try again later.', 'danger')
                 return render_template('submit_event.html', form=form)
 
-            event = Event(
-                title=form.title.data,
-                description=form.description.data,
-                status='draft' if is_draft else 'pending',
-                start_date=form.date.data,
-                end_date=form.date.data,
-                street=form.street.data,
-                city=form.city.data,
-                state=form.state.data,
-                zip_code=form.zip_code.data,
-                latitude=coordinates[0],
-                longitude=coordinates[1],
-                category=form.category.data,
-                target_audience=form.target_audience.data,
-                fun_meter=form.fun_meter.data,
-                user_id=current_user.id
-            )
-            db.session.add(event)
-            db.session.commit()
-            flash('Event created successfully!', 'success')
-            return redirect(url_for('events'))
         return render_template('submit_event.html', form=form)
 
     @app.errorhandler(500)
@@ -335,10 +351,10 @@ def init_routes(app):
     def featured_events_api():
         lat = request.args.get('lat', type=float)
         lng = request.args.get('lng', type=float)
-        
+
         if not lat or not lng:
             return jsonify({'error': 'Location required'}), 400
-            
+
         # Get events within 15 miles radius and with high fun ratings
         events = Event.query.filter(
             Event.latitude.isnot(None),
@@ -346,7 +362,7 @@ def init_routes(app):
             Event.fun_meter >= 4,
             Event.status == 'approved'
         ).all()
-        
+
         # Calculate distances and sort by fun_meter and distance
         featured = []
         for event in events:
@@ -360,7 +376,7 @@ def init_routes(app):
                     'date': event.start_date.strftime('%Y-%m-%d'),
                     'fun_meter': event.fun_meter
                 })
-                
+
         return jsonify(sorted(featured, key=lambda x: (-x['fun_meter'], x['date']))[:5])
 
     @app.route('/admin/analytics')

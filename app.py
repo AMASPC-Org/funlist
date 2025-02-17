@@ -1,7 +1,21 @@
 import os
 import logging
 from datetime import timedelta
-from flask import Flask, session, request
+from flask import Flask
+import logging
+from logging.handlers import RotatingFileHandler
+import os
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        RotatingFileHandler('app.log', maxBytes=10000000, backupCount=5),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__), session, request
 from flask_login import LoginManager
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address

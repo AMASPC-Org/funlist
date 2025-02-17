@@ -62,6 +62,30 @@ function initFloatingCTA() {
     }
 }
 
+// Handle form field visibility
+function initEventForm() {
+    const allDayCheckbox = document.getElementById('all_day');
+    const timeFields = document.querySelector('.time-fields');
+    const recurringCheckbox = document.getElementById('recurring');
+    const recurrenceFields = document.querySelector('.recurrence-fields');
+
+    if (allDayCheckbox) {
+        allDayCheckbox.addEventListener('change', function() {
+            if (timeFields) {
+                timeFields.style.display = this.checked ? 'none' : 'block';
+            }
+        });
+    }
+
+    if (recurringCheckbox) {
+        recurringCheckbox.addEventListener('change', function() {
+            if (recurrenceFields) {
+                recurrenceFields.style.display = this.checked ? 'block' : 'none';
+            }
+        });
+    }
+}
+
 // Form character count
 function initCharCount() {
     const titleInput = document.getElementById('title');
@@ -156,6 +180,34 @@ let eventListeners = new Map();
 document.addEventListener('DOMContentLoaded', () => {
     if (document.querySelector('.floating-cta')) {
         initFloatingCTA();
+    }
+    
+    if (document.querySelector('form#eventForm')) {
+        initEventForm();
+        const form = document.querySelector('form#eventForm');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: new FormData(form)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                if (result.success) {
+                    window.location.href = result.redirect;
+                } else {
+                    alert(result.message || 'Error submitting event');
+                }
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                alert('Error submitting event. Please try again.');
+            }
+        });
     }
 
     if (document.getElementById('title') || document.getElementById('description')) {
