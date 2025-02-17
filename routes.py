@@ -379,6 +379,10 @@ def init_routes(app):
 
         return jsonify(sorted(featured, key=lambda x: (-x['fun_meter'], x['date']))[:5])
 
+    @app.route('/advertising')
+    def advertising():
+        return render_template('advertising.html')
+
     @app.route('/admin/analytics')
     @login_required
     def admin_analytics():
