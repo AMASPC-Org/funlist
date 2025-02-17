@@ -42,38 +42,101 @@
     </div>
 </section>
 
-<!-- Features Section -->
-<div class="container my-5 py-4">
-    <div class="row">
-        <div class="col-md-4 mb-4">
-            <div class="card h-100 feature-card">
-                <div class="card-body">
-                    <h3 id="ai-curation-section"><a href="#ai-curation-section" class="text-decoration-none text-dark">AI-Driven Curation</a></h3>
-                    <p>Our AI analyzes thousands of events to recommend the perfect activities for you based on your interests and preferences.</p>
-                    <a href="#ai-curation-section" class="btn btn-primary mt-2">Learn More</a>
-                </div>
+<!-- Main Features Grid -->
+<div class="container my-5">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="feature-box p-4 bg-light">
+                <h3>AI-Driven Curation</h3>
+                <p>Our AI analyzes thousands of events to find the perfect activities that match your interests and preferences.</p>
             </div>
         </div>
-        <div class="col-md-4 mb-4">
-            <div class="card h-100 feature-card">
-                <div class="card-body">
-                    <h3><a href="#fun-rating-section" class="text-decoration-none text-dark">How the Fun Rating System Works</a></h3>
-                    <p>Each event is rated on a 1-5 scale, with half-point precision, based on its activities, engagement level, and attendee experience.</p>
-                    <a href="#fun-rating-section" class="btn btn-primary mt-2">Learn More</a>
-                </div>
+        <div class="col-md-4">
+            <div class="feature-box p-4 bg-light">
+                <h3>Fun Score System</h3>
+                <p>Every event gets a fun score based on activities, engagement level, and attendee experience.</p>
             </div>
         </div>
-        <div class="col-md-4 mb-4">
-            <div class="card h-100 feature-card">
-                <div class="card-body">
-                    <h3><a href="#fun-assistant-section" class="text-decoration-none text-dark">Fun Assistant</a></h3>
-                    <p>Get personalized event recommendations based on your interests, whether you're looking for family activities, singles events, or business networking.</p>
-                    <a href="#fun-assistant-section" class="btn btn-primary mt-2">Learn More</a>
-                </div>
+        <div class="col-md-4">
+            <div class="feature-box p-4 bg-light">
+                <h3>Fun Assistant</h3>
+                <p>Your personal AI guide to discover events tailored to your interests and preferences.</p>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Personal Fun Assistant Section -->
+<section class="fun-assistant-section py-5 bg-light">
+    <div class="container">
+        <h2>Your Personal Fun Assistant</h2>
+        <p class="lead mb-4">Get personalized recommendations based on your interests and preferences:</p>
+        <ul class="feature-list mb-4">
+            <li>AI-powered event matching</li>
+            <li>Based on the Fun Rating System</li>
+            <li>Weekly personalized updates</li>
+            <li>Customized notifications</li>
+        </ul>
+        <a href="#" class="btn btn-primary btn-lg">Try Fun Assistant Now</a>
+    </div>
+</section>
+
+<!-- Fun Rating System Section -->
+<section class="rating-system-section py-5">
+    <div class="container text-center">
+        <h2 class="mb-4">How the Fun Rating System Works</h2>
+        <p class="lead mb-5">Every event is rated on a 1-5 scale based on activities, engagement level, and attendee experience:</p>
+        <div class="rating-scale">
+            <div class="rating-item">
+                <span class="stars">⭐</span>
+                <p>Basic Event</p>
+            </div>
+            <div class="rating-item">
+                <span class="stars">⭐⭐</span>
+                <p>Social Elements</p>
+            </div>
+            <div class="rating-item">
+                <span class="stars">⭐⭐⭐</span>
+                <p>Interactive</p>
+            </div>
+            <div class="rating-item">
+                <span class="stars">⭐⭐⭐⭐</span>
+                <p>Multiple Activities</p>
+            </div>
+            <div class="rating-item">
+                <span class="stars">⭐⭐⭐⭐⭐</span>
+                <p>Full Experience</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Map Section -->
+<section class="map-section py-5">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <input type="text" class="form-control" placeholder="Search Events">
+            </div>
+            <div class="col-md-3">
+                <select class="form-control">
+                    <option>All Categories</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select class="form-control">
+                    <option>Date Range</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select class="form-control">
+                    <option>Filter Range</option>
+                </select>
+            </div>
+        </div>
+        <div id="map" style="height: 400px;"></div>
+    </div>
+</section>
 
 <!-- Fun Rating System Section -->
 <section id="fun-rating-section" class="container mt-5 mb-5">

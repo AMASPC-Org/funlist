@@ -188,6 +188,72 @@ main {
     color: var(--primary-color);
 }
 
+/* Feature Boxes */
+.feature-box {
+    border-radius: 8px;
+    transition: transform 0.3s ease;
+    height: 100%;
+}
+
+.feature-box:hover {
+    transform: translateY(-5px);
+}
+
+/* Fun Assistant Section */
+.feature-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.feature-list li {
+    margin-bottom: 1rem;
+    padding-left: 2rem;
+    position: relative;
+}
+
+.feature-list li:before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: var(--primary-color);
+}
+
+/* Rating System */
+.rating-scale {
+    display: flex;
+    justify-content: space-between;
+    margin: 2rem 0;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.rating-item {
+    text-align: center;
+    flex: 1;
+    min-width: 150px;
+}
+
+.rating-item .stars {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+/* Map Section */
+.map-section .form-control {
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+    .rating-scale {
+        flex-direction: column;
+    }
+    
+    .rating-item {
+        margin-bottom: 1rem;
+    }
+}
+
 .social-icons a {
     font-size: 1.5rem;
     color: var(--text-secondary);
