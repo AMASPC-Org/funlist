@@ -113,32 +113,47 @@
 <!-- Map Section -->
 <section class="map-section py-5">
     <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Explore Events</h2>
+            <div class="view-switcher">
+                <a href="{{ url_for('events') }}" class="btn btn-outline-primary">
+                    📋 Switch to List View
+                </a>
+            </div>
+        </div>
         <div class="row mb-4">
-            <div class="col-md-3">
-                <input type="text" class="form-control" placeholder="Search Events">
+            <div class="col-md-3 mb-2">
+                <label class="filter-label" for="locationSearch">Location</label>
+                <input type="text" class="form-control" id="locationSearch" placeholder="Search location...">
             </div>
-            <div class="col-md-3">
-                <select class="form-control">
-                    <option>All Categories</option>
-                    <option>Music</option>
-                    <option>Sports</option>
-                    <option>Arts</option>
-                    <option>Food</option>
-                    <option>Other</option>
+            <div class="col-md-3 mb-2">
+                <label class="filter-label" for="categoryFilter">Category</label>
+                <select class="form-select" id="categoryFilter">
+                    <option value="">All Categories</option>
+                    <option value="music">Music</option>
+                    <option value="sports">Sports</option>
+                    <option value="arts">Arts</option>
+                    <option value="food">Food</option>
+                    <option value="other">Other</option>
                 </select>
             </div>
-            <div class="col-md-3">
-                <select class="form-control">
-                    <option>Date Range</option>
-                </select>
+            <div class="col-md-3 mb-2">
+                <label class="filter-label" for="dateFilter">Date</label>
+                <input type="date" class="form-control" id="dateFilter">
             </div>
-            <div class="col-md-3">
-                <select class="form-control">
-                    <option>Filter Range</option>
+            <div class="col-md-3 mb-2">
+                <label class="filter-label" for="funFilter">Fun Rating</label>
+                <select class="form-select" id="funFilter">
+                    <option value="">All Fun Ratings</option>
+                    <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+                    <option value="4">⭐⭐⭐⭐ (4+)</option>
+                    <option value="3">⭐⭐⭐ (3+)</option>
+                    <option value="2">⭐⭐ (2+)</option>
+                    <option value="1">⭐ (1+)</option>
                 </select>
             </div>
         </div>
-        <div id="map" style="height: 400px;"></div>
+        <div id="map" class="map-container"></div>
     </div>
 </section>
 
