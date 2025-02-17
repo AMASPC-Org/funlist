@@ -1,6 +1,7 @@
 // Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
     let markers = {};
+    let map = null;
 
     // Initialize floating CTA
     function initFloatingCTA() {
@@ -27,55 +28,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (titleInput) {
             titleInput.addEventListener('input', function() {
-                document.getElementById('titleCount').textContent = this.value.length;
+                const titleCount = document.getElementById('titleCount');
+                if (titleCount) titleCount.textContent = this.value.length;
             });
         }
 
         if (descriptionInput) {
             descriptionInput.addEventListener('input', function() {
-                document.getElementById('descriptionCount').textContent = this.value.length;
+                const descriptionCount = document.getElementById('descriptionCount');
+                if (descriptionCount) descriptionCount.textContent = this.value.length;
             });
         }
     }
 
-    // Initialize forms
-    function initForms() {
-        let emailSignupForm = document.getElementById('emailSignupForm');
-        if (emailSignupForm) {
-            emailSignupForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                let email = document.getElementById('signupEmail').value;
-                console.log('Email signup:', email);
-                let modal = bootstrap.Modal.getInstance(document.getElementById('emailSignupModal'));
-                if (modal) {
-                    modal.hide();
-                }
-            });
-        }
-    }
-
-    // Event filtering
-    function filterEvents(e) {
-        let category = e.target.value;
-        let eventElements = document.querySelectorAll('.event-card');
-
-        eventElements.forEach(event => {
-            if (category === 'all' || event.dataset.category === category) {
-                event.style.display = 'block';
-            } else {
-                event.style.display = 'none';
-            }
-        });
-    }
-
-    // Initialize all functions
+    // Initialize everything
     initFloatingCTA();
     initCharCount();
-    initForms();
-
-    // Set up event listeners
-    const filterElem = document.getElementById('categoryFilter');
-    if (filterElem) {
-        filterElem.addEventListener('change', filterEvents);
-    }
 });
