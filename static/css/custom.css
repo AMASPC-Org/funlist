@@ -90,8 +90,8 @@
 
 @media (max-width: 768px) {
     #hero.hero-section {
-        height: 65vh;
-        background-size: cover;
+        height: 70vh;
+        background-size: contain;
         background-position: center;
         margin-bottom: 10px;
     }
@@ -99,9 +99,10 @@
 
 @media (max-width: 480px) {
     #hero.hero-section {
-        height: 55vh;
+        height: 45vh;
         margin-bottom: 8px;
-        background-size: cover;
+        background-size: contain;
+        background-position: center 30%;
     }
 }
 
