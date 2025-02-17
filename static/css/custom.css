@@ -194,10 +194,17 @@
 }
 
 .alert {
-    position: relative;
+    position: fixed;
     top: 70px;
-    margin-bottom: 1rem;
+    left: 0;
+    right: 0;
+    margin-bottom: 0;
     z-index: 1020;
+    border-radius: 0;
+}
+
+.alert + main {
+    padding-top: 130px !important;
 }
 
 .navbar-brand {
@@ -342,7 +349,10 @@ main {
 
 @media (max-width: 768px) {
     main {
-        padding-top: 100px;
+        padding-top: 110px;
+    }
+    .alert + main {
+        padding-top: 150px !important;
     }
 }
 
