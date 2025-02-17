@@ -99,7 +99,7 @@ function getFeaturedEvents() {
 }
 
 function fetchFeaturedEvents(lat, lng) {
-    fetch(`/api/featured-events?lat=${lat}&lng=${lng}`)
+    fetch(`https://${window.location.hostname}/api/featured-events?lat=${lat}&lng=${lng}`)
         .then(response => response.json())
         .then(events => {
             const container = document.getElementById('featured-events');
