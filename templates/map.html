@@ -104,7 +104,7 @@
             {
                 id: {{ event.id }},
                 title: "{{ event.title }}",
-                date: "{{ event.date.strftime('%B %d, %Y at %I:%M %p') }}",
+                date: "{{ event.start_date.strftime('%B %d, %Y') }}{% if event.start_time %} at {{ event.start_time.strftime('%I:%M %p') }}{% endif %}",
                 category: "{{ event.category }}",
                 latitude: {{ event.latitude }},
                 longitude: {{ event.longitude }},
