@@ -234,10 +234,15 @@
     <div class="container">
         <h2 class="text-center mb-4">Community Sponsors</h2>
         <div class="row sponsors-grid">
-            {% for i in range(4) %}
             <div class="col-md-3 col-6 mb-4">
                 <div class="sponsor-card">
                     <img src="{{ url_for('static', filename='images/rutledge_farm_logo.png') }}" alt="Rutledge Family Farm" class="img-fluid p-3" style="max-width: 300px;">
+                </div>
+            </div>
+            {% for i in range(3) %}
+            <div class="col-md-3 col-6 mb-4">
+                <div class="sponsor-card">
+                    <div class="ad-slot" data-ad-type="square" data-ad-size="300x250"></div>
                 </div>
             </div>
             {% endfor %}
