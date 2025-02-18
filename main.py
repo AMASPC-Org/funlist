@@ -17,9 +17,16 @@ def create_app():
 if __name__ == "__main__":
     try:
         app = create_app()
-        port = int(os.environ.get("PORT", 5006))
-        logger.info(f"Starting Flask server on port {port}")
-        app.run(host='0.0.0.0', port=port, debug=True)
+        default_ports = [5006, 3000, 8000, 8080]
+        
+        for port in default_ports:
+            try:
+                logger.info(f"Attempting to start Flask server on port {port}")
+                app.run(host='0.0.0.0', port=port, debug=True)
+                break
+            except OSError as e:
+                logger.warning(f"Port {port} is in use, trying next port")
+                continue
     except Exception as e:
         logger.error(f"Failed to start server: {str(e)}")
         raise
