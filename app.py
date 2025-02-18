@@ -110,3 +110,6 @@ def load_user(user_id):
 
 # Initialize routes
 init_routes(app)
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=3000)
