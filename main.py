@@ -1,7 +1,6 @@
 
 import os
 import logging
-from flask import Flask
 from app import app
 
 # Configure logging
@@ -13,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     try:
-        port = int(os.environ.get("PORT", 8080))  # Replit commonly uses port 8080
+        port = 8080  # Set fixed port for Replit
         logger.info(f"Starting Flask server on port {port}...")
         app.run(
             host='0.0.0.0',
