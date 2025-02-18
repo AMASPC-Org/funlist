@@ -82,8 +82,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Featured Events
 function getFeaturedEvents() {
+    const FEATURED_EVENTS_ENABLED = false; // Feature flag
     const container = document.getElementById('featured-events');
     if (!container) return;
+    
+    if (!FEATURED_EVENTS_ENABLED) {
+        container.innerHTML = '<p class="text-muted text-center">Featured events coming soon!</p>';
+        return;
+    }
 
     container.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
 
