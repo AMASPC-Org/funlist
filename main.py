@@ -11,13 +11,16 @@ logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     try:
-        # Get the port from the environment variable (set in .replit)
-        port = int(os.environ.get("PORT", 5006))  # Default to 5006
-        logger.info(f"Starting Flask server on port {port}")
-
-        # Create the Flask app using the factory function
-        app = create_app()
-        app.run(host='0.0.0.0', port=port, debug=True)
+        ports = [5006, 3000, 8080, 8000]
+        for port in ports:
+            try:
+                app = create_app()
+                logger.info(f"Starting Flask server on port {port}")
+                app.run(host='0.0.0.0', port=port, debug=True)
+                break
+            except OSError:
+                logger.warning(f"Port {port} is in use, trying next port")
+                continue
     except Exception as e:
         logger.error(f"Failed to start server: {str(e)}")
         raise
