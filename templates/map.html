@@ -75,7 +75,7 @@
                             <h5 class="card-title">{{ event.title }}</h5>
                             <p class="card-text">{{ event.description|truncate(100) }}</p>
                             <p class="card-text">
-                                <small class="text-muted">{{ event.date.strftime('%B %d, %Y at %I:%M %p') }}</small>
+                                <small class="text-muted">{{ event.start_date.strftime('%B %d, %Y') }}{% if event.start_time %} at {{ event.start_time.strftime('%I:%M %p') }}{% endif %}</small>
                             </p>
                             <p class="card-text"><small class="text-muted">{{ event.location }}</small></p>
                             <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-primary">View Details</a>
