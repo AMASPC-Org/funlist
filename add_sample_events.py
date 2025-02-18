@@ -1,3 +1,4 @@
+
 from datetime import datetime, timedelta
 import random
 from models import Event, User
@@ -14,7 +15,7 @@ def add_sample_events():
             db.session.add(test_user)
             db.session.commit()
 
-        # Sample events with coordinates and social media links
+        # Sample events with coordinates
         events = [
             {
                 "title": "Olympia Music Festival",
@@ -24,15 +25,11 @@ def add_sample_events():
                 "city": "Olympia",
                 "state": "WA",
                 "zip_code": "98501",
-                "category": "music",
-                "target_audience": "adults",
+                "category": "Music",
+                "target_audience": "Adults",
                 "fun_meter": 5,
                 "latitude": 47.0379,
-                "longitude": -122.9007,
-                "website": "https://olympiamusicfest.com",
-                "facebook": "https://facebook.com/olympiamusicfest",
-                "instagram": "https://instagram.com/olympiamusicfest",
-                "twitter": "https://twitter.com/olympiamusicfest"
+                "longitude": -122.9007
             },
             {
                 "title": "Thurston County Fair",
@@ -42,25 +39,69 @@ def add_sample_events():
                 "city": "Lacey",
                 "state": "WA",
                 "zip_code": "98503",
-                "category": "other",
-                "target_audience": "family",
+                "category": "Other",
+                "target_audience": "Family",
                 "fun_meter": 4,
                 "latitude": 47.0343,
-                "longitude": -122.8815,
-                "website": "https://thurstoncountyfair.com",
-                "facebook": "https://facebook.com/thurstoncountyfair",
-                "instagram": "https://instagram.com/thurstoncountyfair",
-                "twitter": "https://twitter.com/thurstoncountyfair"
+                "longitude": -122.8815
+            },
+            {
+                "title": "Downtown Art Walk",
+                "description": "Explore local art galleries and meet artists.",
+                "date": datetime.now() + timedelta(days=3),
+                "street": "205 4th Ave E",
+                "city": "Olympia",
+                "state": "WA",
+                "zip_code": "98501",
+                "category": "Arts",
+                "target_audience": "Adults",
+                "fun_meter": 4,
+                "latitude": 47.0448,
+                "longitude": -122.8982
+            },
+            {
+                "title": "Food Truck Festival",
+                "description": "Sample diverse cuisines from local food trucks.",
+                "date": datetime.now() + timedelta(days=5),
+                "street": "700 Capitol Way N",
+                "city": "Olympia",
+                "state": "WA",
+                "zip_code": "98501",
+                "category": "Food",
+                "target_audience": "Everyone",
+                "fun_meter": 5,
+                "latitude": 47.0478,
+                "longitude": -122.9020
             }
         ]
 
         # Add events to database
         for event_data in events:
-            event = Event(user_id=test_user.id, **event_data)
+            event = Event(
+                title=event_data["title"],
+                description=event_data["description"],
+                start_date=event_data["date"],
+                end_date=event_data["date"],
+                street=event_data["street"],
+                city=event_data["city"],
+                state=event_data["state"],
+                zip_code=event_data["zip_code"],
+                category=event_data["category"],
+                target_audience=event_data["target_audience"],
+                fun_meter=event_data["fun_meter"],
+                latitude=event_data["latitude"],
+                longitude=event_data["longitude"],
+                user_id=test_user.id,
+                status='approved'  # Set status to approved so events show up immediately
+            )
             db.session.add(event)
 
-        db.session.commit()
-        print("Sample events added successfully!")
+        try:
+            db.session.commit()
+            print("Sample events added successfully!")
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error adding events: {str(e)}")
 
 if __name__ == "__main__":
     add_sample_events()
