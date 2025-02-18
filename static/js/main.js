@@ -109,15 +109,20 @@ function fetchFeaturedEvents(lat, lng, container) {
     container.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
     
     fetch(`/api/featured-events?lat=${lat}&lng=${lng}`)
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
-            if (!data.success && data.error) {
-                throw new Error(data.error);
+            if (!data.success) {
+                throw new Error(data.error || 'Failed to fetch events');
             }
             displayFeaturedEvents(container, data.events || []);
         })
         .catch(error => {
-            console.error("Error fetching featured events:", error);
+            console.error("Error fetching featured events:", error.message);
             container.innerHTML = '<div class="alert alert-warning" role="alert">Unable to load featured events. Please try again later.</div>';
         });
 }
