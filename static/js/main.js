@@ -119,11 +119,15 @@ function fetchFeaturedEvents(lat, lng, container) {
             if (!data.success) {
                 throw new Error(data.error || 'Failed to fetch events');
             }
-            displayFeaturedEvents(container, data.events || []);
+            if (!Array.isArray(data.events)) {
+                throw new Error('Invalid events data received');
+            }
+            displayFeaturedEvents(container, data.events);
         })
         .catch(error => {
-            console.error("Error fetching featured events:", error.message);
+            console.error("Error fetching featured events:", error);
             container.innerHTML = '<div class="alert alert-warning" role="alert">Unable to load featured events. Please try again later.</div>';
+            return Promise.reject(error); // Properly handle the rejection
         });
 }
 

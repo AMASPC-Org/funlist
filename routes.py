@@ -411,13 +411,18 @@ def init_routes(app):
                     logger.error(f"Error calculating distance for event {event.id}: {str(e)}")
                     continue
 
+            if not featured:
+                return jsonify({
+                    "success": True,
+                    "events": []
+                })
             return jsonify({
                 "success": True,
                 "events": sorted(featured, key=lambda x: (-x["fun_meter"], x["date"]))[:5]
             })
         except Exception as e:
             logger.error(f"Featured events API error: {str(e)}")
-            return jsonify({"success": False, "error": "Internal server error"}), 500
+            return jsonify({"success": False, "error": str(e)}), 500
 
     @app.route("/advertising")
     def advertising():
