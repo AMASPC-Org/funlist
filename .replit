@@ -7,13 +7,14 @@ channel = "stable-24_05"
 run = ["sh", "-c", "python main.py"]
 
 [env]
-PORT = "5006"  # Set the desired port *here*. This is what main.py will use.
+PORT = "5006"
 
 [[ports]]
-localPort = 5006 # ONLY keep the 5006 port configuration.
+localPort = 5006
 externalPort = 5006
 
 [workflows]
+runButton = "Project"
 
 [[workflows.workflow]]
 name = "Run"
@@ -21,7 +22,7 @@ author = 36270944
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python main.py"
+args = "python main.py" #Ensure this line uses main.py.
 
 [[workflows.workflow]]
 name = "Project"
@@ -44,5 +45,5 @@ task = "packager.installForAll"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python app.py"
+args = "python main.py"  # Ensure this also runs main.py
 waitForPort = 5006
