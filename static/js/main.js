@@ -22,6 +22,9 @@ function getUserLocation() {
 
 // Update featured events based on location
 function updateFeaturedEvents(location) {
+    const FEATURED_EVENTS_ENABLED = false; // Match our feature flag
+    if (!FEATURED_EVENTS_ENABLED) return;
+    
     fetch(`/api/featured-events?lat=${location.lat}&lng=${location.lng}`)
         .then(response => response.json())
         .then(events => {
