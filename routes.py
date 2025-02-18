@@ -381,7 +381,7 @@ def init_routes(app):
 
             if not lat or not lng:
                 return jsonify({"success": False, "error": "Location required"}), 400
-            
+
             events = Event.query.filter(
                 Event.latitude.isnot(None),
                 Event.longitude.isnot(None),
@@ -391,29 +391,30 @@ def init_routes(app):
 
             featured = []
             for event in events:
-            try:
-                # Convert to miles (1 degree ≈ 69 miles)
-                distance = (
-                    (float(event.latitude) - float(lat)) ** 2 + 
-                    (float(event.longitude) - float(lng)) ** 2
-                ) ** 0.5 * 69
-                
-                if distance <= 15:  # 15 miles radius
-                    featured.append({
-                        "id": event.id,
-                        "title": event.title,
-                        "description": event.description[:100] + "..." if len(event.description) > 100 else event.description,
-                        "date": event.start_date.strftime("%Y-%m-%d"),
-                        "fun_meter": event.fun_meter,
-                        "distance": round(distance, 1)
-                    })
-            except (TypeError, ValueError) as e:
+                try:
+                    # Convert to miles (1 degree ≈ 69 miles)
+                    distance = (
+                        (float(event.latitude) - float(lat)) ** 2 + 
+                        (float(event.longitude) - float(lng)) ** 2
+                    ) ** 0.5 * 69
+
+                    if distance <= 15:  # 15 miles radius
+                        featured.append({
+                            "id": event.id,
+                            "title": event.title,
+                            "description": event.description[:100] + "..." if len(event.description) > 100 else event.description,
+                            "date": event.start_date.strftime("%Y-%m-%d"),
+                            "fun_meter": event.fun_meter,
+                            "distance": round(distance, 1)
+                        })
+                except (TypeError, ValueError) as e:
                     logger.error(f"Error calculating distance for event {event.id}: {str(e)}")
                     continue
+
             return jsonify({
-                    "success": True,
-                    "events": sorted(featured, key=lambda x: (-x["fun_meter"], x["date"]))[:5]
-                })
+                "success": True,
+                "events": sorted(featured, key=lambda x: (-x["fun_meter"], x["date"]))[:5]
+            })
         except Exception as e:
             logger.error(f"Featured events API error: {str(e)}")
             return jsonify({"success": False, "error": "Internal server error"}), 500
