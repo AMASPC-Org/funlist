@@ -1,0 +1,31 @@
+Prompt for Replit AI Assistant Web & App Developer: MVP Requirements & Roadmap (Updated)
+Please review all our past conversations and chat logs (across different sessions with you as both AI Agent and AI Assistant) to reconstruct the MVP Technical Requirements Summary document we previously discussed.
+
+Tasks:
+
+Find/Modify/Create: Locate the existing MVP Technical Requirements Summary document. If it exists, ensure it's up-to-date based on our latest discussions. If not, please create it from scratch.  Save this document as mvp_requirements.md in the project directory.
+
+Gap Analysis: After finalizing the mvp_requirements.md file, analyze the current project state to identify any gaps between the current progress and the defined MVP requirements.
+
+Roadmap Creation: Based on the gap analysis, create a roadmap.md file in the project directory. This file should outline the steps needed to bridge the identified gaps and achieve the MVP.
+
+New MVP Feature: Digital Ads (Revised):  Update the digital ads requirements in mvp_requirements.md to include the following:
+
+Funlist.ai Ad Placement: The platform should support placing digital ads.
+Stripe Integration: Integrate Stripe (API available) for handling ad payments.
+LMT.ai Ad Sales Integration: Enable ad sales through Localmarketingtool.ai (LMT.ai). This requires a communication process between LMT.ai and Funlist.ai:
+When an ad is sold on LMT.ai, LMT.ai must automatically notify Funlist.ai to place the ad.
+The ad creative (file) will be submitted via LMT.ai.
+Funlist.ai Direct Ad Purchase & Submission: Allow users to directly purchase ads on Funlist.ai. This includes a process for users to upload their ad creatives (files) and a Funlist.ai ad approval workflow before the ad goes live.
+LMT.ai Event Sponsorship Logo Integration: When a user on LMT.ai purchases sponsorship for an event on Funlist.ai and uploads their company logo (on LMT.ai), that logo should automatically appear on the event's listing card on Funlist.ai.
+AMA Membership Logo Placement: Implement a system to automatically place the company logo of American Marketing Alliance (AMA) members on rotating ad blocks (initially 4) on both LMT.ai and Funlist.ai. This should be triggered by AMA membership status. (Website: americanmarketingalliance.com [ama.com])
+Technical Best Practices Analysis: Before implementing the above features, please provide a brief analysis of the proposed technical approach.  Are these the most efficient and scalable ways to achieve these goals? What are the best practices for implementing these features, especially concerning the integrations between LMT.ai and Funlist.ai?
+
+AMA/LMT.ai/Funlist.ai Report: Create a report summarizing the updated MVP requirements, the technical best practices analysis, and any other relevant information that I can use to update the MVP documentation for ama.com, lmt.ai, and funlist.ai.
+
+Deliverables:
+
+mvp_requirements.md (updated)
+roadmap.md
+AMA/LMT.ai/Funlist.ai Report (new)
+Question: Do you have any questions before proceeding with these tasks?
