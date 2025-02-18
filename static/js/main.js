@@ -419,3 +419,42 @@ function cleanupEventListeners() {
 
 // Clean up listeners when page unloads
 window.addEventListener('unload', cleanupEventListeners);
+
+
+// Sponsor rotation functionality
+function initSponsorRotation() {
+    // Example sponsor list - replace with your actual sponsor data
+    const sponsors = [
+        { image: '/static/images/rutledge_farm_logo.png', name: 'Rutledge Family Farm' },
+        // Add more sponsors here
+    ];
+    
+    const sponsorSlots = document.querySelectorAll('#sponsors-carousel .sponsor-image');
+    let currentIndex = 0;
+    const rotationInterval = 5000; // 5 seconds
+    
+    function updateSponsors() {
+        sponsorSlots.forEach((slot, index) => {
+            const sponsorIndex = (currentIndex + index) % sponsors.length;
+            const sponsor = sponsors[sponsorIndex];
+            
+            slot.src = sponsor.image;
+            slot.alt = sponsor.name;
+            slot.style.display = 'block';
+            slot.parentElement.querySelector('.ad-slot').style.display = 'none';
+        });
+        
+        currentIndex = (currentIndex + 4) % sponsors.length;
+    }
+    
+    // Initial update
+    updateSponsors();
+    
+    // Start rotation
+    setInterval(updateSponsors, rotationInterval);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    initSponsorRotation();
+    // ... (keep existing DOMContentLoaded handlers)
+});
