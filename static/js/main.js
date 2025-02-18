@@ -23,11 +23,15 @@ function getUserLocation() {
 // Update featured events based on location
 function updateFeaturedEvents(location) {
     const FEATURED_EVENTS_ENABLED = false; // Match our feature flag
-    if (!FEATURED_EVENTS_ENABLED) return;
+    if (!FEATURED_EVENTS_ENABLED) return Promise.resolve(); // Return resolved promise when disabled
     
-    fetch(`/api/featured-events?lat=${location.lat}&lng=${location.lng}`)
+    return fetch(`/api/featured-events?lat=${location.lat}&lng=${location.lng}`)
         .then(response => response.json())
-        .then(events => {
+        .then(data => {
+            if (data.message) {
+                console.log('Featured events message:', data.message);
+                return;
+            }
             const featuredSection = document.querySelector('#featured-events');
             if (featuredSection && events.length > 0) {
                 const eventsHtml = events.map(event => `
