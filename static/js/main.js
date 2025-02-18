@@ -24,7 +24,7 @@ function getUserLocation() {
 function updateFeaturedEvents(location) {
     const FEATURED_EVENTS_ENABLED = false; // Match our feature flag
     if (!FEATURED_EVENTS_ENABLED) return Promise.resolve(); // Return resolved promise when disabled
-    
+
     return fetch(`/api/featured-events?lat=${location.lat}&lng=${location.lng}`)
         .then(response => response.json())
         .then(data => {
@@ -65,20 +65,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Location handling
-    const locationModal = document.getElementById('locationModal');
-    if (locationModal) {
-        const allowLocationBtn = document.getElementById('allowLocation');
-        const denyLocationBtn = document.getElementById('denyLocation');
+    // Location modal removed - handled by browser geolocation only
 
-        if (allowLocationBtn) {
-            allowLocationBtn.addEventListener('click', handleLocationPermission);
-        }
-        if (denyLocationBtn) {
-            denyLocationBtn.addEventListener('click', () => {
-                locationModal.style.display = 'none';
-            });
-        }
-    }
 
     // Date range handling
     const dateRangeSelect = document.getElementById('date_range');
@@ -92,7 +80,7 @@ function getFeaturedEvents() {
     const FEATURED_EVENTS_ENABLED = false; // Feature flag
     const container = document.getElementById('featured-events');
     if (!container) return;
-    
+
     if (!FEATURED_EVENTS_ENABLED) {
         container.innerHTML = '<p class="text-muted text-center">Featured events coming soon!</p>';
         return;
@@ -101,7 +89,7 @@ function getFeaturedEvents() {
     container.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
 
     const defaultLocation = { lat: 47.0379, lng: -122.9007 };
-    
+
     if ("geolocation" in navigator) {
         const geolocationPromise = new Promise((resolve) => {
             navigator.geolocation.getCurrentPosition(
@@ -129,14 +117,14 @@ function getFeaturedEvents() {
 function fetchFeaturedEvents(lat, lng, container) {
     const FEATURED_EVENTS_ENABLED = false; // Match our feature flag
     if (!FEATURED_EVENTS_ENABLED || !container) return;
-    
+
     container.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
-    
+
     if (!lat || !lng) {
         container.innerHTML = '<p class="text-muted">Unable to get location. Showing all events.</p>';
         return;
     }
-    
+
     fetch(`/api/featured-events?lat=${lat}&lng=${lng}`)
         .then(response => {
             if (!response.ok) {
@@ -227,23 +215,6 @@ function handleEmailSignup(e) {
     });
 }
 
-// Location Handling
-function handleLocationPermission() {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            position => {
-                const modal = bootstrap.Modal.getInstance(document.getElementById('locationModal'));
-                if (modal) modal.hide();
-                // Update featured events with user's location
-                getFeaturedEvents();
-            },
-            error => {
-                console.error("Error getting location:", error);
-                alert('Unable to get your location. Please try again.');
-            }
-        );
-    }
-}
 
 // Date Range Handling
 function handleDateRangeChange(e) {
