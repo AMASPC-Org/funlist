@@ -236,7 +236,7 @@
         <div class="row sponsors-grid">
             <div class="col-md-3 col-6 mb-4">
                 <div class="sponsor-card">
-                    <img src="{{ url_for('static', filename='images/rutledge_farm_logo.png') }}" alt="Rutledge Family Farm" class="img-fluid p-3" style="max-width: 300px;">
+                    <img src="{{ url_for('static', filename='images/rutledge_farm_logo.png') }}" alt="Rutledge Family Farm" class="img-fluid p-3" width="300" height="auto" onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22100%22><rect width=%22100%%22 height=%22100%%22 fill=%22%23f8f9fa%22/><text x=%2250%%22 y=%2250%%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22Arial%22>Rutledge Family Farm</text></svg>';">
                 </div>
             </div>
             {% for i in range(3) %}
