@@ -85,21 +85,31 @@ function getFeaturedEvents() {
     const container = document.getElementById('featured-events');
     if (!container) return;
 
+    container.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+
+    const defaultLocation = { lat: 47.0379, lng: -122.9007 };
+    
     if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(
-            position => {
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-                fetchFeaturedEvents(lat, lng, container);
-            },
-            error => {
-                console.warn("Using default location:", error);
-                fetchFeaturedEvents(47.0379, -122.9007, container);
-            },
-            { timeout: 5000, maximumAge: 300000 }
-        );
+        const geolocationPromise = new Promise((resolve) => {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    resolve({
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    });
+                },
+                () => {
+                    resolve(defaultLocation);
+                },
+                { timeout: 5000, maximumAge: 300000 }
+            );
+        });
+
+        geolocationPromise.then(location => {
+            fetchFeaturedEvents(location.lat, location.lng, container);
+        });
     } else {
-        container.innerHTML = '<p class="text-muted">Location services not available.</p>';
+        fetchFeaturedEvents(defaultLocation.lat, defaultLocation.lng, container);
     }
 }
 

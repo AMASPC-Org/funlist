@@ -376,11 +376,17 @@ def init_routes(app):
     @app.route("/api/featured-events")
     def featured_events_api():
         try:
-            lat = request.args.get("lat", type=float)
-            lng = request.args.get("lng", type=float)
+            lat = request.args.get("lat")
+            lng = request.args.get("lng")
 
             if not lat or not lng:
-                return jsonify({"success": False, "error": "Location required"}), 400
+                return jsonify({"success": True, "events": []}), 200
+
+            try:
+                lat = float(lat)
+                lng = float(lng)
+            except (TypeError, ValueError):
+                return jsonify({"success": True, "events": []}), 200
 
             events = Event.query.filter(
                 Event.latitude.isnot(None),
