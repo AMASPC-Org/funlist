@@ -389,8 +389,8 @@ def init_routes(app):
                 Event.status == "approved",
             ).all()
 
-        featured = []
-        for event in events:
+            featured = []
+            for event in events:
             try:
                 # Convert to miles (1 degree ≈ 69 miles)
                 distance = (
@@ -408,12 +408,12 @@ def init_routes(app):
                         "distance": round(distance, 1)
                     })
             except (TypeError, ValueError) as e:
-                logger.error(f"Error calculating distance for event {event.id}: {str(e)}")
-                continue
-        return jsonify({
-                "success": True,
-                "events": sorted(featured, key=lambda x: (-x["fun_meter"], x["date"]))[:5]
-            })
+                    logger.error(f"Error calculating distance for event {event.id}: {str(e)}")
+                    continue
+            return jsonify({
+                    "success": True,
+                    "events": sorted(featured, key=lambda x: (-x["fun_meter"], x["date"]))[:5]
+                })
         except Exception as e:
             logger.error(f"Featured events API error: {str(e)}")
             return jsonify({"success": False, "error": "Internal server error"}), 500
