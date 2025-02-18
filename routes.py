@@ -375,19 +375,19 @@ def init_routes(app):
 
     @app.route("/api/featured-events")
     def featured_events_api():
-        lat = request.args.get("lat", type=float)
-        lng = request.args.get("lng", type=float)
+        try:
+            lat = request.args.get("lat", type=float)
+            lng = request.args.get("lng", type=float)
 
-        if not lat or not lng:
-            return jsonify({"error": "Location required"}), 400
-        # Get events within 15 miles radius and with high fun ratings
-
-        events = Event.query.filter(
-            Event.latitude.isnot(None),
-            Event.longitude.isnot(None),
-            Event.fun_meter >= 4,
-            Event.status == "approved",
-        ).all()
+            if not lat or not lng:
+                return jsonify({"success": False, "error": "Location required"}), 400
+            
+            events = Event.query.filter(
+                Event.latitude.isnot(None),
+                Event.longitude.isnot(None),
+                Event.fun_meter >= 4,
+                Event.status == "approved",
+            ).all()
 
         featured = []
         for event in events:
@@ -410,7 +410,13 @@ def init_routes(app):
             except (TypeError, ValueError) as e:
                 logger.error(f"Error calculating distance for event {event.id}: {str(e)}")
                 continue
-        return jsonify(sorted(featured, key=lambda x: (-x["fun_meter"], x["date"]))[:5])
+        return jsonify({
+                "success": True,
+                "events": sorted(featured, key=lambda x: (-x["fun_meter"], x["date"]))[:5]
+            })
+        except Exception as e:
+            logger.error(f"Featured events API error: {str(e)}")
+            return jsonify({"success": False, "error": "Internal server error"}), 500
 
     @app.route("/advertising")
     def advertising():
