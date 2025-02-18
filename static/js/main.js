@@ -123,7 +123,8 @@ function getFeaturedEvents() {
 }
 
 function fetchFeaturedEvents(lat, lng, container) {
-    if (!container) return;
+    const FEATURED_EVENTS_ENABLED = false; // Match our feature flag
+    if (!FEATURED_EVENTS_ENABLED || !container) return;
     
     container.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
     

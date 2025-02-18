@@ -375,6 +375,11 @@ def init_routes(app):
 
     @app.route("/api/featured-events")
     def featured_events_api():
+        # Feature flag check
+        FEATURED_EVENTS_ENABLED = False
+        if not FEATURED_EVENTS_ENABLED:
+            return jsonify({"success": True, "events": [], "message": "Feature not yet available"}), 200
+            
         try:
             lat = request.args.get("lat")
             lng = request.args.get("lng")
