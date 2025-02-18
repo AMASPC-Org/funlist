@@ -1,3 +1,4 @@
+
 import os
 import logging
 from app import app
@@ -13,7 +14,7 @@ if __name__ == "__main__":
     try:
         port = int(os.environ.get("PORT", 5006))
         logger.info(f"Starting Flask server on port {port}")
-        app.run(host='0.0.0.0', port=port, debug=True)
+        app.run(host='0.0.0.0', port=port, debug=False)
     except Exception as e:
         logger.error(f"Failed to start server: {str(e)}")
         raise
