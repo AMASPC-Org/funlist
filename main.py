@@ -13,10 +13,12 @@ logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     try:
-        port = int(os.environ.get('PORT', 5006))
+        port = 5006  # Set fixed port for consistency
         logger.info(f"Starting Flask server on port {port}...")
         app.run(
             host='0.0.0.0',
+            port=port,
+            debug=False,
             port=port,
             debug=False
         )
