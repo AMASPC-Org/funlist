@@ -118,6 +118,11 @@ function fetchFeaturedEvents(lat, lng, container) {
     
     container.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
     
+    if (!lat || !lng) {
+        container.innerHTML = '<p class="text-muted">Unable to get location. Showing all events.</p>';
+        return;
+    }
+    
     fetch(`/api/featured-events?lat=${lat}&lng=${lng}`)
         .then(response => {
             if (!response.ok) {

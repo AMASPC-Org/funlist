@@ -380,7 +380,13 @@ def init_routes(app):
             lng = request.args.get("lng")
 
             if not lat or not lng:
-                return jsonify({"success": True, "events": []}), 200
+                return jsonify({"success": True, "events": [], "message": "No coordinates provided"}), 200
+                
+            try:
+                lat = float(lat)
+                lng = float(lng)
+            except (ValueError, TypeError):
+                return jsonify({"success": False, "error": "Invalid coordinates"}), 400
 
             try:
                 lat = float(lat)
