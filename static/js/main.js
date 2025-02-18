@@ -420,20 +420,29 @@ function cleanupEventListeners() {
 // Clean up listeners when page unloads
 window.addEventListener('unload', cleanupEventListeners);
 
-
 // Sponsor rotation functionality
 function initSponsorRotation() {
+    const sponsorsCarousel = document.getElementById('sponsors-carousel');
+    if (!sponsorsCarousel) return;
+
     const sponsors = [
         { image: '/static/images/rutledge_farm_logo.png', name: 'Rutledge Family Farm' }
     ];
-    
-    const sponsorSlot = document.querySelector('#sponsors-carousel .sponsor-image');
-    if (sponsorSlot) {
-        sponsorSlot.src = sponsors[0].image;
-        sponsorSlot.alt = sponsors[0].name;
-        sponsorSlot.style.display = 'block';
-        sponsorSlot.parentElement.querySelector('.ad-slot').style.display = 'none';
-    }
+
+    // Create sponsor card structure
+    const sponsorCard = document.createElement('div');
+    sponsorCard.className = 'col-md-3';
+    sponsorCard.innerHTML = `
+        <div class="sponsor-card">
+            <div class="sponsor-content">
+                <img src="${sponsors[0].image}" alt="${sponsors[0].name}" class="img-fluid">
+            </div>
+        </div>
+    `;
+
+    // Clear and append new sponsor
+    sponsorsCarousel.innerHTML = '';
+    sponsorsCarousel.appendChild(sponsorCard);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
