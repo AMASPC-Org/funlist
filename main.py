@@ -13,13 +13,13 @@ if __name__ == "__main__":
     try:
         app = create_app()
         # Try ports in sequence until one works
-        ports = [80, 8080, 3000, 5000]
+        ports = [8000, 8080, 3000, 5000]  # Changed port order
         started = False
         
         for port in ports:
             try:
                 logger.info(f"Attempting to start Flask server on port {port}")
-                app.run(host='0.0.0.0', port=port, debug=True)
+                app.run(host='0.0.0.0', port=port, debug=True, use_reloader=False)  # Disabled reloader
                 started = True
                 break
             except OSError as e:
