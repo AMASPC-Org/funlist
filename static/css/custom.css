@@ -197,6 +197,55 @@
     z-index: 2;
 }
 
+
+/* Help Center Styles */
+.help-categories .help-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    text-align: center;
+    height: 100%;
+    transition: transform 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.help-categories .help-card:hover {
+    transform: translateY(-5px);
+}
+
+.help-icon {
+    margin-bottom: 1rem;
+}
+
+.search-input {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 1rem;
+    border-radius: 30px;
+    border: 1px solid #e5e7eb;
+}
+
+.accordion-item {
+    margin-bottom: 1rem;
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 8px;
+}
+
+.accordion-button {
+    padding: 1.25rem;
+    font-weight: 500;
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.faq-section {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
 #hero.hero-section h1,
 #hero.hero-section p {
     color: var(--light-color);
