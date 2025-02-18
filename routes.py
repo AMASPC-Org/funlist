@@ -15,6 +15,10 @@ logger.setLevel(logging.DEBUG)
 
 
 def init_routes(app):
+    @app.route("/about")
+    def about():
+        return render_template('about.html')
+
     @app.route("/subscribe", methods=["POST"])
     def subscribe():
         try:
