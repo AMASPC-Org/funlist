@@ -426,7 +426,8 @@ function initSponsorRotation() {
     if (!sponsorsCarousel) return;
 
     const sponsors = [
-        { image: '/static/images/rutledge_farm_logo.png', name: 'Rutledge Family Farm' }
+        { image: '/static/images/rutledge_farm_logo.png', name: 'Rutledge Family Farm' },
+        { image: '/static/images/your_new_image.png', name: 'Your Sponsor Name' }
     ];
 
     // Create sponsor card structure
