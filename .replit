@@ -13,6 +13,10 @@ PORT = "5006"
 localPort = 5006
 externalPort = 5006
 
+[[ports]]
+localPort = 8080
+externalPort = 80
+
 [workflows]
 runButton = "Run"
 
@@ -22,4 +26,5 @@ author = 36270944
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
+args = "python main.py"
 #args = "python main.py" # REMOVE
