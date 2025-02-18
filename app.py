@@ -4,8 +4,6 @@ from datetime import timedelta
 from flask import Flask
 import logging
 from logging.handlers import RotatingFileHandler
-import os
-
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -23,6 +21,7 @@ from flask_limiter.util import get_remote_address
 from flask_wtf.csrf import CSRFProtect
 from flask_session import Session
 from db_init import db
+from flask_migrate import Migrate  # Import Migrate
 
 # Configure logging
 logging.basicConfig(
@@ -91,6 +90,7 @@ app.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
 
 # initialize extensions
 db.init_app(app)
+migrate = Migrate(app, db)  # Initialize Migrate
 csrf = CSRFProtect(app)
 Session(app)
 
@@ -112,6 +112,3 @@ def load_user(user_id):
 
 # Initialize routes
 init_routes(app)
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)

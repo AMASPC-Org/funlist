@@ -1,7 +1,6 @@
-
 from flask_login import UserMixin
 from datetime import datetime
-from db_init import db
+from db_init import db  # Import db from db_init.py
 import logging
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -45,7 +44,7 @@ class Event(db.Model):
     needs_permission = db.Column(db.Boolean, default=False)
     permission_requested_at = db.Column(db.DateTime)
     permission_granted = db.Column(db.Boolean, default=False)
-    
+
     # Add relationship to User and SourceWebsite models
     organizer = db.relationship('User', backref='organized_events')
     source_website = db.relationship('SourceWebsite', backref='events')
@@ -102,6 +101,7 @@ class User(UserMixin, db.Model):
     def __repr__(self):
         return f'<User {self.email}>'
 
+# Add Subscriber Model
 class Subscriber(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
