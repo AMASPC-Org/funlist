@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     try:
-        port = int(os.environ.get("PORT", 3000))
+        port = int(os.environ.get("PORT", 8080))  # Replit commonly uses port 8080
         logger.info(f"Starting Flask server on port {port}...")
         app.run(
             host='0.0.0.0',
