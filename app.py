@@ -16,20 +16,20 @@ import time
 # Configure logging with more detailed format
 logging.basicConfig(
     level=logging.DEBUG,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s - %(pathname)s:%(lineno)d',
-    handlers=[
-        logging.FileHandler('app.log'),
-        logging.StreamHandler()
-    ]
-)
+    format=
+    '%(asctime)s - %(name)s - %(levelname)s - %(message)s - %(pathname)s:%(lineno)d',
+    handlers=[logging.FileHandler('app.log'),
+              logging.StreamHandler()])
 logger = logging.getLogger(__name__)
+
 
 def create_app():
     logger.info("Starting application creation...")
     app = Flask(__name__)
 
     # Enhanced configurations for Replit environment
-    app.config["SECRET_KEY"] = os.environ.get("FLASK_SECRET_KEY", "dev_key")
+    app.config["SECRET_KEY"] = os.environ.get(
+        "FLASK_SECRET_KEY", "dev_key")  # Use environment variable
     app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
     app.config["SERVER_NAME"] = None  # Allow all hostnames
     app.config["APPLICATION_ROOT"] = "/"
@@ -40,7 +40,9 @@ def create_app():
         "pool_recycle": 300,
         "pool_pre_ping": True,
         "pool_timeout": 30,
-        "connect_args": {"connect_timeout": 10}
+        "connect_args": {
+            "connect_timeout": 10
+        }
     }
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -76,14 +78,16 @@ def create_app():
         logger.info("Initializing Flask-Migrate...")
         Migrate(app, db)
     except Exception as e:
-        logger.error(f"Failed to initialize Flask-Migrate: {str(e)}", exc_info=True)
+        logger.error(f"Failed to initialize Flask-Migrate: {str(e)}",
+                     exc_info=True)
         raise
 
     try:
         logger.info("Initializing CSRF protection...")
         CSRFProtect(app)
     except Exception as e:
-        logger.error(f"Failed to initialize CSRF protection: {str(e)}", exc_info=True)
+        logger.error(f"Failed to initialize CSRF protection: {str(e)}",
+                     exc_info=True)
         raise
 
     try:
@@ -102,7 +106,8 @@ def create_app():
         login_manager.login_message_category = "info"
         login_manager.session_protection = "strong"
     except Exception as e:
-        logger.error(f"Failed to initialize login manager: {str(e)}", exc_info=True)
+        logger.error(f"Failed to initialize login manager: {str(e)}",
+                     exc_info=True)
         raise
 
     try:
@@ -117,7 +122,8 @@ def create_app():
         try:
             return db.session.get(User, int(user_id))
         except Exception as e:
-            logger.error(f"Error loading user {user_id}: {str(e)}", exc_info=True)
+            logger.error(f"Error loading user {user_id}: {str(e)}",
+                         exc_info=True)
             return None
 
     try:
@@ -132,4 +138,5 @@ def create_app():
     logger.info("Application creation completed successfully")
     return app
 
-# Application factory function is used by main.py
+
+# No app.run() or port handling here!
