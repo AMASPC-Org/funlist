@@ -132,23 +132,4 @@ def create_app():
     logger.info("Application creation completed successfully")
     return app
 
-if __name__ == "__main__":
-    try:
-        logger.info("Creating Flask application...")
-        app = create_app()
-        logger.info("Starting Flask server...")
-
-        # Get port from environment with fallback
-        port = int(os.environ.get('PORT', 5006))
-        logger.info(f"Attempting to start server on port {port}")
-
-        app.run(
-            host='0.0.0.0',
-            port=port,
-            debug=True,
-            use_reloader=True,
-            threaded=True
-        )
-    except Exception as e:
-        logger.error(f"Failed to start application: {str(e)}", exc_info=True)
-        raise
+# Application factory function is used by main.py
