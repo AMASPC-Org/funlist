@@ -1,32 +1,23 @@
-
 import os
 import logging
-from flask import Flask
+from app import create_app  # Import the create_app function
 
-# Configure logging
+# Configure logging (basicConfig is fine for simple cases)
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
 
-def create_app():
-    from app import create_app as init_app
-    return init_app()
-
 if __name__ == "__main__":
     try:
+        # Get the port from the environment variable (set in .replit)
+        port = int(os.environ.get("PORT", 5006))  # Default to 5006 if PORT is not set
+        logger.info(f"Starting Flask server on port {port}")
+
+        # Create the Flask app using the factory function
         app = create_app()
-        default_ports = [5006, 3000, 8000, 8080]
-        
-        for port in default_ports:
-            try:
-                logger.info(f"Attempting to start Flask server on port {port}")
-                app.run(host='0.0.0.0', port=port, debug=True)
-                break
-            except OSError as e:
-                logger.warning(f"Port {port} is in use, trying next port")
-                continue
+        app.run(host='0.0.0.0', port=port, debug=True)  # Run the app
     except Exception as e:
         logger.error(f"Failed to start server: {str(e)}")
         raise
