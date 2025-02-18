@@ -99,7 +99,7 @@ function getFeaturedEvents() {
 }
 
 function fetchFeaturedEvents(lat, lng) {
-    fetch(`https://${window.location.hostname}/api/featured-events?lat=${lat}&lng=${lng}`)
+    fetch(`/api/featured-events?lat=${lat}&lng=${lng}`)
         .then(response => response.json())
         .then(events => {
             const container = document.getElementById('featured-events');
@@ -113,6 +113,10 @@ function fetchFeaturedEvents(lat, lng) {
 }
 
 function displayFeaturedEvents(container, events) {
+    if (!events || events.error) {
+        container.innerHTML = '<p class="text-muted">No featured events available in your area.</p>';
+        return;
+    }
     if (!events.length) {
         container.innerHTML = '<p class="text-center">No featured events found in your area.</p>';
         return;
