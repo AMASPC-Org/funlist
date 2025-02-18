@@ -389,25 +389,27 @@ def init_routes(app):
             Event.status == "approved",
         ).all()
 
-        # Calculate distances and sort by fun_meter and distance
-
         featured = []
         for event in events:
-            # Convert to miles (1 degree ≈ 69 miles)
-
-            distance = (
-                (event.latitude - lat) ** 2 + (event.longitude - lng) ** 2
-            ) ** 0.5 * 69
-            if distance <= 15:  # 15 miles radius
-                featured.append(
-                    {
+            try:
+                # Convert to miles (1 degree ≈ 69 miles)
+                distance = (
+                    (float(event.latitude) - float(lat)) ** 2 + 
+                    (float(event.longitude) - float(lng)) ** 2
+                ) ** 0.5 * 69
+                
+                if distance <= 15:  # 15 miles radius
+                    featured.append({
                         "id": event.id,
                         "title": event.title,
-                        "description": event.description,
+                        "description": event.description[:100] + "..." if len(event.description) > 100 else event.description,
                         "date": event.start_date.strftime("%Y-%m-%d"),
                         "fun_meter": event.fun_meter,
-                    }
-                )
+                        "distance": round(distance, 1)
+                    })
+            except (TypeError, ValueError) as e:
+                logger.error(f"Error calculating distance for event {event.id}: {str(e)}")
+                continue
         return jsonify(sorted(featured, key=lambda x: (-x["fun_meter"], x["date"]))[:5])
 
     @app.route("/advertising")
