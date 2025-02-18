@@ -1,0 +1,37 @@
+Action Items for the Developer:
+
+Regarding addsampleevents.py:
+
+Verify Command Spelling: Carefully retype the command python3 addsampleevents.py in the Replit shell, ensuring there are absolutely no typos or extra characters. Before running the command, use ls to list the files in your current directory and visually confirm that addsampleevents.py exists in that directory.
+
+Check Script Location: If addsampleevents.py is not in the root directory (~/workspace), you must either:
+
+Navigate to the correct directory using the cd command (e.g., cd utils if it's in a subdirectory called "utils"). Then run python3 addsampleevents.py.
+
+Provide the full path to the script when running the command (e.g., python3 utils/addsampleevents.py).
+
+Verify and Set Execution Permissions: Run ls -l addsampleevents.py. Look at the output. If it doesn't show "x" permissions (e.g., it shows -rw-r--r-- instead of -rwxr-xr-x), then run chmod +x addsampleevents.py to grant execute permissions.
+
+Verify and add Shebang: Open the addsampleevents.py file and make sure that the very first line is #!/usr/bin/env python3. If it is not, add it. Save the file.
+
+Regarding Webview/Networking:
+
+Explicitly Set Host and Port in Flask (MANDATORY): Modify your app.py file. Find the line that says if __name__ == '__main__':. Make sure the app.run() call looks exactly like this:
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5006, debug=False)
+Use code with caution.
+Python
+Important Notes: The host='0.0.0.0' part is critical for Replit. debug=False is critical for security. Make this change, save the file, and restart your Flask application. Then, check if the webview is working.
+
+Instructions for Google AI Studio/Replit AI/Other Agents:
+
+(Replit Specialist Agent): Execute the following function calls and provide the results:
+
+get_replit_config()
+
+check_python_version()
+
+list_installed_packages()
+
+(FunList CTO AI): Analyze the addsampleevents.py file to ensure the shebang is correct.
