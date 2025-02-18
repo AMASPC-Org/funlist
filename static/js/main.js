@@ -121,31 +121,42 @@ function fetchFeaturedEvents(lat, lng, container) {
 }
 
 function displayFeaturedEvents(container, events) {
-    if (!events || events.error) {
-        container.innerHTML = '<p class="text-muted">No featured events available in your area.</p>';
-        return;
-    }
-    if (!events.length) {
-        container.innerHTML = '<p class="text-center">No featured events found in your area.</p>';
+    if (!container) return;
+
+    if (!events || events.length === 0) {
+        container.innerHTML = '<div class="alert alert-info">No featured events nearby.</div>';
         return;
     }
 
-    const eventsHTML = events.map(event => `
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">${event.title}</h5>
-                    <p class="card-text">${event.description}</p>
-                    <p class="text-muted">${event.date}</p>
-                    <div class="fun-rating">
-                        ${'★'.repeat(event.fun_meter)}${'☆'.repeat(5-event.fun_meter)}
+    try {
+        let html = '<div class="row">';
+        events.forEach(event => {
+            html += `
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">${event.title}</h5>
+                            <p class="card-text">${event.description}</p>
+                            <p class="card-text">
+                                <small class="text-muted">Date: ${event.date}</small>
+                                ${event.distance ? `<br><small class="text-muted">${event.distance} miles away</small>` : ''}
+                            </p>
+                            <p class="card-text">
+                                <span class="badge bg-primary">Fun Meter: ${event.fun_meter}/5</span>
+                            </p>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <a href="/event/${event.id}" class="btn btn-outline-primary w-100">View Details</a>
+                        </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    `).join('');
-
-    container.innerHTML = eventsHTML;
+                </div>`;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+    } catch (error) {
+        console.error('Error displaying featured events:', error);
+        container.innerHTML = '<div class="alert alert-warning">Error displaying featured events. Please try again later.</div>';
+    }
 }
 
 // Email Signup
@@ -331,7 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.querySelector('.floating-cta')) {
         initFloatingCTA();
     }
-    
+
     if (document.querySelector('form#eventForm')) {
         initEventForm();
         const form = document.querySelector('form#eventForm');
@@ -355,7 +366,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
     }
-    
+
     if (document.getElementById('title') || document.getElementById('description')) {
         initCharCount();
     }
