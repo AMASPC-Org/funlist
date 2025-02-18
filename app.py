@@ -15,7 +15,7 @@ import time
 
 # Configure logging with more detailed format
 logging.basicConfig(
-    level=logging.DEBUG,  # Changed to DEBUG for more detailed logs
+    level=logging.DEBUG,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s - %(pathname)s:%(lineno)d',
     handlers=[
         logging.FileHandler('app.log'),
@@ -24,28 +24,18 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-def timeout_after(seconds):
-    def decorator(f):
-        @wraps(f)
-        def wrapper(*args, **kwargs):
-            start = time.time()
-            result = f(*args, **kwargs)
-            if time.time() - start > seconds:
-                raise RequestTimeout("Request timeout")
-            return result
-        return wrapper
-    return decorator
-
 def create_app():
     logger.info("Starting application creation...")
     app = Flask(__name__)
 
-    # Setup configurations
-    logger.info("Setting up configurations...")
+    # Enhanced configurations for Replit environment
     app.config["SECRET_KEY"] = os.environ.get("FLASK_SECRET_KEY", "dev_key")
     app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
-    logger.info(f"Database URL configured: {bool(app.config['SQLALCHEMY_DATABASE_URI'])}")
+    app.config["SERVER_NAME"] = None  # Allow all hostnames
+    app.config["APPLICATION_ROOT"] = "/"
+    app.config["PREFERRED_URL_SCHEME"] = "https"  # Added for Replit HTTPS
 
+    # Database configuration
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
         "pool_recycle": 300,
         "pool_pre_ping": True,
@@ -55,21 +45,27 @@ def create_app():
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     # Session configuration
-    logger.info("Configuring session...")
     app.config['SESSION_TYPE'] = 'filesystem'
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
-    app.config['SESSION_COOKIE_SECURE'] = False
+    app.config['SESSION_COOKIE_SECURE'] = True  # Enable for HTTPS
     app.config['SESSION_COOKIE_HTTPONLY'] = True
-    app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=14)
-    app.config['REMEMBER_COOKIE_HTTPONLY'] = True
-    app.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
-    # Initialize extensions with error handling
+    # Add request logging
+    @app.before_request
+    def log_request():
+        logger.info(f"Incoming request: {request.method} {request.url}")
+        logger.debug(f"Request headers: {dict(request.headers)}")
+
+    @app.after_request
+    def log_response(response):
+        logger.info(f"Response status: {response.status}")
+        return response
+
     try:
         logger.info("Initializing database...")
         db.init_app(app)
         with app.app_context():
-            logger.info("Creating database tables...")
             db.create_all()
             logger.info("Database tables created successfully")
     except Exception as e:
@@ -78,14 +74,14 @@ def create_app():
 
     try:
         logger.info("Initializing Flask-Migrate...")
-        migrate = Migrate(app, db)
+        Migrate(app, db)
     except Exception as e:
         logger.error(f"Failed to initialize Flask-Migrate: {str(e)}", exc_info=True)
         raise
 
     try:
         logger.info("Initializing CSRF protection...")
-        csrf = CSRFProtect(app)
+        CSRFProtect(app)
     except Exception as e:
         logger.error(f"Failed to initialize CSRF protection: {str(e)}", exc_info=True)
         raise
@@ -97,20 +93,6 @@ def create_app():
         logger.error(f"Failed to initialize Session: {str(e)}", exc_info=True)
         raise
 
-    # Setup rate limiter
-    try:
-        logger.info("Setting up rate limiter...")
-        limiter = Limiter(
-            app=app,
-            key_func=get_remote_address,
-            default_limits=["200 per day", "50 per hour"],
-            storage_uri="memory://"
-        )
-    except Exception as e:
-        logger.error(f"Failed to initialize rate limiter: {str(e)}", exc_info=True)
-        raise
-
-    # Setup login manager
     try:
         logger.info("Setting up login manager...")
         login_manager = LoginManager()
@@ -122,17 +104,6 @@ def create_app():
     except Exception as e:
         logger.error(f"Failed to initialize login manager: {str(e)}", exc_info=True)
         raise
-
-    # Request logging
-    @app.before_request
-    @timeout_after(30)
-    def log_request_info():
-        logger.info('Request: %s %s', request.method, request.url)
-
-    @app.after_request
-    def log_response_info(response):
-        logger.info('Response: %s %s %s', request.method, request.url, response.status)
-        return response
 
     try:
         logger.info("Importing User model...")
@@ -166,7 +137,18 @@ if __name__ == "__main__":
         logger.info("Creating Flask application...")
         app = create_app()
         logger.info("Starting Flask server...")
-        app.run(host='0.0.0.0', port=5000, debug=True)
+
+        # Get port from environment with fallback
+        port = int(os.environ.get('PORT', 5006))
+        logger.info(f"Attempting to start server on port {port}")
+
+        app.run(
+            host='0.0.0.0',
+            port=port,
+            debug=True,
+            use_reloader=True,
+            threaded=True
+        )
     except Exception as e:
         logger.error(f"Failed to start application: {str(e)}", exc_info=True)
         raise
