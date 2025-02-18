@@ -1,4 +1,5 @@
-
+# /home/runner/workspace/main.py
+# Line 18: Corrected duplicate 'port' argument.
 import os
 import logging
 from flask import Flask
@@ -17,8 +18,6 @@ if __name__ == "__main__":
         logger.info(f"Starting Flask server on port {port}...")
         app.run(
             host='0.0.0.0',
-            port=port,
-            debug=False,
             port=port,
             debug=False
         )
