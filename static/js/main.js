@@ -82,33 +82,41 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Featured Events
 function getFeaturedEvents() {
+    const container = document.getElementById('featured-events');
+    if (!container) return;
+
     if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
             position => {
                 const lat = position.coords.latitude;
                 const lng = position.coords.longitude;
-                fetchFeaturedEvents(lat, lng);
+                fetchFeaturedEvents(lat, lng, container);
             },
             error => {
-                console.log("Error getting location:", error);
-                // Default coordinates as fallback
-                fetchFeaturedEvents(47.0379, -122.9007);
-            }
+                console.warn("Using default location:", error);
+                fetchFeaturedEvents(47.0379, -122.9007, container);
+            },
+            { timeout: 5000, maximumAge: 300000 }
         );
+    } else {
+        container.innerHTML = '<p class="text-muted">Location services not available.</p>';
     }
 }
 
-function fetchFeaturedEvents(lat, lng) {
+function fetchFeaturedEvents(lat, lng, container) {
     fetch(`/api/featured-events?lat=${lat}&lng=${lng}`)
-        .then(response => response.json())
-        .then(events => {
-            const container = document.getElementById('featured-events');
-            if (container) {
-                displayFeaturedEvents(container, events);
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
+            return response.json();
+        })
+        .then(events => {
+            displayFeaturedEvents(container, events);
         })
         .catch(error => {
             console.error("Error fetching featured events:", error);
+            container.innerHTML = '<p class="text-muted">Unable to load featured events.</p>';
         });
 }
 
