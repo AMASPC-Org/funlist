@@ -10,6 +10,10 @@ channel = "stable-24_05"
 PORT = "5006"
 
 [[ports]]
+localPort = 3000
+externalPort = 3000
+
+[[ports]]
 localPort = 5006
 externalPort = 5006
 
@@ -26,5 +30,5 @@ author = 36270944
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python main.py"
+args = "python app.py"
 #args = "python main.py" # REMOVE
