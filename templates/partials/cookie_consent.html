@@ -1,0 +1,52 @@
+
+<div id="cookie-consent" class="cookie-banner" style="display: none;">
+    <div class="cookie-content">
+        <p>We use cookies to enhance your experience. By continuing to visit this site you agree to our use of cookies. 
+           <a href="#" data-bs-toggle="modal" data-bs-target="#cookieModal">Learn more</a>
+        </p>
+        <div class="cookie-buttons">
+            <button id="accept-cookies" class="btn btn-primary btn-sm">Accept All</button>
+            <button id="customize-cookies" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#cookieModal">Customize</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="cookieModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cookie Preferences</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="cookie-settings">
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="essential-cookies" checked disabled>
+                        <label class="form-check-label" for="essential-cookies">
+                            <strong>Essential Cookies</strong>
+                            <p class="text-muted small">Required for the website to function. Cannot be disabled.</p>
+                        </label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="analytics-cookies">
+                        <label class="form-check-label" for="analytics-cookies">
+                            <strong>Analytics Cookies</strong>
+                            <p class="text-muted small">Help us improve our website by collecting anonymous usage data.</p>
+                        </label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="advertising-cookies">
+                        <label class="form-check-label" for="advertising-cookies">
+                            <strong>Advertising Cookies</strong>
+                            <p class="text-muted small">Used to show you relevant advertisements across other websites.</p>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="save-cookie-preferences">Save Preferences</button>
+            </div>
+        </div>
+    </div>
+</div>
