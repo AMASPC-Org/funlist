@@ -64,8 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
         emailSignupForm.addEventListener('submit', handleEmailSignup);
     }
 
-    // Location handling
-    // Location modal removed - handled by browser geolocation only
+    // Location handling using browser geolocation only
 
 
     // Date range handling
