@@ -403,7 +403,8 @@ header {
     width: 100%;
     top: 0;
     left: 0;
-    z-index: 999;
+    z-index: 1000;
+    height: 70px;
 }
 
 .modal {
@@ -538,6 +539,9 @@ main {
     background: #f8f9fa;
     padding: 1rem 0;
     margin-bottom: 2rem;
+    margin-top: 70px; /* Add space for fixed header */
+    position: relative;
+    z-index: 1;
 }
 
 .banner-ad {
