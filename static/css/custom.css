@@ -112,7 +112,7 @@
     max-width: 100vw;
     position: relative;
     z-index: 1;
-    margin-top: 90px; /* Reduced margin to remove extra space */
+    margin-top: 70px; /* Match header height exactly */
     min-height: 500px; /* Ensure minimum height */
 }
 
