@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 def create_app():
     logger.info("Starting application creation...")
-    app = Flask(__name__)
+    app = Flask(__name__, static_folder='static')
 
     # Enhanced configurations for Replit environment
     app.config["SECRET_KEY"] = os.environ.get(
