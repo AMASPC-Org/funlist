@@ -112,7 +112,8 @@
     max-width: 100vw;
     position: relative;
     z-index: 1;
-    margin-top: 140px; /* Account for header height + banner */
+    margin-top: 180px; /* Increased margin to account for header + banner */
+    min-height: 500px; /* Ensure minimum height */
 }
 
 @media (max-width: 768px) {
