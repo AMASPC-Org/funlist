@@ -548,6 +548,8 @@ main {
     line-height: 0;
     font-size: 0;
     display: block;
+    height: 90px;
+    overflow: hidden;
 }
 
 .ad-label {
