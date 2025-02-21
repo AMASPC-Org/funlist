@@ -539,14 +539,15 @@ main {
     position: relative;
     z-index: 999;
     line-height: 0;
+    font-size: 0;
 }
 
 .banner-ad {
     position: relative;
     text-align: center;
     line-height: 0;
-    max-height: 70px;
-    overflow: hidden;
+    font-size: 0;
+    display: block;
 }
 
 .ad-label {
