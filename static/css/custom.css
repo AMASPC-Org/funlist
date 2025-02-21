@@ -534,16 +534,19 @@ main {
 /* Ad Container Styles */
 .banner-container {
     background: #f8f9fa;
-    padding: 0.5rem 0;
+    padding: 0;
     margin: 0;
     position: relative;
     z-index: 999;
+    line-height: 0;
 }
 
 .banner-ad {
     position: relative;
     text-align: center;
     line-height: 0;
+    max-height: 70px;
+    overflow: hidden;
 }
 
 .ad-label {
