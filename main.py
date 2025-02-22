@@ -18,9 +18,13 @@ if __name__ == '__main__':
     port = int(os.environ.get('PORT', default_port))
     
     # Try alternative ports if default is in use
+    tries = 0
     while is_port_in_use(port):
         port += 1
-        if port > default_port + 10:  # Try up to 10 ports
+        tries += 1
+        if tries > 10:  # Try up to 10 ports
+            logging.error(f"Failed to find available port after {tries} attempts")
             raise RuntimeError("No available ports found")
+        logging.info(f"Port {port-1} in use, trying port {port}")
             
-    app.run(host='0.0.0.0', port=port, debug=False, threaded=True)
+    app.run(host='0.0.0.0', port=port, debug=False, threaded=True, use_reloader=False)
