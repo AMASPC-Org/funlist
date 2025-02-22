@@ -64,18 +64,32 @@ document.addEventListener('DOMContentLoaded', function() {
         emailSignupForm.addEventListener('submit', handleEmailSignup);
     }
 
-    // Handle location permission using browser's native request
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                // Store coordinates in session storage
-                sessionStorage.setItem('userLat', position.coords.latitude);
-                sessionStorage.setItem('userLng', position.coords.longitude);
-            },
-            (error) => {
-                console.log('Geolocation error:', error);
+    // Location handling
+    const allowLocationBtn = document.getElementById('allowLocation');
+    const denyLocationBtn = document.getElementById('denyLocation');
+
+    if (allowLocationBtn) {
+        allowLocationBtn.addEventListener('click', function() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        sessionStorage.setItem('userLat', position.coords.latitude);
+                        sessionStorage.setItem('userLng', position.coords.longitude);
+                        location.reload();
+                    },
+                    (error) => {
+                        console.log('Geolocation error:', error);
+                    }
+                );
             }
-        );
+        });
+    }
+
+    if (denyLocationBtn) {
+        denyLocationBtn.addEventListener('click', function() {
+            sessionStorage.setItem('locationDenied', 'true');
+            location.reload();
+        });
     }
 
 
