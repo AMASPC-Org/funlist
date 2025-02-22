@@ -95,13 +95,21 @@ def create_app():
         logger.info("Initializing CSRF protection and rate limiting...")
         CSRFProtect(app)
         limiter = Limiter(
-            app,
-            key_func=get_remote_address,
+            app=app,
+            storage_uri="memory://",
             default_limits=["200 per day", "50 per hour"],
-            storage_uri="memory://"
+            key_func=get_remote_address
         )
-        limiter.limit("5 per minute")(app.route("/login", methods=["POST"]))
-        limiter.limit("3 per minute")(app.route("/signup", methods=["POST"]))
+        
+        @app.route("/login", methods=["POST"])
+        @limiter.limit("5 per minute")
+        def rate_limited_login():
+            return "rate limited"
+            
+        @app.route("/signup", methods=["POST"])
+        @limiter.limit("3 per minute")
+        def rate_limited_signup():
+            return "rate limited"
     except Exception as e:
         logger.error(f"Failed to initialize security measures: {str(e)}",
                      exc_info=True)
