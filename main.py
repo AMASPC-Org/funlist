@@ -23,4 +23,4 @@ if __name__ == '__main__':
         if port > default_port + 10:  # Try up to 10 ports
             raise RuntimeError("No available ports found")
             
-    app.run(host='0.0.0.0', port=port, debug=False)
+    app.run(host='0.0.0.0', port=port, debug=False, threaded=True)
