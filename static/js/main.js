@@ -1,9 +1,21 @@
-// Core functionality for location handling (Removed as per intention)
+// Global variables
+let dateRangeSelect;
 
-// Update featured events based on location (Removed as per intention)
-
-// DOM Elements
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize date range select if it exists
+    dateRangeSelect = document.getElementById('dateRange');
+    if (dateRangeSelect) {
+        dateRangeSelect.addEventListener('change', function() {
+            updateEvents(this.value);
+        });
+    }
+
+    // Only get featured events when explicitly requested
+    const getFeaturedButton = document.getElementById('getFeatured');
+    if (getFeaturedButton) {
+        getFeaturedButton.addEventListener('click', getFeaturedEvents);
+    }
+
     // Email signup form handling
     const emailForm = document.getElementById('emailSignupForm');
     if (emailForm) {
@@ -16,11 +28,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
 
-    // Date range handling
-    const dateRangeSelect = document.getElementById('date_range');
-    if (dateRangeSelect) {
-        dateRangeSelect.addEventListener('change', handleDateRangeChange);
-    }
     // Email signup form handling
     const emailSignupForm = document.getElementById('emailSignupForm');
     if (emailSignupForm) {
@@ -220,7 +227,7 @@ function handleEmailSignup(e) {
 
 // Date Range Handling
 function handleDateRangeChange(e) {
-    const specificDateInput = document.getElementById('specific_date');
+    const specificDateInput = document.getElementById('specificDate');
     if (specificDateInput) {
         specificDateInput.style.display = e.target.value === 'specific' ? 'block' : 'none';
     }
@@ -510,3 +517,9 @@ document.addEventListener('DOMContentLoaded', function() {
     initSponsorRotation();
     // ... (keep existing DOMContentLoaded handlers)
 });
+
+function updateEvents(dateRangeValue) {
+    //Implementation for updating events based on date range
+    console.log("Updating events with date range:", dateRangeValue);
+    // Add your logic here to fetch and display events based on the selected date range.
+}

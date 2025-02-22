@@ -70,7 +70,7 @@
                 <h5>COMPANY</h5>
                 <ul class="list-unstyled">
                     <li><a href="{{ url_for('about') }}">About Us</a></li>
-                    <li><a href="{{ url_for('about') }}">Help Center</a></li>
+                    <li><a href="{{ url_for('help_center') }}">Help Center</a></li>
                     <li><a href="{{ url_for('advertising') }}">Advertise with Us</a></li>
                 </ul>
             </div>
@@ -78,31 +78,37 @@
                 <h5>CONNECT</h5>
                 <ul class="list-unstyled">
                     <li><a href="tel:3602008768"><i class="fas fa-phone"></i> (360) 200-8768</a></li>
-                    <li><a href="mailto:help@funlist.ai"><i class="fas fa-envelope"></i> [email protected]</a></li>
+                    <li><a href="mailto:help@funlist.ai"><i class="fas fa-envelope"></i> help@funlist.ai</a></li>
                     <li>Seattle, WA</li>
                 </ul>
             </div>
             <div class="col-md-3">
                 <h5>ACCOUNT</h5>
                 <ul class="list-unstyled">
-                    <li><a href="{{ url_for('login') }}">Sign In</a></li>
-                    <li><a href="{{ url_for('signup') }}">Sign Up</a></li>
+                    {% if current_user.is_authenticated %}
+                        <li><a href="{{ url_for('profile') }}">Profile</a></li>
+                        <li><a href="{{ url_for('logout') }}">Sign Out</a></li>
+                    {% else %}
+                        <li><a href="{{ url_for('login') }}">Sign In</a></li>
+                        <li><a href="{{ url_for('signup') }}">Sign Up</a></li>
+                    {% endif %}
                 </ul>
             </div>
-          <div class="col-md-3">
-              <h5>LEGAL</h5>
-              <ul class="list-unstyled">
-                  <li><a href="{{ url_for('terms') }}">Terms & Conditions</a></li>
-                  <li><a href="{{ url_for('privacy') }}">Privacy Policy</a></li>
-                  <li><a href="{{ url_for('advertising') }}">Advertise with Us</a></li>
-              </ul>
-          </div>
+            <div class="col-md-3">
+                <h5>LEGAL</h5>
+                <ul class="list-unstyled">
+                    <li><a href="{{ url_for('terms') }}">Terms & Conditions</a></li>
+                    <li><a href="{{ url_for('privacy') }}">Privacy Policy</a></li>
+                    <li><a href="{{ url_for('advertising') }}">Advertise with Us</a></li>
+                </ul>
+            </div>
         </div>
         <div class="row mt-3">
             <div class="col text-center">
                 <p class="mb-0">© 2025 FunList.ai. All rights reserved.</p>
             </div>
         </div>
+    </div>
 </footer>
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
