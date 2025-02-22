@@ -1,6 +1,9 @@
+// Global variables
+let dateRangeSelect = null;
+let specificDateInput = null;
+
 // Global variables and event listener cleanup
 let eventListeners = new Map();
-let dateRangeSelect = null;
 
 // Clean up listeners when page unloads
 window.addEventListener('unload', cleanupEventListeners);
@@ -13,12 +16,11 @@ function cleanupEventListeners() {
 }
 
 // Date Range Handling
-function handleDateRangeChange(select) {
-    const specificDateInput = document.getElementById('specificDate');
+function handleDateRangeChange(e) {
     if (specificDateInput) {
-        specificDateInput.style.display = select.value === 'specific' ? 'block' : 'none';
+        specificDateInput.style.display = e.target.value === 'specific' ? 'block' : 'none';
     }
-    updateEvents(select.value);
+    updateEvents(e.target.value);
 }
 
 function updateEvents(dateRangeValue) {
@@ -95,14 +97,14 @@ function initEventForm() {
     }
 }
 
-// Initialize everything when DOM is loaded
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize date range select
+    // Initialize date range elements
     dateRangeSelect = document.getElementById('dateRange');
+    specificDateInput = document.getElementById('specificDate');
+
     if (dateRangeSelect) {
-        dateRangeSelect.addEventListener('change', function() {
-            handleDateRangeChange(this);
-        });
+        dateRangeSelect.addEventListener('change', handleDateRangeChange);
     }
 
     // Initialize tooltips
@@ -114,14 +116,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Email signup form handling
     const emailForm = document.getElementById('emailSignupForm');
     if (emailForm) {
-        emailForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const emailInput = this.querySelector('input[type="email"]');
-            if (emailInput && emailInput.value) {
-                console.log('Email signup:', emailInput.value);
-                // Add your email signup logic here
-            }
-        });
+        emailForm.addEventListener('submit', handleEmailSignup);
     }
 
     // Initialize cookie consent
@@ -134,11 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
 
-    // Initialize any Bootstrap tooltips
-    const tooltipTriggerList2 = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList2.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
+    // Initialize any Bootstrap tooltips (duplicate, remove one)
 
     // Initialize floating CTA
     initFloatingCTA();
@@ -172,8 +163,59 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Location handling (moved to the top-level DOMContentLoaded)
-
+    initSponsorRotation();
 });
+
+function handleEmailSignup(e) {
+    e.preventDefault();
+    const email = document.getElementById('signupEmail').value;
+
+    fetch('/subscribe', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Thank you for subscribing!');
+            const modal = bootstrap.Modal.getInstance(document.getElementById('emailSignupModal'));
+            if (modal) modal.hide();
+        } else {
+            alert(data.message || 'Subscription failed. Please try again.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again later.');
+    });
+}
+
+function initSponsorRotation() {
+    const sponsorsCarousel = document.getElementById('sponsors-carousel');
+    if (!sponsorsCarousel) return;
+
+    const sponsors = [
+        { image: '/static/images/rutledge_farm_logo.png', name: 'Rutledge Family Farm' }
+    ];
+
+    // Create sponsor card structure
+    const sponsorCard = document.createElement('div');
+    sponsorCard.className = 'col-md-3';
+    sponsorCard.innerHTML = `
+        <div class="sponsor-card">
+            <div class="sponsor-content">
+                <img src="${sponsors[0].image}" alt="${sponsors[0].name}" class="img-fluid">
+            </div>
+        </div>
+    `;
+
+    // Clear and append new sponsor
+    sponsorsCarousel.innerHTML = '';
+    sponsorsCarousel.appendChild(sponsorCard);
+}
 
 // Cookie consent initialization
 function initCookieConsent() {
@@ -343,36 +385,6 @@ function displayFeaturedEvents(container, events) {
 }
 
 
-
-// Email Signup
-function handleEmailSignup(e) {
-    e.preventDefault();
-    const email = document.getElementById('signupEmail').value;
-
-    fetch('/subscribe', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Thank you for subscribing!');
-            const modal = bootstrap.Modal.getInstance(document.getElementById('emailSignupModal'));
-            if (modal) modal.hide();
-        } else {
-            alert(data.message || 'Subscription failed. Please try again.');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred. Please try again later.');
-    });
-}
-
-
 function showAlert(type, message) {
     const alertDiv = document.createElement('div');
     alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
@@ -424,31 +436,3 @@ function initCharCount() {
         });
     }
 }
-
-function initSponsorRotation() {
-    const sponsorsCarousel = document.getElementById('sponsors-carousel');
-    if (!sponsorsCarousel) return;
-
-    const sponsors = [
-        { image: '/static/images/rutledge_farm_logo.png', name: 'Rutledge Family Farm' }
-    ];
-
-    // Create sponsor card structure
-    const sponsorCard = document.createElement('div');
-    sponsorCard.className = 'col-md-3';
-    sponsorCard.innerHTML = `
-        <div class="sponsor-card">
-            <div class="sponsor-content">
-                <img src="${sponsors[0].image}" alt="${sponsors[0].name}" class="img-fluid">
-            </div>
-        </div>
-    `;
-
-    // Clear and append new sponsor
-    sponsorsCarousel.innerHTML = '';
-    sponsorsCarousel.appendChild(sponsorCard);
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    initSponsorRotation();
-});
