@@ -1,4 +1,4 @@
-// Global event listener tracking
+// Store event listeners for cleanup
 let eventListeners = [];
 
 // Helper function to add and track event listeners
@@ -9,58 +9,41 @@ function addTrackedEventListener(element, type, handler) {
     }
 }
 
-// Initialize event listeners
-function initializeEventListeners() {
-    const dateRangeSelect = document.getElementById('dateRange');
-    const categoryFilter = document.getElementById('categoryFilter');
-    const locationFilter = document.getElementById('locationFilter');
-    const emailForm = document.getElementById('emailSignupForm');
-    const specificDateInput = document.getElementById('specificDate');
-    const getFeaturedButton = document.getElementById('getFeatured');
-
-
-    if (dateRangeSelect) {
-        addTrackedEventListener(dateRangeSelect, 'change', handleDateRangeChange);
-    }
-
-    if (specificDateInput) {
-        addTrackedEventListener(specificDateInput, 'change', filterEventsList);
-    }
-
-    if (categoryFilter) {
-        addTrackedEventListener(categoryFilter, 'change', filterEventsList);
-    }
-
-    if (locationFilter) {
-        addTrackedEventListener(locationFilter, 'input', filterEventsList);
-    }
-
-    if (emailForm) {
-        addTrackedEventListener(emailForm, 'submit', handleEmailSignup);
-    }
-
-    if (getFeaturedButton) {
-        addTrackedEventListener(getFeaturedButton, 'click', getFeaturedEvents);
-    }
-
-
-    // Initialize Bootstrap tooltips
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-}
+// Initialize all components
+document.addEventListener('DOMContentLoaded', function() {
+    initDateRangeHandling();
+    initCookieConsent();
+    initializeTooltips();
+    initFloatingCTA();
+    initEmailSignup();
+    initEventForm();
+    initSponsorRotation();
+    initCharCount();
+    getFeaturedEvents();
+});
 
 // Date Range Handling
-function handleDateRangeChange(e) {
+function initDateRangeHandling() {
+    const dateRangeSelect = document.getElementById('dateRange');
     const specificDateInput = document.getElementById('specificDate');
-    if (specificDateInput) {
-        specificDateInput.style.display = e.target.value === 'specific' ? 'block' : 'none';
+
+    if (dateRangeSelect) {
+        const handleDateChange = (e) => {
+            if (specificDateInput) {
+                specificDateInput.style.display = e.target.value === 'specific' ? 'block' : 'none';
+            }
+            filterEventsList();
+        };
+
+        dateRangeSelect.addEventListener('change', handleDateChange);
+        eventListeners.push({
+            element: dateRangeSelect,
+            type: 'change',
+            handler: handleDateChange
+        });
     }
-    filterEventsList();
 }
 
-// Event Filtering
 function filterEventsList() {
     const category = document.getElementById('categoryFilter')?.value || '';
     const dateRange = document.getElementById('dateRange')?.value || '';
@@ -106,39 +89,80 @@ function filterEventsList() {
             }
         }
 
-        if (location && !cardLocation?.includes(location)) showCard = false;
+        if (location && (!cardLocation || !cardLocation.includes(location))) showCard = false;
 
         card.style.display = showCard ? 'block' : 'none';
     });
 }
 
-// Email Signup Handling
-function handleEmailSignup(e) {
-    e.preventDefault();
-    const email = document.getElementById('emailInput').value;
-
-    fetch('/subscribe', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email: email })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showAlert('success', 'Thank you for subscribing!');
-        } else {
-            showAlert('danger', data.message || 'An error occurred');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showAlert('danger', 'An error occurred while subscribing');
+// Initialize tooltips
+function initializeTooltips() {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
     });
 }
 
-// Alert System
+// Floating CTA
+function initFloatingCTA() {
+    const floatingCTA = document.querySelector('.floating-cta');
+    if (floatingCTA) {
+        const handleScroll = () => {
+            if (window.scrollY > 300) {
+                floatingCTA.classList.add('show');
+            } else {
+                floatingCTA.classList.remove('show');
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        eventListeners.push({
+            element: window,
+            type: 'scroll',
+            handler: handleScroll
+        });
+    }
+}
+
+// Email signup handling
+function initEmailSignup() {
+    const form = document.getElementById('emailSignupForm');
+    if (form) {
+        const handleSubmit = (e) => {
+            e.preventDefault();
+            const email = document.getElementById('emailInput').value;
+
+            fetch('/subscribe', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: email })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('success', 'Thank you for subscribing!');
+                } else {
+                    showAlert('danger', data.message || 'An error occurred');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('danger', 'An error occurred while subscribing');
+            });
+        };
+
+        form.addEventListener('submit', handleSubmit);
+        eventListeners.push({
+            element: form,
+            type: 'submit',
+            handler: handleSubmit
+        });
+    }
+}
+
+// Alert handling
 function showAlert(type, message) {
     const alertDiv = document.createElement('div');
     alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
@@ -146,37 +170,38 @@ function showAlert(type, message) {
         ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     `;
-    document.querySelector('main').insertAdjacentElement('afterbegin', alertDiv);
+
+    const alertContainer = document.getElementById('alertContainer') || document.body;
+    alertContainer.prepend(alertDiv);
 
     setTimeout(() => {
         alertDiv.remove();
     }, 5000);
 }
 
-// Clean up listeners when page unloads
-function cleanupEventListeners() {
-    eventListeners.forEach(({ element, type, handler }) => {
-        if (element) {
-            element.removeEventListener(type, handler);
-        }
-    });
-    eventListeners.length = 0;
+// Cookie handling
+function setCookie(name, value, days) {
+    let expires = '';
+    if (days) {
+        const date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = '; expires=' + date.toUTCString();
+    }
+    document.cookie = name + '=' + (value || '') + expires + '; path=/';
 }
 
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', initializeEventListeners);
-window.addEventListener('unload', cleanupEventListeners);
-
-
-// Initialize tooltips
-function initTooltips() {
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
+function getCookie(name) {
+    const nameEQ = name + '=';
+    const ca = document.cookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+    }
+    return null;
 }
 
-// Cookie consent initialization
+// Cookie consent
 function initCookieConsent() {
     const consentBanner = document.getElementById('cookie-consent');
     const acceptBtn = document.getElementById('accept-cookies');
@@ -187,16 +212,23 @@ function initCookieConsent() {
     }
 
     if (acceptBtn) {
-        acceptBtn.addEventListener('click', () => {
+        const handleAccept = () => {
             setCookie('cookie-consent', 'all', 365);
             setCookie('analytics-cookies', 'true', 365);
             setCookie('advertising-cookies', 'true', 365);
             consentBanner.style.display = 'none';
+        };
+
+        acceptBtn.addEventListener('click', handleAccept);
+        eventListeners.push({
+            element: acceptBtn,
+            type: 'click',
+            handler: handleAccept
         });
     }
 
     if (savePreferencesBtn) {
-        savePreferencesBtn.addEventListener('click', () => {
+        const handleSave = () => {
             const analytics = document.getElementById('analytics-cookies')?.checked;
             const advertising = document.getElementById('advertising-cookies')?.checked;
 
@@ -208,28 +240,26 @@ function initCookieConsent() {
                 consentBanner.style.display = 'none';
             }
             const modal = bootstrap.Modal.getInstance(document.getElementById('cookieModal'));
-            modal?.hide();
+            if (modal) modal.hide();
+        };
+
+        savePreferencesBtn.addEventListener('click', handleSave);
+        eventListeners.push({
+            element: savePreferencesBtn,
+            type: 'click',
+            handler: handleSave
         });
     }
 }
 
-// Cookie utilities
-function setCookie(name, value, days) {
-    const d = new Date();
-    d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
-    document.cookie = `${name}=${value};expires=${d.toUTCString()};path=/`;
-}
 
-function getCookie(name) {
-    const nameEQ = name + "=";
-    const ca = document.cookie.split(';');
-    for (let i = 0; i < ca.length; i++) {
-        let c = ca[i];
-        while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
-    }
-    return null;
-}
+// Cleanup event listeners
+window.addEventListener('unload', () => {
+    eventListeners.forEach(({ element, type, handler }) => {
+        element.removeEventListener(type, handler);
+    });
+    eventListeners = [];
+});
 
 // Featured Events
 function getFeaturedEvents() {
@@ -391,21 +421,6 @@ function initSponsorRotation() {
     sponsorsCarousel.appendChild(sponsorCard);
 }
 
-function initFloatingCTA() {
-    const floatingCTA = document.querySelector('.floating-cta');
-    if (floatingCTA) {
-        let lastScrollTop = 0;
-        window.addEventListener('scroll', () => {
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            if (scrollTop > lastScrollTop) {
-                floatingCTA.classList.add('hide');
-            } else {
-                floatingCTA.classList.remove('hide');
-            }
-            lastScrollTop = scrollTop;
-        });
-    }
-}
 
 function initCharCount() {
     const titleInput = document.getElementById('title');
