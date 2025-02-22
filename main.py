@@ -19,22 +19,11 @@ app = create_app()
 
 if __name__ == '__main__':
     try:
-        port = int(os.environ.get('PORT', 5006))
-        logger.info(f"Attempting to start server on port {port}")
-        
-        if is_port_in_use(port):
-            logger.warning(f"Port {port} is in use, trying alternative ports")
-            for new_port in range(port + 1, port + 10):
-                if not is_port_in_use(new_port):
-                    port = new_port
-                    break
-            else:
-                raise RuntimeError("No available ports found")
-        
+        port = 5006
         logger.info(f"Starting server on port {port}")
         app.run(
             host='0.0.0.0',
-            port=8080,
+            port=port,
             debug=True,
             threaded=True,
             use_reloader=False
