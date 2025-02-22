@@ -9,12 +9,15 @@ function addTrackedEventListener(element, type, handler) {
     }
 }
 
-// Event filtering functionality
-function initializeFilters() {
+// Initialize event listeners
+function initializeEventListeners() {
     const dateRangeSelect = document.getElementById('dateRange');
-    const specificDateInput = document.getElementById('specificDate');
     const categoryFilter = document.getElementById('categoryFilter');
     const locationFilter = document.getElementById('locationFilter');
+    const emailForm = document.getElementById('emailSignupForm');
+    const specificDateInput = document.getElementById('specificDate');
+    const getFeaturedButton = document.getElementById('getFeatured');
+
 
     if (dateRangeSelect) {
         addTrackedEventListener(dateRangeSelect, 'change', handleDateRangeChange);
@@ -31,6 +34,21 @@ function initializeFilters() {
     if (locationFilter) {
         addTrackedEventListener(locationFilter, 'input', filterEventsList);
     }
+
+    if (emailForm) {
+        addTrackedEventListener(emailForm, 'submit', handleEmailSignup);
+    }
+
+    if (getFeaturedButton) {
+        addTrackedEventListener(getFeaturedButton, 'click', getFeaturedEvents);
+    }
+
+
+    // Initialize Bootstrap tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
 }
 
 // Date Range Handling
@@ -38,10 +56,11 @@ function handleDateRangeChange(e) {
     const specificDateInput = document.getElementById('specificDate');
     if (specificDateInput) {
         specificDateInput.style.display = e.target.value === 'specific' ? 'block' : 'none';
-        filterEventsList();
     }
+    filterEventsList();
 }
 
+// Event Filtering
 function filterEventsList() {
     const category = document.getElementById('categoryFilter')?.value || '';
     const dateRange = document.getElementById('dateRange')?.value || '';
@@ -50,7 +69,7 @@ function filterEventsList() {
     document.querySelectorAll('.event-card').forEach(card => {
         const cardCategory = card.dataset.category?.toLowerCase();
         const cardDate = card.dataset.date;
-        const cardLocation = card.dataset.location?.toLowerCase() || '';
+        const cardLocation = card.dataset.location?.toLowerCase();
 
         let showCard = true;
 
@@ -80,19 +99,20 @@ function filterEventsList() {
                     if (!isWeekend) showCard = false;
                     break;
                 case 'week':
-                    const weekFromNow = new Date(today);
-                    weekFromNow.setDate(weekFromNow.getDate() + 7);
-                    if (eventDate > weekFromNow || eventDate < today) showCard = false;
+                    const nextWeek = new Date(today);
+                    nextWeek.setDate(nextWeek.getDate() + 7);
+                    if (eventDate > nextWeek || eventDate < today) showCard = false;
                     break;
             }
         }
 
-        if (location && !cardLocation.includes(location)) showCard = false;
-        card.style.display = showCard ? '' : 'none';
+        if (location && !cardLocation?.includes(location)) showCard = false;
+
+        card.style.display = showCard ? 'block' : 'none';
     });
 }
 
-// Email subscription handling
+// Email Signup Handling
 function handleEmailSignup(e) {
     e.preventDefault();
     const email = document.getElementById('emailInput').value;
@@ -118,7 +138,7 @@ function handleEmailSignup(e) {
     });
 }
 
-// Alert display functionality
+// Alert System
 function showAlert(type, message) {
     const alertDiv = document.createElement('div');
     alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
@@ -127,272 +147,33 @@ function showAlert(type, message) {
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     `;
     document.querySelector('main').insertAdjacentElement('afterbegin', alertDiv);
-    setTimeout(() => alertDiv.remove(), 5000);
+
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 5000);
 }
 
-// Initialize tooltips
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize date range elements
-    dateRangeSelect = document.getElementById('dateRange');
-    specificDateInput = document.getElementById('specificDate');
-
-    initializeFilters();
-
-
-    // Initialize Bootstrap tooltips
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-
-    // Email signup form handling
-    const emailForm = document.getElementById('emailSignupForm');
-    if (emailForm) {
-        addTrackedEventListener(emailForm, 'submit', handleEmailSignup);
-    }
-
-    // Initialize cookie consent
-    initCookieConsent();
-
-    // Only get featured events when explicitly requested
-    const getFeaturedButton = document.getElementById('getFeatured');
-    if (getFeaturedButton) {
-        addTrackedEventListener(getFeaturedButton, 'click', getFeaturedEvents);
-    }
-
-
-    // Initialize floating CTA
-    initFloatingCTA();
-
-    // Initialize event form if it exists
-    initEventForm();
-
-    // Form character count
-    if (document.getElementById('title') || document.getElementById('description')) {
-        initCharCount();
-    }
-
-    // Location handling (moved to the top-level DOMContentLoaded)
-    initSponsorRotation();
-});
-
 // Clean up listeners when page unloads
-window.addEventListener('unload', cleanupEventListeners);
-
 function cleanupEventListeners() {
     eventListeners.forEach(({ element, type, handler }) => {
         if (element) {
             element.removeEventListener(type, handler);
         }
     });
-    eventListeners = [];
+    eventListeners.length = 0;
 }
 
-// Clean up listeners when page unloads
-function cleanupEventListeners() {
-    eventListeners.forEach(({ element, type, handler }) => {
-        element.removeEventListener(type, handler);
-    });
-    eventListeners.clear();
-}
-
-// Date Range Handling
-function handleDateRangeChange(e) {
-    const specificDateInput = document.getElementById('specificDate');
-    if (specificDateInput) {
-        specificDateInput.style.display = e.target.value === 'specific' ? 'block' : 'none';
-    }
-    updateEvents(e.target.value);
-}
-
-function updateEvents(dateRangeValue) {
-    console.log("Updating events with date range:", dateRangeValue);
-    filterEventsList();
-}
-
-function filterEventsList() {
-    const category = document.getElementById('categoryFilter')?.value || '';
-    const dateRange = document.getElementById('dateRange')?.value || '';
-    const location = document.getElementById('locationFilter')?.value?.toLowerCase() || '';
-
-    document.querySelectorAll('.event-card').forEach(card => {
-        const cardCategory = card.dataset.category?.toLowerCase();
-        const cardDate = card.dataset.date;
-        const cardLocation = card.dataset.location?.toLowerCase();
-
-        let showCard = true;
-
-        if (category && cardCategory !== category.toLowerCase()) showCard = false;
-        if (dateRange && cardDate) {
-            const eventDate = new Date(cardDate);
-            const today = new Date();
-
-            switch(dateRange) {
-                case 'specific':
-                    const specificDate = document.getElementById('specificDate')?.value;
-                    if (specificDate) {
-                        const selectedDate = new Date(specificDate);
-                        if (eventDate.toDateString() !== selectedDate.toDateString()) showCard = false;
-                    }
-                    break;
-                case 'today':
-                    if (eventDate.toDateString() !== today.toDateString()) showCard = false;
-                    break;
-                case 'weekend':
-                    const dayOfWeek = eventDate.getDay();
-                    if (dayOfWeek !== 0 && dayOfWeek !== 6) showCard = false;
-                    break;
-                case 'thisWeek':
-                    const weekEnd = new Date(today);
-                    weekEnd.setDate(today.getDate() + 7);
-                    if (eventDate < today || eventDate > weekEnd) showCard = false;
-                    break;
-            }
-        }
-        if (location && !cardLocation?.includes(location)) showCard = false;
-
-        card.style.display = showCard ? 'block' : 'none';
-    });
-}
-
-function initEventForm() {
-    const form = document.getElementById('eventForm');
-    if (!form) return;
-
-    const allDayCheckbox = form.querySelector('#all_day');
-    const timeFields = form.querySelector('.time-fields');
-    const recurringCheckbox = form.querySelector('#recurring');
-    const recurrenceFields = form.querySelector('.recurrence-fields');
-
-    if (allDayCheckbox && timeFields) {
-        allDayCheckbox.addEventListener('change', function() {
-            timeFields.style.display = this.checked ? 'none' : 'block';
-        });
-        timeFields.style.display = allDayCheckbox.checked ? 'none' : 'block';
-    }
-
-    if (recurringCheckbox && recurrenceFields) {
-        recurringCheckbox.addEventListener('change', function() {
-            recurrenceFields.style.display = this.checked ? 'block' : 'none';
-        });
-        recurrenceFields.style.display = recurringCheckbox.checked ? 'block' : 'none';
-    }
-}
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', initializeEventListeners);
+window.addEventListener('unload', cleanupEventListeners);
 
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize date range elements
-    dateRangeSelect = document.getElementById('dateRange');
-    specificDateInput = document.getElementById('specificDate');
-
-    if (dateRangeSelect) {
-        dateRangeSelect.addEventListener('change', handleDateRangeChange);
-    }
-
-    // Initialize tooltips
+// Initialize tooltips
+function initTooltips() {
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.map(function(tooltipTriggerEl) {
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
-
-    // Email signup form handling
-    const emailForm = document.getElementById('emailSignupForm');
-    if (emailForm) {
-        emailForm.addEventListener('submit', handleEmailSignup);
-    }
-
-    // Initialize cookie consent
-    initCookieConsent();
-
-    // Only get featured events when explicitly requested
-    const getFeaturedButton = document.getElementById('getFeatured');
-    if (getFeaturedButton) {
-        getFeaturedButton.addEventListener('click', getFeaturedEvents);
-    }
-
-
-    // Initialize floating CTA
-    initFloatingCTA();
-
-    // Initialize event form if it exists
-    initEventForm();
-
-    // Form character count
-    if (document.getElementById('title') || document.getElementById('description')) {
-        initCharCount();
-    }
-
-    // Clean up any existing listeners
-    cleanupEventListeners();
-
-    // Set up event listeners for filters with cleanup
-    const filters = ['categoryFilter', 'dateRange', 'locationFilter', 'specificDate'];
-    filters.forEach(filterId => {
-        const element = document.getElementById(filterId);
-        if (element) {
-            const handler = () => filterEventsList();
-            element.addEventListener('change', handler);
-            eventListeners.push({ element, type: 'change', handler });
-
-            if (element.tagName === 'INPUT') {
-                const inputHandler = () => filterEventsList();
-                element.addEventListener('input', inputHandler);
-                eventListeners.push({ element, type: 'input', handler: inputHandler });
-            }
-        }
-    });
-
-    // Location handling (moved to the top-level DOMContentLoaded)
-    initSponsorRotation();
-});
-
-function handleEmailSignup(e) {
-    e.preventDefault();
-    const email = document.getElementById('emailInput').value;
-
-    fetch('/subscribe', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email: email })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showAlert('success', 'Thank you for subscribing!');
-        } else {
-            showAlert('danger', data.message || 'An error occurred');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showAlert('danger', 'An error occurred while subscribing');
-    });
-}
-
-function initSponsorRotation() {
-    const sponsorsCarousel = document.getElementById('sponsors-carousel');
-    if (!sponsorsCarousel) return;
-
-    const sponsors = [
-        { image: '/static/images/rutledge_farm_logo.png', name: 'Rutledge Family Farm' }
-    ];
-
-    // Create sponsor card structure
-    const sponsorCard = document.createElement('div');
-    sponsorCard.className = 'col-md-3';
-    sponsorCard.innerHTML = `
-        <div class="sponsor-card">
-            <div class="sponsor-content">
-                <img src="${sponsors[0].image}" alt="${sponsors[0].name}" class="img-fluid">
-            </div>
-        </div>
-    `;
-
-    // Clear and append new sponsor
-    sponsorsCarousel.innerHTML = '';
-    sponsorsCarousel.appendChild(sponsorCard);
 }
 
 // Cookie consent initialization
@@ -562,24 +343,53 @@ function displayFeaturedEvents(container, events) {
     }
 }
 
+function initEventForm() {
+    const form = document.getElementById('eventForm');
+    if (!form) return;
 
+    const allDayCheckbox = form.querySelector('#all_day');
+    const timeFields = form.querySelector('.time-fields');
+    const recurringCheckbox = form.querySelector('#recurring');
+    const recurrenceFields = form.querySelector('.recurrence-fields');
 
-function showAlert(type, message) {
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
-    alertDiv.role = 'alert';
-    alertDiv.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    `;
-    document.querySelector('main').insertAdjacentElement('afterbegin', alertDiv);
+    if (allDayCheckbox && timeFields) {
+        allDayCheckbox.addEventListener('change', function() {
+            timeFields.style.display = this.checked ? 'none' : 'block';
+        });
+        timeFields.style.display = allDayCheckbox.checked ? 'none' : 'block';
+    }
 
-    // Auto dismiss after 5 seconds
-    setTimeout(() => {
-        alertDiv.remove();
-    }, 5000);
+    if (recurringCheckbox && recurrenceFields) {
+        recurringCheckbox.addEventListener('change', function() {
+            recurrenceFields.style.display = this.checked ? 'block' : 'none';
+        });
+        recurrenceFields.style.display = recurringCheckbox.checked ? 'block' : 'none';
+    }
 }
 
+function initSponsorRotation() {
+    const sponsorsCarousel = document.getElementById('sponsors-carousel');
+    if (!sponsorsCarousel) return;
+
+    const sponsors = [
+        { image: '/static/images/rutledge_farm_logo.png', name: 'Rutledge Family Farm' }
+    ];
+
+    // Create sponsor card structure
+    const sponsorCard = document.createElement('div');
+    sponsorCard.className = 'col-md-3';
+    sponsorCard.innerHTML = `
+        <div class="sponsor-card">
+            <div class="sponsor-content">
+                <img src="${sponsors[0].image}" alt="${sponsors[0].name}" class="img-fluid">
+            </div>
+        </div>
+    `;
+
+    // Clear and append new sponsor
+    sponsorsCarousel.innerHTML = '';
+    sponsorsCarousel.appendChild(sponsorCard);
+}
 
 function initFloatingCTA() {
     const floatingCTA = document.querySelector('.floating-cta');
