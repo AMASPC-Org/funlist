@@ -1,6 +1,101 @@
-// Global variables
+// Global variables and event listener cleanup
+let eventListeners = new Map();
 let dateRangeSelect = null;
 
+// Clean up listeners when page unloads
+window.addEventListener('unload', cleanupEventListeners);
+
+function cleanupEventListeners() {
+    eventListeners.forEach(({ element, type, handler }) => {
+        element.removeEventListener(type, handler);
+    });
+    eventListeners.clear();
+}
+
+// Date Range Handling
+function handleDateRangeChange(select) {
+    const specificDateInput = document.getElementById('specificDate');
+    if (specificDateInput) {
+        specificDateInput.style.display = select.value === 'specific' ? 'block' : 'none';
+    }
+    updateEvents(select.value);
+}
+
+function updateEvents(dateRangeValue) {
+    console.log("Updating events with date range:", dateRangeValue);
+    filterEventsList();
+}
+
+function filterEventsList() {
+    const category = document.getElementById('categoryFilter')?.value || '';
+    const dateRange = document.getElementById('dateRange')?.value || '';
+    const location = document.getElementById('locationFilter')?.value.toLowerCase();
+
+    document.querySelectorAll('.event-card').forEach(card => {
+        const cardCategory = card.dataset.category?.toLowerCase();
+        const cardDate = card.dataset.date;
+        const cardLocation = card.dataset.location?.toLowerCase();
+
+        let showCard = true;
+
+        if (category && cardCategory !== category.toLowerCase()) showCard = false;
+        if (dateRange) {
+            const eventDate = new Date(cardDate);
+            const today = new Date();
+
+            switch(dateRange) {
+                case 'specific':
+                    const specificDate = document.getElementById('specificDate')?.value; 
+                    if (specificDate) {
+                        const selectedDate = new Date(specificDate);
+                        if (eventDate.toDateString() !== selectedDate.toDateString()) showCard = false;
+                    }
+                    break;
+                case 'today':
+                    if (eventDate.toDateString() !== today.toDateString()) showCard = false;
+                    break;
+                case 'weekend':
+                    const dayOfWeek = eventDate.getDay();
+                    if (dayOfWeek !== 0 && dayOfWeek !== 6) showCard = false;
+                    break;
+                case 'thisWeek':
+                    const weekEnd = new Date(today);
+                    weekEnd.setDate(today.getDate() + 7);
+                    if (eventDate < today || eventDate > weekEnd) showCard = false;
+                    break;
+            }
+        }
+        if (location && !cardLocation?.includes(location)) showCard = false;
+
+        card.style.display = showCard ? 'block' : 'none';
+    });
+}
+
+function initEventForm() {
+    const form = document.getElementById('eventForm');
+    if (!form) return;
+
+    const allDayCheckbox = form.querySelector('#all_day');
+    const timeFields = form.querySelector('.time-fields');
+    const recurringCheckbox = form.querySelector('#recurring');
+    const recurrenceFields = form.querySelector('.recurrence-fields');
+
+    if (allDayCheckbox && timeFields) {
+        allDayCheckbox.addEventListener('change', function() {
+            timeFields.style.display = this.checked ? 'none' : 'block';
+        });
+        timeFields.style.display = allDayCheckbox.checked ? 'none' : 'block';
+    }
+
+    if (recurringCheckbox && recurrenceFields) {
+        recurringCheckbox.addEventListener('change', function() {
+            recurrenceFields.style.display = this.checked ? 'block' : 'none';
+        });
+        recurrenceFields.style.display = recurringCheckbox.checked ? 'block' : 'none';
+    }
+}
+
+// Initialize everything when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize date range select
     dateRangeSelect = document.getElementById('dateRange');
@@ -23,7 +118,6 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             const emailInput = this.querySelector('input[type="email"]');
             if (emailInput && emailInput.value) {
-                // Handle email signup
                 console.log('Email signup:', emailInput.value);
                 // Add your email signup logic here
             }
@@ -49,7 +143,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize floating CTA
     initFloatingCTA();
 
-    // Handle form field visibility
+    // Initialize event form if it exists
     initEventForm();
 
     // Form character count
@@ -61,7 +155,7 @@ document.addEventListener('DOMContentLoaded', function() {
     cleanupEventListeners();
 
     // Set up event listeners for filters with cleanup
-    const filters = ['categoryFilter', 'dateRange', 'locationFilter', 'specificDate', 'specificDate-mobile'];
+    const filters = ['categoryFilter', 'dateRange', 'locationFilter', 'specificDate'];
     filters.forEach(filterId => {
         const element = document.getElementById(filterId);
         if (element) {
@@ -80,23 +174,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Location handling (moved to the top-level DOMContentLoaded)
 
 });
-
-// Date Range Handling
-function handleDateRangeChange(select) {
-    const specificDateInput = document.getElementById('specificDate');
-    if (specificDateInput) {
-        specificDateInput.style.display = select.value === 'specific' ? 'block' : 'none';
-    }
-
-    // Update events based on selection
-    updateEvents(select.value);
-}
-
-function updateEvents(dateRangeValue) {
-    console.log("Updating events with date range:", dateRangeValue);
-    // Implement your event updating logic here
-    // This could involve making an AJAX call to your backend
-}
 
 // Cookie consent initialization
 function initCookieConsent() {
@@ -266,6 +343,7 @@ function displayFeaturedEvents(container, events) {
 }
 
 
+
 // Email Signup
 function handleEmailSignup(e) {
     e.preventDefault();
@@ -294,31 +372,6 @@ function handleEmailSignup(e) {
     });
 }
 
-
-
-// function handleEmailSignup(e) {
-//     e.preventDefault();
-//     const email = document.getElementById('emailInput').value;
-
-//     fetch('/subscribe', {
-//         method: 'POST',
-//         headers: {
-//             'Content-Type': 'application/json',
-//         },
-//         body: JSON.stringify({ email: email })
-//     })
-//     .then(response => response.json())
-//     .then(data => {
-//         if (data.success) {
-//             showAlert('success', 'Successfully subscribed!');
-//         } else {
-//             showAlert('danger', data.message || 'Subscription failed.');
-//         }
-//     })
-//     .catch(error => {
-//         showAlert('danger', 'An error occurred. Please try again.');
-//     });
-// }
 
 function showAlert(type, message) {
     const alertDiv = document.createElement('div');
@@ -353,34 +406,6 @@ function initFloatingCTA() {
     }
 }
 
-function initEventForm() {
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('eventForm');
-        if (!form) return;
-
-        const allDayCheckbox = form.querySelector('#all_day');
-        const timeFields = form.querySelector('.time-fields');
-        const recurringCheckbox = form.querySelector('#recurring');
-        const recurrenceFields = form.querySelector('.recurrence-fields');
-
-        if (allDayCheckbox && timeFields) {
-            allDayCheckbox.addEventListener('change', function() {
-                timeFields.style.display = this.checked ? 'none' : 'block';
-            });
-            // Initialize state
-            timeFields.style.display = allDayCheckbox.checked ? 'none' : 'block';
-        }
-
-        if (recurringCheckbox && recurrenceFields) {
-            recurringCheckbox.addEventListener('change', function() {
-                recurrenceFields.style.display = this.checked ? 'block' : 'none';
-            });
-            // Initialize state
-            recurrenceFields.style.display = recurringCheckbox.checked ? 'block' : 'none';
-        }
-    });
-}
-
 function initCharCount() {
     const titleInput = document.getElementById('title');
     const descriptionInput = document.getElementById('description');
@@ -398,77 +423,6 @@ function initCharCount() {
             if (descriptionCount) descriptionCount.textContent = this.value.length;
         });
     }
-}
-
-function filterEventsList() {
-    const category = document.getElementById('categoryFilter')?.value || '';
-    const dateRange = document.getElementById('dateRange')?.value || '';
-    const location = document.getElementById('locationFilter')?.value.toLowerCase();
-
-    document.querySelectorAll('.event-card').forEach(card => {
-        const cardCategory = card.dataset.category?.toLowerCase();
-        const cardDate = card.dataset.date;
-        const cardLocation = card.dataset.location?.toLowerCase();
-
-        let showCard = true;
-
-        if (category && cardCategory !== category.toLowerCase()) showCard = false;
-        if (dateRange) {
-            const eventDate = new Date(cardDate);
-            const today = new Date();
-
-            switch(dateRange) {
-                case 'specific':
-                    const specificDate = document.getElementById('specificDate')?.value; 
-                    if (specificDate) {
-                        const selectedDate = new Date(specificDate);
-                        if (eventDate.toDateString() !== selectedDate.toDateString()) showCard = false;
-                    }
-                    break;
-                case 'today':
-                    if (eventDate.toDateString() !== today.toDateString()) showCard = false;
-                    break;
-                case 'weekend':
-                    // Add weekend logic
-                    break;
-                // Add other date range cases
-            }
-        }
-        if (location && !cardLocation?.includes(location)) showCard = false;
-
-        card.style.display = showCard ? 'block' : 'none';
-    });
-}
-
-
-// Handle date range changes
-// function handleDateRangeChange(select) {
-//     const specificDateInput = document.getElementById('specificDate');
-//     if (specificDateInput) {
-//         specificDateInput.style.display = select.value === 'specific' ? 'block' : 'none';
-//         if (select.value === 'specific') {
-//             specificDateInput.focus();
-//         } else if (select.form) {
-//             select.form.submit();
-//         }
-//     }
-// }
-
-
-// Create a single event handler to avoid duplicates
-let eventListeners = new Map();
-
-// Clean up listeners when page unloads
-window.addEventListener('unload', cleanupEventListeners);
-
-function cleanupEventListeners() {
-    // Remove all tracked event listeners
-    eventListeners.forEach(({ element, type, handler }) => {
-        if (element && element.removeEventListener) {
-            element.removeEventListener(type, handler);
-        }
-    });
-    eventListeners.clear();
 }
 
 function initSponsorRotation() {
