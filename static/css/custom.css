@@ -6,6 +6,8 @@
     --light-color: #ffffff;      /* White */
     --text-primary: #1A1A1A;     /* Main text color */
     --text-secondary: #4A4A4A;   /* Secondary text color */
+    --light-bg: #f8f9fa; /* Added light background color */
+    --primary: #FF8A00; /* Added primary color variable */
 }
 
 /* Enhanced Feature Boxes */
@@ -705,7 +707,9 @@ main {
 
 .footer {
     flex-shrink: 0;
-    background-color: #f8f9fa;
+    background-color: var(--light-bg);
+    padding: 2rem 0;
+    margin-top: auto;
 }
 
 .footer h5 {
@@ -721,6 +725,45 @@ main {
 .footer a:hover {
     color: var(--primary-color);
 }
+
+/* Footer styles */
+.footer {
+    margin-top: auto;
+    padding: 2rem 0;
+    background-color: var(--light-bg);
+}
+
+.footer a {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.2s ease;
+}
+
+.footer a:hover {
+    color: var(--primary);
+}
+
+.footer-link {
+    display: inline-block;
+    position: relative;
+}
+
+.footer-link:after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 1px;
+    bottom: 0;
+    left: 0;
+    background-color: var(--primary);
+    transform: scaleX(0);
+    transition: transform 0.2s ease;
+}
+
+.footer-link:hover:after {
+    transform: scaleX(1);
+}
+
 
 /* Feature Boxes */
 .feature-box {
@@ -1015,7 +1058,7 @@ main {
     }
 
     .footer {
-    background-color: #f8f9fa;
+    background-color: var(--light-bg);
     padding: 3rem 0;
 }
 
@@ -1092,7 +1135,7 @@ main {
     width: 100%;
     padding-right: 15px;
     padding-left: 15px;
-    margin-right: auto;
+margin-right: auto;
     margin-left: auto;
     padding-top: 1rem;
     padding-bottom: 2rem;
