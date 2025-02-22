@@ -77,7 +77,12 @@ def create_app():
     def internal_error(error):
         logger.error(f"Internal Server Error: {str(error)}")
         db.session.rollback()
-        return render_template('500.html'), 500
+        return render_template("500.html"), 500
+
+    @app.errorhandler(404)
+    def not_found_error(error):
+        logger.error(f"Page not found: {request.url}")
+        return render_template("404.html"), 404
 
     try:
         logger.info("Initializing database...")
