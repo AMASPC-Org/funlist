@@ -1730,3 +1730,29 @@ main {
         height: 60px;
     }
 }
+/* Navigation fixes */
+.navbar {
+  z-index: 1030;
+  position: fixed;
+  width: 100%;
+  top: 0;
+}
+
+.toggle-container {
+  margin-top: 60px;
+}
+
+main {
+  padding-top: 60px;
+}
+
+/* Standardize button styling in footer */
+.footer .btn-footer {
+  padding: 8px 16px;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footer .btn-footer:hover {
+  color: #007bff;
+}

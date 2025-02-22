@@ -106,7 +106,7 @@
             </div>
             <div class="row mt-3">
                 <div class="col text-center">
-                    <p class="mb-0">© <script>document.write(new Date().getFullYear())</script> FunList.ai. All rights reserved.</p>
+                    <p class="mb-0">© 2025 FunList.ai. All rights reserved.</p>
                 </div>
             </div>
         </div>
@@ -117,23 +117,37 @@
     {% include 'partials/cookie_consent.html' %}
 
     <script>
-        // Initialize geolocation handling only when needed
         document.addEventListener('DOMContentLoaded', function() {
-            // Let the browser handle geolocation permissions
             if ("geolocation" in navigator) {
-                // Only request location when needed (e.g., on map page or when explicitly requested)
                 const isMapPage = window.location.pathname.includes('/map');
                 if (isMapPage) {
-                    navigator.geolocation.getCurrentPosition(function(position) {
-                        // Handle the position data
-                        const event = new CustomEvent('locationReceived', {
-                            detail: {
-                                lat: position.coords.latitude,
-                                lng: position.coords.longitude
-                            }
-                        });
-                        document.dispatchEvent(event);
-                    });
+                    navigator.geolocation.getCurrentPosition(
+                        function(position) {
+                            const event = new CustomEvent('locationReceived', {
+                                detail: {
+                                    lat: position.coords.latitude,
+                                    lng: position.coords.longitude
+                                }
+                            });
+                            document.dispatchEvent(event);
+                        },
+                        function(error) {
+                            console.error('Geolocation error:', error.message);
+                            // Default to a central location if permission denied
+                            const event = new CustomEvent('locationReceived', {
+                                detail: {
+                                    lat: 47.6062,  // Default to Seattle
+                                    lng: -122.3321
+                                }
+                            });
+                            document.dispatchEvent(event);
+                        },
+                        {
+                            enableHighAccuracy: true,
+                            timeout: 5000,
+                            maximumAge: 0
+                        }
+                    );
                 }
             }
         });
