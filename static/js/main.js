@@ -8,6 +8,7 @@ let eventListeners = new Map();
 // Clean up listeners when page unloads
 window.addEventListener('unload', cleanupEventListeners);
 
+// Clean up listeners when page unloads
 function cleanupEventListeners() {
     eventListeners.forEach(({ element, type, handler }) => {
         element.removeEventListener(type, handler);
@@ -17,6 +18,7 @@ function cleanupEventListeners() {
 
 // Date Range Handling
 function handleDateRangeChange(e) {
+    const specificDateInput = document.getElementById('specificDate');
     if (specificDateInput) {
         specificDateInput.style.display = e.target.value === 'specific' ? 'block' : 'none';
     }
@@ -31,7 +33,7 @@ function updateEvents(dateRangeValue) {
 function filterEventsList() {
     const category = document.getElementById('categoryFilter')?.value || '';
     const dateRange = document.getElementById('dateRange')?.value || '';
-    const location = document.getElementById('locationFilter')?.value.toLowerCase();
+    const location = document.getElementById('locationFilter')?.value?.toLowerCase() || '';
 
     document.querySelectorAll('.event-card').forEach(card => {
         const cardCategory = card.dataset.category?.toLowerCase();
@@ -41,13 +43,13 @@ function filterEventsList() {
         let showCard = true;
 
         if (category && cardCategory !== category.toLowerCase()) showCard = false;
-        if (dateRange) {
+        if (dateRange && cardDate) {
             const eventDate = new Date(cardDate);
             const today = new Date();
 
             switch(dateRange) {
                 case 'specific':
-                    const specificDate = document.getElementById('specificDate')?.value; 
+                    const specificDate = document.getElementById('specificDate')?.value;
                     if (specificDate) {
                         const selectedDate = new Date(specificDate);
                         if (eventDate.toDateString() !== selectedDate.toDateString()) showCard = false;
@@ -129,8 +131,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
 
-    // Initialize any Bootstrap tooltips (duplicate, remove one)
-
     // Initialize floating CTA
     initFloatingCTA();
 
@@ -168,28 +168,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function handleEmailSignup(e) {
     e.preventDefault();
-    const email = document.getElementById('signupEmail').value;
+    const email = document.getElementById('emailInput').value;
 
     fetch('/subscribe', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email })
+        body: JSON.stringify({ email: email })
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
             alert('Thank you for subscribing!');
-            const modal = bootstrap.Modal.getInstance(document.getElementById('emailSignupModal'));
-            if (modal) modal.hide();
         } else {
-            alert(data.message || 'Subscription failed. Please try again.');
+            alert(data.message || 'An error occurred');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('An error occurred. Please try again later.');
+        alert('An error occurred while subscribing');
     });
 }
 
@@ -383,6 +381,7 @@ function displayFeaturedEvents(container, events) {
         container.innerHTML = '<div class="alert alert-warning">Error displaying featured events. Please try again later.</div>';
     }
 }
+
 
 
 function showAlert(type, message) {
