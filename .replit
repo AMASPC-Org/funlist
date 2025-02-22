@@ -26,7 +26,7 @@ localPort = 8000
 externalPort = 8000
 
 [workflows]
-runButton = "Project"
+runButton = "Flask Server"
 
 [[workflows.workflow]]
 name = "Run"
@@ -34,7 +34,7 @@ author = 36270944
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python main.py" #Ensure this line uses main.py.
+args = "python main.py"
 
 [[workflows.workflow]]
 name = "Project"
@@ -57,5 +57,5 @@ task = "packager.installForAll"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python main.py"  # Ensure this also runs main.py
+args = "python main.py"
 waitForPort = 5006
