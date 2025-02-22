@@ -26,6 +26,8 @@ logger = logging.getLogger(__name__)
 def create_app():
     logger.info("Starting application creation...")
     app = Flask(__name__, static_folder='static')
+    app.config['TEMPLATES_AUTO_RELOAD'] = True
+    app.config['EXPLAIN_TEMPLATE_LOADING'] = True
 
     @app.after_request
     def add_security_headers(response):

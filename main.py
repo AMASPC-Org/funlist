@@ -33,9 +33,9 @@ if __name__ == '__main__':
         
         logger.info(f"Starting server on port {port}")
         app.run(
-            host='0.0.0.0', 
-            port=port,
-            debug=False,  # Disable debug mode for security
+            host='0.0.0.0',
+            port=8080,
+            debug=True,
             threaded=True,
             use_reloader=False
         )
