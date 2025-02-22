@@ -1,107 +1,81 @@
-// Core functionality for location handling
-function getUserLocation() {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const location = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                };
-                localStorage.setItem('userLocation', JSON.stringify(location));
-                updateFeaturedEvents(location);
-            },
-            (error) => {
-                console.error('Geolocation error:', error);
-                const defaultLocation = { lat: 47.0379, lng: -122.9007 };
-                localStorage.setItem('userLocation', JSON.stringify(defaultLocation));
-                updateFeaturedEvents(defaultLocation);
-            }
-        );
-    }
-}
+// Core functionality for location handling (Removed as per intention)
 
-// Update featured events based on location
-function updateFeaturedEvents(location) {
-    const FEATURED_EVENTS_ENABLED = false; // Match our feature flag
-    if (!FEATURED_EVENTS_ENABLED) return Promise.resolve(); // Return resolved promise when disabled
-
-    return fetch(`/api/featured-events?lat=${location.lat}&lng=${location.lng}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.message) {
-                console.log('Featured events message:', data.message);
-                return;
-            }
-            const featuredSection = document.querySelector('#featured-events');
-            if (featuredSection && events.length > 0) {
-                const eventsHtml = events.map(event => `
-                    <div class="col-md-4 mb-4">
-                        <div class="card h-100">
-                            <div class="card-body">
-                                <h5 class="card-title">${event.title}</h5>
-                                <p class="card-text">${event.description}</p>
-                                <p class="text-muted">Date: ${event.date}</p>
-                                <div class="fun-rating">Fun Rating: ${'⭐'.repeat(event.fun_meter)}</div>
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
-                featuredSection.innerHTML = eventsHtml;
-            }
-        })
-        .catch(error => console.error('Error fetching featured events:', error));
-}
-
+// Update featured events based on location (Removed as per intention)
 
 // DOM Elements
 document.addEventListener('DOMContentLoaded', function() {
-    // Only get featured events when explicitly requested
-    const getFeaturedButton = document.getElementById('getFeatured');
-    if (getFeaturedButton) {
-        getFeaturedButton.addEventListener('click', getFeaturedEvents);
-    }
-
     // Email signup form handling
-    const emailSignupForm = document.getElementById('emailSignupForm');
-    if (emailSignupForm) {
-        emailSignupForm.addEventListener('submit', handleEmailSignup);
+    const emailForm = document.getElementById('emailSignupForm');
+    if (emailForm) {
+        emailForm.addEventListener('submit', handleEmailSignup);
     }
 
-    // Location handling
-    const allowLocationBtn = document.getElementById('allowLocation');
-    const denyLocationBtn = document.getElementById('denyLocation');
-
-    if (allowLocationBtn) {
-        allowLocationBtn.addEventListener('click', function() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        sessionStorage.setItem('userLat', position.coords.latitude);
-                        sessionStorage.setItem('userLng', position.coords.longitude);
-                        location.reload();
-                    },
-                    (error) => {
-                        console.log('Geolocation error:', error);
-                    }
-                );
-            }
-        });
-    }
-
-    if (denyLocationBtn) {
-        denyLocationBtn.addEventListener('click', function() {
-            sessionStorage.setItem('locationDenied', 'true');
-            location.reload();
-        });
-    }
-
+    // Initialize any Bootstrap tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
 
     // Date range handling
     const dateRangeSelect = document.getElementById('date_range');
     if (dateRangeSelect) {
         dateRangeSelect.addEventListener('change', handleDateRangeChange);
     }
+    // Email signup form handling
+    const emailSignupForm = document.getElementById('emailSignupForm');
+    if (emailSignupForm) {
+        emailSignupForm.addEventListener('submit', handleEmailSignup);
+    }
+
+    // Date range handling
+    const dateRangeSelect = document.getElementById('date_range');
+    if (dateRangeSelect) {
+        dateRangeSelect.addEventListener('change', handleDateRangeChange);
+    }
+
+
 });
+
+function handleEmailSignup(e) {
+    e.preventDefault();
+    const email = document.getElementById('emailInput').value;
+
+    fetch('/subscribe', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: email })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('success', 'Successfully subscribed!');
+        } else {
+            showAlert('danger', data.message || 'Subscription failed.');
+        }
+    })
+    .catch(error => {
+        showAlert('danger', 'An error occurred. Please try again.');
+    });
+}
+
+function showAlert(type, message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.role = 'alert';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    document.querySelector('main').insertAdjacentElement('afterbegin', alertDiv);
+
+    // Auto dismiss after 5 seconds
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 5000);
+}
+
 
 // Featured Events
 function getFeaturedEvents() {
@@ -403,31 +377,31 @@ function initCookieConsent() {
     const consentBanner = document.getElementById('cookie-consent');
     const acceptBtn = document.getElementById('accept-cookies');
     const savePreferencesBtn = document.getElementById('save-cookie-preferences');
-    
+
     if (!getCookie('cookie-consent')) {
         consentBanner.style.display = 'block';
     }
-    
+
     acceptBtn?.addEventListener('click', () => {
         setCookie('cookie-consent', 'all', 365);
         setCookie('analytics-cookies', 'true', 365);
         setCookie('advertising-cookies', 'true', 365);
         consentBanner.style.display = 'none';
     });
-    
+
     savePreferencesBtn?.addEventListener('click', () => {
         const analytics = document.getElementById('analytics-cookies').checked;
         const advertising = document.getElementById('advertising-cookies').checked;
-        
+
         setCookie('cookie-consent', 'custom', 365);
         setCookie('analytics-cookies', analytics.toString(), 365);
         setCookie('advertising-cookies', advertising.toString(), 365);
-        
+
         consentBanner.style.display = 'none';
         const modal = bootstrap.Modal.getInstance(document.getElementById('cookieModal'));
         modal?.hide();
     });
-    
+
     // Load saved preferences
     if (getCookie('cookie-consent') === 'custom') {
         document.getElementById('analytics-cookies').checked = getCookie('analytics-cookies') === 'true';
@@ -445,24 +419,24 @@ document.addEventListener('DOMContentLoaded', () => {
         initEventForm();
         const form = document.querySelector('form#eventForm');
         form.addEventListener('submit', function(e) {
-    e.preventDefault();
-    const formData = new FormData(form);
-    fetch(form.action, {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => {
-        if (response.redirected) {
-            window.location.href = response.url;
-        } else {
-            return response.text();
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Error submitting form. Please try again.');
-    });
-});
+            e.preventDefault();
+            const formData = new FormData(form);
+            fetch(form.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.redirected) {
+                    window.location.href = response.url;
+                } else {
+                    return response.text();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error submitting form. Please try again.');
+            });
+        });
     }
 
     if (document.getElementById('title') || document.getElementById('description')) {
