@@ -1,12 +1,192 @@
-// Global variables
-let dateRangeSelect = null;
-let specificDateInput = null;
+// Global event listener tracking
+let eventListeners = [];
 
-// Global variables and event listener cleanup
-let eventListeners = new Map();
+// Helper function to add and track event listeners
+function addTrackedEventListener(element, type, handler) {
+    if (element) {
+        element.addEventListener(type, handler);
+        eventListeners.push({ element, type, handler });
+    }
+}
+
+// Event filtering functionality
+function initializeFilters() {
+    const dateRangeSelect = document.getElementById('dateRange');
+    const specificDateInput = document.getElementById('specificDate');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const locationFilter = document.getElementById('locationFilter');
+
+    if (dateRangeSelect) {
+        addTrackedEventListener(dateRangeSelect, 'change', handleDateRangeChange);
+    }
+
+    if (specificDateInput) {
+        addTrackedEventListener(specificDateInput, 'change', filterEventsList);
+    }
+
+    if (categoryFilter) {
+        addTrackedEventListener(categoryFilter, 'change', filterEventsList);
+    }
+
+    if (locationFilter) {
+        addTrackedEventListener(locationFilter, 'input', filterEventsList);
+    }
+}
+
+// Date Range Handling
+function handleDateRangeChange(e) {
+    const specificDateInput = document.getElementById('specificDate');
+    if (specificDateInput) {
+        specificDateInput.style.display = e.target.value === 'specific' ? 'block' : 'none';
+        filterEventsList();
+    }
+}
+
+function filterEventsList() {
+    const category = document.getElementById('categoryFilter')?.value || '';
+    const dateRange = document.getElementById('dateRange')?.value || '';
+    const location = document.getElementById('locationFilter')?.value?.toLowerCase() || '';
+
+    document.querySelectorAll('.event-card').forEach(card => {
+        const cardCategory = card.dataset.category?.toLowerCase();
+        const cardDate = card.dataset.date;
+        const cardLocation = card.dataset.location?.toLowerCase() || '';
+
+        let showCard = true;
+
+        if (category && cardCategory !== category.toLowerCase()) showCard = false;
+        if (dateRange && cardDate) {
+            const eventDate = new Date(cardDate);
+            const today = new Date();
+
+            switch(dateRange) {
+                case 'specific':
+                    const specificDate = document.getElementById('specificDate')?.value;
+                    if (specificDate) {
+                        const selectedDate = new Date(specificDate);
+                        if (eventDate.toDateString() !== selectedDate.toDateString()) showCard = false;
+                    }
+                    break;
+                case 'today':
+                    if (eventDate.toDateString() !== today.toDateString()) showCard = false;
+                    break;
+                case 'tomorrow':
+                    const tomorrow = new Date(today);
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    if (eventDate.toDateString() !== tomorrow.toDateString()) showCard = false;
+                    break;
+                case 'weekend':
+                    const isWeekend = eventDate.getDay() === 0 || eventDate.getDay() === 6;
+                    if (!isWeekend) showCard = false;
+                    break;
+                case 'week':
+                    const weekFromNow = new Date(today);
+                    weekFromNow.setDate(weekFromNow.getDate() + 7);
+                    if (eventDate > weekFromNow || eventDate < today) showCard = false;
+                    break;
+            }
+        }
+
+        if (location && !cardLocation.includes(location)) showCard = false;
+        card.style.display = showCard ? '' : 'none';
+    });
+}
+
+// Email subscription handling
+function handleEmailSignup(e) {
+    e.preventDefault();
+    const email = document.getElementById('emailInput').value;
+
+    fetch('/subscribe', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: email })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('success', 'Thank you for subscribing!');
+        } else {
+            showAlert('danger', data.message || 'An error occurred');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('danger', 'An error occurred while subscribing');
+    });
+}
+
+// Alert display functionality
+function showAlert(type, message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    document.querySelector('main').insertAdjacentElement('afterbegin', alertDiv);
+    setTimeout(() => alertDiv.remove(), 5000);
+}
+
+// Initialize tooltips
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize date range elements
+    dateRangeSelect = document.getElementById('dateRange');
+    specificDateInput = document.getElementById('specificDate');
+
+    initializeFilters();
+
+
+    // Initialize Bootstrap tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Email signup form handling
+    const emailForm = document.getElementById('emailSignupForm');
+    if (emailForm) {
+        addTrackedEventListener(emailForm, 'submit', handleEmailSignup);
+    }
+
+    // Initialize cookie consent
+    initCookieConsent();
+
+    // Only get featured events when explicitly requested
+    const getFeaturedButton = document.getElementById('getFeatured');
+    if (getFeaturedButton) {
+        addTrackedEventListener(getFeaturedButton, 'click', getFeaturedEvents);
+    }
+
+
+    // Initialize floating CTA
+    initFloatingCTA();
+
+    // Initialize event form if it exists
+    initEventForm();
+
+    // Form character count
+    if (document.getElementById('title') || document.getElementById('description')) {
+        initCharCount();
+    }
+
+    // Location handling (moved to the top-level DOMContentLoaded)
+    initSponsorRotation();
+});
 
 // Clean up listeners when page unloads
 window.addEventListener('unload', cleanupEventListeners);
+
+function cleanupEventListeners() {
+    eventListeners.forEach(({ element, type, handler }) => {
+        if (element) {
+            element.removeEventListener(type, handler);
+        }
+    });
+    eventListeners = [];
+}
 
 // Clean up listeners when page unloads
 function cleanupEventListeners() {
@@ -152,12 +332,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (element) {
             const handler = () => filterEventsList();
             element.addEventListener('change', handler);
-            eventListeners.set(`${filterId}_change`, { element, type: 'change', handler });
+            eventListeners.push({ element, type: 'change', handler });
 
             if (element.tagName === 'INPUT') {
                 const inputHandler = () => filterEventsList();
                 element.addEventListener('input', inputHandler);
-                eventListeners.set(`${filterId}_input`, { element, type: 'input', handler: inputHandler });
+                eventListeners.push({ element, type: 'input', handler: inputHandler });
             }
         }
     });
@@ -180,14 +360,14 @@ function handleEmailSignup(e) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert('Thank you for subscribing!');
+            showAlert('success', 'Thank you for subscribing!');
         } else {
-            alert(data.message || 'An error occurred');
+            showAlert('danger', data.message || 'An error occurred');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('An error occurred while subscribing');
+        showAlert('danger', 'An error occurred while subscribing');
     });
 }
 
