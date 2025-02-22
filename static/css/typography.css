@@ -89,3 +89,59 @@ footer h5 {
   font-weight: 600;
   letter-spacing: 0.5px;
 }
+
+/* Hero Section Typography */
+.hero-content h1 {
+  font-size: 3.5rem;
+  font-weight: 700;
+  letter-spacing: -1px;
+  line-height: 1.1;
+}
+
+.hero-content p {
+  font-family: var(--font-subheading);
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+/* Event Cards */
+.event-card .title {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 1.25rem;
+  line-height: 1.3;
+}
+
+.event-card .date {
+  font-family: var(--font-subheading);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+/* Form Labels */
+label {
+  font-family: var(--font-subheading);
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+/* Alert Messages */
+.alert {
+  font-family: var(--font-body);
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+/* Price Elements */
+.price {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+/* Navigation Dropdown */
+.dropdown-menu {
+  font-family: var(--font-subheading);
+  font-size: 0.95rem;
+}
