@@ -55,9 +55,10 @@ function updateFeaturedEvents(location) {
 
 // DOM Elements
 document.addEventListener('DOMContentLoaded', function() {
-    // Only show location prompt if explicitly requested
-    if (window.location.hash === '#requestLocation') {
-        getFeaturedEvents();
+    // Only get featured events when explicitly requested
+    const getFeaturedButton = document.getElementById('getFeatured');
+    if (getFeaturedButton) {
+        getFeaturedButton.addEventListener('click', getFeaturedEvents);
     }
 
     // Email signup form handling
