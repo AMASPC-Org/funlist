@@ -29,8 +29,12 @@ externalPort = 3001
 localPort = 8000
 externalPort = 8000
 
+[[ports]]
+localPort = 8080
+externalPort = 8080
+
 [workflows]
-runButton = "Project"
+runButton = "Run Flask"
 
 [[workflows.workflow]]
 name = "Run"
@@ -63,3 +67,11 @@ task = "packager.installForAll"
 task = "shell.exec"
 args = "python main.py"
 waitForPort = 5006
+
+[[workflows.workflow]]
+name = "Run Flask"
+author = 36270944
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python main.py"
