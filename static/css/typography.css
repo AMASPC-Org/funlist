@@ -46,4 +46,46 @@ body {
 .section-title {
   font-family: var(--font-subheading);
   font-weight: 500;
+  letter-spacing: 0.5px;
+  margin-bottom: 1.5rem;
+}
+
+/* Navigation */
+.navbar-brand {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+.nav-link {
+  font-family: var(--font-subheading);
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+/* Card Elements */
+.card-title {
+  font-family: var(--font-heading);
+  font-weight: 600;
+}
+
+.card-text {
+  font-family: var(--font-body);
+  line-height: 1.6;
+}
+
+/* Form Elements */
+input, select, textarea {
+  font-family: var(--font-body);
+}
+
+/* Footer */
+footer {
+  font-family: var(--font-body);
+}
+
+footer h5 {
+  font-family: var(--font-subheading);
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }
