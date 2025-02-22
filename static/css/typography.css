@@ -1,9 +1,22 @@
 
 /* Typography System */
 :root {
-  --font-heading: 'Poppins', sans-serif;
-  --font-subheading: 'Montserrat', sans-serif;
-  --font-body: 'Lato', sans-serif;
+  --font-heading: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-subheading: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Lato', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Base Typography */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-primary);
 }
 
 /* Headings */
