@@ -26,6 +26,15 @@ logger = logging.getLogger(__name__)
 def create_app():
     logger.info("Starting application creation...")
     app = Flask(__name__, static_folder='static')
+    
+    @app.after_request
+    def add_security_headers(response):
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+        response.headers['X-XSS-Protection'] = '1; mode=block'
+        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+        response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://auth.util.repl.co; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: https://*; font-src 'self' data:; connect-src 'self' https://*;"
+        return response
 
     # Enhanced configurations for Replit environment
     app.config["SECRET_KEY"] = os.environ.get(
@@ -83,10 +92,18 @@ def create_app():
         raise
 
     try:
-        logger.info("Initializing CSRF protection...")
+        logger.info("Initializing CSRF protection and rate limiting...")
         CSRFProtect(app)
+        limiter = Limiter(
+            app,
+            key_func=get_remote_address,
+            default_limits=["200 per day", "50 per hour"],
+            storage_uri="memory://"
+        )
+        limiter.limit("5 per minute")(app.route("/login", methods=["POST"]))
+        limiter.limit("3 per minute")(app.route("/signup", methods=["POST"]))
     except Exception as e:
-        logger.error(f"Failed to initialize CSRF protection: {str(e)}",
+        logger.error(f"Failed to initialize security measures: {str(e)}",
                      exc_info=True)
         raise
 
