@@ -64,7 +64,19 @@ document.addEventListener('DOMContentLoaded', function() {
         emailSignupForm.addEventListener('submit', handleEmailSignup);
     }
 
-    // Location handling using browser geolocation only
+    // Handle location permission using browser's native request
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                // Store coordinates in session storage
+                sessionStorage.setItem('userLat', position.coords.latitude);
+                sessionStorage.setItem('userLng', position.coords.longitude);
+            },
+            (error) => {
+                console.log('Geolocation error:', error);
+            }
+        );
+    }
 
 
     // Date range handling
