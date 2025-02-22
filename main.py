@@ -35,7 +35,7 @@ if __name__ == '__main__':
         app.run(
             host='0.0.0.0',
             port=port,
-            debug=False,
+            debug=True,  # Enable debug mode temporarily to see detailed errors
             threaded=True,
             use_reloader=False
         )

@@ -73,6 +73,12 @@ def create_app():
         logger.info(f"Response status: {response.status}")
         return response
 
+    @app.errorhandler(500)
+    def internal_error(error):
+        logger.error(f"Internal Server Error: {str(error)}")
+        db.session.rollback()
+        return render_template('500.html'), 500
+
     try:
         logger.info("Initializing database...")
         db.init_app(app)
