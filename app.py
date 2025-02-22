@@ -26,8 +26,6 @@ logger = logging.getLogger(__name__)
 def create_app():
     logger.info("Starting application creation...")
     app = Flask(__name__, static_folder='static')
-    app.config['TEMPLATES_AUTO_RELOAD'] = True
-    app.config['EXPLAIN_TEMPLATE_LOADING'] = True
 
     @app.after_request
     def add_security_headers(response):
@@ -74,17 +72,6 @@ def create_app():
     def log_response(response):
         logger.info(f"Response status: {response.status}")
         return response
-
-    @app.errorhandler(500)
-    def internal_error(error):
-        logger.error(f"Internal Server Error: {str(error)}")
-        db.session.rollback()
-        return render_template("500.html"), 500
-
-    @app.errorhandler(404)
-    def not_found_error(error):
-        logger.error(f"Page not found: {request.url}")
-        return render_template("404.html"), 404
 
     try:
         logger.info("Initializing database...")

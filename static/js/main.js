@@ -24,27 +24,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Date Range Handling
 function initDateRangeHandling() {
-    // Only initialize date range selector if element exists and hasn't been initialized yet.
-    if (!window.dateRangeSelectInitialized) {
-        const dateRangeSelect = document.getElementById('date_range');
-        const specificDateInput = document.getElementById('specificDate');
+    const dateRangeSelect = document.getElementById('dateRange');
+    const specificDateInput = document.getElementById('specificDate');
 
-        if (dateRangeSelect) {
-            window.dateRangeSelectInitialized = true;
-            const handleDateChange = (e) => {
-                if (specificDateInput) {
-                    specificDateInput.style.display = e.target.value === 'specific' ? 'block' : 'none';
-                }
-                filterEventsList();
-            };
+    if (dateRangeSelect) {
+        const handleDateChange = (e) => {
+            if (specificDateInput) {
+                specificDateInput.style.display = e.target.value === 'specific' ? 'block' : 'none';
+            }
+            filterEventsList();
+        };
 
-            dateRangeSelect.addEventListener('change', handleDateChange);
-            eventListeners.push({
-                element: dateRangeSelect,
-                type: 'change',
-                handler: handleDateChange
-            });
-        }
+        dateRangeSelect.addEventListener('change', handleDateChange);
+        eventListeners.push({
+            element: dateRangeSelect,
+            type: 'change',
+            handler: handleDateChange
+        });
     }
 }
 
