@@ -467,7 +467,7 @@ header {
 
 /* Add padding to main content to prevent navbar overlap */
 main {
-    padding-top: 0;
+    padding-top: 70px;
     width: 100%;
     overflow-x: hidden;
 }
@@ -1058,49 +1058,49 @@ main {
     }
 
     .footer {
-    background-color: var(--light-bg);
-    padding: 3rem 0;
-}
-
-.footer h5 {
-    font-size: 0.875rem;
-    font-weight: 600;
-    margin-bottom: 1.25rem;
-    text-transform: uppercase;
-    color: #333;
-}
-
-.footer ul li {
-    margin-bottom: 0.75rem;
-}
-
-.footer ul li a {
-    color: #666;
-    text-decoration: none;
-    font-size: 0.875rem;
-    transition: color 0.2s;
-}
-
-.footer ul li a:hover {
-    color: #333;
-    text-decoration: none;
-}
-
-.footer .fas {
-    margin-right: 0.5rem;
-    color: #666;
-}
-
-.footer .cookie-settings {
-    cursor: pointer;
-}
-
-@media (max-width: 768px) {
-    .footer .col-md-3 {
-        margin-bottom: 2rem;
-        text-align: center;
+        background-color: var(--light-bg);
+        padding: 3rem 0;
     }
-}
+
+    .footer h5 {
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin-bottom: 1.25rem;
+        text-transform: uppercase;
+        color: #333;
+    }
+
+    .footer ul li {
+        margin-bottom: 0.75rem;
+    }
+
+    .footer ul li a {
+        color: #666;
+        text-decoration: none;
+        font-size: 0.875rem;
+        transition: color 0.2s;
+    }
+
+    .footer ul li a:hover {
+        color: #333;
+        text-decoration: none;
+    }
+
+    .footer .fas {
+        margin-right: 0.5rem;
+        color: #666;
+    }
+
+    .footer .cookie-settings {
+        cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+        .footer .col-md-3 {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+    }
 
     @media (max-width: 768px) {
         .footer {
@@ -1115,8 +1115,6 @@ main {
             margin: 0 auto;
         }
     }
-    }
-
     .chat-demo {
         margin-top: 2rem;
     }
@@ -1135,7 +1133,7 @@ main {
     width: 100%;
     padding-right: 15px;
     padding-left: 15px;
-margin-right: auto;
+    margin-right: auto;
     margin-left: auto;
     padding-top: 1rem;
     padding-bottom: 2rem;
@@ -1629,5 +1627,106 @@ margin-bottom: 0.5rem;
 @media (max-width: 768px) {
     .alert + main {
         padding-top: 140px !important;
+    }
+}
+
+/* Navbar and Header Layout Fixes */
+.navbar {
+    background-color: #fff !important;
+    box-shadow: 0px 2px 12px rgba(0,0,0,0.1);
+    padding: 0.75rem 0;
+    min-height: 70px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1030;
+}
+
+/* Event/Map Toggle Fix */
+.view-options {
+    position: relative;
+    z-index: 1020;
+    margin-top: 80px; /* Increased margin to prevent overlap with navbar */
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+/* Banner Ad Container Fix */
+.banner-container {
+    position: relative;
+    width: 100%;
+    max-width: 728px;
+    margin: 70px auto 0;  /* Adjusted margin to account for fixed navbar */
+    padding: 15px;
+    background: transparent;
+    z-index: 1010;
+    text-align: center;
+}
+
+.banner-ad {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    max-width: 728px;
+    height: 90px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+/* Footer Button Styling Fix */
+.footer .btn {
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.footer .btn-outline-primary {
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+    background: transparent;
+}
+
+.footer .btn-outline-primary:hover {
+    background: var(--primary-color);
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Main Content Spacing */
+main {
+    padding-top: 70px; /* Match navbar height */
+}
+
+/* Ensure proper spacing for pages with alerts */
+.alert + main {
+    padding-top: 90px;
+}
+
+/* Hero Section Adjustments */
+#hero.hero-section {
+    margin-top: 70px; /* Match navbar height */
+    position: relative;
+    z-index: 1000;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .view-options {
+        margin-top: 90px;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .banner-container {
+        margin-top: 90px;
+        padding: 10px;
+    }
+
+    .banner-ad {
+        height: 60px;
     }
 }
