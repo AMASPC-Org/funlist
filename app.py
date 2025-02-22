@@ -1,7 +1,7 @@
 import os
 import logging
 from datetime import timedelta
-from flask import Flask, session, request
+from flask import Flask, session, request, render_template
 from flask_login import LoginManager
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 def create_app():
     logger.info("Starting application creation...")
     app = Flask(__name__, static_folder='static')
-    
+
     @app.after_request
     def add_security_headers(response):
         response.headers['X-Content-Type-Options'] = 'nosniff'
@@ -100,12 +100,12 @@ def create_app():
             default_limits=["200 per day", "50 per hour"],
             key_func=get_remote_address
         )
-        
+
         @app.route("/login", methods=["POST"])
         @limiter.limit("5 per minute")
         def rate_limited_login():
             return "rate limited"
-            
+
         @app.route("/signup", methods=["POST"])
         @limiter.limit("3 per minute")
         def rate_limited_signup():
@@ -159,6 +159,18 @@ def create_app():
     except Exception as e:
         logger.error(f"Failed to initialize routes: {str(e)}", exc_info=True)
         raise
+
+    @app.route('/about')
+    def about():
+        return render_template('about.html')
+
+    @app.route('/privacy')
+    def privacy():
+        return render_template('privacy.html')
+
+    @app.route('/terms')
+    def terms():
+        return render_template('terms.html')
 
     logger.info("Application creation completed successfully")
     return app
