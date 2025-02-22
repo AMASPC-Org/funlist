@@ -268,13 +268,10 @@
 }
 
 .alert {
-    position: fixed;
-    top: 70px;
-    left: 0;
-    right: 0;
-    margin-bottom: 0;
-    z-index: 1020;
-    border-radius: 0;
+    margin: 70px 0 1rem 0; /* Add top margin to account for fixed header */
+    border-radius: 0.25rem;
+    position: relative;
+    z-index: 1000;
 }
 
 .alert + main {

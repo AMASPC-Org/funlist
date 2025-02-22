@@ -80,9 +80,14 @@ def init_routes(app):
 
                 db.session.add(user)
                 db.session.commit()
+                
+                login_user(user)
+                session["user_id"] = user.id
+                session["login_time"] = datetime.utcnow().isoformat()
+                session["last_activity"] = datetime.utcnow().isoformat()
 
-                flash("Account created successfully! You can now log in.", "success")
-                return redirect(url_for("login"))
+                flash("Account created successfully! Welcome to FunList!", "success")
+                return redirect(url_for("index"))
             except IntegrityError as e:
                 db.session.rollback()
                 logger.error(f"Database integrity error during sign up: {str(e)}")
