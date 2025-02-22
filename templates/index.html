@@ -53,15 +53,6 @@
     </div>
 </section>
 
-v>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" id="denyLocation">Not Now</button>
-                <button type="button" class="btn btn-primary" id="allowLocation">Allow Location</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Featured Events Section -->
 <section class="featured-events-section py-5 bg-light">
     <div class="container">
@@ -141,7 +132,6 @@ v>
 </section>
 
 
-
 <!-- Fun Rating System Section -->
 <section class="rating-system-section py-5">
     <div class="container text-center">
@@ -218,7 +208,6 @@ v>
 </section>
 
 
-
 <!-- Community Sponsors Section -->
 <section id="community-sponsors" class="py-5">
     <div class="container">
@@ -252,28 +241,32 @@ v>
 {% block scripts %}
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const map = L.map('map').setView([47.0379, -122.9007], 12);
-        const markers = {};
-
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        // Sample events (these would come from your backend)
-        const events = [
-            {
-                id: 1,
-                title: "Olympia Music Festival",
-                latitude: 47.0379,
-                longitude: -122.9007,
-                description: "A weekend of live music performances",
-                category: "Music",
-                funMeter: 5
-            }
-        ];
+        // Use browser's native geolocation API directly
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                map.setView([lat, lng], 12);
+            });
+        }
+
+        // Sample events handling remains unchanged
+        const events = [{
+            id: 1,
+            title: "Olympia Music Festival",
+            latitude: 47.0379,
+            longitude: -122.9007,
+            description: "A weekend of live music performances",
+            category: "Music",
+            funMeter: 5
+        }];
 
         events.forEach(event => {
             const marker = L.marker([event.latitude, event.longitude])
@@ -285,11 +278,9 @@ v>
                         <p><strong>Fun Meter:</strong> ${event.funMeter}/5</p>
                     </div>
                 `);
-            markers[event.id] = marker;
             marker.addTo(map);
         });
 
-        // Force map to recalculate its container size
         setTimeout(function() {
             map.invalidateSize();
         }, 100);
