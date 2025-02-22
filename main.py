@@ -2,6 +2,10 @@
 from app import create_app
 import os
 import socket
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 def is_port_in_use(port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -14,17 +18,27 @@ def is_port_in_use(port):
 app = create_app()
 
 if __name__ == '__main__':
-    default_port = 8080
-    port = int(os.environ.get('PORT', default_port))
-    
-    # Try alternative ports if default is in use
-    tries = 0
-    while is_port_in_use(port):
-        port += 1
-        tries += 1
-        if tries > 10:  # Try up to 10 ports
-            logging.error(f"Failed to find available port after {tries} attempts")
-            raise RuntimeError("No available ports found")
-        logging.info(f"Port {port-1} in use, trying port {port}")
-            
-    app.run(host='0.0.0.0', port=port, debug=False, threaded=True, use_reloader=False)
+    try:
+        port = int(os.environ.get('PORT', 5006))
+        logger.info(f"Attempting to start server on port {port}")
+        
+        if is_port_in_use(port):
+            logger.warning(f"Port {port} is in use, trying alternative ports")
+            for new_port in range(port + 1, port + 10):
+                if not is_port_in_use(new_port):
+                    port = new_port
+                    break
+            else:
+                raise RuntimeError("No available ports found")
+        
+        logger.info(f"Starting server on port {port}")
+        app.run(
+            host='0.0.0.0',
+            port=port,
+            debug=False,
+            threaded=True,
+            use_reloader=False
+        )
+    except Exception as e:
+        logger.error(f"Failed to start server: {str(e)}")
+        raise
