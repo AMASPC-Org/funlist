@@ -15,4 +15,4 @@ app = create_app()
 if __name__ == '__main__':
     port = 5006  # Use consistent port from .replit
     print(f"Starting server on port {port}")
-    app.run(host='0.0.0.0', port=port, debug=False)
+    app.run(host='0.0.0.0', port=port, debug=True)

@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 def create_app():
     logger.info("Starting application creation...")
-    app = Flask(__name__, static_folder='static')
+    app = Flask(__name__, static_url_path='', static_folder='static', template_folder='templates') #Added template_folder
 
     @app.after_request
     def add_security_headers(response):
