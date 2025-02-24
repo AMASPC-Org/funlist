@@ -34,6 +34,9 @@ def create_app():
         response.headers['X-XSS-Protection'] = '1; mode=block'
         response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
         response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://auth.util.repl.co; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: https://*; font-src 'self' data:; connect-src 'self' https://*;"
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
         return response
 
     # Enhanced configurations for Replit environment
