@@ -14,13 +14,12 @@ def is_port_in_use(port):
 app = create_app()
 
 if __name__ == '__main__':
-    default_port = 8080
-    port = int(os.environ.get('PORT', default_port))
+    port = 8080  # Default port for Replit webview
     
     # Try alternative ports if default is in use
     while is_port_in_use(port):
         port += 1
-        if port > default_port + 10:  # Try up to 10 ports
+        if port > 8090:  # Try up to port 8090
             raise RuntimeError("No available ports found")
             
     print(f"Starting server on port {port}")
