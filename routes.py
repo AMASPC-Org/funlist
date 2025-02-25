@@ -19,19 +19,6 @@ def init_routes(app):
     def about():
         return render_template('about.html')
 
-    @app.route("/privacy")
-    def privacy():
-        return render_template('privacy.html')
-
-    @app.route("/terms")
-    def terms():
-        return render_template('terms.html')
-
-    @app.route("/help")
-    @app.route("/help_center")
-    def help_center():
-        return render_template('help_center.html')
-
     @app.route("/subscribe", methods=["POST"])
     def subscribe():
         try:
@@ -94,13 +81,8 @@ def init_routes(app):
                 db.session.add(user)
                 db.session.commit()
 
-                login_user(user)
-                session["user_id"] = user.id
-                session["login_time"] = datetime.utcnow().isoformat()
-                session["last_activity"] = datetime.utcnow().isoformat()
-
-                flash("Account created successfully! Welcome to FunList!", "success")
-                return redirect(url_for("index"))
+                flash("Account created successfully! You can now log in.", "success")
+                return redirect(url_for("login"))
             except IntegrityError as e:
                 db.session.rollback()
                 logger.error(f"Database integrity error during sign up: {str(e)}")
@@ -397,14 +379,14 @@ def init_routes(app):
         FEATURED_EVENTS_ENABLED = False
         if not FEATURED_EVENTS_ENABLED:
             return jsonify({"success": True, "events": [], "message": "Feature not yet available"}), 200
-
+            
         try:
             lat = request.args.get("lat")
             lng = request.args.get("lng")
 
             if not lat or not lng:
                 return jsonify({"success": True, "events": [], "message": "No coordinates provided"}), 200
-
+                
             try:
                 lat = float(lat)
                 lng = float(lng)
@@ -636,5 +618,3 @@ def init_routes(app):
         db.session.commit()
         flash("User account activated.", "success")
         return redirect(url_for("admin_dashboard", tab="users"))
-
-    # Removed duplicate help_center route

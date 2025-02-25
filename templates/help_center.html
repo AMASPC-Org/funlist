@@ -1,49 +1,112 @@
 
 {% extends "base.html" %}
 
-{% block title %}Help Center - FunList.ai{% endblock %}
-
 {% block content %}
-<div class="container mt-4">
-    <h1>Help Center</h1>
-    <div class="row">
-        <div class="col-md-8">
-            <div class="accordion" id="faqAccordion">
-                <div class="accordion-item">
-                    <h3 class="accordion-header">
-                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
-                            How do I submit an event?
-                        </button>
-                    </h3>
-                    <div id="faq1" class="accordion-collapse collapse show">
-                        <div class="accordion-body">
-                            You can submit an event by clicking the "Submit Event" button in the navigation menu. You'll need to be logged in to submit events.
-                        </div>
-                    </div>
+<div class="container">
+    <div class="text-center mb-5">
+        <h1>HELP <span class="text-info">CENTER</span></h1>
+        <p>Find answers and support for FunList.ai</p>
+        
+        <div class="search-container my-4">
+            <input type="text" class="form-control search-input" placeholder="Search help topics...">
+        </div>
+    </div>
+
+    <div class="row help-categories mb-5">
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="help-card">
+                <div class="help-icon text-info mb-3">
+                    <i class="fas fa-rocket fa-2x"></i>
                 </div>
-                <div class="accordion-item">
-                    <h3 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
-                            How do I find events near me?
-                        </button>
-                    </h3>
-                    <div id="faq2" class="accordion-collapse collapse">
-                        <div class="accordion-body">
-                            Use the Map view to see events in your area. The map will automatically show events near your location if you allow location access.
-                        </div>
+                <h3>GETTING STARTED</h3>
+                <p>Learn the basics of using our platform.</p>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="help-card">
+                <div class="help-icon text-info mb-3">
+                    <i class="fas fa-ticket-alt fa-2x"></i>
+                </div>
+                <h3>FOR BUYERS</h3>
+                <p>Find opportunities and track attendance.</p>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="help-card">
+                <div class="help-icon text-info mb-3">
+                    <i class="fas fa-store fa-2x"></i>
+                </div>
+                <h3>FOR SELLERS</h3>
+                <p>Manage your listings and commissions.</p>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="help-card">
+                <div class="help-icon text-info mb-3">
+                    <i class="fas fa-headset fa-2x"></i>
+                </div>
+                <h3>SUPPORT & CONTACT</h3>
+                <p>Get in touch and find more resources.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="faq-section">
+        <h2>FREQUENTLY ASKED <span class="text-info">QUESTIONS</span></h2>
+        
+        <div class="accordion" id="faqAccordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#aboutSection">
+                        About FunList.ai
+                    </button>
+                </h2>
+                <div id="aboutSection" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        <p>Information about FunList.ai and its features will be displayed here.</p>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Contact Support</h5>
-                    <p class="card-text">Need additional help? Contact our support team:</p>
-                    <ul class="list-unstyled">
-                        <li><i class="fas fa-envelope"></i> help@funlist.ai</li>
-                        <li><i class="fas fa-phone"></i> (360) 200-8768</li>
-                    </ul>
+
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#buyersSection">
+                        For Event Attendees
+                    </button>
+                </h2>
+                <div id="buyersSection" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        <p>Information for event attendees will be displayed here.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sellersSection">
+                        For Event Organizers
+                    </button>
+                </h2>
+                <div id="sellersSection" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        <p>Information for event organizers will be displayed here.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#supportSection">
+                        Support & Contact
+                    </button>
+                </h2>
+                <div id="supportSection" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        <p>Support and contact information will be displayed here.</p>
+                    </div>
                 </div>
             </div>
         </div>

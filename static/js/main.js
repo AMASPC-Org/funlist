@@ -1,264 +1,77 @@
-// Store event listeners for cleanup
-let eventListeners = [];
-
-// Helper function to add and track event listeners
-function addTrackedEventListener(element, type, handler) {
-    if (element) {
-        element.addEventListener(type, handler);
-        eventListeners.push({ element, type, handler });
+// Core functionality for location handling
+function getUserLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const location = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+                localStorage.setItem('userLocation', JSON.stringify(location));
+                updateFeaturedEvents(location);
+            },
+            (error) => {
+                console.error('Geolocation error:', error);
+                const defaultLocation = { lat: 47.0379, lng: -122.9007 };
+                localStorage.setItem('userLocation', JSON.stringify(defaultLocation));
+                updateFeaturedEvents(defaultLocation);
+            }
+        );
     }
 }
 
-// Initialize all components
+// Update featured events based on location
+function updateFeaturedEvents(location) {
+    const FEATURED_EVENTS_ENABLED = false; // Match our feature flag
+    if (!FEATURED_EVENTS_ENABLED) return Promise.resolve(); // Return resolved promise when disabled
+
+    return fetch(`/api/featured-events?lat=${location.lat}&lng=${location.lng}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                console.log('Featured events message:', data.message);
+                return;
+            }
+            const featuredSection = document.querySelector('#featured-events');
+            if (featuredSection && events.length > 0) {
+                const eventsHtml = events.map(event => `
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">${event.title}</h5>
+                                <p class="card-text">${event.description}</p>
+                                <p class="text-muted">Date: ${event.date}</p>
+                                <div class="fun-rating">Fun Rating: ${'⭐'.repeat(event.fun_meter)}</div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                featuredSection.innerHTML = eventsHtml;
+            }
+        })
+        .catch(error => console.error('Error fetching featured events:', error));
+}
+
+
+// DOM Elements
 document.addEventListener('DOMContentLoaded', function() {
-    initDateRangeHandling();
-    initCookieConsent();
-    initializeTooltips();
-    initFloatingCTA();
-    initEmailSignup();
-    initEventForm();
-    initSponsorRotation();
-    initCharCount();
+    // Featured Events
     getFeaturedEvents();
-});
 
-// Date Range Handling
-function initDateRangeHandling() {
-    const dateRangeSelect = document.getElementById('dateRange');
-    const specificDateInput = document.getElementById('specificDate');
+    // Email signup form handling
+    const emailSignupForm = document.getElementById('emailSignupForm');
+    if (emailSignupForm) {
+        emailSignupForm.addEventListener('submit', handleEmailSignup);
+    }
 
+    // Location handling using browser geolocation only
+
+
+    // Date range handling
+    const dateRangeSelect = document.getElementById('date_range');
     if (dateRangeSelect) {
-        const handleDateChange = (e) => {
-            if (specificDateInput) {
-                specificDateInput.style.display = e.target.value === 'specific' ? 'block' : 'none';
-            }
-            filterEventsList();
-        };
-
-        dateRangeSelect.addEventListener('change', handleDateChange);
-        eventListeners.push({
-            element: dateRangeSelect,
-            type: 'change',
-            handler: handleDateChange
-        });
+        dateRangeSelect.addEventListener('change', handleDateRangeChange);
     }
-}
-
-function filterEventsList() {
-    const category = document.getElementById('categoryFilter')?.value || '';
-    const dateRange = document.getElementById('dateRange')?.value || '';
-    const location = document.getElementById('locationFilter')?.value?.toLowerCase() || '';
-
-    document.querySelectorAll('.event-card').forEach(card => {
-        const cardCategory = card.dataset.category?.toLowerCase();
-        const cardDate = card.dataset.date;
-        const cardLocation = card.dataset.location?.toLowerCase();
-
-        let showCard = true;
-
-        if (category && cardCategory !== category.toLowerCase()) showCard = false;
-        if (dateRange && cardDate) {
-            const eventDate = new Date(cardDate);
-            const today = new Date();
-
-            switch(dateRange) {
-                case 'specific':
-                    const specificDate = document.getElementById('specificDate')?.value;
-                    if (specificDate) {
-                        const selectedDate = new Date(specificDate);
-                        if (eventDate.toDateString() !== selectedDate.toDateString()) showCard = false;
-                    }
-                    break;
-                case 'today':
-                    if (eventDate.toDateString() !== today.toDateString()) showCard = false;
-                    break;
-                case 'tomorrow':
-                    const tomorrow = new Date(today);
-                    tomorrow.setDate(tomorrow.getDate() + 1);
-                    if (eventDate.toDateString() !== tomorrow.toDateString()) showCard = false;
-                    break;
-                case 'weekend':
-                    const isWeekend = eventDate.getDay() === 0 || eventDate.getDay() === 6;
-                    if (!isWeekend) showCard = false;
-                    break;
-                case 'week':
-                    const nextWeek = new Date(today);
-                    nextWeek.setDate(nextWeek.getDate() + 7);
-                    if (eventDate > nextWeek || eventDate < today) showCard = false;
-                    break;
-            }
-        }
-
-        if (location && (!cardLocation || !cardLocation.includes(location))) showCard = false;
-
-        card.style.display = showCard ? 'block' : 'none';
-    });
-}
-
-// Initialize tooltips
-function initializeTooltips() {
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-}
-
-// Floating CTA
-function initFloatingCTA() {
-    const floatingCTA = document.querySelector('.floating-cta');
-    if (floatingCTA) {
-        const handleScroll = () => {
-            if (window.scrollY > 300) {
-                floatingCTA.classList.add('show');
-            } else {
-                floatingCTA.classList.remove('show');
-            }
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        eventListeners.push({
-            element: window,
-            type: 'scroll',
-            handler: handleScroll
-        });
-    }
-}
-
-// Email signup handling
-function initEmailSignup() {
-    const form = document.getElementById('emailSignupForm');
-    if (form) {
-        const handleSubmit = (e) => {
-            e.preventDefault();
-            const email = document.getElementById('emailInput').value;
-
-            fetch('/subscribe', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email: email })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showAlert('success', 'Thank you for subscribing!');
-                } else {
-                    showAlert('danger', data.message || 'An error occurred');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showAlert('danger', 'An error occurred while subscribing');
-            });
-        };
-
-        form.addEventListener('submit', handleSubmit);
-        eventListeners.push({
-            element: form,
-            type: 'submit',
-            handler: handleSubmit
-        });
-    }
-}
-
-// Alert handling
-function showAlert(type, message) {
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
-    alertDiv.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    `;
-
-    const alertContainer = document.getElementById('alertContainer') || document.body;
-    alertContainer.prepend(alertDiv);
-
-    setTimeout(() => {
-        alertDiv.remove();
-    }, 5000);
-}
-
-// Cookie handling
-function setCookie(name, value, days) {
-    let expires = '';
-    if (days) {
-        const date = new Date();
-        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-        expires = '; expires=' + date.toUTCString();
-    }
-    document.cookie = name + '=' + (value || '') + expires + '; path=/';
-}
-
-function getCookie(name) {
-    const nameEQ = name + '=';
-    const ca = document.cookie.split(';');
-    for (let i = 0; i < ca.length; i++) {
-        let c = ca[i];
-        while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
-    }
-    return null;
-}
-
-// Cookie consent
-function initCookieConsent() {
-    const consentBanner = document.getElementById('cookie-consent');
-    const acceptBtn = document.getElementById('accept-cookies');
-    const savePreferencesBtn = document.getElementById('save-cookie-preferences');
-
-    if (consentBanner && !getCookie('cookie-consent')) {
-        consentBanner.style.display = 'block';
-    }
-
-    if (acceptBtn) {
-        const handleAccept = () => {
-            setCookie('cookie-consent', 'all', 365);
-            setCookie('analytics-cookies', 'true', 365);
-            setCookie('advertising-cookies', 'true', 365);
-            consentBanner.style.display = 'none';
-        };
-
-        acceptBtn.addEventListener('click', handleAccept);
-        eventListeners.push({
-            element: acceptBtn,
-            type: 'click',
-            handler: handleAccept
-        });
-    }
-
-    if (savePreferencesBtn) {
-        const handleSave = () => {
-            const analytics = document.getElementById('analytics-cookies')?.checked;
-            const advertising = document.getElementById('advertising-cookies')?.checked;
-
-            setCookie('cookie-consent', 'custom', 365);
-            setCookie('analytics-cookies', analytics?.toString(), 365);
-            setCookie('advertising-cookies', advertising?.toString(), 365);
-
-            if (consentBanner) {
-                consentBanner.style.display = 'none';
-            }
-            const modal = bootstrap.Modal.getInstance(document.getElementById('cookieModal'));
-            if (modal) modal.hide();
-        };
-
-        savePreferencesBtn.addEventListener('click', handleSave);
-        eventListeners.push({
-            element: savePreferencesBtn,
-            type: 'click',
-            handler: handleSave
-        });
-    }
-}
-
-
-// Cleanup event listeners
-window.addEventListener('unload', () => {
-    eventListeners.forEach(({ element, type, handler }) => {
-        element.removeEventListener(type, handler);
-    });
-    eventListeners = [];
 });
 
 // Featured Events
@@ -373,30 +186,299 @@ function displayFeaturedEvents(container, events) {
     }
 }
 
-function initEventForm() {
-    const form = document.getElementById('eventForm');
-    if (!form) return;
+// Email Signup
+function handleEmailSignup(e) {
+    e.preventDefault();
+    const email = document.getElementById('signupEmail').value;
 
-    const allDayCheckbox = form.querySelector('#all_day');
-    const timeFields = form.querySelector('.time-fields');
-    const recurringCheckbox = form.querySelector('#recurring');
-    const recurrenceFields = form.querySelector('.recurrence-fields');
+    fetch('/subscribe', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Thank you for subscribing!');
+            const modal = bootstrap.Modal.getInstance(document.getElementById('emailSignupModal'));
+            if (modal) modal.hide();
+        } else {
+            alert(data.message || 'Subscription failed. Please try again.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again later.');
+    });
+}
 
-    if (allDayCheckbox && timeFields) {
-        allDayCheckbox.addEventListener('change', function() {
-            timeFields.style.display = this.checked ? 'none' : 'block';
-        });
-        timeFields.style.display = allDayCheckbox.checked ? 'none' : 'block';
-    }
 
-    if (recurringCheckbox && recurrenceFields) {
-        recurringCheckbox.addEventListener('change', function() {
-            recurrenceFields.style.display = this.checked ? 'block' : 'none';
-        });
-        recurrenceFields.style.display = recurringCheckbox.checked ? 'block' : 'none';
+// Date Range Handling
+function handleDateRangeChange(e) {
+    const specificDateInput = document.getElementById('specific_date');
+    if (specificDateInput) {
+        specificDateInput.style.display = e.target.value === 'specific' ? 'block' : 'none';
     }
 }
 
+// Initialize floating CTA
+function initFloatingCTA() {
+    const floatingCTA = document.querySelector('.floating-cta');
+    if (floatingCTA) {
+        let lastScrollTop = 0;
+        window.addEventListener('scroll', () => {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            if (scrollTop > lastScrollTop) {
+                floatingCTA.classList.add('hide');
+            } else {
+                floatingCTA.classList.remove('hide');
+            }
+            lastScrollTop = scrollTop;
+        });
+    }
+}
+
+// Handle form field visibility
+function initEventForm() {
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('eventForm');
+        if (!form) return;
+
+        const allDayCheckbox = form.querySelector('#all_day');
+        const timeFields = form.querySelector('.time-fields');
+        const recurringCheckbox = form.querySelector('#recurring');
+        const recurrenceFields = form.querySelector('.recurrence-fields');
+
+        if (allDayCheckbox && timeFields) {
+            allDayCheckbox.addEventListener('change', function() {
+                timeFields.style.display = this.checked ? 'none' : 'block';
+            });
+            // Initialize state
+            timeFields.style.display = allDayCheckbox.checked ? 'none' : 'block';
+        }
+
+        if (recurringCheckbox && recurrenceFields) {
+            recurringCheckbox.addEventListener('change', function() {
+                recurrenceFields.style.display = this.checked ? 'block' : 'none';
+            });
+            // Initialize state
+            recurrenceFields.style.display = recurringCheckbox.checked ? 'block' : 'none';
+        }
+    });
+}
+
+// Form character count
+function initCharCount() {
+    const titleInput = document.getElementById('title');
+    const descriptionInput = document.getElementById('description');
+
+    if (titleInput) {
+        titleInput.addEventListener('input', function() {
+            const titleCount = document.getElementById('titleCount');
+            if (titleCount) titleCount.textContent = this.value.length;
+        });
+    }
+
+    if (descriptionInput) {
+        descriptionInput.addEventListener('input', function() {
+            const descriptionCount = document.getElementById('descriptionCount');
+            if (descriptionCount) descriptionCount.textContent = this.value.length;
+        });
+    }
+}
+
+// Event list filtering
+function filterEventsList() {
+    const category = document.getElementById('categoryFilter')?.value || '';
+    const dateRange = document.getElementById('dateRange')?.value || '';
+    const location = document.getElementById('locationFilter')?.value.toLowerCase();
+
+    document.querySelectorAll('.event-card').forEach(card => {
+        const cardCategory = card.dataset.category?.toLowerCase();
+        const cardDate = card.dataset.date;
+        const cardLocation = card.dataset.location?.toLowerCase();
+
+        let showCard = true;
+
+        if (category && cardCategory !== category.toLowerCase()) showCard = false;
+        if (dateRange) {
+            const eventDate = new Date(cardDate);
+            const today = new Date();
+
+            switch(dateRange) {
+                case 'specific':
+                    const specificDate = document.getElementById('specificDate')?.value; 
+                    if (specificDate) {
+                        const selectedDate = new Date(specificDate);
+                        if (eventDate.toDateString() !== selectedDate.toDateString()) showCard = false;
+                    }
+                    break;
+                case 'today':
+                    if (eventDate.toDateString() !== today.toDateString()) showCard = false;
+                    break;
+                case 'weekend':
+                    // Add weekend logic
+                    break;
+                // Add other date range cases
+            }
+        }
+        if (location && !cardLocation?.includes(location)) showCard = false;
+
+        card.style.display = showCard ? 'block' : 'none';
+    });
+}
+
+// Handle date range changes
+function handleDateRangeChange(select) {
+    const specificDateInput = document.getElementById('specificDate');
+    if (specificDateInput) {
+        specificDateInput.style.display = select.value === 'specific' ? 'block' : 'none';
+        if (select.value === 'specific') {
+            specificDateInput.focus();
+        } else if (select.form) {
+            select.form.submit();
+        }
+    }
+}
+
+
+// Initialize everything when DOM is loaded
+// Create a single event handler to avoid duplicates
+let eventListeners = new Map();
+
+// Cookie Consent Functions
+function setCookie(name, value, days) {
+    let expires = "";
+    if (days) {
+        const date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "") + expires + "; path=/; SameSite=Lax";
+}
+
+function getCookie(name) {
+    const nameEQ = name + "=";
+    const ca = document.cookie.split(';');
+    for(let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+    }
+    return null;
+}
+
+function initCookieConsent() {
+    const consentBanner = document.getElementById('cookie-consent');
+    const acceptBtn = document.getElementById('accept-cookies');
+    const savePreferencesBtn = document.getElementById('save-cookie-preferences');
+    
+    if (!getCookie('cookie-consent')) {
+        consentBanner.style.display = 'block';
+    }
+    
+    acceptBtn?.addEventListener('click', () => {
+        setCookie('cookie-consent', 'all', 365);
+        setCookie('analytics-cookies', 'true', 365);
+        setCookie('advertising-cookies', 'true', 365);
+        consentBanner.style.display = 'none';
+    });
+    
+    savePreferencesBtn?.addEventListener('click', () => {
+        const analytics = document.getElementById('analytics-cookies').checked;
+        const advertising = document.getElementById('advertising-cookies').checked;
+        
+        setCookie('cookie-consent', 'custom', 365);
+        setCookie('analytics-cookies', analytics.toString(), 365);
+        setCookie('advertising-cookies', advertising.toString(), 365);
+        
+        consentBanner.style.display = 'none';
+        const modal = bootstrap.Modal.getInstance(document.getElementById('cookieModal'));
+        modal?.hide();
+    });
+    
+    // Load saved preferences
+    if (getCookie('cookie-consent') === 'custom') {
+        document.getElementById('analytics-cookies').checked = getCookie('analytics-cookies') === 'true';
+        document.getElementById('advertising-cookies').checked = getCookie('advertising-cookies') === 'true';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    initCookieConsent();
+    if (document.querySelector('.floating-cta')) {
+        initFloatingCTA();
+    }
+
+    if (document.querySelector('form#eventForm')) {
+        initEventForm();
+        const form = document.querySelector('form#eventForm');
+        form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(form);
+    fetch(form.action, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (response.redirected) {
+            window.location.href = response.url;
+        } else {
+            return response.text();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error submitting form. Please try again.');
+    });
+});
+    }
+
+    if (document.getElementById('title') || document.getElementById('description')) {
+        initCharCount();
+    }
+
+    // Clean up any existing listeners
+    cleanupEventListeners();
+
+    // Set up event listeners for filters with cleanup
+    const filters = ['categoryFilter', 'dateRange', 'locationFilter', 'specificDate', 'specificDate-mobile'];
+    filters.forEach(filterId => {
+        const element = document.getElementById(filterId);
+        if (element) {
+            const handler = () => filterEventsList();
+            element.addEventListener('change', handler);
+            eventListeners.set(`${filterId}_change`, { element, type: 'change', handler });
+
+            if (element.tagName === 'INPUT') {
+                const inputHandler = () => filterEventsList();
+                element.addEventListener('input', inputHandler);
+                eventListeners.set(`${filterId}_input`, { element, type: 'input', handler: inputHandler });
+            }
+        }
+    });
+
+    // Location handling (moved to the top-level DOMContentLoaded)
+
+});
+
+function cleanupEventListeners() {
+    // Remove all tracked event listeners
+    eventListeners.forEach(({ element, type, handler }) => {
+        if (element && element.removeEventListener) {
+            element.removeEventListener(type, handler);
+        }
+    });
+    eventListeners.clear();
+}
+
+
+// Clean up listeners when page unloads
+window.addEventListener('unload', cleanupEventListeners);
+
+// Sponsor rotation functionality
 function initSponsorRotation() {
     const sponsorsCarousel = document.getElementById('sponsors-carousel');
     if (!sponsorsCarousel) return;
@@ -421,22 +503,7 @@ function initSponsorRotation() {
     sponsorsCarousel.appendChild(sponsorCard);
 }
 
-
-function initCharCount() {
-    const titleInput = document.getElementById('title');
-    const descriptionInput = document.getElementById('description');
-
-    if (titleInput) {
-        titleInput.addEventListener('input', function() {
-            const titleCount = document.getElementById('titleCount');
-            if (titleCount) titleCount.textContent = this.value.length;
-        });
-    }
-
-    if (descriptionInput) {
-        descriptionInput.addEventListener('input', function() {
-            const descriptionCount = document.getElementById('descriptionCount');
-            if (descriptionCount) descriptionCount.textContent = this.value.length;
-        });
-    }
-}
+document.addEventListener('DOMContentLoaded', function() {
+    initSponsorRotation();
+    // ... (keep existing DOMContentLoaded handlers)
+});

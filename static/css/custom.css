@@ -6,8 +6,6 @@
     --light-color: #ffffff;      /* White */
     --text-primary: #1A1A1A;     /* Main text color */
     --text-secondary: #4A4A4A;   /* Secondary text color */
-    --light-bg: #f8f9fa; /* Added light background color */
-    --primary: #FF8A00; /* Added primary color variable */
 }
 
 /* Enhanced Feature Boxes */
@@ -114,7 +112,7 @@
     max-width: 100vw;
     position: relative;
     z-index: 1;
-    margin-top: 70px;
+    margin-top: 0;
     min-height: 500px; /* Ensure minimum height */
 }
 
@@ -270,23 +268,13 @@
 }
 
 .alert {
-    margin: 1rem auto;
-    max-width: 800px;
-    border-radius: 4px;
-    position: relative;
-    z-index: 1000;
-}
-
-.alert-success {
-    background-color: #d4edda;
-    border-color: #c3e6cb;
-    color: #155724;
-}
-
-.alert-danger {
-    background-color: #f8d7da;
-    border-color: #f5c6cb;
-    color: #721c24;
+    position: fixed;
+    top: 70px;
+    left: 0;
+    right: 0;
+    margin-bottom: 0;
+    z-index: 1020;
+    border-radius: 0;
 }
 
 .alert + main {
@@ -411,11 +399,9 @@
 header {
     background-color: rgba(255, 255, 255, 0.98) !important;
     box-shadow: 0px 2px 12px rgba(0,0,0,0.1);
-    position: fixed;
+    position: relative;
     width: 100%;
-    z-index: 1050;
-    top: 0;
-    left: 0;
+    z-index: 1000;
 }
 
 .modal {
@@ -467,7 +453,7 @@ header {
 
 /* Add padding to main content to prevent navbar overlap */
 main {
-    padding-top: 70px;
+    padding-top: 0;
     width: 100%;
     overflow-x: hidden;
 }
@@ -707,9 +693,7 @@ main {
 
 .footer {
     flex-shrink: 0;
-    background-color: var(--light-bg);
-    padding: 2rem 0;
-    margin-top: auto;
+    background-color: #f8f9fa;
 }
 
 .footer h5 {
@@ -725,45 +709,6 @@ main {
 .footer a:hover {
     color: var(--primary-color);
 }
-
-/* Footer styles */
-.footer {
-    margin-top: auto;
-    padding: 2rem 0;
-    background-color: var(--light-bg);
-}
-
-.footer a {
-    text-decoration: none;
-    color: inherit;
-    transition: color 0.2s ease;
-}
-
-.footer a:hover {
-    color: var(--primary);
-}
-
-.footer-link {
-    display: inline-block;
-    position: relative;
-}
-
-.footer-link:after {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 1px;
-    bottom: 0;
-    left: 0;
-    background-color: var(--primary);
-    transform: scaleX(0);
-    transition: transform 0.2s ease;
-}
-
-.footer-link:hover:after {
-    transform: scaleX(1);
-}
-
 
 /* Feature Boxes */
 .feature-box {
@@ -1058,49 +1003,49 @@ main {
     }
 
     .footer {
-        background-color: var(--light-bg);
-        padding: 3rem 0;
-    }
+    background-color: #f8f9fa;
+    padding: 3rem 0;
+}
 
-    .footer h5 {
-        font-size: 0.875rem;
-        font-weight: 600;
-        margin-bottom: 1.25rem;
-        text-transform: uppercase;
-        color: #333;
-    }
+.footer h5 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+    text-transform: uppercase;
+    color: #333;
+}
 
-    .footer ul li {
-        margin-bottom: 0.75rem;
-    }
+.footer ul li {
+    margin-bottom: 0.75rem;
+}
 
-    .footer ul li a {
-        color: #666;
-        text-decoration: none;
-        font-size: 0.875rem;
-        transition: color 0.2s;
-    }
+.footer ul li a {
+    color: #666;
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition: color 0.2s;
+}
 
-    .footer ul li a:hover {
-        color: #333;
-        text-decoration: none;
-    }
+.footer ul li a:hover {
+    color: #333;
+    text-decoration: none;
+}
 
-    .footer .fas {
-        margin-right: 0.5rem;
-        color: #666;
-    }
+.footer .fas {
+    margin-right: 0.5rem;
+    color: #666;
+}
 
-    .footer .cookie-settings {
-        cursor: pointer;
-    }
+.footer .cookie-settings {
+    cursor: pointer;
+}
 
-    @media (max-width: 768px) {
-        .footer .col-md-3 {
-            margin-bottom: 2rem;
-            text-align: center;
-        }
+@media (max-width: 768px) {
+    .footer .col-md-3 {
+        margin-bottom: 2rem;
+        text-align: center;
     }
+}
 
     @media (max-width: 768px) {
         .footer {
@@ -1115,6 +1060,8 @@ main {
             margin: 0 auto;
         }
     }
+    }
+
     .chat-demo {
         margin-top: 2rem;
     }
@@ -1425,129 +1372,207 @@ main {
     }
 }
 
-/* Navbar and Header Layout Fixes */
-.navbar {
-    background-color: #fff !important;
-    box-shadow: 0px 2px 12px rgba(0,0,0,0.1);
-    padding: 0.75rem 0;
-    min-height: 70px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1030;
+margin-bottom: 0.5rem;
 }
 
-/* Event/Map Toggle Fix */
-.view-options {
-    position: relative;
-    z-index: 1020;
-    margin-top: 80px; /* Increased margin to prevent overlap with navbar */
+.event-card {
+    transition: all 0.3s ease;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.event-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+}
+
+.event-card .card-img-top {
+    height: 200px;
+    object-fit: cover;
+}
+
+.event-card .default-event-img {
+    height: 200px;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    opacity: 0.1;
+}
+
+.event-card .card-title {
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.event-card .fun-rating .stars {
+    color: var(--primary-color);
+}
+
+.event-card .social-links a {
+    font-size: 1.1rem;
+    transition: color 0.2s ease;
+}
+
+.event-card .social-links a:hover {
+    color: var(--primary-color) !important;
+}
+
+.event-card .btn-group {
+    gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .event-card .card-img-top {
+        height: 160px;
+    }
+
+    .event-card .btn-group {
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+
+    .event-card .btn-group .btn {
+        flex: 1;
+    }
+
+    .event-card .card-footer .d-flex {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .event-card .social-links {
+        margin-top: 1rem;
+        text-align: center;
+    }
+}
+
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.search-filters {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.filter-bar {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.filter-form .form-control,
+.filter-form .form-select {
+    border: 1px solid #dee2e6;
+    transition: all 0.2s ease;
+}
+
+.filter-form .form-control:focus,
+.filter-form .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(255, 138, 0, 0.25);
+}
+
+/* Filter Styles */
+.filter-bar {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.filter-bar-mobile .card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.view-toggle {
     display: flex;
-    gap: 10px;
     justify-content: center;
 }
 
-/* Banner Ad Container Fix */
-.banner-container {
-    position: relative;
-    width: 100%;
-    max-width: 728px;
-    margin: 70px auto 0;  /* Adjusted margin to account for fixed navbar */
-    padding: 15px;
-    background: transparent;
-    z-index: 1010;
-    text-align: center;
+.view-toggle .btn-group {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-.banner-ad {
-    position: relative;
-    display: inline-block;
-    width: 100%;
-    max-width: 728px;
-    height: 90px;
-    background: #f8f9fa;
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-/* Footer Button Styling Fix */
-.footer .btn {
-    padding: 8px 16px;
-    border-radius: 4px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.footer .btn-outline-primary {
-    border: 2px solid var(--primary-color);
-    color: var(--primary-color);
-    background: transparent;
-}
-
-.footer .btn-outline-primary:hover {
-    background: var(--primary-color);
-    color: white;
-    transform: translateY(-2px);
-}
-
-/* Main Content Spacing */
-main {
-    padding-top: 70px; /* Match navbar height */
-}
-
-/* Ensure proper spacing for pages with alerts */
-.alert + main {
-    padding-top: 90px;
-}
-
-/* Hero Section Adjustments */
-#hero.hero-section {
-    margin-top: 70px; /* Match navbar height */
-    position: relative;
-    z-index: 1000;
-}
-
-/* Responsive Adjustments */
 @media (max-width: 768px) {
-    .view-options {
-        margin-top: 90px;
-        flex-direction: row;
-        flex-wrap: wrap;
+    .filter-bar-mobile .collapse {
+        margin-top: 1rem;
     }
 
-    .banner-container {
-        margin-top: 90px;
-        padding: 10px;
-    }
-
-    .banner-ad {
-        height: 60px;
+    .filter-bar-mobile .card-body {
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
     }
 }
-/* Navigation fixes */
-.navbar {
-  z-index: 1030;
-  position: fixed;
-  width: 100%;
-  top: 0;
+
+@media (max-width: 768px) {
+    .filter-bar {
+        padding: 1rem;
+    }
+
+    .filter-form .row > div {
+        margin-bottom: 0.5rem;
+    }
 }
 
-.toggle-container {
-  margin-top: 60px;
+.search-container {
+    margin-bottom: 2.5rem;
 }
 
-main {
-  padding-top: 60px;
+.search-container .text-center {
+    margin-top: 1.5rem;
 }
 
-/* Standardize button styling in footer */
-.footer .btn-footer {
-  padding: 8px 16px;
-  text-decoration: none;
-  transition: color 0.2s ease;
+.view-full-map-link {
+    margin-top: 2.5rem; /* Increased spacing */
 }
 
-.footer .btn-footer:hover {
-  color: #007bff;
+.add-event-link { /* Added for desktop navigation */
+    margin-right: 1rem; /* Adjust spacing as needed */
+}
+
+@media (max-width: 991px) {
+    .add-event-mobile { /* Added for mobile navigation */
+        margin-bottom: 1rem;
+    }
+}
+
+/* Submit Event Form Container */
+.container form {
+    padding: 1rem;
+    max-width: 800px;
+    margin: 2rem auto 0;
+}
+
+/* Alert positioning */
+.alert {
+    position: fixed;
+    top: 70px;
+    left: 0;
+    right: 0;
+    z-index: 1020;
+    margin: 0;
+    border-radius: 0;
+}
+
+/* Adjust main content when alert is present */
+.alert + main {
+    padding-top: 120px !important;
+}
+
+/* Form pages specific spacing */
+.auth-form-container {
+    margin-top: 2rem;
+}
+
+@media (max-width: 768px) {
+    .alert + main {
+        padding-top: 140px !important;
+    }
 }

@@ -1,7 +1,7 @@
 import os
 import logging
 from datetime import timedelta
-from flask import Flask, session, request, render_template
+from flask import Flask, session, request
 from flask_login import LoginManager
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -25,20 +25,7 @@ logger = logging.getLogger(__name__)
 
 def create_app():
     logger.info("Starting application creation...")
-    app = Flask(__name__, static_url_path='', static_folder='static', template_folder='templates') #Added template_folder
-
-    @app.after_request
-    def add_security_headers(response):
-        response.headers['X-Content-Type-Options'] = 'nosniff'
-        response.headers['X-Frame-Options'] = 'SAMEORIGIN'
-        response.headers['X-XSS-Protection'] = '1; mode=block'
-        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
-        response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://auth.util.repl.co; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: https://*; font-src 'self' data:; connect-src 'self' https://*;"
-        response.headers['Access-Control-Allow-Origin'] = '*'
-        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
-        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
-        response.headers['Access-Control-Allow-Credentials'] = 'true'
-        return response
+    app = Flask(__name__, static_folder='static')
 
     # Enhanced configurations for Replit environment
     app.config["SECRET_KEY"] = os.environ.get(
@@ -96,26 +83,10 @@ def create_app():
         raise
 
     try:
-        logger.info("Initializing CSRF protection and rate limiting...")
+        logger.info("Initializing CSRF protection...")
         CSRFProtect(app)
-        limiter = Limiter(
-            app=app,
-            storage_uri="memory://",
-            default_limits=["200 per day", "50 per hour"],
-            key_func=get_remote_address
-        )
-
-        @app.route("/login", methods=["POST"])
-        @limiter.limit("5 per minute")
-        def rate_limited_login():
-            return "rate limited"
-
-        @app.route("/signup", methods=["POST"])
-        @limiter.limit("3 per minute")
-        def rate_limited_signup():
-            return "rate limited"
     except Exception as e:
-        logger.error(f"Failed to initialize security measures: {str(e)}",
+        logger.error(f"Failed to initialize CSRF protection: {str(e)}",
                      exc_info=True)
         raise
 
@@ -167,6 +138,5 @@ def create_app():
     logger.info("Application creation completed successfully")
     return app
 
-if __name__ == "__main__":
-    app = create_app()
-    app.run(host='0.0.0.0', port=8080)
+
+# No app.run() or port handling here!
