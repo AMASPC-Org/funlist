@@ -28,6 +28,7 @@ def init_routes(app):
         return render_template('terms.html')
 
     @app.route("/help")
+    @app.route("/help_center")
     def help_center():
         return render_template('help_center.html')
 

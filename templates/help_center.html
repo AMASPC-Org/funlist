@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 
 {% block title %}Help Center - FunList.ai{% endblock %}
@@ -7,7 +8,6 @@
     <h1>Help Center</h1>
     <div class="row">
         <div class="col-md-8">
-            <h2>Frequently Asked Questions</h2>
             <div class="accordion" id="faqAccordion">
                 <div class="accordion-item">
                     <h3 class="accordion-header">
@@ -20,6 +20,30 @@
                             You can submit an event by clicking the "Submit Event" button in the navigation menu. You'll need to be logged in to submit events.
                         </div>
                     </div>
+                </div>
+                <div class="accordion-item">
+                    <h3 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                            How do I find events near me?
+                        </button>
+                    </h3>
+                    <div id="faq2" class="accordion-collapse collapse">
+                        <div class="accordion-body">
+                            Use the Map view to see events in your area. The map will automatically show events near your location if you allow location access.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Contact Support</h5>
+                    <p class="card-text">Need additional help? Contact our support team:</p>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-envelope"></i> help@funlist.ai</li>
+                        <li><i class="fas fa-phone"></i> (360) 200-8768</li>
+                    </ul>
                 </div>
             </div>
         </div>
