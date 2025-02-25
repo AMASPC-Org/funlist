@@ -636,6 +636,4 @@ def init_routes(app):
         flash("User account activated.", "success")
         return redirect(url_for("admin_dashboard", tab="users"))
 
-    @app.route("/help_center")
-    def help_center():
-        return render_template("help_center.html")
+    # Removed duplicate help_center route

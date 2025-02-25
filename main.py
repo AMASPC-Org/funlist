@@ -13,13 +13,6 @@ def is_port_in_use(port):
 app = create_app()
 
 if __name__ == '__main__':
-    port = 8080  # Default fallback port
-    
-    # Try ports until we find an available one
-    while is_port_in_use(port):
-        port += 1
-        if port > 8090:  # Don't try indefinitely
-            raise RuntimeError("No available ports found")
-            
+    port = 5006  # Use consistent port from .replit
     print(f"Starting server on port {port}")
     app.run(host='0.0.0.0', port=port, debug=True)
