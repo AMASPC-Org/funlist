@@ -18,14 +18,18 @@ def init_routes(app):
     @app.route("/about")
     def about():
         return render_template('about.html')
-        
+
     @app.route("/privacy")
     def privacy():
         return render_template('privacy.html')
-        
+
     @app.route("/terms")
     def terms():
         return render_template('terms.html')
+
+    @app.route("/help")
+    def help_center():
+        return render_template('help_center.html')
 
     @app.route("/subscribe", methods=["POST"])
     def subscribe():
@@ -88,7 +92,7 @@ def init_routes(app):
 
                 db.session.add(user)
                 db.session.commit()
-                
+
                 login_user(user)
                 session["user_id"] = user.id
                 session["login_time"] = datetime.utcnow().isoformat()
@@ -392,14 +396,14 @@ def init_routes(app):
         FEATURED_EVENTS_ENABLED = False
         if not FEATURED_EVENTS_ENABLED:
             return jsonify({"success": True, "events": [], "message": "Feature not yet available"}), 200
-            
+
         try:
             lat = request.args.get("lat")
             lng = request.args.get("lng")
 
             if not lat or not lng:
                 return jsonify({"success": True, "events": [], "message": "No coordinates provided"}), 200
-                
+
             try:
                 lat = float(lat)
                 lng = float(lng)
