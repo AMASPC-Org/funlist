@@ -514,10 +514,35 @@ function initFloatingButtons() {
     }
 }
 
-// Initialize everything when DOM is loaded
-// Create a single event handler to avoid duplicates
-let eventListeners = new Map();
+// Add bounce effect to buttons on mobile
+function addFunkyMobileEffects() {
+    // Check if we're on mobile
+    if (window.innerWidth <= 576) {
+        const feedbackButton = document.getElementById('feedbackButton');
+        const subscribeButton = document.getElementById('subscribeButton');
 
+        if (feedbackButton && subscribeButton) {
+            // Add initial entrance animation
+            setTimeout(() => {
+                feedbackButton.style.transition = 'all 0.8s cubic-bezier(0.18, 0.89, 0.32, 1.28)';
+                feedbackButton.style.transform = 'translateX(-20px)';
+
+                subscribeButton.style.transition = 'all 0.8s cubic-bezier(0.18, 0.89, 0.32, 1.28)';
+                subscribeButton.style.transform = 'translateX(20px)';
+
+                setTimeout(() => {
+                    feedbackButton.style.transform = '';
+                    subscribeButton.style.transform = '';
+                }, 800);
+            }, 1500);
+        }
+    }
+}
+
+// Add this to window load event
+window.addEventListener('load', addFunkyMobileEffects);
+
+// Initialize floating butto
 // Cookie Consent Functions
 function setCookie(name, value, days) {
     let expires = "";

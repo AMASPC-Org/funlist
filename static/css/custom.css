@@ -1164,11 +1164,14 @@ body.user-logged-in .floating-button {
     opacity: 0.85;
 }
 
-/* For smaller mobile screens */
+/* For smaller mobile screens - FUNKY STYLES */
 @media (max-width: 576px) {
     .floating-button {
-        padding: 0.5rem 0.75rem;
+        padding: 0.65rem;
         font-size: 0.9rem;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+        transition: all 0.3s ease;
     }
     
     .floating-button span {
@@ -1177,8 +1180,57 @@ body.user-logged-in .floating-button {
     
     .floating-button i {
         margin-right: 0;
-        font-size: 1.1rem;
+        font-size: 1.2rem;
     }
+    
+    /* Different pulse animations for each button */
+    .feedback-button {
+        animation: pulse-left 2.5s infinite;
+        background: linear-gradient(135deg, #4e54c8, #8f94fb);
+        box-shadow: 0 2px 15px rgba(78, 84, 200, 0.6);
+    }
+    
+    .subscribe-button {
+        animation: pulse-right 2.5s infinite;
+        background: linear-gradient(135deg, #11998e, #38ef7d);
+        box-shadow: 0 2px 15px rgba(17, 153, 142, 0.6);
+    }
+    
+    /* When cookie consent is visible, move buttons up */
+    body.cookie-consent-visible .floating-buttons-container {
+        bottom: 5rem;
+    }
+    
+    /* Animation keyframes */
+    @keyframes pulse-left {
+        0% {
+            transform: scale(1) rotate(0deg);
+        }
+        50% {
+            transform: scale(1.15) rotate(-5deg);
+        }
+        100% {
+            transform: scale(1) rotate(0deg);
+        }
+    }
+    
+    @keyframes pulse-right {
+        0% {
+            transform: scale(1) rotate(0deg);
+        }
+        50% {
+            transform: scale(1.15) rotate(5deg);
+        }
+        100% {
+            transform: scale(1) rotate(0deg);
+        }
+    }
+    
+    /* Active/pressed state */
+    .floating-button:active {
+        transform: scale(0.85);
+    }
+}
 }
 
 /* Adjust when cookie consent is visible */
