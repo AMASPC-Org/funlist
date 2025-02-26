@@ -370,13 +370,22 @@ def init_routes(app):
             
             # Log additional details for debugging
             if user:
-                logger.info(f"User found: {user.id}, is_admin: {user.is_admin}")
+                logger.info(f"User found: ID: {user.id}, Email: {user.email}, is_admin: {user.is_admin}, active: {user.account_active}")
                 password_check = user.check_password(password)
                 logger.info(f"Password check result: {password_check}")
+                
+                # Fix admin status if needed
+                if not user.is_admin and email == 'ryan@americanmarketingalliance.com':
+                    logger.info(f"Fixing admin status for user {user.id}")
+                    user.is_admin = True
+                    user.account_active = True
+                    db.session.commit()
+                    logger.info(f"Admin status updated. New values - is_admin: {user.is_admin}, active: {user.account_active}")
             else:
                 logger.warning(f"No user found with email: {email}")
             
-            # Check authentication conditions
+            # Check authentication conditions after potential fix
+            user = User.query.filter_by(email=email).first()  # Reload the user after potential changes
             if user and user.check_password(password) and user.is_admin:
                 login_user(user)
                 logger.info(f"Admin login successful: {user.email}")

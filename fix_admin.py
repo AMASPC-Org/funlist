@@ -1,5 +1,5 @@
 
-from app import app
+from flask import Flask
 from models import User
 from db_init import db
 import logging
@@ -9,6 +9,10 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 def fix_admin_user():
+    # Import app here to avoid circular imports
+    from app import create_app
+    app = create_app()
+    
     with app.app_context():
         try:
             # Check all existing users
