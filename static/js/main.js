@@ -135,7 +135,7 @@ function getFeaturedEvents() {
             distance: 1.5
         }
     ];
-    
+
     displayFeaturedEvents(container, sampleEvents);
     return;
 
@@ -213,7 +213,6 @@ function displayFeaturedEvents(container, events) {
     if (!events || events.length === 0) {
         container.innerHTML = '<div class="alert alert-info">No featured events nearby.</div>';
         return;
-    }
     }
 
     try {
@@ -634,6 +633,9 @@ function initCookieConsent() {
     }
 }
 
+// Define eventListeners globally for all functions to access
+var eventListeners = new Map();
+
 document.addEventListener('DOMContentLoaded', () => {
     initCookieConsent();
     if (document.querySelector('.floating-cta')) {
@@ -673,7 +675,6 @@ document.addEventListener('DOMContentLoaded', () => {
     cleanupEventListeners();
 
     // Set up event listeners for filters with cleanup
-    var eventListeners = new Map();
     const filters = ['categoryFilter', 'dateRange', 'locationFilter', 'specificDate', 'specificDate-mobile'];
     filters.forEach(filterId => {
         const element = document.getElementById(filterId);

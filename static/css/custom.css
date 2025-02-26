@@ -1124,6 +1124,14 @@ main {
     width: 100%;
     z-index: 1040; /* Below modals (1050) but above most content */
     pointer-events: none; /* Allow clicks to pass through the container */
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Make buttons more visible when scrolling */
+body.is-scrolled .floating-buttons-container {
+    opacity: 0.95;
+    transform: translateY(-10px);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
 }
 
 .floating-button {
