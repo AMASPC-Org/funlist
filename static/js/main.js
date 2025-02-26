@@ -1,4 +1,4 @@
-// Core functionality for location handling
+// Core functionality for location handling - directly uses browser's native prompt
 function getUserLocation() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
@@ -15,10 +15,38 @@ function getUserLocation() {
                 const defaultLocation = { lat: 47.0379, lng: -122.9007 };
                 localStorage.setItem('userLocation', JSON.stringify(defaultLocation));
                 updateFeaturedEvents(defaultLocation);
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 0
             }
         );
     }
 }
+
+// Automatically request geolocation when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Trigger geolocation request on page load
+    getUserLocation();
+    
+    // Other existing DOMContentLoaded code...
+    
+    // Featured Events
+    getFeaturedEvents();
+
+    // Email signup form handling
+    const emailSignupForm = document.getElementById('emailSignupForm');
+    if (emailSignupForm) {
+        emailSignupForm.addEventListener('submit', handleEmailSignup);
+    }
+
+    // Date range handling
+    const dateRangeSelect = document.getElementById('date_range');
+    if (dateRangeSelect) {
+        dateRangeSelect.addEventListener('change', handleDateRangeChange);
+    }
+});
 
 // Update featured events based on location
 function updateFeaturedEvents(location) {
@@ -64,7 +92,7 @@ document.addEventListener('DOMContentLoaded', function() {
         emailSignupForm.addEventListener('submit', handleEmailSignup);
     }
 
-    // Location handling using browser geolocation only
+    // Location handling using browser's native geolocation prompt only
 
 
     // Date range handling
