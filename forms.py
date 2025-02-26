@@ -90,6 +90,15 @@ class EventForm(FlaskForm):
                 ('music', 'Music'), 
                 ('sports', 'Sports'),
                 ('arts', 'Arts'),
+
+class OrganizerProfileForm(FlaskForm):
+    company_name = StringField('Organization/Company Name', validators=[Optional(), Length(max=100)])
+    description = TextAreaField('About Your Organization', validators=[Optional(), Length(max=500)])
+    website = StringField('Website', validators=[Optional(), URL()])
+    advertising_opportunities = TextAreaField('Advertising Opportunities', validators=[Optional(), Length(max=500)])
+    sponsorship_opportunities = TextAreaField('Sponsorship Opportunities', validators=[Optional(), Length(max=500)])
+    submit = SubmitField('Save Organizer Profile')
+
                 ('food', 'Food & Drink'),
                 ('other', 'Other')
             ], validators=[DataRequired()])

@@ -583,6 +583,56 @@ def init_routes(app):
             event.status = "approved"
         elif action == "reject":
             event.status = "rejected"
+
+    @app.route("/become-organizer")
+    @login_required
+    def become_organizer():
+        # Redirect user to the organizer profile page to set up their organizer account
+        return redirect(url_for("organizer_profile"))
+
+    @app.route("/organizer-profile", methods=["GET", "POST"])
+    @login_required
+    def organizer_profile():
+        # Import the form
+        from forms import OrganizerProfileForm
+        
+        form = OrganizerProfileForm()
+        
+        if request.method == "GET":
+            # Pre-populate form with existing data if available
+            form.company_name.data = current_user.company_name
+            form.description.data = current_user.organizer_description
+            form.website.data = current_user.organizer_website
+            form.advertising_opportunities.data = current_user.advertising_opportunities
+            form.sponsorship_opportunities.data = current_user.sponsorship_opportunities
+            
+        if form.validate_on_submit():
+            try:
+                organizer_data = {
+                    "company_name": form.company_name.data,
+                    "organizer_description": form.description.data,
+                    "organizer_website": form.website.data,
+                    "advertising_opportunities": form.advertising_opportunities.data,
+                    "sponsorship_opportunities": form.sponsorship_opportunities.data,
+                }
+                
+                current_user.update_organizer_profile(organizer_data)
+                db.session.commit()
+                flash("Organizer profile updated successfully!", "success")
+                return redirect(url_for("profile"))
+            except Exception as e:
+                db.session.rollback()
+                logger.error(f"Error updating organizer profile: {str(e)}")
+                flash("There was a problem updating your organizer profile. Please try again.", "danger")
+                
+        return render_template("organizer_profile.html", form=form)
+
+    @app.route("/organizers")
+    def organizers():
+        # Get all users who are organizers
+        organizers = User.query.filter_by(is_organizer=True).all()
+        return render_template("organizers.html", organizers=organizers)
+
         elif action == "delete":
             db.session.delete(event)
         db.session.commit()

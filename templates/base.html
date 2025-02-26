@@ -57,6 +57,11 @@
         </div>
         {% endif %}
     </header>
+
+                  <li class="nav-item">
+                      <a class="nav-link" href="{{ url_for('organizers') }}">Organizers</a>
+                  </li>
+
 <main>
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
