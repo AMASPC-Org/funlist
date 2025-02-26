@@ -1,6 +1,3 @@
-// Define eventListeners globally for all functions to access
-var eventListeners = new Map();
-
 // Core functionality for location handling - directly uses browser's native prompt
 function getUserLocation() {
     if (navigator.geolocation) {
@@ -643,6 +640,7 @@ document.addEventListener('DOMContentLoaded', () => {
     cleanupEventListeners();
 
     // Set up event listeners for filters with cleanup
+    var eventListeners = new Map();
     const filters = ['categoryFilter', 'dateRange', 'locationFilter', 'specificDate', 'specificDate-mobile'];
     filters.forEach(filterId => {
         const element = document.getElementById(filterId);
