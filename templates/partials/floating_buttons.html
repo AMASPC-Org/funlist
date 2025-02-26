@@ -1,0 +1,84 @@
+
+<div class="floating-buttons-container">
+    <!-- Feedback button (left side) -->
+    <div class="floating-button feedback-button" id="feedbackButton">
+        <i class="fas fa-comment"></i>
+        <span>Feedback</span>
+    </div>
+    
+    <!-- Subscribe button (right side) -->
+    <div class="floating-button subscribe-button" id="subscribeButton">
+        <i class="fas fa-envelope"></i>
+        <span>Subscribe</span>
+    </div>
+</div>
+
+<!-- Feedback Modal -->
+<div class="modal fade" id="feedbackModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">We Value Your Feedback</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="feedbackForm">
+                    <div class="mb-3">
+                        <label for="feedbackType" class="form-label">Type of Feedback</label>
+                        <select class="form-select" id="feedbackType" required>
+                            <option value="" selected disabled>Select type...</option>
+                            <option value="suggestion">Suggestion</option>
+                            <option value="issue">Report an Issue</option>
+                            <option value="compliment">Compliment</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="feedbackMessage" class="form-label">Your Message</label>
+                        <textarea class="form-control" id="feedbackMessage" rows="4" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="feedbackEmail" class="form-label">Your Email (optional)</label>
+                        <input type="email" class="form-control" id="feedbackEmail">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Feedback</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Subscribe Modal - Different from the existing email signup modal -->
+<div class="modal fade" id="subscribeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Get Weekly Fun Updates</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="floatingSubscribeForm">
+                    <div class="mb-3">
+                        <label for="subscribeEmail" class="form-label">Email address</label>
+                        <input type="email" class="form-control" id="subscribeEmail" required>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="preferenceEvents" checked>
+                            <label class="form-check-label" for="preferenceEvents">
+                                Events & Activities
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="preferenceDeals" checked>
+                            <label class="form-check-label" for="preferenceDeals">
+                                Local Deals & Offers
+                            </label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Subscribe</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

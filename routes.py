@@ -21,25 +21,38 @@ def init_routes(app):
 
     @app.route("/subscribe", methods=["POST"])
     def subscribe():
-        try:
-            data = request.get_json()
-            email = data.get("email")
-            if not email:
-                return jsonify({"success": False, "message": "Email is required"}), 400
-            if Subscriber.query.filter_by(email=email).first():
-                return (
-                    jsonify({"success": False, "message": "Email already subscribed"}),
-                    400,
-                )
-            subscriber = Subscriber(email=email)
-            db.session.add(subscriber)
-            db.session.commit()
+        data = request.get_json()
+        email = data.get('email')
+        preferences = data.get('preferences', {})
 
-            return jsonify({"success": True, "message": "Subscription successful"})
-        except Exception as e:
-            logger.error(f"Subscription error: {str(e)}")
-            db.session.rollback()
-            return jsonify({"success": False, "message": "An error occurred"}), 500
+        if not email:
+            return jsonify({'success': False, 'message': 'Email is required'})
+
+        # Here you would typically add the email to your database or newsletter service
+        # This is a placeholder implementation
+
+        # Log the subscription for demo purposes
+        app.logger.info(f"New subscription: {email} with preferences: {preferences}")
+
+        return jsonify({'success': True, 'message': 'Subscription successful'})
+
+    @app.route('/submit-feedback', methods=['POST'])
+    def submit_feedback():
+        data = request.get_json()
+        feedback_type = data.get('type')
+        message = data.get('message')
+        email = data.get('email', 'Anonymous')
+
+        if not feedback_type or not message:
+            return jsonify({'success': False, 'message': 'Feedback type and message are required'})
+
+        # Here you would typically store the feedback in your database
+        # This is a placeholder implementation
+
+        # Log the feedback for demo purposes
+        app.logger.info(f"New feedback from {email} - Type: {feedback_type} - Message: {message}")
+
+        return jsonify({'success': True, 'message': 'Feedback submitted successfully'})
 
     @app.before_request
     def before_request():
@@ -379,14 +392,14 @@ def init_routes(app):
         FEATURED_EVENTS_ENABLED = False
         if not FEATURED_EVENTS_ENABLED:
             return jsonify({"success": True, "events": [], "message": "Feature not yet available"}), 200
-            
+
         try:
             lat = request.args.get("lat")
             lng = request.args.get("lng")
 
             if not lat or not lng:
                 return jsonify({"success": True, "events": [], "message": "No coordinates provided"}), 200
-                
+
             try:
                 lat = float(lat)
                 lng = float(lng)

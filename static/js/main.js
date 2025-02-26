@@ -29,9 +29,9 @@ function getUserLocation() {
 document.addEventListener('DOMContentLoaded', function() {
     // Trigger geolocation request on page load
     getUserLocation();
-    
+
     // Other existing DOMContentLoaded code...
-    
+
     // Featured Events
     getFeaturedEvents();
 
@@ -372,6 +372,148 @@ function handleDateRangeChange(select) {
 }
 
 
+// Initialize floating buttons
+function initFloatingButtons() {
+    const feedbackButton = document.getElementById('feedbackButton');
+    const subscribeButton = document.getElementById('subscribeButton');
+    const cookieConsent = document.getElementById('cookie-consent');
+
+    // Check if user is logged in (based on class added to body by server)
+    const isLoggedIn = document.body.classList.contains('user-logged-in');
+
+    // Check if user has already subscribed (we'll store this in a cookie)
+    const hasSubscribed = getCookie('user-subscribed') === 'true';
+
+    // Add cookie consent visible class to body when consent is showing
+    if (cookieConsent && cookieConsent.style.display !== 'none') {
+        document.body.classList.add('cookie-consent-visible');
+    }
+
+    // If cookie consent changes visibility, update the body class
+    const cookieObserver = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.attributeName === 'style') {
+                if (cookieConsent.style.display === 'none') {
+                    document.body.classList.remove('cookie-consent-visible');
+                } else {
+                    document.body.classList.add('cookie-consent-visible');
+                }
+            }
+        });
+    });
+
+    if (cookieConsent) {
+        cookieObserver.observe(cookieConsent, { attributes: true });
+    }
+
+    // For returning users who already subscribed, don't show the subscribe button
+    if (hasSubscribed && subscribeButton) {
+        subscribeButton.style.display = 'none';
+    }
+
+    // Add event listeners to buttons
+    if (feedbackButton) {
+        feedbackButton.addEventListener('click', function() {
+            const feedbackModal = new bootstrap.Modal(document.getElementById('feedbackModal'));
+            feedbackModal.show();
+        });
+    }
+
+    if (subscribeButton) {
+        subscribeButton.addEventListener('click', function() {
+            const subscribeModal = new bootstrap.Modal(document.getElementById('subscribeModal'));
+            subscribeModal.show();
+        });
+    }
+
+    // Handle subscribe form submission
+    const floatingSubscribeForm = document.getElementById('floatingSubscribeForm');
+    if (floatingSubscribeForm) {
+        floatingSubscribeForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('subscribeEmail').value;
+
+            // Get preferences
+            const preferenceEvents = document.getElementById('preferenceEvents').checked;
+            const preferenceDeals = document.getElementById('preferenceDeals').checked;
+
+            fetch('/subscribe', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    email,
+                    preferences: {
+                        events: preferenceEvents,
+                        deals: preferenceDeals
+                    }
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Thank you for subscribing!');
+                    setCookie('user-subscribed', 'true', 365); // Remember subscription for a year
+
+                    // Hide the subscribe button
+                    if (subscribeButton) {
+                        subscribeButton.style.display = 'none';
+                    }
+
+                    // Close the modal
+                    const subscribeModal = bootstrap.Modal.getInstance(document.getElementById('subscribeModal'));
+                    if (subscribeModal) subscribeModal.hide();
+                } else {
+                    alert(data.message || 'Subscription failed. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again later.');
+            });
+        });
+    }
+
+    // Handle feedback form submission
+    const feedbackForm = document.getElementById('feedbackForm');
+    if (feedbackForm) {
+        feedbackForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const type = document.getElementById('feedbackType').value;
+            const message = document.getElementById('feedbackMessage').value;
+            const email = document.getElementById('feedbackEmail').value;
+
+            fetch('/submit-feedback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ type, message, email })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Thank you for your feedback!');
+
+                    // Reset the form
+                    feedbackForm.reset();
+
+                    // Close the modal
+                    const feedbackModal = bootstrap.Modal.getInstance(document.getElementById('feedbackModal'));
+                    if (feedbackModal) feedbackModal.hide();
+                } else {
+                    alert(data.message || 'Failed to submit feedback. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again later.');
+            });
+        });
+    }
+}
+
 // Initialize everything when DOM is loaded
 // Create a single event handler to avoid duplicates
 let eventListeners = new Map();
@@ -402,31 +544,31 @@ function initCookieConsent() {
     const consentBanner = document.getElementById('cookie-consent');
     const acceptBtn = document.getElementById('accept-cookies');
     const savePreferencesBtn = document.getElementById('save-cookie-preferences');
-    
+
     if (!getCookie('cookie-consent')) {
         consentBanner.style.display = 'block';
     }
-    
+
     acceptBtn?.addEventListener('click', () => {
         setCookie('cookie-consent', 'all', 365);
         setCookie('analytics-cookies', 'true', 365);
         setCookie('advertising-cookies', 'true', 365);
         consentBanner.style.display = 'none';
     });
-    
+
     savePreferencesBtn?.addEventListener('click', () => {
         const analytics = document.getElementById('analytics-cookies').checked;
         const advertising = document.getElementById('advertising-cookies').checked;
-        
+
         setCookie('cookie-consent', 'custom', 365);
         setCookie('analytics-cookies', analytics.toString(), 365);
         setCookie('advertising-cookies', advertising.toString(), 365);
-        
+
         consentBanner.style.display = 'none';
         const modal = bootstrap.Modal.getInstance(document.getElementById('cookieModal'));
         modal?.hide();
     });
-    
+
     // Load saved preferences
     if (getCookie('cookie-consent') === 'custom') {
         document.getElementById('analytics-cookies').checked = getCookie('analytics-cookies') === 'true';
@@ -439,6 +581,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.querySelector('.floating-cta')) {
         initFloatingCTA();
     }
+    initFloatingButtons(); // Initialize floating buttons
 
     if (document.querySelector('form#eventForm')) {
         initEventForm();
