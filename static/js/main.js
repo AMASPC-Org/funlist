@@ -1,3 +1,6 @@
+// Define eventListeners globally for all functions to access
+var eventListeners = new Map();
+
 // Core functionality for location handling - directly uses browser's native prompt
 function getUserLocation() {
     if (navigator.geolocation) {
