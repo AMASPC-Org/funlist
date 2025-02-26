@@ -1,5 +1,5 @@
 
-from app import app
+from flask import Flask
 from models import User
 from db_init import db
 import logging
@@ -9,6 +9,9 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 def create_admin():
+    # Import app from app.py
+    from app import app
+    
     with app.app_context():
         try:
             # Check if admin already exists
