@@ -104,10 +104,42 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Featured Events
 function getFeaturedEvents() {
-    const FEATURED_EVENTS_ENABLED = false; // Feature flag
+    const FEATURED_EVENTS_ENABLED = true; // Feature flag - enabled
     const container = document.getElementById('featured-events');
     if (!container) return;
 
+    // Display sample featured events without requiring geolocation
+    const sampleEvents = [
+        {
+            id: 1,
+            title: "Downtown Music Festival",
+            description: "A weekend of live music performances featuring local bands and artists",
+            date: "2025-03-15",
+            fun_meter: 5,
+            distance: 2.3
+        },
+        {
+            id: 2,
+            title: "Spring Food & Wine Festival",
+            description: "Taste the best local cuisine and wines in a beautiful outdoor setting",
+            date: "2025-03-22",
+            fun_meter: 4,
+            distance: 3.7
+        },
+        {
+            id: 3,
+            title: "Art Gallery Opening",
+            description: "Grand opening of a new exhibit featuring works from regional artists",
+            date: "2025-03-10",
+            fun_meter: 4,
+            distance: 1.5
+        }
+    ];
+    
+    displayFeaturedEvents(container, sampleEvents);
+    return;
+
+    // Original geolocation code (not used with our sample data)
     if (!FEATURED_EVENTS_ENABLED) {
         container.innerHTML = '<p class="text-muted text-center">Featured events coming soon!</p>';
         return;
@@ -182,6 +214,7 @@ function displayFeaturedEvents(container, events) {
         container.innerHTML = '<div class="alert alert-info">No featured events nearby.</div>';
         return;
     }
+    }
 
     try {
         let html = '<div class="row">';
@@ -197,7 +230,7 @@ function displayFeaturedEvents(container, events) {
                                 ${event.distance ? `<br><small class="text-muted">${event.distance} miles away</small>` : ''}
                             </p>
                             <p class="card-text">
-                                <span class="badge bg-primary">Fun Meter: ${event.fun_meter}/5</span>
+                                <span class="badge bg-primary">Fun Meter: ${'★'.repeat(event.fun_meter)}</span>
                             </p>
                         </div>
                         <div class="card-footer bg-transparent">
