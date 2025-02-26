@@ -633,6 +633,17 @@ def init_routes(app):
         organizers = User.query.filter_by(is_organizer=True).all()
         return render_template("organizers.html", organizers=organizers)
 
+    @app.route("/organizer/<int:user_id>")
+    def organizer_detail(user_id):
+        organizer = User.query.get_or_404(user_id)
+        if not organizer.is_organizer:
+            flash("This user is not registered as an event organizer.", "warning")
+            return redirect(url_for("organizers"))
+            
+        # Get events by this organizer
+        events = Event.query.filter_by(user_id=organizer.id).order_by(Event.start_date.desc()).all()
+        return render_template("organizer_detail.html", organizer=organizer, events=events)
+
         elif action == "delete":
             db.session.delete(event)
         db.session.commit()

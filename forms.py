@@ -99,9 +99,28 @@ class OrganizerProfileForm(FlaskForm):
     sponsorship_opportunities = TextAreaField('Sponsorship Opportunities', validators=[Optional(), Length(max=500)])
     submit = SubmitField('Save Organizer Profile')
 
-                ('food', 'Food & Drink'),
-                ('other', 'Other')
-            ], validators=[DataRequired()])
+class EventForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired()])
+    description = TextAreaField('Description', validators=[DataRequired()])
+    date = DateField('Date', validators=[DataRequired()])
+    street = StringField('Street Address', validators=[DataRequired()])
+    city = StringField('City', validators=[DataRequired()])
+    state = StringField('State', validators=[DataRequired()])
+    zip_code = StringField('ZIP Code', validators=[DataRequired()])
+    fun_meter = SelectField('Fun Rating', choices=[
+        ('1', '⭐'),
+        ('2', '⭐⭐'),
+        ('3', '⭐⭐⭐'),
+        ('4', '⭐⭐⭐⭐'),
+        ('5', '⭐⭐⭐⭐⭐')
+    ], validators=[DataRequired()])
+    category = SelectField('Category', choices=[
+        ('music', 'Music'), 
+        ('sports', 'Sports'),
+        ('arts', 'Arts'),
+        ('food', 'Food & Drink'),
+        ('other', 'Other')
+    ], validators=[DataRequired()])
             target_audience = SelectField('Target Audience', choices=[
                 ('all', 'All Ages'),
                 ('adults', 'Adults'),
