@@ -361,14 +361,37 @@ def init_routes(app):
             return redirect(url_for("admin_dashboard"))
         form = LoginForm()
         if form.validate_on_submit():
-            user = User.query.filter_by(email=form.email.data).first()
-            logger.info(f"Admin login attempt: {form.email.data}")
-            if user and user.check_password(form.password.data) and user.is_admin:
+            email = form.email.data
+            password = form.password.data
+            logger.info(f"Admin login attempt: {email}")
+            
+            # Get the user
+            user = User.query.filter_by(email=email).first()
+            
+            # Log additional details for debugging
+            if user:
+                logger.info(f"User found: {user.id}, is_admin: {user.is_admin}")
+                password_check = user.check_password(password)
+                logger.info(f"Password check result: {password_check}")
+            else:
+                logger.warning(f"No user found with email: {email}")
+            
+            # Check authentication conditions
+            if user and user.check_password(password) and user.is_admin:
                 login_user(user)
                 logger.info(f"Admin login successful: {user.email}")
                 return redirect(url_for("admin_dashboard"))
-            logger.warning(f"Failed admin login attempt: {form.email.data}")
-            flash("Invalid credentials or not an admin user.", "danger")
+            else:
+                logger.warning(f"Failed admin login attempt: {email}")
+                if not user:
+                    flash("User not found.", "danger")
+                elif not user.check_password(password):
+                    flash("Invalid password.", "danger")
+                elif not user.is_admin:
+                    flash("This user does not have admin privileges.", "danger")
+                else:
+                    flash("Invalid credentials or not an admin user.", "danger")
+        
         return render_template("admin_login.html", form=form)
 
     @app.route("/admin/events")

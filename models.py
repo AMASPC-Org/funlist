@@ -86,7 +86,10 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         if not self.password_hash:
             return False
-        return check_password_hash(self.password_hash, password)
+        if not password:
+            return False
+        result = check_password_hash(self.password_hash, password)
+        return result
 
     def get_id(self):
         return str(self.id)
