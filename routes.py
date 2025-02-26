@@ -362,9 +362,12 @@ def init_routes(app):
         form = LoginForm()
         if form.validate_on_submit():
             user = User.query.filter_by(email=form.email.data).first()
+            logger.info(f"Admin login attempt: {form.email.data}")
             if user and user.check_password(form.password.data) and user.is_admin:
                 login_user(user)
+                logger.info(f"Admin login successful: {user.email}")
                 return redirect(url_for("admin_dashboard"))
+            logger.warning(f"Failed admin login attempt: {form.email.data}")
             flash("Invalid credentials or not an admin user.", "danger")
         return render_template("admin_login.html", form=form)
 

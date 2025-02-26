@@ -1,13 +1,14 @@
+
 from app import app
 from models import User
 from db_init import db
 
 def create_admin():
     with app.app_context():
-        admin = User.query.filter_by(email='ryan@funlist.ai').first()
+        admin = User.query.filter_by(email='ryan@americanmarketingalliance.com').first()
         if not admin:
             admin = User(
-                email='ryan@funlist.ai',
+                email='ryan@americanmarketingalliance.com',
                 is_admin=True,
                 account_active=True
             )
