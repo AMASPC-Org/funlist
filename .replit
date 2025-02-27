@@ -33,9 +33,8 @@ externalPort = 8000
 localPort = 8080
 externalPort = 8080 # Added port 8080 as per the changes
 
-
 [workflows]
-runButton = "Project"
+runButton = "Flask Server"
 
 [[workflows.workflow]]
 name = "Run"
@@ -43,7 +42,7 @@ author = 36270944
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python main.py" #Ensure this line uses main.py.
+args = "python main.py"
 
 [[workflows.workflow]]
 name = "Project"
