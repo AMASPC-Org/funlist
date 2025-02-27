@@ -520,7 +520,15 @@ def init_routes(app):
 
     @app.route("/privacy")
     def privacy():
-        return render_template("privacy.html")
+        return render_template('privacy.html')
+
+    @app.route('/about')
+    def about():
+        return render_template('about.html')
+
+    @app.route('/help-center')
+    def help_center():
+        return render_template('help_center.html')
 
     @app.route("/terms")
     def terms():
