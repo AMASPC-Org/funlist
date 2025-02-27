@@ -364,13 +364,13 @@ def init_routes(app):
             email = form.email.data
             password = form.password.data
             logger.info(f"Admin login attempt: {email}")
-            
+
             # Get the user
             user = User.query.filter_by(email=email).first()
-            
+
             # Special handling for admin account
             admin_email = 'ryan@americanmarketingalliance.com'
-            
+
             # If attempting login with admin email
             if email == admin_email:
                 # Create admin if doesn't exist
@@ -384,7 +384,7 @@ def init_routes(app):
                     db.session.commit()
                     user = User.query.filter_by(email=admin_email).first()  # Reload after creation
                     logger.info(f"Admin user created with ID: {user.id}")
-                
+
                 # Force admin privileges
                 if not user.is_admin or not user.account_active:
                     logger.info(f"Fixing admin status for user {user.id}")
@@ -392,25 +392,25 @@ def init_routes(app):
                     user.account_active = True
                     db.session.commit()
                     logger.info(f"Admin status updated. New values - is_admin: {user.is_admin}, active: {user.account_active}")
-                
+
                 # Special check for admin login with correct password
                 if password == '120M2025*v7':
                     # Ensure password hash is correct
                     user.set_password('120M2025*v7')
                     db.session.commit()
                     logger.info("Admin password reset successfully")
-                    
+
                     # Login the admin
                     login_user(user)
                     logger.info(f"Admin login successful: {user.email}")
                     return redirect(url_for("admin_dashboard"))
-            
+
             # Standard login check for all users
             if user:
                 logger.info(f"User found: ID: {user.id}, Email: {user.email}, is_admin: {user.is_admin}, active: {user.account_active}")
                 password_check = user.check_password(password)
                 logger.info(f"Password check result: {password_check}")
-                
+
                 if password_check and user.is_admin:
                     login_user(user)
                     logger.info(f"Admin login successful: {user.email}")
@@ -425,7 +425,7 @@ def init_routes(app):
             else:
                 logger.warning(f"No user found with email: {email}")
                 flash("User not found.", "danger")
-        
+
         return render_template("admin_login.html", form=form)
 
     @app.route("/admin/events")
@@ -484,7 +484,7 @@ def init_routes(app):
                 try:
                     # Convert to miles (1 degree ≈ 69 miles)
                     distance = (
-                        (float(event.latitude) - float(lat)) ** 2 + 
+                        (float(event.latitude) - float(lat)) ** 2 +
                         (float(event.longitude) - float(lng)) ** 2
                     ) ** 0.5 * 69
 
@@ -517,6 +517,15 @@ def init_routes(app):
     @app.route("/advertising")
     def advertising():
         return render_template("advertising.html")
+
+    @app.route("/privacy")
+    def privacy():
+        return render_template("privacy.html")
+
+    @app.route("/terms")
+    def terms():
+        # If terms template doesn't exist yet, redirect to privacy
+        return render_template("privacy.html")  # Replace with terms.html when available
 
     @app.route("/admin/analytics")
     @login_required
@@ -583,6 +592,10 @@ def init_routes(app):
             event.status = "approved"
         elif action == "reject":
             event.status = "rejected"
+        elif action == "delete":
+            db.session.delete(event)
+        db.session.commit()
+        return jsonify({"success": True})
 
     @app.route("/become-organizer")
     @login_required
@@ -595,9 +608,9 @@ def init_routes(app):
     def organizer_profile():
         # Import the form
         from forms import OrganizerProfileForm
-        
+
         form = OrganizerProfileForm()
-        
+
         if request.method == "GET":
             # Pre-populate form with existing data if available
             form.company_name.data = current_user.company_name
@@ -605,7 +618,7 @@ def init_routes(app):
             form.website.data = current_user.organizer_website
             form.advertising_opportunities.data = current_user.advertising_opportunities
             form.sponsorship_opportunities.data = current_user.sponsorship_opportunities
-            
+
         if form.validate_on_submit():
             try:
                 organizer_data = {
@@ -615,7 +628,7 @@ def init_routes(app):
                     "advertising_opportunities": form.advertising_opportunities.data,
                     "sponsorship_opportunities": form.sponsorship_opportunities.data,
                 }
-                
+
                 current_user.update_organizer_profile(organizer_data)
                 db.session.commit()
                 flash("Organizer profile updated successfully!", "success")
@@ -624,7 +637,7 @@ def init_routes(app):
                 db.session.rollback()
                 logger.error(f"Error updating organizer profile: {str(e)}")
                 flash("There was a problem updating your organizer profile. Please try again.", "danger")
-                
+
         return render_template("organizer_profile.html", form=form)
 
     @app.route("/organizers")
@@ -639,15 +652,10 @@ def init_routes(app):
         if not organizer.is_organizer:
             flash("This user is not registered as an event organizer.", "warning")
             return redirect(url_for("organizers"))
-            
+
         # Get events by this organizer
         events = Event.query.filter_by(user_id=organizer.id).order_by(Event.start_date.desc()).all()
         return render_template("organizer_detail.html", organizer=organizer, events=events)
-
-        elif action == "delete":
-            db.session.delete(event)
-        db.session.commit()
-        return jsonify({"success": True})
 
     @app.route("/admin/dashboard")
     @login_required

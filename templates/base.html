@@ -87,10 +87,6 @@
                 <h5>COMPANY</h5>
                 <ul class="list-unstyled">
                     <li><a href="{{ url_for('about') }}">About Us</a></li>
-                    <!----  **ANNOTATION**: base.html: Changed url_for('help_center') to url_for('about')
-                            **Line Number (approximate):** 81
-                            **Reason:**  The 'help_center' route does not exist, causing a BuildError.  'about' is a valid route.
-                    --->
                     <li><a href="{{ url_for('about') }}">Help Center</a></li>
                     <li><a href="{{ url_for('advertising') }}">Advertise with Us</a></li>
                 </ul>
@@ -114,7 +110,7 @@
               <h5>LEGAL</h5>
               <ul class="list-unstyled">
                   <li><a href="#">Terms & Conditions</a></li>
-                  <li><a href="#">Privacy Policy</a></li>
+                  <li><a href="{{ url_for('privacy') }}" class="footer-link btn-footer">Privacy Policy</a></li>
                   <li><a href="{{ url_for('advertising') }}">Advertise with Us</a></li>
               </ul>
           </div>
@@ -124,6 +120,7 @@
                 <p class="mb-0">© 2024 FunList.ai. All rights reserved.</p>
             </div>
         </div>
+    </div>
 </footer>
 {% include 'partials/floating_buttons.html' %}
 
