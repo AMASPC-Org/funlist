@@ -46,6 +46,57 @@ document.addEventListener('DOMContentLoaded', function() {
     if (dateRangeSelect) {
         dateRangeSelect.addEventListener('change', handleDateRangeChange);
     }
+
+    // Initialize Bootstrap tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+
+    // Initialize Bootstrap popovers
+    var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+    var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+        return new bootstrap.Popover(popoverTriggerEl)
+    })
+
+    // Track CTA click events
+    window.trackCtaClick = function(ctaType) {
+        console.log('CTA clicked:', ctaType);
+        // This could be expanded to use analytics services
+        // Example: gtag('event', 'click', {'event_category': 'CTA', 'event_label': ctaType});
+    }
+
+    // Email signup form submission
+    window.submitEmailSignup = function() {
+        const email = document.getElementById('emailInput').value;
+        if (!email || !validateEmail(email)) {
+            alert('Please enter a valid email address');
+            return;
+        }
+
+        // Get selected interests
+        const interests = [];
+        document.querySelectorAll('input[type="checkbox"]:checked').forEach(checkbox => {
+            interests.push(checkbox.value);
+        });
+
+        console.log('Email signup:', email, 'Interests:', interests);
+        // Here you would typically send this data to your backend
+        // For now, show a success message and close modal
+        alert('Thanks for subscribing! You\'ll receive updates soon.');
+
+        // Close the modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('emailSignupModal'));
+        if (modal) {
+            modal.hide();
+        }
+    }
+
+    // Simple email validation function
+    function validateEmail(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+    }
 });
 
 // Update featured events based on location
@@ -251,9 +302,6 @@ function handleEmailSignup(e) {
     e.preventDefault();
     const email = document.getElementById('signupEmail').value;
 
-    //Added tracking here
-    trackCtaClick('email_signup');
-
     fetch('/subscribe', {
         method: 'POST',
         headers: {
@@ -267,8 +315,6 @@ function handleEmailSignup(e) {
             alert('Thank you for subscribing!');
             const modal = bootstrap.Modal.getInstance(document.getElementById('emailSignupModal'));
             if (modal) modal.hide();
-            //Added tracking here
-            trackCtaClick('subscribe_success');
         } else {
             alert(data.message || 'Subscription failed. Please try again.');
         }
@@ -453,7 +499,6 @@ function initFloatingButtons() {
         feedbackButton.addEventListener('click', function() {
             const feedbackModal = new bootstrap.Modal(document.getElementById('feedbackModal'));
             feedbackModal.show();
-            trackCtaClick('feedback');
         });
     }
 
@@ -461,7 +506,6 @@ function initFloatingButtons() {
         subscribeButton.addEventListener('click', function() {
             const subscribeModal = new bootstrap.Modal(document.getElementById('subscribeModal'));
             subscribeModal.show();
-            trackCtaClick('subscribe');
         });
     }
 
@@ -503,7 +547,6 @@ function initFloatingButtons() {
                     // Close the modal
                     const subscribeModal = bootstrap.Modal.getInstance(document.getElementById('subscribeModal'));
                     if (subscribeModal) subscribeModal.hide();
-                    trackCtaClick('subscribe_success');
                 } else {
                     alert(data.message || 'Subscription failed. Please try again.');
                 }
@@ -542,7 +585,6 @@ function initFloatingButtons() {
                     // Close the modal
                     const feedbackModal = bootstrap.Modal.getInstance(document.getElementById('feedbackModal'));
                     if (feedbackModal) feedbackModal.hide();
-                    trackCtaClick('feedback_success');
                 } else {
                     alert(data.message || 'Failed to submit feedback. Please try again.');
                 }
@@ -748,16 +790,3 @@ document.addEventListener('DOMContentLoaded', function() {
     initSponsorRotation();
     // ... (keep existing DOMContentLoaded handlers)
 });
-
-//Added tracking function
-function trackCtaClick(ctaType) {
-    // Check if Google Analytics exists
-    if (typeof gtag !== 'undefined') {
-        gtag('event', 'click', {
-            'event_category': 'CTA',
-            'event_label': ctaType
-        });
-    }
-    // For development testing
-    console.log('CTA clicked:', ctaType);
-}
