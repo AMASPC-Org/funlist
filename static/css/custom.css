@@ -1513,3 +1513,48 @@ body.cookie-consent-visible .floating-buttons-container {
 .organizer-banner {
     display: none;
 }
+
+/* Event details page */
+.event-actions .btn {
+    width: 100%;
+}
+
+/* About page CTA enhancements */
+.cta-button-host, .cta-button-subscribe {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.cta-button-host:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+}
+
+.cta-button-subscribe:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 123, 255, 0.2);
+}
+
+.cta-section {
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Enhanced modal styling */
+#emailSignupModal .form-control {
+    padding: 12px 20px;
+    font-size: 1rem;
+}
+
+#emailSignupModal .btn-primary {
+    padding: 10px;
+    font-size: 1.1rem;
+    border-radius: 30px;
+    transition: all 0.3s ease;
+}
+
+#emailSignupModal .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+}

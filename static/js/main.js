@@ -251,6 +251,9 @@ function handleEmailSignup(e) {
     e.preventDefault();
     const email = document.getElementById('signupEmail').value;
 
+    //Added tracking here
+    trackCtaClick('email_signup');
+
     fetch('/subscribe', {
         method: 'POST',
         headers: {
@@ -264,6 +267,8 @@ function handleEmailSignup(e) {
             alert('Thank you for subscribing!');
             const modal = bootstrap.Modal.getInstance(document.getElementById('emailSignupModal'));
             if (modal) modal.hide();
+            //Added tracking here
+            trackCtaClick('subscribe_success');
         } else {
             alert(data.message || 'Subscription failed. Please try again.');
         }
@@ -448,6 +453,7 @@ function initFloatingButtons() {
         feedbackButton.addEventListener('click', function() {
             const feedbackModal = new bootstrap.Modal(document.getElementById('feedbackModal'));
             feedbackModal.show();
+            trackCtaClick('feedback');
         });
     }
 
@@ -455,6 +461,7 @@ function initFloatingButtons() {
         subscribeButton.addEventListener('click', function() {
             const subscribeModal = new bootstrap.Modal(document.getElementById('subscribeModal'));
             subscribeModal.show();
+            trackCtaClick('subscribe');
         });
     }
 
@@ -496,6 +503,7 @@ function initFloatingButtons() {
                     // Close the modal
                     const subscribeModal = bootstrap.Modal.getInstance(document.getElementById('subscribeModal'));
                     if (subscribeModal) subscribeModal.hide();
+                    trackCtaClick('subscribe_success');
                 } else {
                     alert(data.message || 'Subscription failed. Please try again.');
                 }
@@ -534,6 +542,7 @@ function initFloatingButtons() {
                     // Close the modal
                     const feedbackModal = bootstrap.Modal.getInstance(document.getElementById('feedbackModal'));
                     if (feedbackModal) feedbackModal.hide();
+                    trackCtaClick('feedback_success');
                 } else {
                     alert(data.message || 'Failed to submit feedback. Please try again.');
                 }
@@ -739,3 +748,16 @@ document.addEventListener('DOMContentLoaded', function() {
     initSponsorRotation();
     // ... (keep existing DOMContentLoaded handlers)
 });
+
+//Added tracking function
+function trackCtaClick(ctaType) {
+    // Check if Google Analytics exists
+    if (typeof gtag !== 'undefined') {
+        gtag('event', 'click', {
+            'event_category': 'CTA',
+            'event_label': ctaType
+        });
+    }
+    // For development testing
+    console.log('CTA clicked:', ctaType);
+}
