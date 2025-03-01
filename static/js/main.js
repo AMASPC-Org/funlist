@@ -589,10 +589,10 @@ function setCookie(name, value, days) {
 function getCookie(name) {
     const nameEQ = name + "=";
     const ca = document.cookie.split(';');
-    for(let i = 0; i < ca.length; i++) {
+    for (let i = 0; i < ca.length; i++) {
         let c = ca[i];
-        while (c.charAt(0) == ' ') c = c.substring(1, c.length);
-        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+        while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
     }
     return null;
 }
@@ -602,6 +602,7 @@ function initCookieConsent() {
     const acceptBtn = document.getElementById('accept-cookies');
     const savePreferencesBtn = document.getElementById('save-cookie-preferences');
 
+    // Check if cookie exists before showing the banner
     if (!getCookie('cookie-consent')) {
         consentBanner.style.display = 'block';
     }
