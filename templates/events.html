@@ -1,228 +1,120 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
-{% block title %}Events - FunList.ai{% endblock %}
-
-{% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-8">
-            <h1 class="display-4 mb-3">Discover Local Events</h1>
-            <p class="lead mb-4">Find fun activities in Thurston County, WA</p>
-        </div>
-        <div class="col-md-4 text-md-end mt-3 mt-md-0">
-            <a href="{{ url_for('submit_event') }}" class="btn btn-primary me-2 event-cta" id="post-event-cta">
-                <i class="fas fa-plus-circle me-1"></i> Post Your Event & Get Discovered!
-            </a>
-            <button class="btn btn-outline-primary event-cta" data-bs-toggle="modal" data-bs-target="#emailSignupModal" id="weekly-updates-cta">
-                <i class="fas fa-envelope me-1"></i> Get Weekly Fun Updates!
-            </button>
-            <p class="small text-muted mt-1">No spam, just the best local events!</p>
-        </div>
-    </div>
-
-    {% include 'partials/filter_bar.html' %}
-
-    <div class="row mt-5">
-        {% if events %}
-            {% for event in events %}
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card h-100 shadow-sm event-card">
-                        {% if event.image_url %}
-                            <img src="{{ event.image_url }}" class="card-img-top" alt="{{ event.title }}" loading="lazy">
-                        {% else %}
-                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 180px;">
-                                <i class="fas fa-calendar-alt fa-4x text-secondary"></i>
-                            </div>
-                        {% endif %}
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <h5 class="card-title">{{ event.title }}</h5>
-                                <button class="btn btn-sm btn-link text-danger bookmark-btn" data-event-id="{{ event.id }}" aria-label="Bookmark this event">
-                                    <i class="far fa-heart"></i>
-                                </button>
-                            </div>
-                            <p class="card-text text-muted mb-2">
-                                <i class="fas fa-calendar me-2"></i>{{ event.start_time.strftime('%a, %b %d, %Y') }}
-                            </p>
-                            <p class="card-text text-muted mb-2">
-                                <i class="fas fa-clock me-2"></i>{{ event.start_time.strftime('%I:%M %p') }} - {{ event.end_time.strftime('%I:%M %p') }}
-                            </p>
-                            <p class="card-text text-muted mb-3">
-                                <i class="fas fa-map-marker-alt me-2"></i>{{ event.location }}
-                            </p>
-
-                            {% if event.fun_rating %}
-                            <div class="mb-3">
-                                <span class="badge bg-primary fun-rating">
-                                    <i class="fas fa-smile me-1"></i> Fun Meter: {{ event.fun_rating }}/5
-                                </span>
-                            </div>
-                            {% endif %}
-
-                            <p class="card-text">{{ event.description|truncate(100) }}</p>
-                            <div class="d-flex justify-content-between mt-3">
-                                <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-outline-primary view-details-btn" aria-label="View event details">View Details</a>
-                                <button class="btn btn-sm btn-outline-secondary similar-events-btn" data-event-id="{{ event.id }}" aria-label="Find similar events">
-                                    <i class="fas fa-search me-1"></i> More Like This
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
-        {% else %}
-            <div class="col-12">
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle me-2"></i> No events found matching your criteria. Try adjusting your filters or check back later for new events!
-                </div>
-            </div>
-        {% endif %}
-    </div>
-
-    <div class="row mt-5 mb-5 py-5 bg-light rounded fun-assistant-section">
-        <div class="col-md-8 offset-md-2 text-center">
-            <h3 class="mb-4">Your Personal Fun Assistant</h3>
-            <p class="lead mb-4">Let FunList.ai help you discover events tailored to your interests</p>
-            <div class="row mt-4 g-4">
-                <div class="col-md-4 mb-4 mb-md-0">
-                    <i class="fas fa-magic fa-2x mb-3 text-primary"></i>
-                    <h5>🎵 AI-powered event matching</h5>
-                    <p>Our smart algorithm learns your preferences</p>
-                </div>
-                <div class="col-md-4 mb-4 mb-md-0">
-                    <i class="fas fa-calendar-check fa-2x mb-3 text-primary"></i>
-                    <h5>📅 Weekly personalized updates</h5>
-                    <p>Get a curated list of events every week</p>
-                </div>
-                <div class="col-md-4">
-                    <i class="fas fa-lightbulb fa-2x mb-3 text-primary"></i>
-                    <h5>🔍 Smart recommendations</h5>
-                    <p>Discover hidden gems in your area</p>
-                </div>
-            </div>
-            <div class="mt-5">
-                <form id="subscribe-form-2" method="post" action="{{ url_for('subscribe') }}" class="row g-3 align-items-center justify-content-center">
-                    <div class="col-md-8">
-                        <input type="email" name="email" id="email-subscribe-2" class="form-control form-control-lg rounded-pill" placeholder="Enter your email to stay updated..." required aria-label="Email subscription">
-                    </div>
-                    <div class="col-md-12 mt-2">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="customizeUpdates" name="customize_updates">
-                            <label class="form-check-label" for="customizeUpdates">
-                                Customize event updates based on my interests
-                            </label>
-                        </div>
-                    </div>
-                    <div class="col-md-12 mt-3">
-                        <button type="submit" class="btn btn-lg btn-primary rounded-pill px-4 subscribe-btn">Subscribe Now</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Subscription Modal -->
-<div class="modal fade" id="subscriptionModal" tabindex="-1" aria-labelledby="subscriptionModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="subscriptionModalLabel">Stay Updated on Local Fun!</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Never miss out on fun events in Thurston County! Subscribe for personalized weekly updates.</p>
-                <form id="modal-subscribe-form" method="post" action="{{ url_for('subscribe') }}">
-                    <div class="mb-3">
-                        <input type="email" name="email" class="form-control form-control-lg rounded-pill" placeholder="Enter your email..." required>
-                    </div>
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="modalCustomizeUpdates" name="customize_updates">
-                        <label class="form-check-label" for="modalCustomizeUpdates">Customize based on my interests</label>
-                    </div>
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary">Subscribe Now</button>
-                    </div>
-                </form>
-                <div class="mt-3 text-center">
-                    <p>Or sign up with:</p>
-                    <button class="btn btn-outline-secondary me-2"><i class="fab fa-google"></i> Google</button>
-                    <button class="btn btn-outline-secondary"><i class="fab fa-facebook-f"></i> Facebook</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
+{% block head %}
+<link rel="canonical" href="{{ url_for('events', _external=True) }}" />
 {% endblock %}
 
-{% block scripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Event tracking for CTA buttons
-    const trackEventClick = (elementId, eventName, eventProperties = {}) => {
-        const element = document.getElementById(elementId);
-        if (element) {
-            element.addEventListener('click', function() {
-                // If using Google Analytics
-                if (typeof gtag !== 'undefined') {
-                    gtag('event', eventName, eventProperties);
-                }
-                // If using Mixpanel
-                if (typeof mixpanel !== 'undefined') {
-                    mixpanel.track(eventName, eventProperties);
-                }
-                console.log(`Event tracked: ${eventName}`, eventProperties);
-            });
-        }
-    };
+{% block content %}
+<div class="container map-container-wrapper">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Explore Events</h2>
+        <div class="view-toggle btn-group" role="group">
+            <a href="{{ url_for('map') }}" class="btn btn-outline-primary">Map</a>
+            <a href="{{ url_for('events') }}" class="btn btn-primary active">List</a>
+        </div>
+    </div>
+    
+    <div class="filter-bar mb-4">
+        <div class="row g-3">
+            <div class="col-md">
+                <input type="text" class="form-control" placeholder="Search location...">
+            </div>
+            <div class="col-md">
+                <select class="form-select">
+                    <option selected>All Categories</option>
+                    <option>Sports</option>
+                    <option>Music</option>
+                    <option>Arts</option>
+                    <option>Food</option>
+                    <option>Other</option>
+                </select>
+            </div>
+            <div class="col-md">
+                <select class="form-select">
+                    <option selected>Any Date</option>
+                    <option>Today</option>
+                    <option>Tomorrow</option>
+                    <option>This Weekend</option>
+                    <option>Next Week</option>
+                </select>
+            </div>
+            <div class="col-md">
+                <select class="form-select">
+                    <option selected>All Fun Ratings</option>
+                    <option>⭐⭐⭐⭐⭐ (5)</option>
+                    <option>⭐⭐⭐⭐ (4+)</option>
+                    <option>⭐⭐⭐ (3+)</option>
+                </select>
+            </div>
+        </div>
+    </div>
 
-    // Track main CTA clicks
-    trackEventClick('post-event-cta', 'post_event_click');
-    trackEventClick('weekly-updates-cta', 'weekly_updates_click');
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for event in events %}
+    <div class="col">
+        <div class="card event-card h-100">
+            {% if event.image_url %}
+            <img src="{{ event.image_url }}" class="card-img-top" alt="{{ event.title }}">
+            {% else %}
+            <div class="card-img-top default-event-img"></div>
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">{{ event.title }}</h5>
+                <p class="card-text text-muted mb-2">
+                    <i class="far fa-calendar me-2"></i>{{ event.start_date.strftime('%B %d, %Y') }}
+                    {% if event.start_time %} at {{ event.start_time.strftime('%I:%M %p') }}{% endif %}
+                </p>
+                <p class="card-text text-muted mb-3">
+                    <i class="fas fa-map-marker-alt me-2"></i>{{ event.city }}, {{ event.state }}
+                </p>
+                <p class="card-text">{{ event.description|truncate(120) }}</p>
+                <div class="fun-rating mb-3">
+                    <span class="text-muted me-2">Fun Rating:</span>
+                    <span class="stars">{{ "⭐" * event.fun_meter }}</span>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-top-0">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="btn-group">
+                        {% if event.ticket_url %}
+                        <a href="{{ event.ticket_url }}" class="btn btn-primary btn-sm" target="_blank">
+                            <i class="fas fa-ticket-alt me-1"></i>Get Tickets
+                        </a>
+                        {% endif %}
+                        <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-outline-primary btn-sm">
+                            Details
+                        </a>
+                    </div>
+                    <div class="social-links">
+                        {% if event.website %}
+                        <a href="{{ event.website }}" class="text-muted me-2" target="_blank" title="Website">
+                            <i class="fas fa-globe"></i>
+                        </a>
+                        {% endif %}
+                        {% if event.facebook %}
+                        <a href="{{ event.facebook }}" class="text-muted me-2" target="_blank" title="Facebook">
+                            <i class="fab fa-facebook"></i>
+                        </a>
+                        {% endif %}
+                        {% if event.instagram %}
+                        <a href="{{ event.instagram }}" class="text-muted me-2" target="_blank" title="Instagram">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        {% endif %}
+                        {% if event.twitter %}
+                        <a href="{{ event.twitter }}" class="text-muted" target="_blank" title="Twitter">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
 
-    // Bookmark functionality
-    document.querySelectorAll('.bookmark-btn').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            const eventId = this.getAttribute('data-event-id');
-            const icon = this.querySelector('i');
-
-            // Toggle heart icon
-            if (icon.classList.contains('far')) {
-                icon.classList.replace('far', 'fas');
-                // Save bookmarked event (implement actual storage as needed)
-                console.log(`Event ${eventId} bookmarked`);
-            } else {
-                icon.classList.replace('fas', 'far');
-                console.log(`Event ${eventId} removed from bookmarks`);
-            }
-
-            // Track bookmark event
-            trackEventClick(null, 'event_bookmarked', { event_id: eventId });
-        });
-    });
-
-    // Similar events functionality
-    document.querySelectorAll('.similar-events-btn').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            const eventId = this.getAttribute('data-event-id');
-            alert('Similar events feature coming soon!');
-
-            // Track similar events clicks
-            trackEventClick(null, 'similar_events_click', { event_id: eventId });
-        });
-    });
-
-    // Show subscription modal after 10 seconds
-    setTimeout(() => {
-        if (!localStorage.getItem('subscriptionModalShown')) {
-            const subscriptionModal = new bootstrap.Modal(document.getElementById('subscriptionModal'));
-            subscriptionModal.show();
-            localStorage.setItem('subscriptionModalShown', 'true');
-        }
-    }, 10000);
-});
-</script>
+{% if not events %}
+<p class="text-center mt-4">No events found. Try adjusting your search criteria.</p>
+{% endif %}
 {% endblock %}
