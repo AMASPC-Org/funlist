@@ -27,6 +27,33 @@
     background: linear-gradient(135deg, rgba(255,138,0,0.05) 0%, rgba(0,212,224,0.05) 100%);
 }
 
+/* About page CTA buttons */
+#about-page-ctas {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+#about-page-ctas .cta-button-host,
+#about-page-ctas .cta-button-subscribe {
+    min-width: 200px;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 576px) {
+    #about-page-ctas {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    #about-page-ctas .cta-button-host,
+    #about-page-ctas .cta-button-subscribe {
+        width: 100%;
+    }
+}
+
 /* Enhanced Rating System */
 .rating-scale {
     display: flex;
