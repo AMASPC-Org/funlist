@@ -46,57 +46,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (dateRangeSelect) {
         dateRangeSelect.addEventListener('change', handleDateRangeChange);
     }
-
-    // Initialize Bootstrap tooltips
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl)
-    })
-
-    // Initialize Bootstrap popovers
-    var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
-    var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
-        return new bootstrap.Popover(popoverTriggerEl)
-    })
-
-    // Track CTA click events
-    window.trackCtaClick = function(ctaType) {
-        console.log('CTA clicked:', ctaType);
-        // This could be expanded to use analytics services
-        // Example: gtag('event', 'click', {'event_category': 'CTA', 'event_label': ctaType});
-    }
-
-    // Email signup form submission
-    window.submitEmailSignup = function() {
-        const email = document.getElementById('emailInput').value;
-        if (!email || !validateEmail(email)) {
-            alert('Please enter a valid email address');
-            return;
-        }
-
-        // Get selected interests
-        const interests = [];
-        document.querySelectorAll('input[type="checkbox"]:checked').forEach(checkbox => {
-            interests.push(checkbox.value);
-        });
-
-        console.log('Email signup:', email, 'Interests:', interests);
-        // Here you would typically send this data to your backend
-        // For now, show a success message and close modal
-        alert('Thanks for subscribing! You\'ll receive updates soon.');
-
-        // Close the modal
-        const modal = bootstrap.Modal.getInstance(document.getElementById('emailSignupModal'));
-        if (modal) {
-            modal.hide();
-        }
-    }
-
-    // Simple email validation function
-    function validateEmail(email) {
-        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return re.test(email);
-    }
 });
 
 // Update featured events based on location
@@ -302,6 +251,9 @@ function handleEmailSignup(e) {
     e.preventDefault();
     const email = document.getElementById('signupEmail').value;
 
+    //Added tracking here
+    trackCtaClick('email_signup');
+
     fetch('/subscribe', {
         method: 'POST',
         headers: {
@@ -309,20 +261,22 @@ function handleEmailSignup(e) {
         },
         body: JSON.stringify({ email })
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Thank you for subscribing!');
-            const modal = bootstrap.Modal.getInstance(document.getElementById('emailSignupModal'));
-            if (modal) modal.hide();
-        } else {
-            alert(data.message || 'Subscription failed. Please try again.');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred. Please try again later.');
-    });
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Thank you for subscribing!');
+                const modal = bootstrap.Modal.getInstance(document.getElementById('emailSignupModal'));
+                if (modal) modal.hide();
+                //Added tracking here
+                trackCtaClick('subscribe_success');
+            } else {
+                alert(data.message || 'Subscription failed. Please try again.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again later.');
+        });
 }
 
 
@@ -418,9 +372,9 @@ function filterEventsList() {
             const eventDate = new Date(cardDate);
             const today = new Date();
 
-            switch(dateRange) {
+            switch (dateRange) {
                 case 'specific':
-                    const specificDate = document.getElementById('specificDate')?.value; 
+                    const specificDate = document.getElementById('specificDate')?.value;
                     if (specificDate) {
                         const selectedDate = new Date(specificDate);
                         if (eventDate.toDateString() !== selectedDate.toDateString()) showCard = false;
@@ -499,6 +453,7 @@ function initFloatingButtons() {
         feedbackButton.addEventListener('click', function() {
             const feedbackModal = new bootstrap.Modal(document.getElementById('feedbackModal'));
             feedbackModal.show();
+            trackCtaClick('feedback');
         });
     }
 
@@ -506,6 +461,7 @@ function initFloatingButtons() {
         subscribeButton.addEventListener('click', function() {
             const subscribeModal = new bootstrap.Modal(document.getElementById('subscribeModal'));
             subscribeModal.show();
+            trackCtaClick('subscribe');
         });
     }
 
@@ -525,7 +481,7 @@ function initFloatingButtons() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     email,
                     preferences: {
                         events: preferenceEvents,
@@ -533,28 +489,29 @@ function initFloatingButtons() {
                     }
                 })
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Thank you for subscribing!');
-                    setCookie('user-subscribed', 'true', 365); // Remember subscription for a year
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Thank you for subscribing!');
+                        setCookie('user-subscribed', 'true', 365); // Remember subscription for a year
 
-                    // Hide the subscribe button
-                    if (subscribeButton) {
-                        subscribeButton.style.display = 'none';
+                        // Hide the subscribe button
+                        if (subscribeButton) {
+                            subscribeButton.style.display = 'none';
+                        }
+
+                        // Close the modal
+                        const subscribeModal = bootstrap.Modal.getInstance(document.getElementById('subscribeModal'));
+                        if (subscribeModal) subscribeModal.hide();
+                        trackCtaClick('subscribe_success');
+                    } else {
+                        alert(data.message || 'Subscription failed. Please try again.');
                     }
-
-                    // Close the modal
-                    const subscribeModal = bootstrap.Modal.getInstance(document.getElementById('subscribeModal'));
-                    if (subscribeModal) subscribeModal.hide();
-                } else {
-                    alert(data.message || 'Subscription failed. Please try again.');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred. Please try again later.');
-            });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again later.');
+                });
         });
     }
 
@@ -574,25 +531,26 @@ function initFloatingButtons() {
                 },
                 body: JSON.stringify({ type, message, email })
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Thank you for your feedback!');
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Thank you for your feedback!');
 
-                    // Reset the form
-                    feedbackForm.reset();
+                        // Reset the form
+                        feedbackForm.reset();
 
-                    // Close the modal
-                    const feedbackModal = bootstrap.Modal.getInstance(document.getElementById('feedbackModal'));
-                    if (feedbackModal) feedbackModal.hide();
-                } else {
-                    alert(data.message || 'Failed to submit feedback. Please try again.');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred. Please try again later.');
-            });
+                        // Close the modal
+                        const feedbackModal = bootstrap.Modal.getInstance(document.getElementById('feedbackModal'));
+                        if (feedbackModal) feedbackModal.hide();
+                        trackCtaClick('feedback_success');
+                    } else {
+                        alert(data.message || 'Failed to submit feedback. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again later.');
+                });
         });
     }
 }
@@ -634,7 +592,7 @@ function setCookie(name, value, days) {
         date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
         expires = "; expires=" + date.toUTCString();
     }
-    document.cookie = name + "=" + (value || "") + expires + "; path=/; SameSite=Lax";
+    document.cookie = name + "=" + (value || "") + expires + "; path=/";
 }
 
 function getCookie(name) {
@@ -652,38 +610,120 @@ function initCookieConsent() {
     const consentBanner = document.getElementById('cookie-consent');
     const acceptBtn = document.getElementById('accept-cookies');
     const savePreferencesBtn = document.getElementById('save-cookie-preferences');
+    const analyticsCheckbox = document.getElementById('analytics-cookies');
+    const advertisingCheckbox = document.getElementById('advertising-cookies');
 
-    // Check if cookie exists before showing the banner
+    // Only show banner if consent cookie doesn't exist
     if (!getCookie('cookie-consent')) {
-        consentBanner.style.display = 'block';
+        if (consentBanner) {
+            consentBanner.style.display = 'block';
+            document.body.classList.add('cookie-consent-visible');
+        }
+    } else {
+        if (consentBanner) {
+            consentBanner.style.display = 'none';
+            document.body.classList.remove('cookie-consent-visible');
+        }
     }
 
-    acceptBtn?.addEventListener('click', () => {
-        setCookie('cookie-consent', 'all', 365);
-        setCookie('analytics-cookies', 'true', 365);
-        setCookie('advertising-cookies', 'true', 365);
-        consentBanner.style.display = 'none';
-    });
+    // Load saved preferences for modal if checkboxes exist
+    if (analyticsCheckbox && advertisingCheckbox) {
+        analyticsCheckbox.checked = getCookie('analytics-cookies') === 'true';
+        advertisingCheckbox.checked = getCookie('advertising-cookies') === 'true';
+    }
 
-    savePreferencesBtn?.addEventListener('click', () => {
-        const analytics = document.getElementById('analytics-cookies').checked;
-        const advertising = document.getElementById('advertising-cookies').checked;
+    // Event listeners
+    if (acceptBtn) {
+        acceptBtn.addEventListener('click', () => {
+            setCookie('cookie-consent', 'all', 365);
+            setCookie('analytics-cookies', 'true', 365);
+            setCookie('advertising-cookies', 'true', 365);
+            if (consentBanner) {
+                consentBanner.style.display = 'none';
+                document.body.classList.remove('cookie-consent-visible');
+            }
+        });
+    }
 
-        setCookie('cookie-consent', 'custom', 365);
-        setCookie('analytics-cookies', analytics.toString(), 365);
-        setCookie('advertising-cookies', advertising.toString(), 365);
+    if (savePreferencesBtn) {
+        savePreferencesBtn.addEventListener('click', () => {
+            const analytics = analyticsCheckbox.checked;
+            const advertising = advertisingCheckbox.checked;
 
-        consentBanner.style.display = 'none';
-        const modal = bootstrap.Modal.getInstance(document.getElementById('cookieModal'));
-        modal?.hide();
-    });
+            setCookie('cookie-consent', 'custom', 365);
+            setCookie('analytics-cookies', analytics.toString(), 365);
+            setCookie('advertising-cookies', advertising.toString(), 365);
 
-    // Load saved preferences
-    if (getCookie('cookie-consent') === 'custom') {
-        document.getElementById('analytics-cookies').checked = getCookie('analytics-cookies') === 'true';
-        document.getElementById('advertising-cookies').checked = getCookie('advertising-cookies') === 'true';
+            if (consentBanner) {
+                consentBanner.style.display = 'none';
+                document.body.classList.remove('cookie-consent-visible');
+            }
+
+            const modal = bootstrap.Modal.getInstance(document.getElementById('cookieModal'));
+            if (modal) {
+                modal.hide();
+            }
+        });
     }
 }
+
+// Select date functions
+function handleDateSelect(select) {
+    if (select.value === 'specific-date') {
+        const specificDateInput = document.getElementById('specific-date-input');
+        specificDateInput.style.display = 'block';
+        specificDateInput.required = true;
+        specificDateInput.focus();
+    } else if (select.form) {
+        select.form.submit();
+    }
+}
+
+// Initialize floating buttons
+function initFloatingButtons() {
+    const feedbackButton = document.getElementById('feedbackButton');
+    const subscribeButton = document.getElementById('subscribeButton');
+    const cookieConsent = document.getElementById('cookie-consent');
+
+    // Check if user is logged in (based on class added to body by server)
+    const isLoggedIn = document.body.classList.contains('user-logged-in');
+
+    // Check if user has already subscribed (we'll store this in a cookie)
+    const hasSubscribed = getCookie('user-subscribed') === 'true';
+
+    // Add cookie consent visible class to body when consent is showing
+    if (cookieConsent && cookieConsent.style.display !== 'none') {
+        document.body.classList.add('cookie-consent-visible');
+    }
+
+    // If cookie consent changes visibility, update the body class
+    const cookieObserver = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.attributeName === 'style') {
+                if (cookieConsent.style.display === 'none') {
+                    document.body.classList.remove('cookie-consent-visible');
+                } else {
+                    document.body.classList.add('cookie-consent-visible');
+                }
+            }
+        });
+    });
+
+    if (cookieConsent) {
+        cookieObserver.observe(cookieConsent, { attributes: true });
+    }
+}
+
+// Initialize everything on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize cookie consent system
+    initCookieConsent();
+
+    // Initialize floating buttons
+    initFloatingButtons();
+
+    // Other initializations can go here
+});
 
 // Define eventListeners globally for all functions to access
 var eventListeners = new Map();
@@ -699,24 +739,24 @@ document.addEventListener('DOMContentLoaded', () => {
         initEventForm();
         const form = document.querySelector('form#eventForm');
         form.addEventListener('submit', function(e) {
-    e.preventDefault();
-    const formData = new FormData(form);
-    fetch(form.action, {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => {
-        if (response.redirected) {
-            window.location.href = response.url;
-        } else {
-            return response.text();
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Error submitting form. Please try again.');
-    });
-});
+            e.preventDefault();
+            const formData = new FormData(form);
+            fetch(form.action, {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => {
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                    } else {
+                        return response.text();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error submitting form. Please try again.');
+                });
+        });
     }
 
     if (document.getElementById('title') || document.getElementById('description')) {
@@ -790,3 +830,16 @@ document.addEventListener('DOMContentLoaded', function() {
     initSponsorRotation();
     // ... (keep existing DOMContentLoaded handlers)
 });
+
+//Added tracking function
+function trackCtaClick(ctaType) {
+    // Check if Google Analytics exists
+    if (typeof gtag !== 'undefined') {
+        gtag('event', 'click', {
+            'event_category': 'CTA',
+            'event_label': ctaType
+        });
+    }
+    // For development testing
+    console.log('CTA clicked:', ctaType);
+}
