@@ -1,0 +1,43 @@
+Prompt for Replit AI Agent: Update the About Page
+Task: Apply the following UX and development improvements to enhance readability, engagement, and functionality while keeping the title size unchanged.
+
+Changes to Make
+User Experience (UX) Improvements:
+Improve CTA Buttons:
+
+Update "Post an Event" to "Host an Event – Get Discovered!"
+Update "Subscribe to Weekly FunList" to "Get Weekly Fun Alerts!" with a small subtext: "No spam—just the best local events!"
+Add hover effects to both buttons for better interaction.
+Increase Readability & Visual Appeal:
+
+Add whitespace between sections for better readability.
+Introduce subtle dividers to separate content blocks clearly.
+Keep the current title size but add a subheading below it, such as:
+"Your go-to guide for discovering and promoting fun events in Thurston County!"
+Add Visual Enhancements:
+
+Include small icons next to "Post an Event" (📅) and "Subscribe" (📩) to make them more eye-catching.
+Consider using a soft gradient background behind the CTA section for better contrast.
+Optimize Subscription Box UI:
+
+Replace the plain email input with a rounded field that has placeholder text: "Enter your email to stay in the loop..."
+Add a checkbox for users to personalize updates based on interests (e.g., 🎵 Music, 🍽 Food, 🎭 Arts).
+CTO & Full-Stack Development Improvements:
+Optimize CTA Button Tracking:
+
+Implement event tracking for CTA clicks via Google Analytics or Mixpanel.
+A/B test different button placements and text for better conversions.
+Enhance Subscription Flow:
+
+Convert the "Subscribe" button into a modal pop-up that triggers after 10 seconds of user inactivity.
+Integrate Google & Facebook OAuth signups for quick subscriptions.
+Performance & Accessibility Fixes:
+
+Ensure all buttons and links have ARIA labels for screen reader compatibility.
+Use lazy loading for any images to improve page speed.
+Final Steps for Implementation:
+✅ Update UI elements based on the above improvements.
+✅ Implement tracking and A/B testing for CTA buttons.
+✅ Optimize performance and accessibility for a seamless experience.
+
+After completing changes, perform a usability test to measure engagement and refine further based on feedback. 🚀
