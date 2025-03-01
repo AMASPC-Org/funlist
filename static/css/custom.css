@@ -1068,6 +1068,31 @@ main {
     cursor: pointer;
 }
 
+.social-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-social {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #f8f9fa;
+    color: #666;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: 1px solid #ddd;
+}
+
+.btn-social:hover {
+    background-color: #4CAF50;
+    color: white;
+    transform: translateY(-3px);
+}
+
 @media (max-width: 768px) {
     .footer .col-md-3 {
         margin-bottom: 2rem;
