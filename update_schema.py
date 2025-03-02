@@ -1,73 +1,54 @@
-
+from flask import Flask
 from db_init import db
-from models import User
+import os
 import logging
-from sqlalchemy import inspect
+from sqlalchemy import Column, Boolean
+from models import User
 
-# Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def add_column(engine, table_name, column):
-    column_name = column.compile(dialect=engine.dialect)
-    column_type = column.type.compile(engine.dialect)
-    engine.execute(f'ALTER TABLE {table_name} ADD COLUMN IF NOT EXISTS {column_name} {column_type}')
+def create_app():
+    app = Flask(__name__)
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    db.init_app(app)
+    return app
 
 def update_schema():
-    try:
-        # Get database inspector
-        inspector = inspect(db.engine)
-        
-        # Check if User table exists
-        if 'user' in inspector.get_table_names():
-            # Get existing columns
-            columns = [col['name'] for col in inspector.get_columns('user')]
-            
-            # Check for missing organizer columns
-            missing_columns = []
-            if 'is_organizer' not in columns:
-                missing_columns.append('is_organizer')
-            if 'company_name' not in columns:
-                missing_columns.append('company_name')
-            if 'organizer_description' not in columns:
-                missing_columns.append('organizer_description')
-            if 'organizer_website' not in columns:
-                missing_columns.append('organizer_website')
-            if 'advertising_opportunities' not in columns:
-                missing_columns.append('advertising_opportunities')
-            if 'sponsorship_opportunities' not in columns:
-                missing_columns.append('sponsorship_opportunities')
-            if 'organizer_profile_updated_at' not in columns:
-                missing_columns.append('organizer_profile_updated_at')
-            
-            # Add missing columns to the User table
-            if missing_columns:
-                logger.info(f"Adding missing columns to user table: {', '.join(missing_columns)}")
-                with db.engine.connect() as conn:
-                    if 'is_organizer' in missing_columns:
-                        conn.execute('ALTER TABLE "user" ADD COLUMN is_organizer BOOLEAN DEFAULT FALSE')
-                    if 'company_name' in missing_columns:
-                        conn.execute('ALTER TABLE "user" ADD COLUMN company_name VARCHAR(100)')
-                    if 'organizer_description' in missing_columns:
-                        conn.execute('ALTER TABLE "user" ADD COLUMN organizer_description TEXT')
-                    if 'organizer_website' in missing_columns:
-                        conn.execute('ALTER TABLE "user" ADD COLUMN organizer_website VARCHAR(200)')
-                    if 'advertising_opportunities' in missing_columns:
-                        conn.execute('ALTER TABLE "user" ADD COLUMN advertising_opportunities TEXT')
-                    if 'sponsorship_opportunities' in missing_columns:
-                        conn.execute('ALTER TABLE "user" ADD COLUMN sponsorship_opportunities TEXT')
-                    if 'organizer_profile_updated_at' in missing_columns:
-                        conn.execute('ALTER TABLE "user" ADD COLUMN organizer_profile_updated_at TIMESTAMP')
-                    
-                logger.info("Schema update completed successfully")
-            else:
-                logger.info("No schema updates needed")
-        else:
-            logger.warning("User table not found in database")
-            
-    except Exception as e:
-        logger.error(f"Error updating schema: {str(e)}")
-        raise
+    app = create_app()
+    with app.app_context():
+        conn = db.engine.connect()
+        # Check if columns exist before trying to add them
+        inspector = db.inspect(db.engine)
+        columns = [c['name'] for c in inspector.get_columns('user')]
+
+        try:
+            if 'is_subscriber' not in columns:
+                conn.execute('ALTER TABLE user ADD COLUMN is_subscriber BOOLEAN DEFAULT 1')
+                logger.info("Added is_subscriber column")
+
+            if 'is_event_creator' not in columns:
+                conn.execute('ALTER TABLE user ADD COLUMN is_event_creator BOOLEAN DEFAULT 0')
+                logger.info("Added is_event_creator column")
+
+            # All existing users should be subscribers
+            conn.execute('UPDATE user SET is_subscriber = 1 WHERE is_subscriber IS NULL')
+
+            # Make admin user have all roles
+            conn.execute("UPDATE user SET is_subscriber = 1, is_event_creator = 1, is_organizer = 1 WHERE email = 'ryan@americanmarketingalliance.com'")
+
+            logger.info("Schema update completed successfully")
+            return True
+        except Exception as e:
+            logger.error(f"Error updating schema: {str(e)}")
+            return False
+        finally:
+            conn.close()
 
 if __name__ == "__main__":
-    update_schema()
+    success = update_schema()
+    if success:
+        print("Schema updated successfully.")
+    else:
+        print("Failed to update schema.")

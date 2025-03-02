@@ -86,10 +86,27 @@ def init_routes(app):
         form = SignupForm()
         if form.validate_on_submit():
             try:
+                # Check if user already exists
+                existing_user = User.query.filter_by(email=form.email.data).first()
+                if existing_user:
+                    flash("This email address is already registered. Please use a different email or try logging in.", "danger")
+                    form.email.errors = list(form.email.errors) + ["Email already registered"]
+                    return render_template("signup.html", form=form)
+                    
                 user = User()
                 user.email = form.email.data
                 user.set_password(form.password.data)
                 user.account_active = True
+                
+                # Set default role as subscriber
+                user.is_subscriber = True
+                
+                # Set additional roles based on form choices
+                if hasattr(form, 'is_event_creator') and form.is_event_creator.data:
+                    user.is_event_creator = True
+                
+                if hasattr(form, 'is_organizer') and form.is_organizer.data:
+                    user.is_organizer = True
 
                 db.session.add(user)
                 db.session.commit()
@@ -290,6 +307,13 @@ def init_routes(app):
     @app.route("/submit-event", methods=["GET", "POST"])
     @login_required
     def submit_event():
+        # Check if user has event creation permissions
+        if not (current_user.is_event_creator or current_user.is_organizer or current_user.is_admin):
+            # Allow them to request event creation access
+            current_user.is_event_creator = True
+            db.session.commit()
+            flash("You have been granted event creation permissions.", "success")
+            
         form = EventForm()
         if request.method == "POST":
             try:

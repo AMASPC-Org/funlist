@@ -69,6 +69,11 @@ class User(UserMixin, db.Model):
     account_active = db.Column(db.Boolean, default=True, nullable=False)
     last_login = db.Column(db.DateTime)
 
+    # User roles
+    is_subscriber = db.Column(db.Boolean, default=True)  # Default role for all users
+    is_event_creator = db.Column(db.Boolean, default=False)  # Can create events
+    is_admin = db.Column(db.Boolean, default=False)  # Admin access
+
     # Profile fields
     username = db.Column(db.String(50), unique=True)
     first_name = db.Column(db.String(50))

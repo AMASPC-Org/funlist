@@ -19,6 +19,8 @@ class SignupForm(FlaskForm):
         DataRequired(message="Please confirm your password"),
         EqualTo('password', message='Passwords do not match. Please try again.')
     ])
+    is_event_creator = BooleanField('I want to create events')
+    is_organizer = BooleanField('I represent an organization or venue')
     submit = SubmitField('Sign Up')
 
     def validate_email(self, email):
