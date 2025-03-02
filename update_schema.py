@@ -1,55 +1,73 @@
 
-from flask import Flask
-from models import User, Event, Subscriber
 from db_init import db
+from models import User
 import logging
 from sqlalchemy import inspect
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# Set up logging
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def create_app():
-    app = Flask(__name__)
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///funlist.db"
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    db.init_app(app)
-    return app
+def add_column(engine, table_name, column):
+    column_name = column.compile(dialect=engine.dialect)
+    column_type = column.type.compile(engine.dialect)
+    engine.execute(f'ALTER TABLE {table_name} ADD COLUMN IF NOT EXISTS {column_name} {column_type}')
 
 def update_schema():
-    app = create_app()
-    with app.app_context():
-        try:
-            # Get existing tables and columns
-            inspector = inspect(db.engine)
+    try:
+        # Get database inspector
+        inspector = inspect(db.engine)
+        
+        # Check if User table exists
+        if 'user' in inspector.get_table_names():
+            # Get existing columns
+            columns = [col['name'] for col in inspector.get_columns('user')]
             
-            # Check if User table has is_organizer column
-            user_columns = [col['name'] for col in inspector.get_columns('user')]
+            # Check for missing organizer columns
+            missing_columns = []
+            if 'is_organizer' not in columns:
+                missing_columns.append('is_organizer')
+            if 'company_name' not in columns:
+                missing_columns.append('company_name')
+            if 'organizer_description' not in columns:
+                missing_columns.append('organizer_description')
+            if 'organizer_website' not in columns:
+                missing_columns.append('organizer_website')
+            if 'advertising_opportunities' not in columns:
+                missing_columns.append('advertising_opportunities')
+            if 'sponsorship_opportunities' not in columns:
+                missing_columns.append('sponsorship_opportunities')
+            if 'organizer_profile_updated_at' not in columns:
+                missing_columns.append('organizer_profile_updated_at')
             
-            # Add organizer columns if they don't exist
-            if 'is_organizer' not in user_columns:
-                logger.info("Adding organizer columns to User table")
-                
-                # Use SQL to add the missing columns
-                db.session.execute(db.text('ALTER TABLE "user" ADD COLUMN is_organizer BOOLEAN DEFAULT FALSE'))
-                db.session.execute(db.text('ALTER TABLE "user" ADD COLUMN company_name VARCHAR(100)'))
-                db.session.execute(db.text('ALTER TABLE "user" ADD COLUMN organizer_description TEXT'))
-                db.session.execute(db.text('ALTER TABLE "user" ADD COLUMN organizer_website VARCHAR(200)'))
-                db.session.execute(db.text('ALTER TABLE "user" ADD COLUMN advertising_opportunities TEXT'))
-                db.session.execute(db.text('ALTER TABLE "user" ADD COLUMN sponsorship_opportunities TEXT'))
-                db.session.execute(db.text('ALTER TABLE "user" ADD COLUMN organizer_profile_updated_at TIMESTAMP'))
-                
-                db.session.commit()
-                logger.info("Added organizer columns to User table")
+            # Add missing columns to the User table
+            if missing_columns:
+                logger.info(f"Adding missing columns to user table: {', '.join(missing_columns)}")
+                with db.engine.connect() as conn:
+                    if 'is_organizer' in missing_columns:
+                        conn.execute('ALTER TABLE "user" ADD COLUMN is_organizer BOOLEAN DEFAULT FALSE')
+                    if 'company_name' in missing_columns:
+                        conn.execute('ALTER TABLE "user" ADD COLUMN company_name VARCHAR(100)')
+                    if 'organizer_description' in missing_columns:
+                        conn.execute('ALTER TABLE "user" ADD COLUMN organizer_description TEXT')
+                    if 'organizer_website' in missing_columns:
+                        conn.execute('ALTER TABLE "user" ADD COLUMN organizer_website VARCHAR(200)')
+                    if 'advertising_opportunities' in missing_columns:
+                        conn.execute('ALTER TABLE "user" ADD COLUMN advertising_opportunities TEXT')
+                    if 'sponsorship_opportunities' in missing_columns:
+                        conn.execute('ALTER TABLE "user" ADD COLUMN sponsorship_opportunities TEXT')
+                    if 'organizer_profile_updated_at' in missing_columns:
+                        conn.execute('ALTER TABLE "user" ADD COLUMN organizer_profile_updated_at TIMESTAMP')
+                    
+                logger.info("Schema update completed successfully")
             else:
-                logger.info("Organizer columns already exist in User table")
-                
-        except Exception as e:
-            logger.error(f"Error updating schema: {str(e)}")
-            logger.info("Recreating all tables from scratch")
-            db.drop_all()
-            db.create_all()
-            logger.info("Database schema recreated from scratch")
+                logger.info("No schema updates needed")
+        else:
+            logger.warning("User table not found in database")
+            
+    except Exception as e:
+        logger.error(f"Error updating schema: {str(e)}")
+        raise
 
 if __name__ == "__main__":
     update_schema()
