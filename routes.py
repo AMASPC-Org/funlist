@@ -485,7 +485,7 @@ def init_routes(app):
             event.organizer_email = request.form.get('organizer_email')
             event.organizer_phone = request.form.get('organizer_phone')
             event.category = request.form.get('category')
-            event.tags = request.form.get('tags')
+            event.tags = request.form.get('target_market') # Store target market in tags field
             event.is_featured = True if request.form.get('is_featured') else False
             event.status = request.form.get('status')
 

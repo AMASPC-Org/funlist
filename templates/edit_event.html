@@ -102,8 +102,10 @@
         </div>
 
         <div class="mb-3">
-            <label for="tags" class="form-label">Tags (comma separated)</label>
-            <input type="text" class="form-control" id="tags" name="tags" value="{{ event.tags }}">
+            <label for="target_market" class="form-label">Target Market (comma separated)</label>
+            <input type="text" class="form-control" id="target_market" name="target_market" value="{{ event.tags }}" autocomplete="off">
+            <div id="target_market_suggestions" class="suggestion-dropdown"></div>
+            <small class="text-muted">Type to see suggestions or add your own new market segment</small>
         </div>
 
         <div class="mb-3 form-check">
