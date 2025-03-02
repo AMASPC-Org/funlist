@@ -45,7 +45,8 @@ document.addEventListener('DOMContentLoaded', function() {
 // Placeholder function to populate sponsors - needs a proper data source
 function populateSponsors() {
   const sponsors = [
-    { name: 'Rutledge Corn Maze', image: '/static/images/rutledge_logo.png' },
+    { name: 'Rutledge Corn Maze', image: '/static/images/RutledgeFamilyFarm_Logo.png' },
+    { name: 'American Marketing Alliance', image: '/static/images/ama-logo.png' },
     // Add other sponsors here...
   ];
 
@@ -60,12 +61,35 @@ function populateSponsors() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('main.js loaded');
+document.addEventListener("DOMContentLoaded", function() {
+  console.log("main.js loaded");
 
-  // Populate sponsors carousel if it exists on the page
+  // Populate sponsors carousel if it exists
   const sponsorsCarousel = document.getElementById('sponsors-carousel');
   if (sponsorsCarousel) {
+    console.log("Populating sponsors carousel");
     populateSponsors();
   }
+
+  // Add CSRF token to all AJAX requests
+  setupAjaxCSRF();
 });
+
+// Setup CSRF token for AJAX requests
+function setupAjaxCSRF() {
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+  if (csrfToken) {
+    // Add CSRF token to all fetch requests
+    const originalFetch = window.fetch;
+    window.fetch = function(url, options = {}) {
+      // Only add the CSRF token to same-origin POST/PUT/DELETE requests
+      if (typeof url === 'string' && url.startsWith('/') && 
+          options.method && ['POST', 'PUT', 'DELETE'].includes(options.method.toUpperCase())) {
+        options.headers = options.headers || {};
+        options.headers['X-CSRFToken'] = csrfToken;
+      }
+      return originalFetch.call(this, url, options);
+    };
+  }
+}

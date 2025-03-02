@@ -1,5 +1,56 @@
 console.log("Admin events script loaded");
 
+// Event handling functions for admin events page
+function viewEvent(eventId) {
+  window.location.href = `/event/${eventId}`;
+}
+
+function editEvent(eventId) {
+  window.location.href = `/admin/events/${eventId}/edit`;
+}
+
+function approveEvent(eventId) {
+  if (confirm('Are you sure you want to approve this event?')) {
+    sendEventAction(eventId, 'approve');
+  }
+}
+
+function rejectEvent(eventId) {
+  if (confirm('Are you sure you want to reject this event?')) {
+    sendEventAction(eventId, 'reject');
+  }
+}
+
+function deleteEvent(eventId) {
+  if (confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
+    sendEventAction(eventId, 'delete');
+  }
+}
+
+function sendEventAction(eventId, action) {
+  fetch(`/admin/event/${eventId}/${action}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert(data.message);
+      // Reload the page to reflect changes
+      window.location.reload();
+    } else {
+      alert('Error: ' + data.message);
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('An error occurred. Please try again.');
+  });
+}
+
 // Event handler functions
 function viewEvent(eventId) {
     window.location.href = `/event/${eventId}`;
