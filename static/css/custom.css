@@ -481,7 +481,7 @@ header {
 
 /* Add padding to main content to prevent navbar overlap */
 main {
-    padding-top: 0;
+    padding-top: 90px;
     width: 100%;
     overflow-x: hidden;
 }
@@ -506,6 +506,11 @@ main {
 /* Extra padding for auth pages */
 .row.justify-content-center {
     margin-top: 2rem;
+}
+
+/* Specific styling for auth pages */
+.auth-page-content {
+    padding-top: 1.5rem;
 }
 
 /* Special handling for hero section */
@@ -1553,6 +1558,11 @@ body.cookie-consent-visible .floating-buttons-container {
 /* Form pages specific spacing */
 .auth-form-container {
     margin-top: 2rem;
+}
+
+/* Add extra spacing to signup, login, and other form pages */
+.row.justify-content-center {
+    margin-top: 1.5rem;
 }
 
 @media (max-width: 768px) {
