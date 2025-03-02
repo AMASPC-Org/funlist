@@ -92,19 +92,19 @@ def init_routes(app):
                     flash("This email address is already registered. Please use a different email or try logging in.", "danger")
                     form.email.errors = list(form.email.errors) + ["Email already registered"]
                     return render_template("signup.html", form=form)
-                    
+
                 user = User()
                 user.email = form.email.data
                 user.set_password(form.password.data)
                 user.account_active = True
-                
+
                 # Set default role as subscriber
                 user.is_subscriber = True
-                
+
                 # Set additional roles based on form choices
                 if hasattr(form, 'is_event_creator') and form.is_event_creator.data:
                     user.is_event_creator = True
-                
+
                 if hasattr(form, 'is_organizer') and form.is_organizer.data:
                     user.is_organizer = True
 
@@ -313,7 +313,7 @@ def init_routes(app):
             current_user.is_event_creator = True
             db.session.commit()
             flash("You have been granted event creation permissions.", "success")
-            
+
         form = EventForm()
         if request.method == "POST":
             try:
@@ -458,8 +458,43 @@ def init_routes(app):
         if not current_user.is_admin:
             flash("Access denied. Admin privileges required.", "danger")
             return redirect(url_for("index"))
-        events = Event.query.order_by(Event.start_date.desc()).all()
+        events = Event.query.order_by(Event.created_at.desc()).all()
         return render_template("admin_events.html", events=events)
+
+    @app.route("/admin/events/<int:event_id>/edit", methods=['GET', 'POST'])
+    @login_required
+    def admin_edit_event(event_id):
+        if not current_user.is_admin:
+            flash("Access denied. Admin privileges required.", "danger")
+            return redirect(url_for("index"))
+        event = Event.query.get_or_404(event_id)
+
+        if request.method == 'POST':
+            # Update event details from form
+            event.title = request.form.get('title')
+            event.description = request.form.get('description')
+            event.location = request.form.get('location')
+            event.address = request.form.get('address')
+            event.city = request.form.get('city')
+            event.state = request.form.get('state')
+            event.zip_code = request.form.get('zip_code')
+            event.start_time = datetime.strptime(request.form.get('start_time'), '%Y-%m-%dT%H:%M')
+            event.end_time = datetime.strptime(request.form.get('end_time'), '%Y-%m-%dT%H:%M')
+            event.website = request.form.get('website')
+            event.organizer_name = request.form.get('organizer_name')
+            event.organizer_email = request.form.get('organizer_email')
+            event.organizer_phone = request.form.get('organizer_phone')
+            event.category = request.form.get('category')
+            event.tags = request.form.get('tags')
+            event.is_featured = True if request.form.get('is_featured') else False
+            event.status = request.form.get('status')
+
+            db.session.commit()
+            flash('Event updated successfully', 'success')
+            return redirect(url_for('admin_events'))
+
+        return render_template('edit_event.html', event=event, is_admin=True)
+
 
     @app.route("/admin/users")
     @login_required
@@ -610,10 +645,10 @@ def init_routes(app):
     def admin_event_action(event_id, action):
         if not current_user.is_admin:
             return jsonify({"success": False, "message": "Unauthorized"}), 403
-        
+
         try:
             event = Event.query.get_or_404(event_id)
-            
+
             if action == "approve":
                 event.status = "approved"
                 message = f"Event '{event.title}' has been approved"
@@ -626,7 +661,7 @@ def init_routes(app):
                 message = f"Event '{title}' has been deleted"
             else:
                 return jsonify({"success": False, "message": "Invalid action"}), 400
-                
+
             db.session.commit()
             return jsonify({"success": True, "message": message})
         except Exception as e:
@@ -694,81 +729,6 @@ def init_routes(app):
         events = Event.query.filter_by(user_id=organizer.id).order_by(Event.start_date.desc()).all()
         return render_template("organizer_detail.html", organizer=organizer, events=events)
 
-    @app.route("/admin/event/<int:event_id>/edit", methods=["GET", "POST"])
-    @login_required
-    def admin_edit_event(event_id):
-        if not current_user.is_admin:
-            flash("Access denied. Admin privileges required.", "danger")
-            return redirect(url_for("index"))
-            
-        event = Event.query.get_or_404(event_id)
-        form = EventForm()
-        
-        if request.method == "GET":
-            # Pre-populate form with event data
-            form.title.data = event.title
-            form.description.data = event.description
-            form.start_date.data = event.start_date
-            form.end_date.data = event.end_date
-            form.street.data = event.street
-            form.city.data = event.city
-            form.state.data = event.state
-            form.zip_code.data = event.zip_code
-            form.category.data = event.category
-            form.target_audience.data = event.target_audience
-            form.fun_meter.data = str(event.fun_meter)
-            form.website.data = event.website
-            form.facebook.data = event.facebook
-            form.instagram.data = event.instagram
-            form.twitter.data = event.twitter
-            form.ticket_url.data = event.ticket_url
-        
-        if form.validate_on_submit():
-            try:
-                # Update event attributes
-                event.title = form.title.data
-                event.description = form.description.data
-                event.start_date = form.start_date.data
-                event.end_date = form.end_date.data
-                event.street = form.street.data
-                event.city = form.city.data
-                event.state = form.state.data
-                event.zip_code = form.zip_code.data
-                event.category = form.category.data
-                event.target_audience = form.target_audience.data
-                event.fun_meter = int(form.fun_meter.data)
-                event.website = form.website.data
-                event.facebook = form.facebook.data
-                event.instagram = form.instagram.data
-                event.twitter = form.twitter.data
-                event.ticket_url = form.ticket_url.data
-                
-                # Update status if provided
-                if request.form.get('status'):
-                    event.status = request.form.get('status')
-                
-                # If address changed, update coordinates
-                coordinates = geocode_address(
-                    form.street.data,
-                    form.city.data,
-                    form.state.data,
-                    form.zip_code.data,
-                )
-                
-                if coordinates:
-                    event.latitude = coordinates[0]
-                    event.longitude = coordinates[1]
-                
-                db.session.commit()
-                flash("Event updated successfully!", "success")
-                return redirect(url_for("admin_events"))
-            except Exception as e:
-                db.session.rollback()
-                logger.error(f"Error updating event: {str(e)}")
-                flash(f"Error updating event: {str(e)}", "danger")
-                
-        return render_template("admin_edit_event.html", form=form, event=event)
-    
     @app.route("/admin/dashboard")
     @login_required
     def admin_dashboard():

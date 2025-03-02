@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block head %}
@@ -34,19 +33,19 @@
                         <td>{{ event.start_date.strftime('%Y-%m-%d') }}</td>
                         <td>
                             <div class="btn-group" role="group">
-                                <button onclick="approveEvent({{ event.id }})" class="btn btn-sm btn-outline-success {% if event.status == 'approved' %}active{% endif %}" title="Approve">
+                                <button type="button" onclick="window.approveEvent({{ event.id }})" class="btn btn-sm btn-outline-success {% if event.status == 'approved' %}active{% endif %}" title="Approve">
                                     <i class="fas fa-check"></i>
                                 </button>
-                                <button onclick="rejectEvent({{ event.id }})" class="btn btn-sm btn-outline-danger {% if event.status == 'rejected' %}active{% endif %}" title="Reject">
+                                <button type="button" onclick="window.rejectEvent({{ event.id }})" class="btn btn-sm btn-outline-danger {% if event.status == 'rejected' %}active{% endif %}" title="Reject">
                                     <i class="fas fa-times"></i>
                                 </button>
-                                <button onclick="viewEvent({{ event.id }})" class="btn btn-sm btn-outline-primary" title="View">
+                                <button type="button" onclick="window.viewEvent({{ event.id }})" class="btn btn-sm btn-outline-primary" title="View">
                                     <i class="fas fa-eye"></i>
                                 </button>
-                                <button onclick="editEvent({{ event.id }})" class="btn btn-sm btn-outline-secondary" title="Edit">
+                                <button type="button" onclick="window.editEvent({{ event.id }})" class="btn btn-sm btn-outline-secondary" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <button onclick="deleteEvent({{ event.id }})" class="btn btn-sm btn-outline-danger" title="Delete">
+                                <button type="button" onclick="window.deleteEvent({{ event.id }})" class="btn btn-sm btn-outline-danger" title="Delete">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>

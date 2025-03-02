@@ -1,104 +1,127 @@
-// Admin Events JavaScript
+// Function to show toast notifications
+function showToast(message, type = 'info') {
+    const toastContainer = document.getElementById('toast-container') || createToastContainer();
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-white bg-${type} border-0`;
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'assertive');
+    toast.setAttribute('aria-atomic', 'true');
 
-// Log that the script has loaded
-console.log("Admin events script loaded");
+    const toastBody = document.createElement('div');
+    toastBody.className = 'toast-body d-flex align-items-center';
 
-// Function to show toast messages
-function showToast(message, type) {
-    const toastEl = document.createElement('div');
-    toastEl.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
-    toastEl.setAttribute('role', 'alert');
-    toastEl.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    `;
-    document.body.appendChild(toastEl);
+    // Add icon based on type
+    let icon = 'info-circle';
+    if (type === 'success') icon = 'check-circle';
+    if (type === 'danger') icon = 'exclamation-circle';
+    if (type === 'warning') icon = 'exclamation-triangle';
 
-    // Auto remove after 5 seconds
-    setTimeout(() => {
-        if (toastEl) {
-            toastEl.remove();
-        }
-    }, 5000);
+    toastBody.innerHTML = `<i class="fas fa-${icon} me-2"></i> ${message}`;
+
+    const closeButton = document.createElement('button');
+    closeButton.className = 'btn-close btn-close-white ms-auto';
+    closeButton.setAttribute('data-bs-dismiss', 'toast');
+    closeButton.setAttribute('aria-label', 'Close');
+
+    toastBody.appendChild(closeButton);
+    toast.appendChild(toastBody);
+    toastContainer.appendChild(toast);
+
+    // Initialize and show the toast
+    const bsToast = new bootstrap.Toast(toast, { autohide: true, delay: 5000 });
+    bsToast.show();
+
+    // Remove the toast after it's hidden
+    toast.addEventListener('hidden.bs.toast', function() {
+        toast.remove();
+    });
 }
 
-// Function to view event details
+// Create toast container if it doesn't exist
+function createToastContainer() {
+    const container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'position-fixed top-0 end-0 p-3';
+    container.style.zIndex = '5000';
+    document.body.appendChild(container);
+    return container;
+}
+
+// View event details
 function viewEvent(eventId) {
     if (!eventId) return;
+    // Redirect to the event detail page
     window.location.href = `/event/${eventId}`;
 }
 
-// Function to edit an event
+// Edit event
 function editEvent(eventId) {
     if (!eventId) return;
-    window.location.href = `/admin/event/${eventId}/edit`;
+    window.location.href = `/admin/events/${eventId}/edit`;
 }
 
-// Function to approve an event
+
+// Approve event
 function approveEvent(eventId) {
     if (!eventId) return;
 
-    if (confirm('Are you sure you want to approve this event?')) {
-        fetch(`/admin/event/${eventId}/approve`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                showToast(data.message, 'success');
-                setTimeout(() => location.reload(), 1000);
-            } else {
-                showToast(data.message || 'Failed to approve event', 'danger');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showToast('An error occurred while approving the event', 'danger');
-        });
-    }
+    fetch(`/admin/event/${eventId}/approve`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showToast(data.message, 'success');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast(data.message || 'Failed to approve event', 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('An error occurred while approving the event', 'danger');
+    });
 }
 
-// Function to reject an event
+// Reject event
 function rejectEvent(eventId) {
     if (!eventId) return;
 
-    if (confirm('Are you sure you want to reject this event?')) {
-        fetch(`/admin/event/${eventId}/reject`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                showToast(data.message, 'success');
-                setTimeout(() => location.reload(), 1000);
-            } else {
-                showToast(data.message || 'Failed to reject event', 'danger');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showToast('An error occurred while rejecting the event', 'danger');
-        });
-    }
+    fetch(`/admin/event/${eventId}/reject`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showToast(data.message, 'success');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast(data.message || 'Failed to reject event', 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('An error occurred while rejecting the event', 'danger');
+    });
 }
 
-// Function to delete an event
+// Delete event
 function deleteEvent(eventId) {
     if (!eventId) return;
 
@@ -130,7 +153,25 @@ function deleteEvent(eventId) {
     }
 }
 
-// Initialize event handlers when document is ready
+// Initialize Bootstrap tooltips
 document.addEventListener('DOMContentLoaded', function() {
-    // Add any additional initialization here if needed
+    console.log('Admin events script loaded');
+
+    // Create toast container if it doesn't exist
+    if (!document.getElementById('toast-container')) {
+        createToastContainer();
+    }
+
+    // Initialize Bootstrap tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
 });
+
+// Make sure functions are available globally
+window.viewEvent = viewEvent;
+window.editEvent = editEvent;
+window.deleteEvent = deleteEvent;
+window.approveEvent = approveEvent;
+window.rejectEvent = rejectEvent;

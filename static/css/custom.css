@@ -303,7 +303,6 @@
     margin-bottom: 0;
     z-index: 1020;
     border-radius: 0;
-    margin-top: 60px; /* Add space below the navbar */
 }
 
 .alert + main {
@@ -680,7 +679,7 @@ main {
     display: none !important;
 }
 
-/* Global Styles */
+/* General Styling Updates */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap');
 
 body {
@@ -1550,7 +1549,6 @@ body.cookie-consent-visible .floating-buttons-container {
     z-index: 1020;
     margin: 0;
     border-radius: 0;
-    margin-top: 60px; /* Add space below the navbar */
 }
 
 /* Adjust main content when alert is present */
