@@ -108,11 +108,36 @@ def init_routes(app):
                 if hasattr(form, 'is_organizer') and form.is_organizer.data:
                     user.is_organizer = True
 
+                # Process user intention
+                user_intention = request.form.get('user_intention', 'find_events')
+                if user_intention == 'create_events':
+                    user.is_event_creator = True
+                elif user_intention == 'represent_organization':
+                    user.is_organizer = True
+                    user.is_event_creator = True  # Organizers can also create events
+                
                 db.session.add(user)
                 db.session.commit()
 
-                flash("Account created successfully! You can now log in.", "success")
-                return redirect(url_for("login"))
+                # Auto-login the user
+                login_user(user)
+                session["user_id"] = user.id
+                session["login_time"] = datetime.utcnow().isoformat()
+                session["last_activity"] = datetime.utcnow().isoformat()
+
+                # Set a welcome message based on their intention
+                if user_intention == 'create_events':
+                    flash("Welcome! Your account has been created. You can now start listing your events.", "success")
+                    # Redirect to submit event page for event creators
+                    return redirect(url_for("submit_event"))
+                elif user_intention == 'represent_organization':
+                    flash("Welcome! Your account has been created. You can set up your organization profile and start listing events.", "success")
+                    # Redirect to organizer profile setup
+                    return redirect(url_for("organizer_profile"))
+                else:
+                    flash("Welcome! Your account has been created. Start exploring events in your area.", "success")
+                    # Redirect to events page for regular users
+                    return redirect(url_for("events"))
             except IntegrityError as e:
                 db.session.rollback()
                 logger.error(f"Database integrity error during sign up: {str(e)}")
