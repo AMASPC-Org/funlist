@@ -44,9 +44,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Placeholder function to populate sponsors - needs a proper data source
 function populateSponsors() {
+  console.log("Populating sponsors carousel");
   const sponsors = [
-    { name: 'Rutledge Corn Maze', image: '/static/images/RutledgeFamilyFarm_Logo.png' },
-    { name: 'American Marketing Alliance', image: '/static/images/ama-logo.png' },
+    { name: 'Rutledge Corn Maze', image: '/static/images/rutledge_logo.png' },
     // Add other sponsors here...
   ];
 
