@@ -77,7 +77,49 @@ def init_routes(app):
     @app.route("/")
     def index():
         events = Event.query.order_by(Event.start_date.desc()).all()
-        return render_template("index.html", events=events, user=current_user)
+        # Check if this is a new registration to show the wizard
+        new_registration = session.pop('new_registration', False)
+        return render_template("index.html", events=events, user=current_user, new_registration=new_registration)
+        
+    @app.route("/save-preferences", methods=["POST"])
+    @login_required
+    def save_preferences():
+        try:
+            data = request.get_json()
+            
+            # Update user profile with preferences
+            profile_data = {}
+            
+            if 'location' in data and data['location']:
+                profile_data['location'] = data['location']
+                
+            if 'interests' in data and data['interests']:
+                profile_data['interests'] = ','.join(data['interests'])
+                
+            # Update organizer profile if applicable
+            if current_user.is_organizer:
+                organizer_data = {}
+                
+                if 'organizationName' in data and data['organizationName']:
+                    organizer_data['company_name'] = data['organizationName']
+                    
+                if 'organizationWebsite' in data and data['organizationWebsite']:
+                    organizer_data['organizer_website'] = data['organizationWebsite']
+                    
+                if organizer_data:
+                    current_user.update_organizer_profile(organizer_data)
+            
+            # Update user profile
+            if profile_data:
+                current_user.update_profile(profile_data)
+                
+            db.session.commit()
+            
+            return jsonify({"success": True, "message": "Preferences saved successfully"})
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error saving preferences: {str(e)}")
+            return jsonify({"success": False, "message": str(e)}), 500
 
     @app.route("/signup", methods=["GET", "POST"])
     def signup():
@@ -125,19 +167,14 @@ def init_routes(app):
                 session["login_time"] = datetime.utcnow().isoformat()
                 session["last_activity"] = datetime.utcnow().isoformat()
 
-                # Set a welcome message based on their intention
-                if user_intention == 'create_events':
-                    flash("Welcome! Your account has been created. You can now start listing your events.", "success")
-                    # Redirect to submit event page for event creators
-                    return redirect(url_for("submit_event"))
-                elif user_intention == 'represent_organization':
-                    flash("Welcome! Your account has been created. You can set up your organization profile and start listing events.", "success")
-                    # Redirect to organizer profile setup
-                    return redirect(url_for("organizer_profile"))
-                else:
-                    flash("Welcome! Your account has been created. Start exploring events in your area.", "success")
-                    # Redirect to events page for regular users
-                    return redirect(url_for("events"))
+                # Set welcome message and indicate this is a new registration
+                flash("Welcome to FunList.ai! Let's set up your profile.", "success")
+                
+                # Set session flag for new registration to trigger wizard
+                session['new_registration'] = True
+                
+                # Redirect to index which will show the wizard
+                return redirect(url_for("index"))
             except IntegrityError as e:
                 db.session.rollback()
                 logger.error(f"Database integrity error during sign up: {str(e)}")
