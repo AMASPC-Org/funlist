@@ -2,7 +2,52 @@
 // Admin event management functionality
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Admin events script loaded');
+    
+    // Initialize toast container if it doesn't exist
+    if (!document.getElementById('toast-container')) {
+        const toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.className = 'position-fixed top-0 end-0 p-3';
+        toastContainer.style.zIndex = '5000';
+        document.body.appendChild(toastContainer);
+    }
 });
+
+// Function to show toast notifications
+function showToast(message, type = 'info') {
+    const toastContainer = document.getElementById('toast-container');
+    const toastId = 'toast-' + Date.now();
+    
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-white bg-${type} border-0`;
+    toast.id = toastId;
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'assertive');
+    toast.setAttribute('aria-atomic', 'true');
+    
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                ${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    `;
+    
+    toastContainer.appendChild(toast);
+    
+    const bsToast = new bootstrap.Toast(toast, {
+        autohide: true,
+        delay: 3000
+    });
+    
+    bsToast.show();
+    
+    // Remove toast after it's hidden
+    toast.addEventListener('hidden.bs.toast', function() {
+        toast.remove();
+    });
+}
 
 function approveEvent(eventId) {
     if (!eventId) return;
@@ -95,56 +140,12 @@ function deleteEvent(eventId) {
 
 function editEvent(eventId) {
     if (!eventId) return;
-    // Redirect to the edit page - this will be implemented in a future feature
+    // Redirect to the edit page
     window.location.href = `/admin/event/${eventId}/edit`;
 }
 
 function viewEvent(eventId) {
     if (!eventId) return;
+    // Redirect to the event detail page
     window.location.href = `/event/${eventId}`;
-}
-
-function showToast(message, type = 'info') {
-    // Create toast container if it doesn't exist
-    let toastContainer = document.getElementById('toast-container');
-    if (!toastContainer) {
-        toastContainer = document.createElement('div');
-        toastContainer.id = 'toast-container';
-        toastContainer.className = 'position-fixed top-0 end-0 p-3';
-        toastContainer.style.zIndex = '5000';
-        document.body.appendChild(toastContainer);
-    }
-    
-    // Create toast
-    const toastId = 'toast-' + Date.now();
-    const toast = document.createElement('div');
-    toast.className = `toast align-items-center text-white bg-${type} border-0`;
-    toast.id = toastId;
-    toast.setAttribute('role', 'alert');
-    toast.setAttribute('aria-live', 'assertive');
-    toast.setAttribute('aria-atomic', 'true');
-    
-    const toastContent = `
-        <div class="d-flex">
-            <div class="toast-body">
-                ${message}
-            </div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-        </div>
-    `;
-    
-    toast.innerHTML = toastContent;
-    toastContainer.appendChild(toast);
-    
-    // Initialize and show toast
-    const bsToast = new bootstrap.Toast(toast, {
-        autohide: true,
-        delay: 3000
-    });
-    bsToast.show();
-    
-    // Remove toast after hiding
-    toast.addEventListener('hidden.bs.toast', function() {
-        toast.remove();
-    });
 }
