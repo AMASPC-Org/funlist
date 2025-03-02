@@ -66,10 +66,10 @@ function approveEvent(eventId) {
     })
     .then(data => {
         if (data.success) {
-            showToast('Event approved successfully', 'success');
+            showToast(data.message, 'success');
             setTimeout(() => location.reload(), 1000);
         } else {
-            showToast('Failed to approve event', 'danger');
+            showToast(data.message || 'Failed to approve event', 'danger');
         }
     })
     .catch(error => {
@@ -95,10 +95,10 @@ function rejectEvent(eventId) {
     })
     .then(data => {
         if (data.success) {
-            showToast('Event rejected successfully', 'success');
+            showToast(data.message, 'success');
             setTimeout(() => location.reload(), 1000);
         } else {
-            showToast('Failed to reject event', 'danger');
+            showToast(data.message || 'Failed to reject event', 'danger');
         }
     })
     .catch(error => {
@@ -125,10 +125,10 @@ function deleteEvent(eventId) {
         })
         .then(data => {
             if (data.success) {
-                showToast('Event deleted successfully', 'success');
+                showToast(data.message, 'success');
                 setTimeout(() => location.reload(), 1000);
             } else {
-                showToast('Failed to delete event', 'danger');
+                showToast(data.message || 'Failed to delete event', 'danger');
             }
         })
         .catch(error => {
