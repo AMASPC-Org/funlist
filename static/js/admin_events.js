@@ -1,7 +1,7 @@
 
 // Function to show toast notifications
 function showToast(message, type = 'info') {
-    const toastContainer = document.getElementById('toast-container');
+    const toastContainer = document.getElementById('toast-container') || createToastContainer();
     const toast = document.createElement('div');
     toast.className = `toast align-items-center text-white bg-${type} border-0`;
     toast.setAttribute('role', 'alert');
@@ -38,6 +38,31 @@ function showToast(message, type = 'info') {
     });
 }
 
+// Create toast container if it doesn't exist
+function createToastContainer() {
+    const container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'position-fixed top-0 end-0 p-3';
+    container.style.zIndex = '5000';
+    document.body.appendChild(container);
+    return container;
+}
+
+// View event details
+function viewEvent(eventId) {
+    if (!eventId) return;
+    // Redirect to the event detail page
+    window.location.href = `/event/${eventId}`;
+}
+
+// Edit event
+function editEvent(eventId) {
+    if (!eventId) return;
+    // Redirect to the edit page
+    window.location.href = `/admin/event/${eventId}/edit`;
+}
+
+// Approve event
 function approveEvent(eventId) {
     if (!eventId) return;
     
@@ -67,6 +92,7 @@ function approveEvent(eventId) {
     });
 }
 
+// Reject event
 function rejectEvent(eventId) {
     if (!eventId) return;
     
@@ -96,6 +122,7 @@ function rejectEvent(eventId) {
     });
 }
 
+// Delete event
 function deleteEvent(eventId) {
     if (!eventId) return;
     
@@ -127,21 +154,16 @@ function deleteEvent(eventId) {
     }
 }
 
-function editEvent(eventId) {
-    if (!eventId) return;
-    // Redirect to the edit page
-    window.location.href = `/admin/event/${eventId}/edit`;
-}
-
-function viewEvent(eventId) {
-    if (!eventId) return;
-    // Redirect to the event detail page
-    window.location.href = `/event/${eventId}`;
-}
-
 // Initialize Bootstrap tooltips
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize any Bootstrap components if needed
+    console.log('Admin events script loaded');
+    
+    // Create toast container if it doesn't exist
+    if (!document.getElementById('toast-container')) {
+        createToastContainer();
+    }
+    
+    // Initialize Bootstrap tooltips
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl);

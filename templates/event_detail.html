@@ -90,16 +90,12 @@
             <div class="card">
                 <div class="card-body">
                     <div class="event-actions">
-                        {% if event not in current_user.interested_events %}
-                        <a href="{{ url_for('express_interest', event_id=event.id) }}" class="btn btn-primary btn-block mb-2">
+                        <button class="btn btn-primary btn-block mb-2">
                             <i class="far fa-star"></i> Express Interest
-                        </a>
-                        {% endif %}
-                        {% if event not in current_user.attended_events %}
-                        <a href="{{ url_for('mark_attended', event_id=event.id) }}" class="btn btn-success btn-block">
+                        </button>
+                        <button class="btn btn-success btn-block">
                             <i class="far fa-check-circle"></i> Mark as Attended
-                        </a>
-                        {% endif %}
+                        </button>
                     </div>
                 </div>
             </div>
