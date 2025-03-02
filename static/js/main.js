@@ -45,16 +45,16 @@ document.addEventListener('DOMContentLoaded', function() {
 // Placeholder function to populate sponsors - needs a proper data source
 function populateSponsors() {
   const sponsors = [
-    { name: 'Rutledge Corn Maze', image: '/static/images/RutledgeFamilyFarm_Logo.png' },
+    { name: 'Rutledge Corn Maze', image: '/static/images/rutledge_logo.png' },
     // Add other sponsors here...
   ];
 
   const sponsorsCarousel = document.getElementById('sponsors-carousel');
   if (sponsorsCarousel) {
+    console.log('Populating sponsors carousel');
     let html = '';
     sponsors.forEach(sponsor => {
-      // Check if image exists in attached_assets
-      html += `<div class="col-md-4 mb-4"><div class="sponsor-card"><div class="sponsor-content"><img src="/attached_assets/RutledgeFamilyFarm_Logo.png" alt="${sponsor.name}" onerror="this.onerror=null; this.src='/static/images/RutledgeFamilyFarm_Logo.png'"></div></div></div>`;
+      html += `<div class="col-md-4 mb-4"><div class="sponsor-card"><div class="sponsor-content"><img src="${sponsor.image}" alt="${sponsor.name}"></div></div></div>`;
     });
     sponsorsCarousel.innerHTML = html;
   }
