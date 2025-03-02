@@ -610,16 +610,29 @@ def init_routes(app):
     def admin_event_action(event_id, action):
         if not current_user.is_admin:
             return jsonify({"success": False, "message": "Unauthorized"}), 403
-        event = Event.query.get_or_404(event_id)
-
-        if action == "approve":
-            event.status = "approved"
-        elif action == "reject":
-            event.status = "rejected"
-        elif action == "delete":
-            db.session.delete(event)
-        db.session.commit()
-        return jsonify({"success": True})
+        
+        try:
+            event = Event.query.get_or_404(event_id)
+            
+            if action == "approve":
+                event.status = "approved"
+                message = f"Event '{event.title}' has been approved"
+            elif action == "reject":
+                event.status = "rejected"
+                message = f"Event '{event.title}' has been rejected"
+            elif action == "delete":
+                title = event.title
+                db.session.delete(event)
+                message = f"Event '{title}' has been deleted"
+            else:
+                return jsonify({"success": False, "message": "Invalid action"}), 400
+                
+            db.session.commit()
+            return jsonify({"success": True, "message": message})
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error in admin_event_action: {str(e)}")
+            return jsonify({"success": False, "message": f"Error: {str(e)}"}), 500
 
     @app.route("/become-organizer")
     @login_required
@@ -681,6 +694,19 @@ def init_routes(app):
         events = Event.query.filter_by(user_id=organizer.id).order_by(Event.start_date.desc()).all()
         return render_template("organizer_detail.html", organizer=organizer, events=events)
 
+    @app.route("/admin/event/<int:event_id>/edit", methods=["GET", "POST"])
+    @login_required
+    def admin_edit_event(event_id):
+        if not current_user.is_admin:
+            flash("Access denied. Admin privileges required.", "danger")
+            return redirect(url_for("index"))
+            
+        event = Event.query.get_or_404(event_id)
+        # For now, just redirect to the event detail page
+        # This route will be fully implemented in a future update
+        flash("Event editing will be available in a future update.", "info")
+        return redirect(url_for("event_detail", event_id=event_id))
+    
     @app.route("/admin/dashboard")
     @login_required
     def admin_dashboard():
