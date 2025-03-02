@@ -1,11 +1,10 @@
-
 // Ensure floating buttons are fully visible
 document.addEventListener('DOMContentLoaded', function() {
     // Function to adjust button position
     function adjustButtonPosition() {
         const cookieConsent = document.querySelector('.cookie-consent');
         const floatingButtons = document.querySelector('.floating-buttons-container');
-        
+
         if (cookieConsent && floatingButtons) {
             if (cookieConsent.classList.contains('show')) {
                 floatingButtons.style.bottom = (cookieConsent.offsetHeight + 20) + 'px';
@@ -14,13 +13,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }
-    
+
     // Run once on load
     adjustButtonPosition();
-    
+
     // Also run when window resizes
     window.addEventListener('resize', adjustButtonPosition);
-    
+
     // Check if the buttons are in the viewport
     function isInViewport(element) {
         const rect = element.getBoundingClientRect();
@@ -31,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
             rect.right <= (window.innerWidth || document.documentElement.clientWidth)
         );
     }
-    
+
     // Adjust if buttons are cut off
     const buttons = document.querySelectorAll('.floating-button');
     buttons.forEach(button => {
@@ -42,3 +41,30 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+
+// Placeholder function to populate sponsors - needs a proper data source
+function populateSponsors() {
+  const sponsors = [
+    { name: 'Rutledge Corn Maze', image: 'rutledge_corn_maze.jpg' },
+    // Add other sponsors here...
+  ];
+
+  const sponsorsCarousel = document.getElementById('sponsors-carousel');
+  if (sponsorsCarousel) {
+    let html = '';
+    sponsors.forEach(sponsor => {
+      html += `<div><img src="${sponsor.image}" alt="${sponsor.name}"></div>`;
+    });
+    sponsorsCarousel.innerHTML = html;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('main.js loaded');
+
+  // Populate sponsors carousel if it exists on the page
+  const sponsorsCarousel = document.getElementById('sponsors-carousel');
+  if (sponsorsCarousel) {
+    populateSponsors();
+  }
+});
