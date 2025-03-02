@@ -3,8 +3,7 @@ from flask import Flask
 from db_init import db
 import os
 import logging
-from sqlalchemy import Column, Boolean, text
-from models import User
+from sqlalchemy import text
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -19,25 +18,31 @@ def create_app():
 def update_schema():
     app = create_app()
     with app.app_context():
-        inspector = db.inspect(db.engine)
-        columns = [c['name'] for c in inspector.get_columns('user')]
-
         try:
-            # Use SQLAlchemy's text() for raw SQL if needed
-            if 'is_subscriber' not in columns:
-                db.engine.execute(text('ALTER TABLE user ADD COLUMN is_subscriber BOOLEAN DEFAULT 1'))
-                logger.info("Added is_subscriber column")
-
-            if 'is_event_creator' not in columns:
-                db.engine.execute(text('ALTER TABLE user ADD COLUMN is_event_creator BOOLEAN DEFAULT 0'))
-                logger.info("Added is_event_creator column")
-
-            # Update existing users
-            db.engine.execute(text('UPDATE user SET is_subscriber = 1 WHERE is_subscriber IS NULL'))
-
-            # Update admin user
-            db.engine.execute(text("UPDATE user SET is_subscriber = 1, is_event_creator = 1, is_organizer = 1 WHERE email = 'ryan@americanmarketingalliance.com'"))
-
+            # Check existing columns
+            inspector = db.inspect(db.engine)
+            columns = [c['name'] for c in inspector.get_columns('user')]
+            
+            # Add new columns if they don't exist
+            with db.engine.connect() as conn:
+                if 'is_subscriber' not in columns:
+                    conn.execute(text('ALTER TABLE "user" ADD COLUMN is_subscriber BOOLEAN DEFAULT TRUE'))
+                    conn.commit()
+                    logger.info("Added is_subscriber column")
+                
+                if 'is_event_creator' not in columns:
+                    conn.execute(text('ALTER TABLE "user" ADD COLUMN is_event_creator BOOLEAN DEFAULT FALSE'))
+                    conn.commit()
+                    logger.info("Added is_event_creator column")
+                
+                # Update existing users
+                conn.execute(text('UPDATE "user" SET is_subscriber = TRUE WHERE is_subscriber IS NULL'))
+                conn.commit()
+                
+                # Update admin user
+                conn.execute(text("UPDATE \"user\" SET is_subscriber = TRUE, is_event_creator = TRUE, is_organizer = TRUE WHERE email = 'ryan@americanmarketingalliance.com'"))
+                conn.commit()
+                
             logger.info("Schema update completed successfully")
             return True
         except Exception as e:

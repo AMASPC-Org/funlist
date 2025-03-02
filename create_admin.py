@@ -24,6 +24,11 @@ def create_admin_user():
             admin_email = 'ryan@americanmarketingalliance.com'
             admin_password = '120M2025*v7'
             
+            # First make sure the schema is updated
+            from update_schema import update_schema
+            update_schema()
+            
+            # Now create or update the admin
             admin = User.query.filter_by(email=admin_email).first()
             if admin:
                 logger.info(f"Admin user already exists: {admin_email}")
