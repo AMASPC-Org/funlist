@@ -1203,7 +1203,7 @@ main {
 /* Floating Buttons */
 .floating-buttons-container {
     position: fixed;
-    bottom: 1.5rem;
+    bottom: 2.5rem; /* Increased from 1.5rem to provide more space */
     width: 100%;
     z-index: 1040; /* Below modals (1050) but above most content */
     pointer-events: none; /* Allow clicks to pass through the container */
@@ -1219,7 +1219,7 @@ body.is-scrolled .floating-buttons-container {
 
 .floating-button {
     position: absolute;
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 1.25rem; /* Increased horizontal padding */
     border-radius: 2rem;
     background-color: #4CAF50;
     color: white;
@@ -1230,11 +1230,15 @@ body.is-scrolled .floating-buttons-container {
     cursor: pointer;
     transition: all 0.3s ease;
     pointer-events: auto; /* Make the button clickable */
+    text-decoration: none;
+    bottom: 0; /* Ensure buttons align to bottom of container */
 }
 
 .floating-button:hover {
     transform: translateY(-3px);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    color: white; /* Maintain text color on hover */
+    text-decoration: none;
 }
 
 .floating-button i {
@@ -1257,12 +1261,21 @@ body.user-logged-in .floating-button {
 
 /* For smaller mobile screens - FUNKY STYLES */
 @media (max-width: 576px) {
+    .floating-buttons-container {
+        bottom: 1.5rem; /* Adjust position for mobile */
+    }
+    
     .floating-button {
         padding: 0.65rem;
         font-size: 0.9rem;
         border-radius: 50%;
         animation: pulse 2s infinite;
         transition: all 0.3s ease;
+        width: 3rem; /* Fixed width for circle buttons */
+        height: 3rem; /* Fixed height for circle buttons */
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
     .floating-button span {
