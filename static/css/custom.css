@@ -1136,6 +1136,18 @@ main {
         margin-bottom: 2rem;
         text-align: center;
     }
+    
+    .social-icons {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .footer {
+        text-align: center;
+    }
 }
 
     @media (max-width: 768px) {
@@ -1145,6 +1157,10 @@ main {
 
         .social-icons {
             justify-content: center;
+            display: flex;
+            flex-direction: row;
+            margin: 0 auto;
+            width: 100%;
         }
 
         .subscribe-form .input-group {
