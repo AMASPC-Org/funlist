@@ -47,7 +47,7 @@
         flex-direction: column;
         align-items: center;
     }
-    
+
     #about-page-ctas .cta-button-host,
     #about-page-ctas .cta-button-subscribe {
         width: 100%;
@@ -510,7 +510,8 @@ main {
 
 /* Specific styling for auth pages */
 .auth-page-content {
-    padding-top: 1.5rem;
+    margin-top: 1.5rem;
+    margin-bottom: 2rem;
 }
 
 /* Special handling for hero section */
@@ -1130,7 +1131,7 @@ main {
     }
 
     .feature-list {
-        margin-left: 1rem;
+        marginleft: 1rem;
     }
 }
 
