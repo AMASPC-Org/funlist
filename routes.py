@@ -1,10 +1,10 @@
 from flask import render_template, flash, redirect, url_for, request, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user, login_required, login_user, logout_user
-from forms import SignupForm, LoginForm, ProfileForm, EventForm
+from forms import SignupForm, LoginForm, ProfileForm, EventForm, ResetPasswordRequestForm, ResetPasswordForm
 from models import User, Event, Subscriber
 from db_init import db
-from utils import geocode_address
+from utils import geocode_address, send_password_reset_email
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 import logging
 from datetime import datetime, timedelta
@@ -647,6 +647,50 @@ def init_routes(app):
     def terms():
         # If terms template doesn't exist yet, redirect to privacy
         return render_template("privacy.html")  # Replace with terms.html when available
+        
+    @app.route("/reset-password-request", methods=["GET", "POST"])
+    def reset_password_request():
+        if current_user.is_authenticated:
+            return redirect(url_for("index"))
+        form = ResetPasswordRequestForm()
+        if form.validate_on_submit():
+            user = User.query.filter_by(email=form.email.data).first()
+            if user:
+                token = user.get_reset_token()
+                # In a real production environment, you'd send an email with a reset link
+                # For development, we'll just redirect to the reset page with the token
+                flash(f'Password reset link has been sent to {form.email.data}. Please check your email.', 'info')
+                
+                # For demo purposes, we'll provide a direct link as well
+                reset_url = url_for('reset_password', token=token, _external=True)
+                flash(f'For demo purposes, you can also <a href="{reset_url}">click here</a> to reset your password.', 'info')
+                
+                return redirect(url_for('login'))
+            else:
+                # Don't reveal that the user doesn't exist
+                flash('If an account with this email exists, a password reset link has been sent.', 'info')
+                return redirect(url_for('login'))
+        return render_template('reset_password_request.html', form=form)
+        
+    @app.route("/reset-password/<token>", methods=["GET", "POST"])
+    def reset_password(token):
+        if current_user.is_authenticated:
+            return redirect(url_for("index"))
+            
+        user = User.verify_reset_token(token)
+        if not user:
+            flash('Invalid or expired reset token. Please try again.', 'danger')
+            return redirect(url_for('reset_password_request'))
+            
+        form = ResetPasswordForm()
+        if form.validate_on_submit():
+            user.set_password(form.password.data)
+            user.clear_reset_token()
+            db.session.commit()
+            flash('Your password has been reset successfully. You can now log in with your new password.', 'success')
+            return redirect(url_for('login'))
+            
+        return render_template('reset_password.html', form=form, token=token)
 
     @app.route("/admin/analytics")
     @login_required

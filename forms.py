@@ -116,3 +116,23 @@ class OrganizerProfileForm(FlaskForm):
     advertising_opportunities = TextAreaField('Advertising Opportunities', validators=[Optional(), Length(max=500)])
     sponsorship_opportunities = TextAreaField('Sponsorship Opportunities', validators=[Optional(), Length(max=500)])
     submit = SubmitField('Save Organizer Profile')
+    
+class ResetPasswordRequestForm(FlaskForm):
+    email = StringField('Email', validators=[
+        DataRequired(message="Please enter your email address"),
+        Email(message="Please enter a valid email address")
+    ])
+    submit = SubmitField('Request Password Reset')
+
+class ResetPasswordForm(FlaskForm):
+    password = PasswordField('New Password', validators=[
+        DataRequired(message="Please enter your new password"),
+        Length(min=8, max=128, message="Password must be between 8 and 128 characters long"),
+        Regexp(r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]+$',
+               message="Password must contain at least one letter, one number, and one special character")
+    ])
+    confirm_password = PasswordField('Confirm New Password', validators=[
+        DataRequired(message="Please confirm your new password"),
+        EqualTo('password', message='Passwords do not match. Please try again.')
+    ])
+    submit = SubmitField('Reset Password')

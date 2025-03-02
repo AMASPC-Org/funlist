@@ -1,8 +1,10 @@
 from flask_login import UserMixin
-from datetime import datetime
+from datetime import datetime, timedelta
 from db_init import db  # Import db from db_init.py
 import logging
 from werkzeug.security import generate_password_hash, check_password_hash
+import secrets
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +70,8 @@ class User(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     account_active = db.Column(db.Boolean, default=True, nullable=False)
     last_login = db.Column(db.DateTime)
+    reset_token = db.Column(db.String(100), nullable=True)
+    reset_token_expiry = db.Column(db.DateTime, nullable=True)
 
     # User roles
     is_subscriber = db.Column(db.Boolean, default=True)  # Default role for all users
@@ -127,6 +131,39 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return f'<User {self.email}>'
+        
+    # Password reset token methods
+    def get_reset_token(self, expires_in=3600):
+        # Generate a secure token with 32 bytes of randomness
+        token = secrets.token_hex(32)
+        # Set expiration timestamp (current time + expiration in seconds)
+        expiry = int(time.time()) + expires_in
+        # Store token and expiration in the database
+        self.reset_token = token
+        self.reset_token_expiry = datetime.fromtimestamp(expiry)
+        db.session.commit()
+        return token
+        
+    @staticmethod
+    def verify_reset_token(token):
+        user = User.query.filter_by(reset_token=token).first()
+        if not user:
+            return None
+            
+        # Check if token is expired
+        if datetime.utcnow() > user.reset_token_expiry:
+            # Clear expired token
+            user.reset_token = None
+            user.reset_token_expiry = None
+            db.session.commit()
+            return None
+            
+        return user
+        
+    def clear_reset_token(self):
+        self.reset_token = None
+        self.reset_token_expiry = None
+        db.session.commit()
 
 # Add Subscriber Model
 class Subscriber(db.Model):
