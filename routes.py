@@ -702,10 +702,67 @@ def init_routes(app):
             return redirect(url_for("index"))
             
         event = Event.query.get_or_404(event_id)
-        # For now, just redirect to the event detail page
-        # This route will be fully implemented in a future update
-        flash("Event editing will be available in a future update.", "info")
-        return redirect(url_for("event_detail", event_id=event_id))
+        form = EventForm()
+        
+        if request.method == "GET":
+            # Pre-populate form with existing event data
+            form.title.data = event.title
+            form.description.data = event.description
+            form.start_date.data = event.start_date
+            form.end_date.data = event.end_date
+            form.street.data = event.street
+            form.city.data = event.city
+            form.state.data = event.state
+            form.zip_code.data = event.zip_code
+            form.category.data = event.category
+            form.target_audience.data = event.target_audience
+            form.fun_meter.data = str(event.fun_meter)
+            form.website.data = event.website
+            form.ticket_url.data = event.ticket_url
+            
+        if form.validate_on_submit():
+            try:
+                # Update event with form data
+                event.title = form.title.data
+                event.description = form.description.data
+                event.start_date = form.start_date.data
+                event.end_date = form.end_date.data
+                event.street = form.street.data
+                event.city = form.city.data
+                event.state = form.state.data
+                event.zip_code = form.zip_code.data
+                
+                # Update geocoding if address changed
+                if (event.street != form.street.data or 
+                    event.city != form.city.data or 
+                    event.state != form.state.data or 
+                    event.zip_code != form.zip_code.data):
+                    coordinates = geocode_address(
+                        form.street.data,
+                        form.city.data,
+                        form.state.data,
+                        form.zip_code.data,
+                    )
+                    
+                    if coordinates:
+                        event.latitude = coordinates[0]
+                        event.longitude = coordinates[1]
+                
+                event.category = form.category.data
+                event.target_audience = form.target_audience.data
+                event.fun_meter = int(form.fun_meter.data)
+                event.website = form.website.data
+                event.ticket_url = form.ticket_url.data
+                
+                db.session.commit()
+                flash("Event updated successfully!", "success")
+                return redirect(url_for("admin_events"))
+            except Exception as e:
+                db.session.rollback()
+                logger.error(f"Error updating event: {str(e)}")
+                flash(f"Error updating event: {str(e)}", "danger")
+        
+        return render_template("edit_event.html", form=form, event=event)
     
     @app.route("/admin/dashboard")
     @login_required

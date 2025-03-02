@@ -303,6 +303,7 @@
     margin-bottom: 0;
     z-index: 1020;
     border-radius: 0;
+    margin-top: 60px;
 }
 
 .alert + main {
@@ -1606,4 +1607,14 @@ body.cookie-consent-visible .floating-buttons-container {
 
 .cta-section:hover {
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Add padding to container to prevent content from being hidden under navbar */
+.container {
+    padding-top: 1rem;
+}
+
+/* Additional top padding for pages with alerts to prevent double padding */
+.alert + .container {
+    padding-top: 0;
 }
