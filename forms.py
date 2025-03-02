@@ -35,7 +35,7 @@ class LoginForm(FlaskForm):
         DataRequired(message="Please enter your password")
     ])
     remember_me = BooleanField('Remember Me')
-    submit = SubmitField('Log In')
+    submit = SubmitField('Sign In')
 
 class ProfileForm(FlaskForm):
     username = StringField('Username', validators=[
