@@ -1,49 +1,38 @@
 
-// Admin event management functionality
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Admin events script loaded');
-    
-    // Initialize toast container if it doesn't exist
-    if (!document.getElementById('toast-container')) {
-        const toastContainer = document.createElement('div');
-        toastContainer.id = 'toast-container';
-        toastContainer.className = 'position-fixed top-0 end-0 p-3';
-        toastContainer.style.zIndex = '5000';
-        document.body.appendChild(toastContainer);
-    }
-});
-
 // Function to show toast notifications
 function showToast(message, type = 'info') {
     const toastContainer = document.getElementById('toast-container');
-    const toastId = 'toast-' + Date.now();
-    
     const toast = document.createElement('div');
     toast.className = `toast align-items-center text-white bg-${type} border-0`;
-    toast.id = toastId;
     toast.setAttribute('role', 'alert');
     toast.setAttribute('aria-live', 'assertive');
     toast.setAttribute('aria-atomic', 'true');
     
-    toast.innerHTML = `
-        <div class="d-flex">
-            <div class="toast-body">
-                ${message}
-            </div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-        </div>
-    `;
+    const toastBody = document.createElement('div');
+    toastBody.className = 'toast-body d-flex align-items-center';
     
+    // Add icon based on type
+    let icon = 'info-circle';
+    if (type === 'success') icon = 'check-circle';
+    if (type === 'danger') icon = 'exclamation-circle';
+    if (type === 'warning') icon = 'exclamation-triangle';
+    
+    toastBody.innerHTML = `<i class="fas fa-${icon} me-2"></i> ${message}`;
+    
+    const closeButton = document.createElement('button');
+    closeButton.className = 'btn-close btn-close-white ms-auto';
+    closeButton.setAttribute('data-bs-dismiss', 'toast');
+    closeButton.setAttribute('aria-label', 'Close');
+    
+    toastBody.appendChild(closeButton);
+    toast.appendChild(toastBody);
     toastContainer.appendChild(toast);
     
-    const bsToast = new bootstrap.Toast(toast, {
-        autohide: true,
-        delay: 3000
-    });
-    
+    // Initialize and show the toast
+    const bsToast = new bootstrap.Toast(toast, { autohide: true, delay: 5000 });
     bsToast.show();
     
-    // Remove toast after it's hidden
+    // Remove the toast after it's hidden
     toast.addEventListener('hidden.bs.toast', function() {
         toast.remove();
     });
@@ -149,3 +138,12 @@ function viewEvent(eventId) {
     // Redirect to the event detail page
     window.location.href = `/event/${eventId}`;
 }
+
+// Initialize Bootstrap tooltips
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize any Bootstrap components if needed
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});

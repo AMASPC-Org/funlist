@@ -128,6 +128,10 @@
 
 <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Global bootstrap variable
+      var bootstrap = window.bootstrap;
+    </script>
 
     <!-- Initialize Bootstrap components -->
     <script>
@@ -142,6 +146,7 @@
 
     <!-- Custom JavaScript -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/admin_events.js') }}"></script>  <!-- Added admin_events.js -->
 
     {% block extra_js %}{% endblock %}
 {% include 'partials/cookie_consent.html' %}
