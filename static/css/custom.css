@@ -1109,6 +1109,8 @@ main {
 .social-buttons {
     display: flex;
     gap: 12px;
+    justify-content: flex-start;
+    margin-top: 1rem;
 }
 
 .btn-social {
@@ -1123,6 +1125,7 @@ main {
     text-decoration: none;
     transition: all 0.3s ease;
     border: 1px solid #ddd;
+    margin-right: 10px;
 }
 
 .btn-social:hover {
@@ -1137,36 +1140,25 @@ main {
         text-align: center;
     }
     
-    .social-icons {
+    .social-icons, .social-buttons {
         display: flex;
         justify-content: center;
         gap: 0.5rem;
-        margin-top: 1rem;
-        margin-bottom: 1rem;
+        margin: 1rem auto;
     }
     
     .footer {
         text-align: center;
     }
-}
-
-    @media (max-width: 768px) {
-        .footer {
-            text-align: center;
-        }
-
-        .social-icons {
-            justify-content: center;
-            display: flex;
-            flex-direction: row;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        .subscribe-form .input-group {
-            margin: 0 auto;
-        }
+    
+    .subscribe-form .input-group {
+        margin: 0 auto;
     }
+    
+    .btn-social {
+        margin: 0 5px;
+    }
+}
     }
 
     .chat-demo {
