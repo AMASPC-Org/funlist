@@ -1,3 +1,4 @@
+
 import os
 from flask import Flask
 from models import User
@@ -57,9 +58,11 @@ def add_admin_user(email, password):
 
 if __name__ == "__main__":
     # Add main admin
-    add_admin_user('ryan@americanmarketingalliance.com', '120M2025*v7')
+    success1 = add_admin_user('ryan@americanmarketingalliance.com', '120M2025*v7')
+    print(f"Admin user 1 created/updated: {'Successfully' if success1 else 'Failed'}")
 
     # Add additional admin
-    add_admin_user('ryan.r.rutledge@gmail.com', '120M2025*v7')
+    success2 = add_admin_user('ryan.r.rutledge@gmail.com', '120M2025*v7')
+    print(f"Admin user 2 created/updated: {'Successfully' if success2 else 'Failed'}")
 
-    print("Admin users created/updated successfully.")
+    print("Admin users creation process completed.")
