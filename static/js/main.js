@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Placeholder function to populate sponsors - needs a proper data source
 function populateSponsors() {
   const sponsors = [
-    { name: 'Rutledge Corn Maze', image: 'rutledge_corn_maze.jpg' },
+    { name: 'Rutledge Corn Maze', image: '/static/images/RutledgeFamilyFarm_Logo.png' },
     // Add other sponsors here...
   ];
 
@@ -53,7 +53,7 @@ function populateSponsors() {
   if (sponsorsCarousel) {
     let html = '';
     sponsors.forEach(sponsor => {
-      html += `<div><img src="${sponsor.image}" alt="${sponsor.name}"></div>`;
+      html += `<div class="col-md-4 mb-4"><div class="sponsor-card"><div class="sponsor-content"><img src="${sponsor.image}" alt="${sponsor.name}"></div></div></div>`;
     });
     sponsorsCarousel.innerHTML = html;
   }
