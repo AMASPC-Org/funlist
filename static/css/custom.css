@@ -1753,4 +1753,48 @@ body.cookie-consent-visible .floating-buttons-container {
 .dropdown-menu .border-bottom {
     border-bottom: 1px solid #e9ecef;
     margin-bottom: 0.5rem;
+
+/* Improved responsive footer styling */
+@media (max-width: 768px) {
+  footer .row > div {
+    margin-bottom: 20px;
+  }
+  
+  footer h5 {
+    margin-bottom: 15px;
+  }
+  
+  footer p {
+    margin-bottom: 10px;
+  }
+  
+  footer .row.align-items-center {
+    text-align: center;
+  }
+  
+  footer .col-md-5.col-lg-4.text-md-end {
+    text-align: center !important;
+    margin-top: 15px;
+  }
+}
+
+/* Enhance footer link hover effects */
+footer a.text-white {
+  transition: color 0.3s ease;
+}
+
+footer a.text-white:hover {
+  color: #add8e6 !important;
+  text-decoration: none;
+}
+
+footer a.text-primary {
+  transition: color 0.3s ease;
+}
+
+footer a.text-primary:hover {
+  color: #add8e6 !important;
+  text-decoration: underline;
+}
+
 }

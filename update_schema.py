@@ -1,19 +1,14 @@
 
-from flask import Flask
+from app import create_app
 from db_init import db
-import os
 import logging
 from sqlalchemy import text
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s - %(pathname)s:%(lineno)d',
+    handlers=[logging.StreamHandler()])
 logger = logging.getLogger(__name__)
-
-def create_app():
-    app = Flask(__name__)
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    db.init_app(app)
-    return app
 
 def update_schema():
     app = create_app()
@@ -23,74 +18,87 @@ def update_schema():
             inspector = db.inspect(db.engine)
             columns = [c['name'] for c in inspector.get_columns('user')]
             
-            # Add new columns if they don't exist
+            # Add user profile columns if they don't exist
             with db.engine.connect() as conn:
-                if 'is_subscriber' not in columns:
-                    conn.execute(text('ALTER TABLE "user" ADD COLUMN is_subscriber BOOLEAN DEFAULT TRUE'))
+                if 'audience_type' not in columns:
+                    conn.execute(text('ALTER TABLE "user" ADD COLUMN audience_type VARCHAR(200)'))
                     conn.commit()
-                    logger.info("Added is_subscriber column")
+                    logger.info("Added audience_type column")
                 
-                if 'is_event_creator' not in columns:
-                    conn.execute(text('ALTER TABLE "user" ADD COLUMN is_event_creator BOOLEAN DEFAULT FALSE'))
+                if 'preferred_locations' not in columns:
+                    conn.execute(text('ALTER TABLE "user" ADD COLUMN preferred_locations VARCHAR(255)'))
                     conn.commit()
-                    logger.info("Added is_event_creator column")
+                    logger.info("Added preferred_locations column")
                 
-                if 'is_organizer' not in columns:
-                    conn.execute(text('ALTER TABLE "user" ADD COLUMN is_organizer BOOLEAN DEFAULT FALSE'))
+                if 'event_interests' not in columns:
+                    conn.execute(text('ALTER TABLE "user" ADD COLUMN event_interests VARCHAR(255)'))
                     conn.commit()
-                    logger.info("Added is_organizer column")
+                    logger.info("Added event_interests column")
                 
-                if 'company_name' not in columns:
-                    conn.execute(text('ALTER TABLE "user" ADD COLUMN company_name VARCHAR(100)'))
+                # Add venue columns if they don't exist
+                if 'is_venue' not in columns:
+                    conn.execute(text('ALTER TABLE "user" ADD COLUMN is_venue BOOLEAN DEFAULT FALSE'))
                     conn.commit()
-                    logger.info("Added company_name column")
+                    logger.info("Added is_venue column")
                 
-                if 'organizer_description' not in columns:
-                    conn.execute(text('ALTER TABLE "user" ADD COLUMN organizer_description TEXT'))
+                if 'venue_capacity' not in columns:
+                    conn.execute(text('ALTER TABLE "user" ADD COLUMN venue_capacity VARCHAR(50)'))
                     conn.commit()
-                    logger.info("Added organizer_description column")
+                    logger.info("Added venue_capacity column")
                 
-                if 'organizer_website' not in columns:
-                    conn.execute(text('ALTER TABLE "user" ADD COLUMN organizer_website VARCHAR(200)'))
+                if 'venue_features' not in columns:
+                    conn.execute(text('ALTER TABLE "user" ADD COLUMN venue_features TEXT'))
                     conn.commit()
-                    logger.info("Added organizer_website column")
+                    logger.info("Added venue_features column")
                 
-                if 'advertising_opportunities' not in columns:
-                    conn.execute(text('ALTER TABLE "user" ADD COLUMN advertising_opportunities TEXT'))
+                if 'venue_profile_updated_at' not in columns:
+                    conn.execute(text('ALTER TABLE "user" ADD COLUMN venue_profile_updated_at TIMESTAMP'))
                     conn.commit()
-                    logger.info("Added advertising_opportunities column")
+                    logger.info("Added venue_profile_updated_at column")
                 
-                if 'sponsorship_opportunities' not in columns:
-                    conn.execute(text('ALTER TABLE "user" ADD COLUMN sponsorship_opportunities TEXT'))
+                # Add vendor columns if they don't exist
+                if 'is_vendor' not in columns:
+                    conn.execute(text('ALTER TABLE "user" ADD COLUMN is_vendor BOOLEAN DEFAULT FALSE'))
                     conn.commit()
-                    logger.info("Added sponsorship_opportunities column")
+                    logger.info("Added is_vendor column")
                 
-                if 'organizer_profile_updated_at' not in columns:
-                    conn.execute(text('ALTER TABLE "user" ADD COLUMN organizer_profile_updated_at TIMESTAMP'))
+                if 'vendor_type' not in columns:
+                    conn.execute(text('ALTER TABLE "user" ADD COLUMN vendor_type VARCHAR(50)'))
                     conn.commit()
-                    logger.info("Added organizer_profile_updated_at column")
+                    logger.info("Added vendor_type column")
                 
-                # Update existing users
-                conn.execute(text('UPDATE "user" SET is_subscriber = TRUE WHERE is_subscriber IS NULL'))
-                conn.commit()
-                
-                # Update admin user
-                conn.execute(text('UPDATE "user" SET is_subscriber = TRUE, is_event_creator = TRUE, is_admin = TRUE WHERE email = \'ryan@americanmarketingalliance.com\''))
-                conn.commit()
-                
-                if 'is_organizer' in columns:
-                    conn.execute(text('UPDATE "user" SET is_organizer = TRUE WHERE email = \'ryan@americanmarketingalliance.com\''))
+                if 'vendor_description' not in columns:
+                    conn.execute(text('ALTER TABLE "user" ADD COLUMN vendor_description TEXT'))
                     conn.commit()
+                    logger.info("Added vendor_description column")
                 
-            logger.info("Schema update completed successfully")
+                if 'vendor_profile_updated_at' not in columns:
+                    conn.execute(text('ALTER TABLE "user" ADD COLUMN vendor_profile_updated_at TIMESTAMP'))
+                    conn.commit()
+                    logger.info("Added vendor_profile_updated_at column")
+                
+                if 'services' not in columns:
+                    conn.execute(text('ALTER TABLE "user" ADD COLUMN services TEXT'))
+                    conn.commit()
+                    logger.info("Added services column")
+                
+                if 'pricing' not in columns:
+                    conn.execute(text('ALTER TABLE "user" ADD COLUMN pricing TEXT'))
+                    conn.commit()
+                    logger.info("Added pricing column")
+                
+                # Add venue_id to events table
+                event_columns = [c['name'] for c in inspector.get_columns('event')]
+                if 'venue_id' not in event_columns:
+                    conn.execute(text('ALTER TABLE "event" ADD COLUMN venue_id INTEGER REFERENCES "user" (id)'))
+                    conn.commit()
+                    logger.info("Added venue_id column to events table")
+                
+            logger.info("Schema update complete!")
             return True
         except Exception as e:
             logger.error(f"Error updating schema: {str(e)}")
             return False
 
 if __name__ == "__main__":
-    success = update_schema()
-    if success:
-        print("Schema updated successfully.")
-    else:
-        print("Failed to update schema.")
+    update_schema()
