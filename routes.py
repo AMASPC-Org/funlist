@@ -150,11 +150,14 @@ def init_routes(app):
                 if hasattr(form, 'is_organizer') and form.is_organizer.data:
                     user.is_organizer = True
 
-                # Process user intention
-                user_intention = request.form.get('user_intention', 'find_events')
-                if user_intention == 'create_events':
+                # Process user intentions (can select multiple)
+                user_intentions = request.form.getlist('user_intention[]')
+                if not user_intentions:
+                    user_intentions = ['find_events']  # Default
+                
+                if 'create_events' in user_intentions:
                     user.is_event_creator = True
-                elif user_intention == 'represent_organization':
+                if 'represent_organization' in user_intentions:
                     user.is_organizer = True
                     user.is_event_creator = True  # Organizers can also create events
                 
