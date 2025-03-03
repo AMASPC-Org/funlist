@@ -19,13 +19,15 @@ def check_port_usage(ports):
 
             if pids and pids[0]:
                 logging.info(f"Port {port} is in use by PIDs: {', '.join(pids)}")
+                # Also list process details for debugging
+                subprocess.run(f"ps -p {','.join(pids)} -o pid,ppid,cmd", shell=True)
             else:
                 logging.info(f"Port {port} is available")
         except Exception as e:
             logging.error(f"Error checking port {port}: {e}")
 
 # Check port availability without killing processes
-check_port_usage([8080, 8081, 5000, 80])
+check_port_usage([5000, 8081, 8080, 80])
 
 logging.info("Starting Flask server...")
 app = create_app()
@@ -38,8 +40,8 @@ if __name__ == "__main__":
         print(f"Running in deployment environment. Starting server on port {port}...")
         app.run(host='0.0.0.0', port=port, debug=False)
     else:
-        # In development, use PORT from environment or default to 8080
-        port = int(os.environ.get('PORT', 8080))
+        # In development, prioritize port 5000 from environment
+        port = int(os.environ.get('PORT', 5000))
         print(f"Starting development server on port {port}...")
 
         # Try to start the server, with improved fallback port handling
