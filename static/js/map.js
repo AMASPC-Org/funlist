@@ -1,198 +1,167 @@
-// FunlistMap.js - Map functionality for FunList.ai
-
-// Create a namespace for our map functions
+// Map handling module for FunList.ai
 window.FunlistMap = (function() {
-    // Default location (Olympia, WA)
-    const DEFAULT_LAT = 47.0379;
-    const DEFAULT_LNG = -122.9007;
-    const DEFAULT_ZOOM = 13;
+  // Private variables
+  let mapInstance = null;
+  const defaultLocation = [47.0379, -122.9007]; // Default to Olympia, WA
+  const defaultZoom = 13;
 
-    // Store the map instance
-    let mapInstance = null;
-    let userMarker = null;
+  // Initialize map on the specified element
+  function initMap(elementId) {
+    console.log("Initializing map in element:", elementId);
 
-    // Initialize the map in the specified container
-    function init(containerId) {
-        console.log("Initializing map in element:", containerId);
-        const mapContainer = document.getElementById(containerId);
+    // Check if element exists
+    const mapElement = document.getElementById(elementId);
+    if (!mapElement) {
+      console.error("Map container element not found:", elementId);
+      return null;
+    }
 
-        if (!mapContainer) {
-            console.error("Map container not found:", containerId);
-            return null;
-        }
+    try {
+      // Create the map instance
+      mapInstance = L.map(elementId, {
+        center: defaultLocation,
+        zoom: defaultZoom,
+        zoomControl: true
+      });
 
-        // If map already exists in this container, return the existing instance
-        if (mapInstance && mapInstance._container === mapContainer) {
-            console.log("Map already initialized, returning existing instance");
-            return mapInstance;
-        }
+      // Add tile layer (OpenStreetMap)
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+      }).addTo(mapInstance);
 
-        // Create the map with error handling
-        try {
-            // Create the map
-            const map = L.map(containerId, {
-                center: [DEFAULT_LAT, DEFAULT_LNG],
-                zoom: DEFAULT_ZOOM,
-                zoomControl: true,
-                attributionControl: true
-            });
+      console.log("Map initialized successfully");
+      return mapInstance;
+    } catch (error) {
+      console.error("Error initializing map:", error);
+      return null;
+    }
+  }
 
-            // Add OpenStreetMap tile layer
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                maxZoom: 19,
+  // Get user's location and center map there
+  function getUserLocation(map, callback) {
+    if (!map) {
+      console.error("Map is not initialized");
+      callback(false, null);
+      return;
+    }
+
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        function(position) {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+
+          console.log("User location obtained:", lat, lng);
+
+          // Center map on user location
+          try {
+            map.setView([lat, lng], defaultZoom);
+
+            // Add a marker for user location
+            const userMarker = L.marker([lat, lng], {
+              icon: L.divIcon({
+                className: 'user-location-marker',
+                html: '<div class="pulse"></div>',
+                iconSize: [15, 15]
+              })
             }).addTo(map);
+            userMarker.bindPopup('You are here').openPopup();
 
-            // Store the instance for later use
-            mapInstance = map;
-            console.log("Map initialized successfully");
-
-            // Force a resize after initialization to handle any layout issues
-            setTimeout(() => {
-                console.log("Found Leaflet map instance, invalidating size");
-                map.invalidateSize();
-            }, 300);
-
-            return map;
-        } catch (error) {
-            console.error("Error initializing map:", error);
-            return null;
-        }
-    }
-
-    // Add a marker to the map
-    function addMarker(map, lat, lng, popupContent) {
-        try {
-            // Validate inputs
-            if (!map || typeof lat !== 'number' || typeof lng !== 'number') {
-                console.error("Invalid parameters for addMarker", { map, lat, lng });
-                return null;
-            }
-
-            const marker = L.marker([lat, lng]).addTo(map);
-
-            if (popupContent) {
-                marker.bindPopup(popupContent);
-            }
-
-            return marker;
-        } catch (error) {
-            console.error("Error adding marker:", error);
-            return null;
-        }
-    }
-
-    // Get user's location and center the map there
-    function getUserLocation(map, callback) {
-        if (!map) {
-            if (typeof callback === 'function') {
-                callback(false, { error: "Map not initialized" });
-            }
-            return;
-        }
-
-        // Check if browser supports geolocation
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                function(position) {
-                    // Success
-                    const userLat = position.coords.latitude;
-                    const userLng = position.coords.longitude;
-
-                    // Center map on user location
-                    map.setView([userLat, userLng], DEFAULT_ZOOM);
-
-                    // Remove existing user marker if it exists
-                    if (userMarker) {
-                        map.removeLayer(userMarker);
-                    }
-
-                    // Add a marker for user's location
-                    userMarker = L.marker([userLat, userLng], {
-                        icon: L.divIcon({
-                            className: 'user-location-marker',
-                            html: '<div class="ping"></div>',
-                            iconSize: [20, 20],
-                            iconAnchor: [10, 10]
-                        })
-                    }).addTo(map);
-
-                    userMarker.bindPopup("You are here!").openPopup();
-
-                    if (typeof callback === 'function') {
-                        callback(true, { lat: userLat, lng: userLng });
-                    }
-                },
-                function(error) {
-                    // Error
-                    console.warn("Geolocation error:", error.message);
-
-                    if (typeof callback === 'function') {
-                        callback(false, { error: error.message });
-                    }
-                },
-                {
-                    maximumAge: 60000,
-                    timeout: 10000,
-                    enableHighAccuracy: true
-                }
-            );
-        } else {
-            console.warn("Geolocation not supported by this browser");
-
-            if (typeof callback === 'function') {
-                callback(false, { error: "Geolocation not supported" });
-            }
-        }
-    }
-
-    // Search for a location using OpenStreetMap Nominatim API
-    function searchLocation(query, callback) {
-        const encodedQuery = encodeURIComponent(query);
-        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodedQuery}&limit=1`;
-
-        fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                if (data && data.length > 0) {
-                    const location = data[0];
-                    if (typeof callback === 'function') {
-                        callback(true, location);
-                    }
-                } else {
-                    if (typeof callback === 'function') {
-                        callback(false, { error: "Location not found" });
-                    }
-                }
-            })
-            .catch(error => {
-                console.error("Error searching location:", error);
-                if (typeof callback === 'function') {
-                    callback(false, { error: error.message });
-                }
+            // Dispatch custom event for other components
+            const event = new CustomEvent('user-location-ready', {
+              detail: { lat, lng }
             });
-    }
+            document.dispatchEvent(event);
+            console.log("Dispatched user-location-ready event");
 
-    // Utility function to debounce function calls
-    function debounce(func, wait) {
-        let timeout;
-        return function() {
-            const context = this;
-            const args = arguments;
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(context, args), wait);
-        };
-    }
-
-    // Public API
-    return {
-        init: init,
-        addMarker: addMarker,
-        getUserLocation: getUserLocation,
-        searchLocation: searchLocation,
-        debounce: debounce,
-        getMapInstance: function() {
-            return mapInstance;
+            callback(true, { lat, lng });
+          } catch (error) {
+            console.error("Error setting user location:", error);
+            callback(false, null);
+          }
+        },
+        function(error) {
+          console.warn("Geolocation error:", error.message);
+          callback(false, null);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 5000,
+          maximumAge: 0
         }
+      );
+    } else {
+      console.warn("Geolocation not available in this browser");
+      callback(false, null);
+    }
+  }
+
+  // Add a marker to the map
+  function addMarker(map, lat, lng, popupContent) {
+    if (!map) {
+      console.error("Map is not initialized");
+      return null;
+    }
+
+    try {
+      const marker = L.marker([lat, lng]).addTo(map);
+
+      if (popupContent) {
+        marker.bindPopup(popupContent);
+      }
+
+      return marker;
+    } catch (error) {
+      console.error("Error adding marker:", error);
+      return null;
+    }
+  }
+
+  // Search for a location using OpenStreetMap Nominatim API
+  function searchLocation(query, callback) {
+    if (!query || query.trim() === '') {
+      callback(false, null);
+      return;
+    }
+
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`;
+
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        if (data && data.length > 0) {
+          callback(true, data[0]);
+        } else {
+          callback(false, null);
+        }
+      })
+      .catch(error => {
+        console.error("Location search error:", error);
+        callback(false, null);
+      });
+  }
+
+  // Simple debounce function to limit API calls
+  function debounce(func, wait) {
+    let timeout;
+    return function(...args) {
+      const context = this;
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(context, args), wait);
     };
+  }
+
+  // Public API
+  return {
+    init: initMap,
+    getUserLocation: getUserLocation,
+    addMarker: addMarker,
+    searchLocation: searchLocation,
+    debounce: debounce,
+    // Allow access to the map instance
+    getMap: function() {
+      return mapInstance;
+    }
+  };
 })();

@@ -84,26 +84,33 @@
 <script>
   // Store markers for event handling
   let eventMarkers = [];
+  let mapInstance = null;
   
   // Main function to initialize everything when the DOM is loaded
   document.addEventListener('DOMContentLoaded', function() {
     console.log("Map page loaded, initializing map...");
     
     // Initialize map using our map module
-    const map = window.FunlistMap.init('map');
-    if (!map) {
+    mapInstance = window.FunlistMap.init('map');
+    if (!mapInstance) {
       console.error("Failed to initialize map");
       return;
     }
     
     // Force map resize after a short delay to ensure it's visible
     setTimeout(function() {
-      map.invalidateSize();
-      console.log("Forcing map resize");
+      if (mapInstance) {
+        try {
+          mapInstance.invalidateSize(true);
+          console.log("Forcing map resize");
+        } catch (e) {
+          console.error("Error resizing map:", e);
+        }
+      }
     }, 500);
     
     // Get user location
-    window.FunlistMap.getUserLocation(map, function(success, data) {
+    window.FunlistMap.getUserLocation(mapInstance, function(success, data) {
       if (success) {
         console.log("User location set as map center");
       } else {
@@ -125,7 +132,7 @@
         `;
         
         const eventMarker = window.FunlistMap.addMarker(
-          map, 
+          mapInstance, 
           {{ event.latitude }}, 
           {{ event.longitude }}, 
           popupContent
@@ -164,9 +171,9 @@
         const searchQuery = e.target.value;
         if (searchQuery.length > 2) {
           window.FunlistMap.searchLocation(searchQuery, function(success, location) {
-            if (success) {
+            if (success && mapInstance) {
               console.log("Location found:", location.display_name);
-              map.setView([parseFloat(location.lat), parseFloat(location.lon)], 12);
+              mapInstance.setView([parseFloat(location.lat), parseFloat(location.lon)], 12);
             }
           });
         }
@@ -207,6 +214,19 @@
         }
       });
     });
+  });
+  
+  // Handle window resize events to make the map responsive
+  window.addEventListener('resize', function() {
+    if (mapInstance) {
+      try {
+        setTimeout(function() {
+          mapInstance.invalidateSize(true);
+        }, 200);
+      } catch (e) {
+        console.error("Error resizing map on window resize:", e);
+      }
+    }
   });
 </script>
 {% endblock %}
