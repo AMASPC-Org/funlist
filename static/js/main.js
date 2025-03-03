@@ -8,6 +8,11 @@ document.addEventListener('DOMContentLoaded', function() {
     setupModals();
     setupFloatingButtons();
     setupCookieConsent();
+    initializeMap(); //Added this line to initialize the map on load
+    initializeSponsorsCarousel(); //Added this line to initialize the sponsors carousel on load
+    setupFormValidation();
+    setupLocationServices();
+    setupFilters();
 
     // Initialize any carousels or sliders
     initializeCarousels();
@@ -498,4 +503,45 @@ function saveUserPreferences(data) {
         console.error('Error saving preferences:', error);
         alert('An error occurred while saving your preferences. Please try again.');
     });
+}
+
+function initializeMap() {
+    const mapContainer = document.getElementById('map');
+    if (!mapContainer) {
+        console.log('Map container not found');
+        return;
+    }
+
+    // Make sure Leaflet is loaded
+    if (typeof L === 'undefined') {
+        console.error('Leaflet library not loaded');
+        mapContainer.innerHTML = '<div class="alert alert-danger">Map could not be loaded. Please refresh the page.</div>';
+        return;
+    }
+
+    try {
+        // Initialize the map
+        const map = L.map('map').setView([47.0379, -122.9007], 10); // Default to Olympia, WA
+
+        // Add the OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Force map to recalculate its container size
+        setTimeout(function() {
+            map.invalidateSize();
+        }, 100);
+
+        // Add event markers if they exist
+        if (typeof eventLocations !== 'undefined' && eventLocations.length > 0) {
+            eventLocations.forEach(event => {
+                const marker = L.marker([event.latitude, event.longitude]).addTo(map);
+                marker.bindPopup(`<b>${event.title}</b><br>${event.description}<br><a href="/event/${event.id}">View Details</a>`);
+            });
+        }
+    } catch (error) {
+        console.error('Error initializing map:', error);
+        mapContainer.innerHTML = '<div class="alert alert-danger">Map could not be loaded. Please try again later.</div>';
+    }
 }
