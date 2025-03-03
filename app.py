@@ -59,8 +59,7 @@ def create_app():
     from flask_session import Session
     Session(app)
     
-    # Don't clear session files on every app start
-    # This can cause users to be logged out unexpectedly
+    # NOTE: We've fixed double initialization of Session
 
     # Add request logging
     @app.before_request
@@ -125,10 +124,10 @@ def create_app():
         raise
 
     try:
-        logger.info("Initializing Session...")
-        # Session(app)  # Already initialized above, don't initialize twice
+        logger.info("Session already initialized above...")
+        # Don't initialize session again
     except Exception as e:
-        logger.error(f"Failed to initialize Session: {str(e)}", exc_info=True)
+        logger.error(f"Failed with session: {str(e)}", exc_info=True)
         raise
 
     try:
