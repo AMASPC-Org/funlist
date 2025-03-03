@@ -77,83 +77,46 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- First load Leaflet library, then our map module, then initialize -->
+<!-- Load map.js script -->
+<script src="{{ url_for('static', filename='js/map.js') }}"></script>
+
+<!-- Initialize the map after page loads -->
 <script>
-// Make sure the Leaflet library is loaded before initializing the map
-window.addEventListener('load', function() {
-    console.log("Window loaded, checking map dependencies");
-
-    // Make sure Leaflet is loaded first
-    if (typeof L === 'undefined') {
-        console.error("Leaflet library not loaded. Adding Leaflet scripts");
-        var leafletCSS = document.createElement('link');
-        leafletCSS.rel = 'stylesheet';
-        leafletCSS.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-        document.head.appendChild(leafletCSS);
-
-        var leafletScript = document.createElement('script');
-        leafletScript.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-        leafletScript.onload = checkFunlistMap;
-        document.head.appendChild(leafletScript);
-    } else {
-        checkFunlistMap();
-    }
-
-    function checkFunlistMap() {
-        // Check if FunlistMap is defined
-        if (typeof FunlistMap === 'undefined') {
-            console.error("FunlistMap module not loaded. Retrying...");
-            // Try to reload the map.js file
-            var mapScript = document.createElement('script');
-            mapScript.src = "{{ url_for('static', filename='js/map.js') }}";
-            mapScript.onload = initializeMap;
-            document.head.appendChild(mapScript);
-        } else {
-            initializeMap();
-        }
-    }
-});
-
-function initializeMap() {
-    console.log("Initializing map with FunlistMap:", typeof FunlistMap);
-    if (typeof FunlistMap === 'undefined') {
-        console.error("FunlistMap still not defined after loading script");
-        return;
-    }
-
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("Map page loaded, initializing map...");
+    
     // Initialize the map
     var map = FunlistMap.init('map');
-
+    
     if (map) {
         // Add markers for events
         {% for event in events %}
             {% if event.latitude and event.longitude %}
                 FunlistMap.addMarker(map, {{ event.latitude }}, {{ event.longitude }},
-                `<div><h5>{{ event.title }}</h5><p>{{ event.description|truncate(100) }}</p><a href="/event/{{event.id}}">View Details</a></div>`);
+                `<div class="event-popup">
+                    <h5>{{ event.title }}</h5>
+                    <p>{{ event.description|truncate(100) }}</p>
+                    <a href="/event/{{event.id}}" class="btn btn-sm btn-primary">View Details</a>
+                </div>`);
             {% endif %}
         {% endfor %}
-
+        
         console.log("Added {{ events|length }} event markers to map");
-
+        
         // Get user location and center map
         FunlistMap.getUserLocation(map, function(success, location) {
             if (success) {
-                console.log("centered map");
+                console.log("Map centered on user location");
             } else {
-                console.log("failed to center map");
+                console.log("Using default location for map");
             }
         });
-
-        // Force a resize of the map after a short delay to handle any rendering issues
+        
+        // Make sure the map renders correctly
         setTimeout(function() {
-            if (map && typeof map.invalidateSize === 'function') {
-                map.invalidateSize();
-                console.log("Map size invalidated");
-            }
-        }, 800);
-    } else {
-        console.error("Failed to initialize map");
+            map.invalidateSize();
+        }, 500);
     }
-}
+});
 </script>
 {% endblock %}
