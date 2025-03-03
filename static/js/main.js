@@ -1,19 +1,16 @@
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('main.js loaded');
+  console.log("main.js loaded");
 
-    // Add global error handling
-    window.addEventListener('error', function(event) {
-        console.log("JavaScript error caught:", event.error);
-        console.log(event);
-
-        // Check if it's a cross-origin error
-        if (!event.message || event.message === 'Script error.') {
-            console.log("Cross-origin script error detected. Check for cross-origin issues.");
-        }
-
-        // Prevent the error from bubbling up
-        event.preventDefault();
-    });
+  // Global error handler to catch and log script errors
+  window.addEventListener('error', function(event) {
+    console.log("JavaScript error caught:", event.error);
+    if (event.message && event.message.indexOf('Script error') !== -1) {
+      console.log("Cross-origin script error detected. Check for cross-origin issues.");
+    }
+    // Prevent the error from bubbling up
+    event.stopPropagation();
+    return true;
+  });
 
     try {
         // Initialize sponsors carousel if it exists

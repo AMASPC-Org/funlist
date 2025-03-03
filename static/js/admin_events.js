@@ -7,12 +7,12 @@ try {
     try {
       // Safely check if we're on the admin events page
       const adminEventContainer = document.getElementById('admin-events-container');
-      
+
       if (adminEventContainer) {
         // Initialize admin event handlers
         const approveButtons = document.querySelectorAll('.approve-event');
         const rejectButtons = document.querySelectorAll('.reject-event');
-        
+
         approveButtons.forEach(button => {
           button.addEventListener('click', function(e) {
             try {
@@ -25,7 +25,7 @@ try {
             }
           });
         });
-        
+
         rejectButtons.forEach(button => {
           button.addEventListener('click', function(e) {
             try {
@@ -166,5 +166,13 @@ function getCsrfToken() {
 
 // Initialize any needed components when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
+  console.log("Admin events script loaded");
+
+  // Only execute admin-specific code if we're on an admin page
+  const isAdminPage = window.location.pathname.includes('/admin/');
+  if (!isAdminPage) {
+    console.log("Not an admin page, skipping admin script execution");
+    return;
+  }
   // Any initialization code for admin events page
 });
