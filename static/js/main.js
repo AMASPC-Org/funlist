@@ -409,47 +409,8 @@ function populateSponsorsCarousel() {
 }
 
 function setupCookieConsent() {
-    // Check if cookie consent is already set
-    if (checkCookieConsentExpiration()) {
-        return; // Consent is valid, exit early
-    }
-
-    setupCookieButtons();
-    showCookieBanner();
-
-    // Event listener for cookie preference changes
-    const cookiePreferencesForm = document.getElementById('cookie-preferences-form');
-    if (cookiePreferencesForm) {
-        cookiePreferencesForm.addEventListener('submit', function(event) {
-            event.preventDefault();
-
-            const essentialCookies = document.getElementById('essential-cookies');
-            const analyticsCookies = document.getElementById('analytics-cookies');
-            const advertisingCookies = document.getElementById('advertising-cookies');
-
-
-            try {
-                saveCookiePreferences({
-                    essential: true, // Always required
-                    analytics: analyticsCookies ? analyticsCookies.checked : false,
-                    advertising: advertisingCookies ? advertisingCookies.checked : false
-                });
-
-                hideCookieBanner();
-
-                // Close the modal
-                const cookieModal = document.getElementById('cookieModal');
-                if (cookieModal && window.bootstrap) {
-                    const modalInstance = bootstrap.Modal.getInstance(cookieModal);
-                    if (modalInstance) {
-                        modalInstance.hide();
-                    }
-                }
-            } catch (error) {
-                console.error("Error saving cookie preferences:", error);
-            }
-        });
-    }
+    // This function is now handled directly in the cookie_consent.html partial
+    console.log("Cookie consent setup handled in template");
 }
 
 function saveCookiePreferences(preferences) {
@@ -495,66 +456,4 @@ function checkCookieConsentExpiration() {
     }
 }
 
-function showCookieBanner() {
-    const cookieBanner = document.getElementById('cookie-consent-banner');
-    if (cookieBanner) {
-        cookieBanner.style.display = 'block';
-        console.log("Cookie banner shown");
-    } else {
-        console.error("Cookie banner element not found");
-    }
-}
-
-function acceptAllCookies() {
-    saveCookiePreferences({
-        essential: true,
-        analytics: true,
-        advertising: true
-    });
-}
-
-function hideCookieBanner() {
-    const cookieBanner = document.getElementById('cookie-consent-banner');
-    if (cookieBanner) {
-        cookieBanner.style.display = 'none';
-        console.log("Cookie banner hidden");
-    } else {
-        console.error("Cookie banner element not found");
-    }
-}
-
-function setupCookieButtons() {
-    console.log("Setting up cookie consent buttons");
-
-    // Accept all button
-    const acceptAllBtn = document.getElementById('accept-all-cookies');
-    if (acceptAllBtn) {
-        console.log("Found accept-all-cookies button");
-        acceptAllBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            console.log("Accept all cookies clicked");
-            acceptAllCookies();
-            hideCookieBanner();
-        });
-    } else {
-        console.log("Accept all cookies button not found");
-    }
-
-    // Reject non-essential button
-    const rejectBtn = document.getElementById('reject-non-essential-cookies');
-    if (rejectBtn) {
-        console.log("Found reject-non-essential-cookies button");
-        rejectBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            console.log("Reject non-essential cookies clicked");
-            saveCookiePreferences({
-                essential: true,
-                analytics: false,
-                advertising: false
-            });
-            hideCookieBanner();
-        });
-    } else {
-        console.log("Reject non-essential cookies button not found");
-    }
-}
+// Cookie functions are handled in the cookie_consent.html partial

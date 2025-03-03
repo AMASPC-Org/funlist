@@ -1,4 +1,4 @@
-<div id="cookie-consent" class="cookie-banner" style="display: none;" role="alert" aria-live="polite">
+<div id="cookie-consent-banner" class="cookie-banner" style="display: none;" role="alert" aria-live="polite">
     <div class="cookie-content">
         <p>We use cookies to enhance your experience. By continuing to visit this site you agree to our use of cookies. 
            <a href="#" data-bs-toggle="modal" data-bs-target="#cookieModal">Learn more</a>
@@ -64,7 +64,7 @@
 
     function initCookieConsent() {
         // Initialize the cookie consent
-        const cookieConsent = document.getElementById('cookie-consent');
+        const cookieConsent = document.getElementById('cookie-consent-banner');
         const cookieForm = document.getElementById('cookie-preferences-form');
 
         if (!cookieConsent) {
@@ -178,7 +178,7 @@
 
     function hideCookieBanner() {
         try {
-            const cookieBanner = document.getElementById('cookie-consent');
+            const cookieBanner = document.getElementById('cookie-consent-banner');
             if (cookieBanner) {
                 cookieBanner.style.display = 'none';
                 document.body.classList.remove('cookie-consent-visible');
