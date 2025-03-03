@@ -85,10 +85,12 @@ def kill_processes_on_port(port):
             logger.error(f"Error killing processes: {e}")
     except Exception as e:
         logger.error(f"Error in kill_processes_on_port: {str(e)}")
-    return False
-            return True
-        except Exception as e:
-            logger.error(f"Error killing processes: {e}")
+    try:
+        import os
+        os.system(f"pkill -f 'python.*main.py'")
+        return True
+    except Exception as e:
+        logger.error(f"Error killing processes: {e}")
     return False
 
 # Create the Flask app
