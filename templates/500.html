@@ -27,14 +27,6 @@
                     {% endif %}
                     <p><strong>URL:</strong> {{ request.url }}</p>
                     <p><strong>Method:</strong> {{ request.method }}</p>
-                    <div>
-                        <strong>Request Headers:</strong>
-                        <ul>
-                            {% for header, value in request.headers.items() %}
-                            <li>{{ header }}: {{ value }}</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
                 </div>
                 {% endif %}
             </div>

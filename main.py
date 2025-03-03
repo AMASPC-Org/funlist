@@ -56,14 +56,17 @@ logger.info(f"Starting Flask server...")
 def kill_processes_on_port(port):
     try:
         import psutil
-        for proc in psutil.process_iter(['pid', 'name', 'connections']):
+        for proc in psutil.process_iter(['pid', 'name']):
             try:
-                for conn in proc.connections():
-                    if conn.laddr.port == port:
+                for conn in proc.connections(kind='inet'):
+                    if hasattr(conn.laddr, 'port') and conn.laddr.port == port:
                         logger.info(f"Killing process {proc.pid} {proc.name()} using port {port}")
                         proc.kill()
                         return True
             except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                pass
+            except AttributeError:
+                # Skip if connections() is not properly available
                 pass
     except ImportError:
         logger.warning("psutil not available, using lsof to kill processes")

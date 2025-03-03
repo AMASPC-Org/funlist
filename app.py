@@ -195,6 +195,7 @@ def create_app():
     # Add improved error handler
     @app.errorhandler(500)
     def internal_server_error(e):
+        from flask import render_template
         logger.error(f"500 error: {str(e)}", exc_info=True)
         return render_template('500.html', error=str(e)), 500
 
