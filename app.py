@@ -54,11 +54,10 @@ def create_app():
     app.config['SESSION_USE_SIGNER'] = False  # Disable signer to avoid bytes/string issues
     app.config['SESSION_FILE_DIR'] = './flask_session'
     app.config['SESSION_KEY_PREFIX'] = 'funlist_'
-    
+
     # Initialize Flask-Session (only once)
-    from flask_session import Session
     Session(app)
-    
+
     # NOTE: We've fixed double initialization of Session
 
     # Add request logging
@@ -159,7 +158,7 @@ def create_app():
             # More robust user loading
             if user_id is None:
                 return None
-            
+
             # Try to convert to integer, but handle gracefully if it's not
             try:
                 user_id_int = int(user_id)
@@ -190,7 +189,7 @@ def create_app():
     except Exception as e:
         logger.error(f"Failed to initialize routes: {str(e)}", exc_info=True)
         raise
-        
+
     # Add improved error handler
     @app.errorhandler(500)
     def internal_server_error(e):
