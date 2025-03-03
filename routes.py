@@ -15,6 +15,12 @@ logger.setLevel(logging.DEBUG)
 
 
 def init_routes(app):
+    # Add global error handler for application context errors
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        app.logger.error(f"Unhandled exception: {str(e)}", exc_info=True)
+        return render_template('500.html'), 500
+        
     @app.route("/about")
     def about():
         return render_template('about.html')
