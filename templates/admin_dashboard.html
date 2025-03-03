@@ -112,10 +112,10 @@
                                     <td>{{ event.organizer.email }}</td>
                                     <td>
                                         {% if event.status == 'pending' %}
-                                        <a href="{{ url_for('admin_approve_event', event_id=event.id) }}" 
-                                           class="btn btn-sm btn-success">Approve</a>
-                                        <a href="{{ url_for('admin_reject_event', event_id=event.id) }}" 
-                                           class="btn btn-sm btn-danger">Reject</a>
+                                        <button onclick="window.approveEvent({{ event.id }})" 
+                                           class="btn btn-sm btn-success">Approve</button>
+                                        <button onclick="window.rejectEvent({{ event.id }})" 
+                                           class="btn btn-sm btn-danger">Reject</button>
                                         {% endif %}
                                         <a href="{{ url_for('event_detail', event_id=event.id) }}" 
                                            class="btn btn-sm btn-primary">View</a>
@@ -202,6 +202,63 @@
 {% endblock %}
 
 {% block extra_js %}
+{% if active_tab == 'events' %}
+<script>
+// Define window functions for event management if they don't exist
+if (typeof window.approveEvent !== 'function') {
+    window.approveEvent = function(eventId) {
+        if (confirm('Are you sure you want to approve this event?')) {
+            fetch(`/admin/event/${eventId}/approve`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        }
+    };
+}
+
+if (typeof window.rejectEvent !== 'function') {
+    window.rejectEvent = function(eventId) {
+        if (confirm('Are you sure you want to reject this event?')) {
+            fetch(`/admin/event/${eventId}/reject`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        }
+    };
+}
+</script>
+{% endif %}
+
 {% if active_tab == 'analytics' %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>

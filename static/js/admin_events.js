@@ -97,11 +97,10 @@ window.approveEvent = function(eventId) {
 
 window.rejectEvent = function(eventId) {
   if (confirm('Are you sure you want to reject this event?')) {
-    fetch(`/api/events/${eventId}/reject`, {
+    fetch(`/admin/event/${eventId}/reject`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCsrfToken()
+        'Content-Type': 'application/json'
       }
     })
     .then(response => response.json())

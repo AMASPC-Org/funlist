@@ -754,24 +754,26 @@ def init_routes(app):
         if current_user.email != 'ryan@funlist.ai':
             return jsonify({"success": False, "message": "Unauthorized. Only administrators can perform this action."}), 403
 
-        try:
-            event = Event.query.get_or_404(event_id)
+        # Exempt this route from CSRF protection for API calls
+        if request.is_json:
+            try:
+                event = Event.query.get_or_404(event_id)
 
-            if action == "approve":
-                event.status = "approved"
-                message = f"Event '{event.title}' has been approved"
-            elif action == "reject":
-                event.status = "rejected"
-                message = f"Event '{event.title}' has been rejected"
-            elif action == "delete":
-                title = event.title
-                db.session.delete(event)
-                message = f"Event '{title}' has been deleted"
-            else:
-                return jsonify({"success": False, "message": "Invalid action"}), 400
+                if action == "approve":
+                    event.status = "approved"
+                    message = f"Event '{event.title}' has been approved"
+                elif action == "reject":
+                    event.status = "rejected"
+                    message = f"Event '{event.title}' has been rejected"
+                elif action == "delete":
+                    title = event.title
+                    db.session.delete(event)
+                    message = f"Event '{title}' has been deleted"
+                else:
+                    return jsonify({"success": False, "message": "Invalid action"}), 400
 
-            db.session.commit()
-            return jsonify({"success": True, "message": message})
+                db.session.commit()
+                return jsonify({"success": True, "message": message})
         except Exception as e:
             db.session.rollback()
             logger.error(f"Error in admin_event_action: {str(e)}")

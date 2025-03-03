@@ -99,7 +99,15 @@ def create_app():
 
     try:
         logger.info("Initializing CSRF protection...")
-        CSRFProtect(app)
+        csrf = CSRFProtect(app)
+
+        # Exempt API routes from CSRF protection
+        @csrf.exempt
+        def csrf_exempt_api():
+            # Exempt all routes that are API routes
+            if request.path.startswith('/admin/event/') and request.method == 'POST':
+                return True
+            return False
     except Exception as e:
         logger.error(f"Failed to initialize CSRF protection: {str(e)}",
                      exc_info=True)
