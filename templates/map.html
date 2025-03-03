@@ -2,6 +2,11 @@
 
 {% block title %}Map | FunList.ai{% endblock %}
 
+{% block head %}
+  {{ super() }}
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+{% endblock %}
+
 {% block content %}
 <div class="container my-4">
   <h1 class="text-center mb-4">Event Map</h1>
@@ -88,14 +93,27 @@
 {% block extra_js %}
 <script>
   document.addEventListener('DOMContentLoaded', function() {
+    // Make sure Leaflet is loaded
+    if (typeof L === 'undefined') {
+      console.error('Leaflet library not loaded');
+      return;
+    }
+    
     // Initialize the map only if the map container exists
-    if (document.getElementById('map')) {
-      var map = L.map('map').setView([47.0379, -122.9007], 10); // Default to Olympia, WA
+    const mapContainer = document.getElementById('map');
+    if (mapContainer) {
+      try {
+        var map = L.map('map').setView([47.0379, -122.9007], 10); // Default to Olympia, WA
 
-      // Add the OpenStreetMap tile layer
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-      }).addTo(map);
+        // Add the OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        
+        // Force map to recalculate its container size after small delay
+        setTimeout(function() {
+          map.invalidateSize();
+        }, 100);
 
       // Try to get user's location if available
       if (navigator.geolocation) {
@@ -166,6 +184,12 @@
           function filterEvents(){
             //This function is not implemented because it is not needed for the edited code.
           }
+      } catch(error) {
+        console.error('Error initializing map:', error);
+        mapContainer.innerHTML = '<div class="alert alert-danger">Map could not be loaded. Please try again later.</div>';
+      }
+    } else {
+      console.error('Map container not found');
     }
   });
 </script>

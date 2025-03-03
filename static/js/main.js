@@ -350,7 +350,16 @@ function setupFormValidation() {
 
 function setupLocationServices() {
     const mapContainer = document.getElementById('map');
-    if (!mapContainer) return;
+    if (!mapContainer) {
+        console.log('Map container not found, skipping location services');
+        return;
+    }
+
+    // Check if Leaflet is loaded
+    if (typeof L === 'undefined') {
+        console.error('Leaflet library not loaded');
+        return;
+    }
 
     // If browser supports geolocation, get user's location
     if (navigator.geolocation) {
