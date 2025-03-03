@@ -125,7 +125,7 @@
     </script>
 
     {% block scripts %}{% endblock %}
-{% if current_user.is_authenticated and current_user.is_admin %}
+{% if current_user.is_authenticated and current_user.email == 'ryan@funlist.ai' %}
 <script src="{{ url_for('static', filename='js/admin_events.js') }}"></script>
 {% endif %}
 

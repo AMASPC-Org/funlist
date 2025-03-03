@@ -570,7 +570,7 @@ def init_routes(app):
     @app.route("/admin/events")
     @login_required
     def admin_events():
-        if not current_user.is_admin:
+        if current_user.email != 'ryan@funlist.ai':
             flash("Access denied. Admin privileges required.", "danger")
             return redirect(url_for("index"))
         events = Event.query.order_by(Event.created_at.desc()).all()
@@ -579,7 +579,7 @@ def init_routes(app):
     @app.route("/admin/events/<int:event_id>/edit", methods=['GET', 'POST'])
     @login_required
     def admin_edit_event(event_id):
-        if not current_user.is_admin:
+        if current_user.email != 'ryan@funlist.ai':
             flash("Access denied. Admin privileges required.", "danger")
             return redirect(url_for("index"))
         event = Event.query.get_or_404(event_id)
@@ -614,7 +614,7 @@ def init_routes(app):
     @app.route("/admin/users")
     @login_required
     def admin_users():
-        if not current_user.is_admin:
+        if current_user.email != 'ryan@funlist.ai':
             flash("Access denied. Admin privileges required.", "danger")
             return redirect(url_for("index"))
         users = User.query.order_by(User.created_at.desc()).all()
@@ -748,7 +748,7 @@ def init_routes(app):
     @app.route("/admin/analytics")
     @login_required
     def admin_analytics():
-        if not current_user.is_admin:
+        if current_user.email != 'ryan@funlist.ai':
             flash("Access denied. Admin privileges required.", "danger")
             return redirect(url_for("index"))
         # Get events by category data
@@ -802,7 +802,7 @@ def init_routes(app):
     @app.route("/admin/event/<int:event_id>/<action>", methods=["POST"])
     @login_required
     def admin_event_action(event_id, action):
-        if not current_user.is_admin:
+        if current_user.email != 'ryan@funlist.ai':
             return jsonify({"success": False, "message": "Unauthorized"}), 403
 
         try:
@@ -923,7 +923,7 @@ def init_routes(app):
     @app.route("/admin/dashboard")
     @login_required
     def admin_dashboard():
-        if not current_user.is_admin:
+        if current_user.email != 'ryan@funlist.ai':
             flash("Access denied. Admin privileges required.", "danger")
             return redirect(url_for("index"))
         tab = request.args.get("tab", "overview")
@@ -1005,7 +1005,7 @@ def init_routes(app):
     @app.route("/admin/user/<int:user_id>/deactivate")
     @login_required
     def admin_deactivate_user(user_id):
-        if not current_user.is_admin:
+        if current_user.email != 'ryan@funlist.ai':
             return jsonify({"error": "Unauthorized"}), 403
         user = User.query.get_or_404(user_id)
         user.account_active = False
@@ -1016,7 +1016,7 @@ def init_routes(app):
     @app.route("/admin/user/<int:user_id>/activate")
     @login_required
     def admin_activate_user(user_id):
-        if not current_user.is_admin:
+        if current_user.email != 'ryan@funlist.ai':
             return jsonify({"error": "Unauthorized"}), 403
         user = User.query.get_or_404(user_id)
         user.account_active = True
