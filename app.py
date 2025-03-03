@@ -46,22 +46,21 @@ def create_app():
     }
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    # Simplified session configuration to fix cookie encoding issue
+    # Improved session configuration
     app.config['SESSION_TYPE'] = 'filesystem'
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
     app.config['SESSION_COOKIE_SECURE'] = False  # Disable for local development
     app.config['SESSION_COOKIE_HTTPONLY'] = True
-    app.config['SESSION_USE_SIGNER'] = False  # Disable signer which can cause encoding issues
+    app.config['SESSION_USE_SIGNER'] = True  # Enable signer for security
     app.config['SESSION_FILE_DIR'] = './flask_session'
+    app.config['SESSION_KEY_PREFIX'] = 'funlist_'
     
-    # Initialize Flask-Session
+    # Initialize Flask-Session (only once)
     from flask_session import Session
     Session(app)
     
-    # Clear existing session files to start fresh
-    for f in os.listdir('./flask_session'):
-        if f != '.gitkeep':
-            os.remove(os.path.join('./flask_session', f))
+    # Don't clear session files on every app start
+    # This can cause users to be logged out unexpectedly
 
     # Add request logging
     @app.before_request
@@ -75,12 +74,13 @@ def create_app():
         # Set Content Security Policy header with more permissive options
         csp = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https: https://cdn.jsdelivr.net https://unpkg.com https://code.jquery.com https://auth.util.repl.co https://*.replit.dev https://*.repl.co; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https: https://cdn.jsdelivr.net https://unpkg.com https://code.jquery.com https://auth.util.repl.co https://*.replit.dev https://*.repl.co https://cdnjs.cloudflare.com; "
             "style-src 'self' 'unsafe-inline' https: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
             "img-src 'self' data: https:; "
             "font-src 'self' data: https: https://cdnjs.cloudflare.com; "
             "connect-src 'self' https:; "
             "frame-src 'self' https: https://auth.util.repl.co https://*.replit.dev https://*.repl.co; "
+            "object-src 'none'; "
             "report-uri /csp-report"
         )
         response.headers['Content-Security-Policy'] = csp

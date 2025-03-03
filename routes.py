@@ -1,7 +1,7 @@
 from flask import render_template, flash, redirect, url_for, request, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user, login_required, login_user, logout_user
-from forms import SignupForm, LoginForm, ProfileForm, EventForm, ResetPasswordRequestForm, ResetPasswordForm
+from forms import SignupForm, LoginForm, ProfileForm, EventForm, ResetPasswordRequestForm, ResetPasswordForm, OrganizerProfileForm, VendorProfileForm, VenueProfileForm
 from models import User, Event, Subscriber
 from db_init import db
 from utils import geocode_address, send_password_reset_email
@@ -260,13 +260,14 @@ def init_routes(app):
                     if user.check_password(form.password.data):
                         if form.remember_me.data:
                             session.permanent = True
-                        # Set basic session data without complex encoding
+                        
+                        # Login the user first
+                        login_user(user, remember=form.remember_me.data)
+                        
+                        # Then set session data with simplified strings
                         session["user_id"] = str(user.id)
                         session["login_time"] = str(datetime.utcnow())
                         session["last_activity"] = str(datetime.utcnow())
-
-                        # Login the user
-                        login_user(user, remember=form.remember_me.data)
 
                         # Update last login time
                         user.last_login = datetime.utcnow()
