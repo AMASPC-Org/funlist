@@ -77,6 +77,19 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Global error handling
+window.addEventListener('error', function(event) {
+    console.log('JavaScript error caught:', event.error);
+    console.log(event);
+    
+    // Prevent the error from being hidden
+    if (event && event.message && event.message.includes('Script error')) {
+        // Most likely a cross-origin error
+        console.log('Cross-origin script error detected. Check for cross-origin issues.');
+    }
+    
+    // Don't show alerts in production, this is just for debugging
+    // alert('Error occurred: ' + (event.error ? event.error.message : event.message));
+});
 function setupErrorHandling() {
     window.addEventListener('error', function(event) {
         console.log('JavaScript error caught:', event.error);

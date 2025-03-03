@@ -2,7 +2,8 @@
 
 {% block head %}
 {{ super() }}
-<script src="{{ url_for('static', filename='js/admin_events.js') }}?v={{ range(1, 10000) | random }}"></script>
+{% set random_version = range(1, 10000) | random %}
+<script src="{{ url_for('static', filename='js/admin_events.js') }}?v={{ random_version }}"></script>
 {% endblock %}
 
 {% block content %}

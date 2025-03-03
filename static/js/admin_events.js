@@ -1,4 +1,3 @@
-
 // Admin events functionality
 console.log("Admin events script loaded");
 
@@ -52,7 +51,7 @@ window.rejectEvent = function(eventId) {
 };
 
 window.viewEvent = function(eventId) {
-  window.location.href = `/event/${eventId}`;
+  window.location.href = `/events/${eventId}`;
 };
 
 window.editEvent = function(eventId) {
@@ -61,12 +60,13 @@ window.editEvent = function(eventId) {
 
 window.deleteEvent = function(eventId) {
   if (confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
-    fetch(`/api/events/${eventId}/delete`, {
-      method: 'DELETE',
+    fetch(`/admin/events/${eventId}/action`, {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'X-CSRFToken': getCsrfToken()
-      }
+      },
+      body: JSON.stringify({action: 'delete'})
     })
     .then(response => response.json())
     .then(data => {
@@ -87,13 +87,13 @@ window.deleteEvent = function(eventId) {
 function showToast(message, type) {
   const toastContainer = document.getElementById('toast-container');
   if (!toastContainer) return;
-  
+
   const toast = document.createElement('div');
   toast.className = `toast align-items-center text-white bg-${type} border-0`;
   toast.setAttribute('role', 'alert');
   toast.setAttribute('aria-live', 'assertive');
   toast.setAttribute('aria-atomic', 'true');
-  
+
   toast.innerHTML = `
     <div class="d-flex">
       <div class="toast-body">
@@ -102,12 +102,12 @@ function showToast(message, type) {
       <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
     </div>
   `;
-  
+
   toastContainer.appendChild(toast);
-  
+
   const bsToast = new bootstrap.Toast(toast, { autohide: true, delay: 5000 });
   bsToast.show();
-  
+
   toast.addEventListener('hidden.bs.toast', function () {
     toast.remove();
   });
