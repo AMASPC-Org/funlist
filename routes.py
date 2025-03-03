@@ -20,7 +20,7 @@ def init_routes(app):
     def handle_exception(e):
         app.logger.error(f"Unhandled exception: {str(e)}", exc_info=True)
         return render_template('500.html'), 500
-        
+
     @app.route("/about")
     def about():
         return render_template('about.html')
@@ -86,41 +86,41 @@ def init_routes(app):
         # Check if this is a new registration to show the wizard
         new_registration = session.pop('new_registration', False)
         return render_template("index.html", events=events, user=current_user, new_registration=new_registration)
-        
+
     @app.route("/save-preferences", methods=["POST"])
     @login_required
     def save_preferences():
         try:
             data = request.get_json()
-            
+
             # Update user profile with preferences
             profile_data = {}
-            
+
             if 'location' in data and data['location']:
                 profile_data['location'] = data['location']
-                
+
             if 'interests' in data and data['interests']:
                 profile_data['interests'] = ','.join(data['interests'])
-                
+
             # Update organizer profile if applicable
             if current_user.is_organizer:
                 organizer_data = {}
-                
+
                 if 'organizationName' in data and data['organizationName']:
                     organizer_data['company_name'] = data['organizationName']
-                    
+
                 if 'organizationWebsite' in data and data['organizationWebsite']:
                     organizer_data['organizer_website'] = data['organizationWebsite']
-                    
+
                 if organizer_data:
                     current_user.update_organizer_profile(organizer_data)
-            
+
             # Update user profile
             if profile_data:
                 current_user.update_profile(profile_data)
-                
+
             db.session.commit()
-            
+
             return jsonify({"success": True, "message": "Preferences saved successfully"})
         except Exception as e:
             db.session.rollback()
@@ -154,7 +154,7 @@ def init_routes(app):
                     user_intentions = request.form.getlist('user_intention[]')
                     if not user_intentions:
                         user_intentions = ['find_events']  # Default
-                    
+
                     if 'create_events' in user_intentions:
                         user.is_event_creator = True
                     if 'represent_organization' in user_intentions:
@@ -172,7 +172,7 @@ def init_routes(app):
                         user.is_vendor = True
                         if hasattr(form, 'vendor_type') and form.vendor_type.data:
                             user.vendor_type = form.vendor_type.data
-                
+
                 db.session.add(user)
                 db.session.commit()
 
@@ -186,13 +186,13 @@ def init_routes(app):
                 if not form.terms_accepted.data:
                     flash("You must accept the Terms and Conditions and Privacy Policy to register.", "danger")
                     return render_template("signup.html", form=form)
-                
+
                 # Set welcome message and indicate this is a new registration
                 flash("Welcome to FunList.ai! Let's set up your profile.", "success")
-                
+
                 # Set session flag for new registration to trigger wizard
                 session['new_registration'] = True
-                
+
                 # Redirect to index which will show the wizard
                 return redirect(url_for("index"))
             except IntegrityError as e:
@@ -239,10 +239,10 @@ def init_routes(app):
                 # Use a simpler query to avoid column issues
                 email = form.email.data
                 logger.info(f"Attempting login for: {email}")
-                
+
                 # Simplified query that avoids problematic columns
                 user = db.session.execute(db.select(User).filter_by(email=email)).scalar_one_or_none()
-                
+
                 if user:
                     logger.info(f"User found: {user.id}")
                     if user.check_password(form.password.data):
@@ -251,14 +251,14 @@ def init_routes(app):
                         session["user_id"] = user.id
                         session["login_time"] = datetime.utcnow().isoformat()
                         session["last_activity"] = datetime.utcnow().isoformat()
-                        
+
                         # Login the user
                         login_user(user, remember=form.remember_me.data)
-                        
+
                         # Update last login time
                         user.last_login = datetime.utcnow()
                         db.session.commit()
-                        
+
                         logger.info(f"Login successful for user: {user.id}")
                         flash("Logged in successfully!", "success")
                         next_page = request.args.get("next")
@@ -496,13 +496,13 @@ def init_routes(app):
                         # Ensure admin privileges for the correct admin
                         user.is_admin = True
                         db.session.commit()
-                        
+
                         # Login the user
                         login_user(user)
                         session["user_id"] = user.id
                         session["login_time"] = datetime.utcnow().isoformat()
                         session["last_activity"] = datetime.utcnow().isoformat()
-                        
+
                         logger.info(f"Admin login successful: {admin_email}")
                         return redirect(url_for("admin_dashboard"))
                     else:
@@ -510,7 +510,7 @@ def init_routes(app):
                 except Exception as e:
                     logger.error(f"Standard login check failed: {str(e)}")
                     flash("Login check failed. Database may need maintenance.", "danger")
-            
+
             except Exception as e:
                 logger.error(f"Unexpected error in admin login: {str(e)}", exc_info=True)
                 flash("We encountered a technical issue. Please try again later.", "danger")
@@ -649,7 +649,7 @@ def init_routes(app):
     @app.route("/terms")
     def terms():
         return render_template("terms.html")
-        
+
     @app.route("/reset-password-request", methods=["GET", "POST"])
     def reset_password_request():
         if current_user.is_authenticated:
@@ -662,28 +662,28 @@ def init_routes(app):
                 # In a real production environment, you'd send an email with a reset link
                 # For development, we'll just redirect to the reset page with the token
                 flash(f'Password reset link has been sent to {form.email.data}. Please check your email.', 'info')
-                
+
                 # For demo purposes, we'll provide a direct link as well
                 reset_url = url_for('reset_password', token=token, _external=True)
                 flash(f'For demo purposes, you can also <a href="{reset_url}">click here</a> to reset your password.', 'info')
-                
+
                 return redirect(url_for('login'))
             else:
                 # Don't reveal that the user doesn't exist
                 flash('If an account with this email exists, a password reset link has been sent.', 'info')
                 return redirect(url_for('login'))
         return render_template('reset_password_request.html', form=form)
-        
+
     @app.route("/reset-password/<token>", methods=["GET", "POST"])
     def reset_password(token):
         if current_user.is_authenticated:
             return redirect(url_for("index"))
-            
+
         user = User.verify_reset_token(token)
         if not user:
             flash('Invalid or expired reset token. Please try again.', 'danger')
             return redirect(url_for('reset_password_request'))
-            
+
         form = ResetPasswordForm()
         if form.validate_on_submit():
             user.set_password(form.password.data)
@@ -691,7 +691,7 @@ def init_routes(app):
             db.session.commit()
             flash('Your password has been reset successfully. You can now log in with your new password.', 'success')
             return redirect(url_for('login'))
-            
+
         return render_template('reset_password.html', form=form, token=token)
 
     @app.route("/admin/analytics")
@@ -755,25 +755,24 @@ def init_routes(app):
             return jsonify({"success": False, "message": "Unauthorized. Only administrators can perform this action."}), 403
 
         # Exempt this route from CSRF protection for API calls
-        if request.is_json:
-            try:
-                event = Event.query.get_or_404(event_id)
+        try:
+            event = Event.query.get_or_404(event_id)
 
-                if action == "approve":
-                    event.status = "approved"
-                    message = f"Event '{event.title}' has been approved"
-                elif action == "reject":
-                    event.status = "rejected"
-                    message = f"Event '{event.title}' has been rejected"
-                elif action == "delete":
-                    title = event.title
-                    db.session.delete(event)
-                    message = f"Event '{title}' has been deleted"
-                else:
-                    return jsonify({"success": False, "message": "Invalid action"}), 400
+            if action == "approve":
+                event.status = "approved"
+                message = f"Event '{event.title}' has been approved"
+            elif action == "reject":
+                event.status = "rejected"
+                message = f"Event '{event.title}' has been rejected"
+            elif action == "delete":
+                title = event.title
+                db.session.delete(event)
+                message = f"Event '{title}' has been deleted"
+            else:
+                return jsonify({"success": False, "message": "Invalid action"}), 400
 
-                db.session.commit()
-                return jsonify({"success": True, "message": message})
+            db.session.commit()
+            return jsonify({"success": True, "message": message})
         except Exception as e:
             db.session.rollback()
             logger.error(f"Error in admin_event_action: {str(e)}")
@@ -796,8 +795,7 @@ def init_routes(app):
         if request.method == "GET":
             # Pre-populate form with existing data if available
             form.company_name.data = current_user.company_name
-            form.description.data = current_user.organizer_description
-            form.website.data = current_user.organizer_website
+            form.description.data = current_user.organizer_description            form.website.data = current_user.organizer_website
             form.advertising_opportunities.data = current_user.advertising_opportunities
             form.sponsorship_opportunities.data = current_user.sponsorship_opportunities
 
@@ -821,7 +819,7 @@ def init_routes(app):
                 flash("There was a problem updating your organizer profile. Please try again.", "danger")
 
         return render_template("organizer_profile.html", form=form)
-        
+
     @app.route("/vendor-profile", methods=["GET", "POST"])
     @login_required
     def vendor_profile():
@@ -843,7 +841,7 @@ def init_routes(app):
                 current_user.vendor_description = form.description.data
                 current_user.organizer_website = form.website.data  # Reuse the organizer_website field
                 current_user.vendor_profile_updated_at = datetime.utcnow()
-                
+
                 db.session.commit()
                 flash("Vendor profile updated successfully!", "success")
                 return redirect(url_for("profile"))

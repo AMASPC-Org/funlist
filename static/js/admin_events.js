@@ -1,13 +1,7 @@
 // Admin events functionality
 console.log("Admin events script loaded");
 
-// Get CSRF token from meta tag
-function getCsrfToken() {
-  const tokenMeta = document.querySelector('meta[name="csrf-token"]');
-  return tokenMeta ? tokenMeta.getAttribute('content') : '';
-}
-
-// Show toast notification
+// Helper function to show toast notifications
 function showToast(message, type) {
   const toast = document.createElement('div');
   toast.className = `toast toast-${type || 'info'}`;
@@ -23,74 +17,37 @@ function showToast(message, type) {
   }, 3000);
 }
 
-// Add error handling for admin events script
-try {
-  document.addEventListener('DOMContentLoaded', function() {
-    try {
-      // Safely check if we're on the admin events page
-      const adminEventContainer = document.getElementById('admin-events-container');
-
-      if (adminEventContainer) {
-        // Initialize admin event handlers
-        const approveButtons = document.querySelectorAll('.approve-event');
-        const rejectButtons = document.querySelectorAll('.reject-event');
-
-        approveButtons.forEach(button => {
-          button.addEventListener('click', function(e) {
-            try {
-              e.preventDefault();
-              const eventId = this.getAttribute('data-event-id');
-              console.log(`Approve event ${eventId} clicked`);
-              window.approveEvent(eventId);
-            } catch (err) {
-              console.error("Error handling approve event:", err);
-              showToast("Error approving event: " + err.message, "danger");
-            }
-          });
-        });
-
-        rejectButtons.forEach(button => {
-          button.addEventListener('click', function(e) {
-            try {
-              e.preventDefault();
-              const eventId = this.getAttribute('data-event-id');
-              console.log(`Reject event ${eventId} clicked`);
-              // Implement rejection logic
-            } catch (err) {
-              console.error("Error handling reject event:", err);
-            }
-          });
-        });
-      }
-    } catch (error) {
-      console.error("Error in admin events DOMContentLoaded:", error);
-    }
-  });
-} catch (error) {
-  console.error("Error in admin_events.js:", error);
+// Helper function to handle API responses
+function handleResponse(response) {
+  if (!response.ok) {
+    return response.json().then(data => {
+      throw new Error(data.message || 'Server error');
+    });
+  }
+  return response.json();
 }
 
 // Define window functions for event management
 window.approveEvent = function(eventId) {
   if (confirm('Are you sure you want to approve this event?')) {
-    fetch(`/admin/event/${eventId}/approve`, { //Corrected endpoint
+    fetch(`/admin/event/${eventId}/approve`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCsrfToken()
+        'Content-Type': 'application/json'
       }
     })
-    .then(response => response.json())
+    .then(handleResponse)
     .then(data => {
       if (data.success) {
-        showToast('Event approved successfully', 'success');
+        showToast(data.message, 'success');
         setTimeout(() => { window.location.reload(); }, 1000);
       } else {
         showToast('Error: ' + data.message, 'danger');
       }
     })
     .catch(error => {
-      showToast('Error: ' + error, 'danger');
+      console.error('Error:', error);
+      showToast('Error: ' + error.message, 'danger');
     });
   }
 };
@@ -103,27 +60,20 @@ window.rejectEvent = function(eventId) {
         'Content-Type': 'application/json'
       }
     })
-    .then(response => response.json())
+    .then(handleResponse)
     .then(data => {
       if (data.success) {
-        showToast('Event rejected successfully', 'success');
+        showToast(data.message, 'success');
         setTimeout(() => { window.location.reload(); }, 1000);
       } else {
         showToast('Error: ' + data.message, 'danger');
       }
     })
     .catch(error => {
-      showToast('Error: ' + error, 'danger');
+      console.error('Error:', error);
+      showToast('Error: ' + error.message, 'danger');
     });
   }
-};
-
-window.viewEvent = function(eventId) {
-  window.location.href = `/events/${eventId}`;
-};
-
-window.editEvent = function(eventId) {
-  window.location.href = `/admin/events/${eventId}/edit`;
 };
 
 window.deleteEvent = function(eventId) {
@@ -134,65 +84,84 @@ window.deleteEvent = function(eventId) {
         'Content-Type': 'application/json'
       }
     })
-    .then(response => response.json())
+    .then(handleResponse)
     .then(data => {
       if (data.success) {
-        showToast('Event deleted successfully', 'success');
+        showToast(data.message, 'success');
         setTimeout(() => { window.location.reload(); }, 1000);
       } else {
         showToast('Error: ' + data.message, 'danger');
       }
     })
     .catch(error => {
-      showToast('Error: ' + error, 'danger');
+      console.error('Error:', error);
+      showToast('Error: ' + error.message, 'danger');
     });
   }
 };
 
-// Helper function to show toast notifications
-function showToast(message, type) {
-  const toastContainer = document.getElementById('toast-container');
-  if (!toastContainer) return;
+window.viewEvent = function(eventId) {
+  window.location.href = `/event/${eventId}`;
+};
 
-  const toast = document.createElement('div');
-  toast.className = `toast align-items-center text-white bg-${type} border-0`;
-  toast.setAttribute('role', 'alert');
-  toast.setAttribute('aria-live', 'assertive');
-  toast.setAttribute('aria-atomic', 'true');
+window.editEvent = function(eventId) {
+  window.location.href = `/admin/events/${eventId}/edit`;
+};
 
-  toast.innerHTML = `
-    <div class="d-flex">
-      <div class="toast-body">
-        ${message}
-      </div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-    </div>
-  `;
-
-  toastContainer.appendChild(toast);
-
-  const bsToast = new bootstrap.Toast(toast, { autohide: true, delay: 5000 });
-  bsToast.show();
-
-  toast.addEventListener('hidden.bs.toast', function () {
-    toast.remove();
-  });
-}
-
-// Helper function to get CSRF token
-function getCsrfToken() {
-  return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-}
-
-// Initialize any needed components when DOM is loaded
+// Add event listeners when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-  console.log("Admin events script loaded");
+  console.log('Admin events page initialized');
 
-  // Only execute admin-specific code if we're on an admin page
-  const isAdminPage = window.location.pathname.includes('/admin/');
-  if (!isAdminPage) {
-    console.log("Not an admin page, skipping admin script execution");
-    return;
-  }
-  // Any initialization code for admin events page
+  // Add any additional event handlers here
+  const approveButtons = document.querySelectorAll('.approve-event');
+  const rejectButtons = document.querySelectorAll('.reject-event');
+  const deleteButtons = document.querySelectorAll('.delete-event');
+  const viewButtons = document.querySelectorAll('.view-event');
+  const editButtons = document.querySelectorAll('.edit-event');
+
+  approveButtons.forEach(button => {
+    button.addEventListener('click', function(e) {
+      e.preventDefault();
+      const eventId = this.getAttribute('data-event-id');
+      window.approveEvent(eventId);
+    });
+  });
+
+  rejectButtons.forEach(button => {
+    button.addEventListener('click', function(e) {
+      e.preventDefault();
+      const eventId = this.getAttribute('data-event-id');
+      window.rejectEvent(eventId);
+    });
+  });
+
+  deleteButtons.forEach(button => {
+    button.addEventListener('click', function(e) {
+      e.preventDefault();
+      const eventId = this.getAttribute('data-event-id');
+      window.deleteEvent(eventId);
+    });
+  });
+
+  viewButtons.forEach(button => {
+    button.addEventListener('click', function(e) {
+      e.preventDefault();
+      const eventId = this.getAttribute('data-event-id');
+      window.viewEvent(eventId);
+    });
+  });
+
+  editButtons.forEach(button => {
+    button.addEventListener('click', function(e) {
+      e.preventDefault();
+      const eventId = this.getAttribute('data-event-id');
+      window.editEvent(eventId);
+    });
+  });
 });
+
+// Get CSRF token from meta tag (This part is kept as is, but is likely redundant with the new approach)
+function getCsrfToken() {
+  const tokenMeta = document.querySelector('meta[name="csrf-token"]');
+  return tokenMeta ? tokenMeta.getAttribute('content') : '';
+}
