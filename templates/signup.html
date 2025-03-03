@@ -57,6 +57,10 @@
                                 Find events to attend
                             </label>
                         </div>
+                        <div class="form-check">
+                            {{ form.is_event_creator(class="form-check-input") }}
+                            {{ form.is_event_creator.label(class="form-check-label") }}
+                        </div>
                         
                         <div class="form-check mb-2">
                             {{ form.is_vendor(class="form-check-input", id="is_vendor_checkbox") }}
