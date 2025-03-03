@@ -1,4 +1,3 @@
-
 // Map handling module for FunList.ai
 // This file contains all map-related functionality
 
@@ -14,7 +13,7 @@ function initializeMap(elementId, defaultLat = 47.0379, defaultLng = -122.9007, 
     console.error(`Map container ${elementId} not found`);
     return null;
   }
-  
+
   try {
     // Create map with default center
     const mapInstance = L.map(elementId, {
@@ -31,14 +30,20 @@ function initializeMap(elementId, defaultLat = 47.0379, defaultLng = -122.9007, 
     }).addTo(mapInstance);
 
     console.log("Map initialized successfully");
-    
+
+    // Force a map resize after it's visible and loaded
+    setTimeout(() => {
+      mapInstance.invalidateSize();
+      console.log("Map size refreshed for better rendering");
+    }, 100);
+
     // Make map responsive to container size changes
     window.addEventListener('resize', () => {
       if (mapInstance) {
         setTimeout(() => mapInstance.invalidateSize(), 100);
       }
     });
-    
+
     return mapInstance;
   } catch (error) {
     console.error("Error initializing map:", error);
@@ -55,7 +60,7 @@ function getUserLocation(mapInstance, callback) {
     if (callback) callback(false);
     return;
   }
-  
+
   console.log("Requesting user location...");
   navigator.geolocation.getCurrentPosition(
     function(position) {
@@ -73,17 +78,17 @@ function getUserLocation(mapInstance, callback) {
         iconSize: [16, 16],
         iconAnchor: [8, 8]
       });
-      
+
       // Remove existing user marker if present
       if (userLocationMarker) {
         mapInstance.removeLayer(userLocationMarker);
       }
-      
+
       // Create new user marker
       userLocationMarker = L.marker([userLat, userLng], {icon: userIcon})
         .addTo(mapInstance)
         .bindPopup("<strong>Your location</strong>");
-      
+
       if (callback) callback(true, {lat: userLat, lng: userLng});
     }, 
     function(error) {
@@ -101,15 +106,15 @@ function getUserLocation(mapInstance, callback) {
 // Add a single marker to the map
 function addMarker(mapInstance, lat, lng, popupContent, options = {}) {
   if (!mapInstance) return null;
-  
+
   try {
     const marker = L.marker([lat, lng], options)
       .addTo(mapInstance);
-    
+
     if (popupContent) {
       marker.bindPopup(popupContent);
     }
-    
+
     return marker;
   } catch (error) {
     console.error("Error adding marker:", error);
@@ -120,7 +125,7 @@ function addMarker(mapInstance, lat, lng, popupContent, options = {}) {
 // Search for location using Nominatim API
 function searchLocation(query, callback) {
   if (!query || query.length < 3) return;
-  
+
   fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`, {
     method: 'GET',
     headers: {
