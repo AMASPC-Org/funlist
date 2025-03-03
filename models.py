@@ -91,12 +91,25 @@ class User(UserMixin, db.Model):
     sponsorship_opportunities = db.Column(db.Text)
     organizer_profile_updated_at = db.Column(db.DateTime)
     
+    # Vendor fields
+    is_vendor = db.Column(db.Boolean, default=False)
+    vendor_type = db.Column(db.String(50))
+    vendor_description = db.Column(db.Text)
+    vendor_profile_updated_at = db.Column(db.DateTime)
+    
     def update_organizer_profile(self, organizer_data):
         for key, value in organizer_data.items():
             if hasattr(self, key):
                 setattr(self, key, value)
         self.is_organizer = True
         self.organizer_profile_updated_at = datetime.utcnow()
+        
+    def update_vendor_profile(self, vendor_data):
+        for key, value in vendor_data.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+        self.is_vendor = True
+        self.vendor_profile_updated_at = datetime.utcnow()
 
     last_name = db.Column(db.String(50))
     # is_admin is already defined above

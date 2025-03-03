@@ -63,6 +63,23 @@
                                 Create and list my own events
                             </label>
                         </div>
+                        <div class="form-check mb-2">
+                            {{ form.is_event_creator(class="form-check-input") }}
+                            {{ form.is_event_creator.label(class="form-check-label") }}
+                        </div>
+                        <div class="form-check mb-2">
+                            {{ form.is_organizer(class="form-check-input") }}
+                            {{ form.is_organizer.label(class="form-check-label") }}
+                        </div>
+                        <div class="form-check mb-2">
+                            {{ form.is_vendor(class="form-check-input", id="is_vendor_checkbox") }}
+                            {{ form.is_vendor.label(class="form-check-label") }}
+                        </div>
+                        <div id="vendor_type_container" class="mb-3" style="display: none;">
+                            {{ form.vendor_type.label(class="form-label") }}
+                            {{ form.vendor_type(class="form-select") }}
+                        </div>
+
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="user_intention[]" id="represent_organization" value="represent_organization">
                             <label class="form-check-label" for="represent_organization">
@@ -70,6 +87,12 @@
                             </label>
                         </div>
                     </div>
+
+                    <script>
+                        document.getElementById('is_vendor_checkbox').addEventListener('change', function() {
+                            document.getElementById('vendor_type_container').style.display = this.checked ? 'block' : 'none';
+                        });
+                    </script>
 
                     <div class="d-grid">
                         {{ form.submit(class="btn btn-primary") }}

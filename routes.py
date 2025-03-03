@@ -167,6 +167,11 @@ def init_routes(app):
                         user.is_event_creator = True
                     if hasattr(form, 'is_organizer') and form.is_organizer.data:
                         user.is_organizer = True
+                        user.is_event_creator = True  # Organizers can also create events
+                    if hasattr(form, 'is_vendor') and form.is_vendor.data:
+                        user.is_vendor = True
+                        if hasattr(form, 'vendor_type') and form.vendor_type.data:
+                            user.vendor_type = form.vendor_type.data
                 
                 db.session.add(user)
                 db.session.commit()
@@ -865,6 +870,38 @@ def init_routes(app):
                 flash("There was a problem updating your organizer profile. Please try again.", "danger")
 
         return render_template("organizer_profile.html", form=form)
+        
+    @app.route("/vendor-profile", methods=["GET", "POST"])
+    @login_required
+    def vendor_profile():
+        # Import the form
+        from forms import VendorProfileForm
+
+        form = VendorProfileForm()
+
+        if request.method == "GET":
+            # Pre-populate form with existing data if available
+            form.vendor_type.data = current_user.vendor_type
+            form.description.data = current_user.vendor_description
+            form.website.data = current_user.organizer_website  # Reuse the organizer_website field
+
+        if form.validate_on_submit():
+            try:
+                current_user.is_vendor = True
+                current_user.vendor_type = form.vendor_type.data
+                current_user.vendor_description = form.description.data
+                current_user.organizer_website = form.website.data  # Reuse the organizer_website field
+                current_user.vendor_profile_updated_at = datetime.utcnow()
+                
+                db.session.commit()
+                flash("Vendor profile updated successfully!", "success")
+                return redirect(url_for("profile"))
+            except Exception as e:
+                db.session.rollback()
+                logger.error(f"Error updating vendor profile: {str(e)}")
+                flash("There was a problem updating your vendor profile. Please try again.", "danger")
+
+        return render_template("vendor_profile.html", form=form)
 
     @app.route("/organizers")
     def organizers():
