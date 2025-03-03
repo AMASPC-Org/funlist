@@ -62,7 +62,7 @@ def kill_processes_on_port(port):
         
         # First find all PIDs using the port
         for conn in connections:
-            if conn.laddr.port == port:
+            if hasattr(conn, 'laddr') and hasattr(conn.laddr, 'port') and conn.laddr.port == port:
                 if conn.pid is not None:
                     connected_pids.add(conn.pid)
                     
@@ -75,8 +75,16 @@ def kill_processes_on_port(port):
                 return True
             except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess) as e:
                 logger.warning(f"Failed to kill process {pid}: {str(e)}")
+        
+        # If psutil approach didn't work, try pkill
+        try:
+            import os
+            os.system(f"pkill -f 'python.*main.py'")
+            return True
+        except Exception as e:
+            logger.error(f"Error killing processes: {e}")
     except ImportError:
-        logger.warning("psutil not available, using lsof to kill processes")
+        logger.warning("psutil not available, using pkill instead")
         try:
             import os
             os.system(f"pkill -f 'python.*main.py'")
@@ -85,12 +93,7 @@ def kill_processes_on_port(port):
             logger.error(f"Error killing processes: {e}")
     except Exception as e:
         logger.error(f"Error in kill_processes_on_port: {str(e)}")
-    try:
-        import os
-        os.system(f"pkill -f 'python.*main.py'")
-        return True
-    except Exception as e:
-        logger.error(f"Error killing processes: {e}")
+    
     return False
 
 # Create the Flask app
@@ -111,7 +114,7 @@ if __name__ == "__main__":
         try:
             logger.info(f"Attempting to start server on port {current_port}...")
             # Make sure we're binding to 0.0.0.0 to be accessible externally
-            app.run(host='0.0.0.0', port=current_port, debug=True, use_reloader=False)
+            app.run(host='0.0.0.0', port=current_port, debug=True, use_reloader=False, threaded=True)
             break
         except OSError as e:
             if "Address already in use" in str(e):
