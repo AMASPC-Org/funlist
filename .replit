@@ -31,7 +31,11 @@ externalPort = 8000
 
 [[ports]]
 localPort = 8080
-externalPort = 8080 # Added port 8080 as per the changes
+externalPort = 8080
+
+[[ports]]
+localPort = 8081
+externalPort = 8081
 
 [workflows]
 runButton = "Flask Server"
