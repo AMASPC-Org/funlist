@@ -54,10 +54,9 @@ def create_app():
     app.config['SESSION_USE_SIGNER'] = False  # Disable signer which can cause encoding issues
     app.config['SESSION_FILE_DIR'] = './flask_session'
     
-    # Ensure session_interface encoding is properly set
+    # Initialize Flask-Session
     from flask_session import Session
-    session_interface = Session(app)
-    app.session_interface.serializer.loads = lambda x: x
+    Session(app)
     
     # Clear existing session files to start fresh
     for f in os.listdir('./flask_session'):
