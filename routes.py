@@ -182,6 +182,11 @@ def init_routes(app):
                 session["login_time"] = datetime.utcnow().isoformat()
                 session["last_activity"] = datetime.utcnow().isoformat()
 
+                # Verify terms acceptance
+                if not form.terms_accepted.data:
+                    flash("You must accept the Terms and Conditions and Privacy Policy to register.", "danger")
+                    return render_template("signup.html", form=form)
+                
                 # Set welcome message and indicate this is a new registration
                 flash("Welcome to FunList.ai! Let's set up your profile.", "success")
                 
@@ -698,8 +703,7 @@ def init_routes(app):
 
     @app.route("/terms")
     def terms():
-        # If terms template doesn't exist yet, redirect to privacy
-        return render_template("privacy.html")  # Replace with terms.html when available
+        return render_template("terms.html")
         
     @app.route("/reset-password-request", methods=["GET", "POST"])
     def reset_password_request():

@@ -35,6 +35,9 @@ class SignupForm(FlaskForm):
         ('decor', 'Decoration Services'),
         ('other', 'Other')
     ], validators=[Optional()])
+    terms_accepted = BooleanField('I accept the <a href="/terms" target="_blank">Terms and Conditions</a> and <a href="/privacy" target="_blank">Privacy Policy</a>', validators=[
+        DataRequired(message="You must accept the Terms and Conditions and Privacy Policy to continue")
+    ])
     submit = SubmitField('Sign Up')
 
     def validate_email(self, email):
