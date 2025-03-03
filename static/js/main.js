@@ -20,6 +20,41 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize any carousels or sliders
     initializeCarousels();
     initializeSponsorsCarousel();
+
+    // Map page functionality
+    // Check if on map page and if map element exists
+    const mapElement = document.getElementById('map');
+
+    if (mapElement) {
+        try {
+            console.log('Map element found, initializing...');
+
+            // Add resize handler to ensure map renders correctly when window size changes
+            window.addEventListener('resize', function() {
+                if (typeof L !== 'undefined') {
+                    setTimeout(function() {
+                        if (window.map) {
+                            window.map.invalidateSize();
+                        }
+                    }, 200);
+                }
+            });
+
+            // Ensure map is properly sized on page load
+            setTimeout(function() {
+                if (typeof L !== 'undefined' && window.map) {
+                    window.map.invalidateSize();
+                }
+            }, 500);
+
+        } catch (error) {
+            console.error('Error in map initialization:', error);
+        }
+    } else {
+        if (window.location.pathname.includes('/map')) {
+            console.error('Map container not found, skipping location services');
+        }
+    }
 });
 
 // Global error handling
@@ -535,7 +570,7 @@ function initializeMap() {
         // Force map to recalculate its container size with multiple attempts to ensure it renders
         setTimeout(function() {
             map.invalidateSize();
-            
+
             // Try again after a longer delay to ensure map is fully rendered
             setTimeout(function() {
                 map.invalidateSize();
@@ -548,14 +583,14 @@ function initializeMap() {
             eventLocations.forEach(event => {
                 const marker = L.marker([event.latitude, event.longitude]).addTo(map);
                 marker.bindPopup(`<b>${event.title}</b><br>${event.description}<br><a href="/event/${event.id}">View Details</a>`);
-                
+
                 // Add click handler to highlight corresponding card
                 marker.on('click', function() {
                     highlightEventCard(event.id);
                 });
             });
         }
-        
+
         // Connect event cards with map markers for interaction
         const eventCards = document.querySelectorAll('.event-card');
         eventCards.forEach(card => {
@@ -571,7 +606,8 @@ function initializeMap() {
                 }
             });
         });
-        
+
+        window.map = map; // Make map globally accessible for resize handling
         return map;
     } catch (error) {
         console.error('Error initializing map:', error);

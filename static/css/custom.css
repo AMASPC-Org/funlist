@@ -1602,22 +1602,39 @@ body.cookie-consent-visible .floating-buttons-container {
 #map {
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     z-index: 1;
+    height: 700px;
+    width: 100%;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
 }
 
 .map-container-wrapper {
     margin-bottom: 2rem;
 }
 
+.map-content-area {
+    margin-top: 1rem;
+}
+
 .event-cards-container {
     padding-right: 0.5rem;
+    height: 700px;
+    overflow-y: auto;
+    scrollbar-width: thin;
 }
 
 .event-cards-container .event-card {
     cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.event-cards-container .event-card:hover {
+    transform: translateY(-2px);
 }
 
 .event-cards-container .event-card.highlighted {
     border-left: 4px solid var(--primary-color);
+    background-color: rgba(var(--bs-primary-rgb), 0.05);
 }
 
 @media (max-width: 768px) {
