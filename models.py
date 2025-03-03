@@ -1,11 +1,11 @@
         import logging
-        from app import db
-        from datetime import datetime
-        from flask_login import UserMixin
-        from sqlalchemy import or_
-        from slugify import slugify  # Import the slugify library
+from app import db
+from datetime import datetime
+from flask_login import UserMixin
+from sqlalchemy import or_
+from slugify import slugify  # Import the slugify library
 
-        logger = logging.getLogger(__name__) #add logger
+logger = logging.getLogger(__name__) #add logger
 
 
         class SearchableResource:
