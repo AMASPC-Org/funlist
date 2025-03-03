@@ -186,6 +186,7 @@
     z-index: 1;
     margin-top: 0;
     min-height: 500px; /* Ensure minimum height */
+    padding-top: 70px; /* Added padding to account for navbar height */
 }
 
 @media (max-width: 768px) {
@@ -1961,4 +1962,22 @@ body.cookie-consent-visible .floating-buttons-container {
         margin-bottom: 10px;
     }
 }
+}
+
+/* Header and navigation styling */
+.navbar {
+  background-color: var(--primary-color);
+  padding: 15px 0;
+  margin-bottom: 0;
+}
+
+/* Hero section spacing */
+#hero.hero-section {
+  padding-top: 70px; /* Adjust as needed */
+  margin-top: 0;
+}
+
+.pre-hero-banner,
+.organizer-banner {
+  display: none;
 }

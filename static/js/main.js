@@ -265,6 +265,7 @@ function initializeCarousels() {
     if (sponsorsCarousel) {
         console.log("Populating sponsors carousel");
         // Initialize carousel logic here if needed
+        initializeSponsorsCarousel();
     }
 }
 
@@ -390,7 +391,7 @@ function setupLocationServices() {
     } else {
         console.warn("Geolocation not supported by this browser");
     }
-    
+
     // Ensure any map instance is properly sized (for tabs, hidden elements, etc.)
     if (window.Leaflet || window.L) {
         setTimeout(() => {
@@ -517,4 +518,98 @@ function saveUserPreferences(data) {
         console.error('Error saving preferences:', error);
         alert('An error occurred while saving your preferences. Please try again.');
     });
+}
+
+// Get user location for map centering
+function getUserLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      function(position) {
+        userLat = position.coords.latitude;
+        userLng = position.coords.longitude;
+
+        console.log("User location found:", userLat, userLng);
+
+        // Dispatch event for other components that might need location
+        const locationEvent = new CustomEvent('user-location-ready', {
+          detail: { lat: userLat, lng: userLng }
+        });
+        document.dispatchEvent(locationEvent);
+
+        // If on map page, center the map - with error handling
+        if (typeof map !== 'undefined' && map) {
+          try {
+            map.setView([userLat, userLng], 11);
+            console.log("Map centered on user location");
+
+            // Fix for common Leaflet issue - map needs resize after container becomes visible
+            setTimeout(function() {
+              if (map && typeof map.invalidateSize === 'function') {
+                map.invalidateSize();
+                console.log("Forced map resize");
+              }
+            }, 500);
+          } catch (e) {
+            console.error("Error centering map:", e);
+          }
+        }
+
+        // Load featured events if on homepage
+        if (window.location.pathname === '/' || window.location.pathname === '') {
+          try {
+            loadFeaturedEvents(userLat, userLng);
+          } catch (e) {
+            console.error("Error loading featured events:", e);
+          }
+        }
+      },
+      function(error) {
+        console.error("Geolocation error:", error.code, error.message);
+        // Use default coordinates (e.g., center of target area) when geolocation fails
+        let defaultLat = 47.0379; // Example: Olympia, WA coordinates
+        let defaultLng = -122.9007;
+
+        // Set global variables for use elsewhere
+        userLat = defaultLat;
+        userLng = defaultLng;
+
+        // If on map page, center the map on default location - with error handling
+        if (typeof map !== 'undefined' && map) {
+          try {
+            map.setView([defaultLat, defaultLng], 11);
+
+            // Force map to recalculate size
+            setTimeout(function() {
+              if (map && typeof map.invalidateSize === 'function') {
+                map.invalidateSize();
+              }
+            }, 500);
+          } catch (e) {
+            console.error("Error setting default map view:", e);
+          }
+        }
+
+        // Still load featured events with default coordinates
+        if (window.location.pathname === '/' || window.location.pathname === '') {
+          try {
+            loadFeaturedEvents(defaultLat, defaultLng);
+          } catch (e) {
+            console.error("Error loading featured events with default coordinates:", e);
+          }
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0
+      }
+    );
+  } else {
+    console.error("Geolocation is not supported by this browser");
+    // Handle case where geolocation is not supported
+    let defaultLat = 47.0379; // Default: Olympia, WA 
+    let defaultLng = -122.9007;
+    userLat = defaultLat;
+    userLng = defaultLng;
+  }
 }
