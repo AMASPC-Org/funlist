@@ -522,94 +522,98 @@ function saveUserPreferences(data) {
 
 // Get user location for map centering
 function getUserLocation() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      function(position) {
-        userLat = position.coords.latitude;
-        userLng = position.coords.longitude;
+  try {
+    console.log("Map container found, requesting user location");
 
-        console.log("User location found:", userLat, userLng);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        function(position) {
+          userLat = position.coords.latitude;
+          userLng = position.coords.longitude;
 
-        // Dispatch event for other components that might need location
-        const locationEvent = new CustomEvent('user-location-ready', {
-          detail: { lat: userLat, lng: userLng }
-        });
-        document.dispatchEvent(locationEvent);
+          console.log("User location obtained:", userLat, userLng);
 
-        // If on map page, center the map - with error handling
-        if (typeof map !== 'undefined' && map) {
-          try {
-            map.setView([userLat, userLng], 11);
-            console.log("Map centered on user location");
+          // Dispatch a custom event that the location is ready
+          document.dispatchEvent(new CustomEvent('user-location-ready', {
+            detail: { lat: userLat, lng: userLng }
+          }));
 
-            // Fix for common Leaflet issue - map needs resize after container becomes visible
-            setTimeout(function() {
-              if (map && typeof map.invalidateSize === 'function') {
-                map.invalidateSize();
-                console.log("Forced map resize");
-              }
-            }, 500);
-          } catch (e) {
-            console.error("Error centering map:", e);
+          console.log("User location found:", userLat, userLng);
+
+          // If on map page, center the map - check if map exists first
+          if (typeof map !== 'undefined' && map) {
+            try {
+              console.log("Forcing map resize");
+              map.invalidateSize();
+              map.setView([userLat, userLng], 11);
+            } catch (e) {
+              console.error("Error setting map view:", e);
+            }
           }
-        }
 
-        // Load featured events if on homepage
-        if (window.location.pathname === '/' || window.location.pathname === '') {
-          try {
-            loadFeaturedEvents(userLat, userLng);
-          } catch (e) {
-            console.error("Error loading featured events:", e);
+          // Load featured events if on homepage
+          if (window.location.pathname === '/' || window.location.pathname === '') {
+            try {
+              loadFeaturedEvents(userLat, userLng);
+            } catch (e) {
+              console.error("Error loading featured events:", e);
+            }
           }
-        }
-      },
-      function(error) {
-        console.error("Geolocation error:", error.code, error.message);
-        // Use default coordinates (e.g., center of target area) when geolocation fails
-        let defaultLat = 47.0379; // Example: Olympia, WA coordinates
-        let defaultLng = -122.9007;
+        },
+        function(error) {
+          console.error("Geolocation error:", error.code, error.message);
+          // Use default coordinates (e.g., center of target area) when geolocation fails
+          let defaultLat = 47.0379; // Example: Olympia, WA coordinates
+          let defaultLng = -122.9007;
 
-        // Set global variables for use elsewhere
-        userLat = defaultLat;
-        userLng = defaultLng;
+          // Set global variables for use elsewhere
+          userLat = defaultLat;
+          userLng = defaultLng;
 
-        // If on map page, center the map on default location - with error handling
-        if (typeof map !== 'undefined' && map) {
-          try {
-            map.setView([defaultLat, defaultLng], 11);
+          // Dispatch event with default coordinates
+          document.dispatchEvent(new CustomEvent('user-location-ready', {
+            detail: { lat: defaultLat, lng: defaultLng, isDefault: true }
+          }));
 
-            // Force map to recalculate size
-            setTimeout(function() {
-              if (map && typeof map.invalidateSize === 'function') {
-                map.invalidateSize();
-              }
-            }, 500);
-          } catch (e) {
-            console.error("Error setting default map view:", e);
+          // If on map page, center the map on default location
+          if (typeof map !== 'undefined' && map) {
+            try {
+              map.invalidateSize();
+              map.setView([defaultLat, defaultLng], 11);
+            } catch (e) {
+              console.error("Error setting default map view:", e);
+            }
           }
-        }
 
-        // Still load featured events with default coordinates
-        if (window.location.pathname === '/' || window.location.pathname === '') {
-          try {
-            loadFeaturedEvents(defaultLat, defaultLng);
-          } catch (e) {
-            console.error("Error loading featured events with default coordinates:", e);
+          // Still load featured events with default coordinates
+          if (window.location.pathname === '/' || window.location.pathname === '') {
+            try {
+              loadFeaturedEvents(defaultLat, defaultLng);
+            } catch (e) {
+              console.error("Error loading featured events with default coordinates:", e);
+            }
           }
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 5000,
+          maximumAge: 0
         }
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 0
-      }
-    );
-  } else {
-    console.error("Geolocation is not supported by this browser");
-    // Handle case where geolocation is not supported
-    let defaultLat = 47.0379; // Default: Olympia, WA 
-    let defaultLng = -122.9007;
-    userLat = defaultLat;
-    userLng = defaultLng;
+      );
+    } else {
+      console.error("Geolocation is not supported by this browser");
+      // Handle case where geolocation is not supported
+      let defaultLat = 47.0379;
+      let defaultLng = -122.9007;
+      userLat = defaultLat;
+      userLng = defaultLng;
+
+      // Dispatch event with default coordinates and flag that geolocation is not supported
+      document.dispatchEvent(new CustomEvent('user-location-ready', {
+        detail: { lat: defaultLat, lng: defaultLng, isDefault: true, notSupported: true }
+      }));
+    }
+  } catch (e) {
+    console.error("Error in getUserLocation:", e);
   }
 }
