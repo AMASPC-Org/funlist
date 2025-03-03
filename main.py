@@ -50,7 +50,7 @@ if __name__ == "__main__":
         except OSError as e:
             if "Address already in use" in str(e):
                 # Try multiple fallback ports in sequence, prioritizing less commonly used ports
-                fallback_ports = [4000, 4040, 4080, 6000, 7000]
+                fallback_ports = [5050, 4000, 4040, 4080, 6000, 7000]
 
                 for fallback_port in fallback_ports:
                     print(f"Port {port} is in use. Attempting fallback on port {fallback_port}...")
