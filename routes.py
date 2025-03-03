@@ -425,15 +425,6 @@ def init_routes(app):
     def event_detail(event_id):
         event = Event.query.get_or_404(event_id)
         return render_template("event_detail.html", event=event)
-
-    @app.route("/")
-    def index():
-        return render_template("index.html", title="Home")
-        
-    @app.route("/events")
-    def events():
-        events = Event.query.all()
-        return render_template("events.html", events=events, title="Events")
         
     @app.errorhandler(404)
     def not_found_error(error):
