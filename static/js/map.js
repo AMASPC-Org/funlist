@@ -1,115 +1,103 @@
-// Map handling module for FunList.ai
-// This file contains all map-related functionality
+// FunList.ai Map Module
 
-// Cache DOM elements and initialize variables
-let map = null;
-const eventMarkers = [];
-let userLocationMarker = null;
+// Initialize the map with Leaflet
+function initializeMap(elementId) {
+  console.log("Initializing map in element:", elementId);
 
-// Initialize map with options
-function initializeMap(elementId, defaultLat = 47.0379, defaultLng = -122.9007, defaultZoom = 10) {
-  const mapContainer = document.getElementById(elementId);
-  if (!mapContainer) {
-    console.error(`Map container ${elementId} not found`);
+  const mapElement = document.getElementById(elementId);
+  if (!mapElement) {
+    console.error("Map container element not found:", elementId);
     return null;
   }
 
   try {
-    // Create map with default center
-    const mapInstance = L.map(elementId, {
+    // Create the map instance
+    const map = L.map(elementId, {
+      center: [47.0379, -122.9007], // Default to Olympia, WA
+      zoom: 13,
       zoomControl: true,
-      scrollWheelZoom: true,
-      attributionControl: true
-    }).setView([defaultLat, defaultLng], defaultZoom);
-
-    // Add the OpenStreetMap tile layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      maxZoom: 19,
-      crossOrigin: "anonymous" // Add crossOrigin attribute to fix CORS issues
-    }).addTo(mapInstance);
-
-    console.log("Map initialized successfully");
-
-    // Force a map resize after it's visible and loaded
-    setTimeout(() => {
-      mapInstance.invalidateSize();
-      console.log("Map size refreshed for better rendering");
-    }, 100);
-
-    // Make map responsive to container size changes
-    window.addEventListener('resize', () => {
-      if (mapInstance) {
-        setTimeout(() => mapInstance.invalidateSize(), 100);
-      }
+      scrollWheelZoom: true
     });
 
-    return mapInstance;
+    // Add the OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19
+    }).addTo(map);
+
+    console.log("Map initialized successfully");
+    return map;
   } catch (error) {
     console.error("Error initializing map:", error);
-    if (mapContainer) {
-      mapContainer.innerHTML = '<div class="alert alert-danger">There was an error loading the map. Please refresh the page to try again.</div>';
-    }
     return null;
   }
 }
 
-// Get user's location and center map
-function getUserLocation(mapInstance, callback) {
-  if (!mapInstance || !navigator.geolocation) {
-    if (callback) callback(false);
+// Get user location and center the map
+function getUserLocation(map, callback) {
+  if (!map) {
+    console.error("Map not initialized");
+    if (callback) callback(false, "Map not initialized");
     return;
   }
 
-  console.log("Requesting user location...");
-  navigator.geolocation.getCurrentPosition(
-    function(position) {
-      const userLat = position.coords.latitude;
-      const userLng = position.coords.longitude;
-      console.log("User location obtained:", userLat, userLng);
+  if ('geolocation' in navigator) {
+    navigator.geolocation.getCurrentPosition(
+      function(position) {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
 
-      // Center map on user's location
-      mapInstance.setView([userLat, userLng], 12);
+        console.log("User location obtained:", lat, lng);
 
-      // Add a marker for user's location with custom icon
-      const userIcon = L.divIcon({
-        html: '<div style="background-color: #4285F4; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white;"></div>',
-        className: 'user-location-marker',
-        iconSize: [16, 16],
-        iconAnchor: [8, 8]
-      });
+        // Center the map on user location
+        map.setView([lat, lng], 13);
 
-      // Remove existing user marker if present
-      if (userLocationMarker) {
-        mapInstance.removeLayer(userLocationMarker);
+        // Create a marker for user location
+        const userMarker = L.marker([lat, lng], {
+          icon: L.divIcon({
+            className: 'user-location-marker',
+            html: '<div><i class="fas fa-map-marker-alt"></i></div>',
+            iconSize: [30, 30],
+            iconAnchor: [15, 30]
+          })
+        }).addTo(map);
+
+        userMarker.bindPopup("You are here").openPopup();
+
+        if (callback) callback(true, {lat, lng});
+
+        // Dispatch a custom event that user location is ready
+        const event = new CustomEvent('user-location-ready', { 
+          detail: { latitude: lat, longitude: lng } 
+        });
+        document.dispatchEvent(event);
+        console.log("Dispatched user-location-ready event");
+      },
+      function(error) {
+        console.error("Error getting user location:", error.message);
+        if (callback) callback(false, error.message);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0
       }
-
-      // Create new user marker
-      userLocationMarker = L.marker([userLat, userLng], {icon: userIcon})
-        .addTo(mapInstance)
-        .bindPopup("<strong>Your location</strong>");
-
-      if (callback) callback(true, {lat: userLat, lng: userLng});
-    }, 
-    function(error) {
-      console.log("Geolocation error:", error.message);
-      if (callback) callback(false, error);
-    }, 
-    {
-      enableHighAccuracy: true,
-      timeout: 5000,
-      maximumAge: 0
-    }
-  );
+    );
+  } else {
+    console.warn("Geolocation is not supported by this browser");
+    if (callback) callback(false, "Geolocation not supported");
+  }
 }
 
-// Add a single marker to the map
-function addMarker(mapInstance, lat, lng, popupContent, options = {}) {
-  if (!mapInstance) return null;
+// Add a marker to the map
+function addMarker(map, lat, lng, popupContent) {
+  if (!map) {
+    console.error("Map not initialized");
+    return null;
+  }
 
   try {
-    const marker = L.marker([lat, lng], options)
-      .addTo(mapInstance);
+    const marker = L.marker([lat, lng]).addTo(map);
 
     if (popupContent) {
       marker.bindPopup(popupContent);
@@ -122,36 +110,25 @@ function addMarker(mapInstance, lat, lng, popupContent, options = {}) {
   }
 }
 
-// Search for location using Nominatim API
+// Search for a location using Nominatim
 function searchLocation(query, callback) {
-  if (!query || query.length < 3) return;
+  const searchUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`;
 
-  fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`, {
-    method: 'GET',
-    headers: {
-      'Accept': 'application/json'
-    }
-  })
-  .then(response => {
-    if (!response.ok) {
-      throw new Error(`Network response was not ok: ${response.status}`);
-    }
-    return response.json();
-  })
-  .then(data => {
-    if (data && data.length > 0) {
-      callback(true, data[0]);
-    } else {
-      callback(false, {message: 'No locations found'});
-    }
-  })
-  .catch(error => {
-    console.error("Error searching for location:", error);
-    callback(false, error);
-  });
+  fetch(searchUrl)
+    .then(response => response.json())
+    .then(data => {
+      if (data && data.length > 0) {
+        callback(true, data[0]);
+      } else {
+        callback(false, "Location not found");
+      }
+    })
+    .catch(error => {
+      console.error("Error searching location:", error);
+      callback(false, error);
+    });
 }
 
-// Helper function for debouncing API calls
 function debounce(func, wait) {
   let timeout;
   return function executedFunction(...args) {

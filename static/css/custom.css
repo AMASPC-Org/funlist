@@ -1761,28 +1761,47 @@ body.cookie-consent-visible .floating-buttons-container {
 
 /* Map specific styling */
 #map {
-    min-height: 600px;
+    height: 600px;
     width: 100%;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    z-index: 1;
     margin-bottom: 20px;
-    position: relative;
-    overflow: hidden;
+    position: relative; 
 }
 
+/* Fix z-index issues with map container */
 .leaflet-container {
     height: 100%;
     width: 100%;
+    z-index: 1;
 }
 
-/* Ensure the map is rendered correctly */
+.leaflet-control {
+    z-index: 800 !important;
+}
+
+.leaflet-pane {
+    z-index: 400 !important;
+}
+
 .leaflet-map-pane {
-    z-index: 2 !important;
+    z-index: 1 !important;
 }
 
-.leaflet-google-layer {
-    z-index: 1 !important;
+/* Higher z-index for controls and popups */
+.leaflet-popup {
+    z-index: 700 !important;
+}
+
+/* Ensure dropdown menus appear above the map */
+.dropdown-menu {
+    z-index: 1000 !important;
+}
+
+/* Navigation bar should be above the map */
+.navbar {
+    z-index: 1100 !important;
+    position: relative;
 }
 
 .event-popup h5 {
