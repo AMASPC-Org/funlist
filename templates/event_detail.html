@@ -28,6 +28,29 @@
                         </ul>
                     </div>
 
+                    <!-- New sections for fun rating justification and target audience description -->
+                    {% if event.fun_rating_justification %}
+                    <div class="card mb-4">
+                      <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Why This Rating?</h5>
+                      </div>
+                      <div class="card-body">
+                        <p>{{ event.fun_rating_justification }}</p>
+                      </div>
+                    </div>
+                    {% endif %}
+
+                    {% if event.target_audience_description %}
+                    <div class="card mb-4">
+                      <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Who Will Enjoy This Event?</h5>
+                      </div>
+                      <div class="card-body">
+                        <p>{{ event.target_audience_description }}</p>
+                      </div>
+                    </div>
+                    {% endif %}
+
                     <div class="social-share mt-4">
                         <h4>Share This Event</h4>
                         <div class="share-buttons">

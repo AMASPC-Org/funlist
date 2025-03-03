@@ -472,7 +472,9 @@ def init_routes(app):
                         longitude=coordinates[1],
                         category=form.category.data,
                         target_audience=form.target_audience.data,
+                        target_audience_description=form.target_audience_description.data,
                         fun_meter=form.fun_meter.data,
+                        fun_rating_justification=form.fun_rating_justification.data,
                         user_id=current_user.id,
                     )
                     db.session.add(event)

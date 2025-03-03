@@ -172,6 +172,7 @@ class EventForm(FlaskForm):
         ('4', '⭐⭐⭐⭐'),
         ('5', '⭐⭐⭐⭐⭐')
     ], validators=[DataRequired()])
+    fun_rating_justification = TextAreaField("Why This Rating?")
     category = SelectField('Category', choices=[
         ('music', 'Music'), 
         ('sports', 'Sports'),
@@ -185,6 +186,7 @@ class EventForm(FlaskForm):
         ('kids', 'Kids'),
         ('seniors', 'Seniors')
     ], validators=[DataRequired()])
+    target_audience_description = TextAreaField("Who Will Enjoy This Event?")
     website = StringField('Website', validators=[Optional(), URL()])
     facebook = StringField('Facebook')
     instagram = StringField('Instagram')
