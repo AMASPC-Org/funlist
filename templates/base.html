@@ -22,27 +22,30 @@
             min-width: 200px;
         }
     </style>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    <!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
      crossorigin="anonymous"/>
 
-    <!-- Leaflet JS (must come after CSS) -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+<!-- Leaflet JS (must come after CSS) -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
      crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}?v={{ range(1, 10000) | random }}">
+     
+<!-- Custom CSS with cache-busting -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}?v={{ range(1, 10000) | random }}">
     
-    <!-- Ensure Leaflet loads properly -->
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        // Check if Leaflet is properly loaded
-        if (typeof L === 'undefined') {
-          console.error("Leaflet library not loaded properly");
-        } else {
-          console.log("Leaflet library loaded successfully");
-        }
-      });
-    </script>
+<!-- Ensure Leaflet loads properly -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Check if Leaflet is properly loaded
+    if (typeof L === 'undefined') {
+      console.error("Leaflet library not loaded properly");
+    } else {
+      console.log("Leaflet library loaded successfully");
+    }
+  });
+</script>
 </head>
 <body {% if new_registration %}data-new-registration="true"{% endif %}>
   {% include 'partials/navbar.html' %}
