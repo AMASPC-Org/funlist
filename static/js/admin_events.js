@@ -13,7 +13,7 @@ function showToast(message, type) {
   toast.className = `toast toast-${type || 'info'}`;
   toast.innerHTML = message;
   document.body.appendChild(toast);
-  
+
   // Auto remove after 3 seconds
   setTimeout(() => {
     toast.classList.add('toast-fade-out');
@@ -73,7 +73,7 @@ try {
 // Define window functions for event management
 window.approveEvent = function(eventId) {
   if (confirm('Are you sure you want to approve this event?')) {
-    fetch(`/api/events/${eventId}/approve`, {
+    fetch(`/admin/event/${eventId}/approve`, { //Corrected endpoint
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -129,13 +129,11 @@ window.editEvent = function(eventId) {
 
 window.deleteEvent = function(eventId) {
   if (confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
-    fetch(`/admin/events/${eventId}/action`, {
+    fetch(`/admin/event/${eventId}/delete`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCsrfToken()
-      },
-      body: JSON.stringify({action: 'delete'})
+        'Content-Type': 'application/json'
+      }
     })
     .then(response => response.json())
     .then(data => {
