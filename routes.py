@@ -795,7 +795,8 @@ def init_routes(app):
         if request.method == "GET":
             # Pre-populate form with existing data if available
             form.company_name.data = current_user.company_name
-            form.description.data = current_user.organizer_description            form.website.data = current_user.organizer_website
+            form.description.data = current_user.organizer_description
+            form.website.data = current_user.organizer_website
             form.advertising_opportunities.data = current_user.advertising_opportunities
             form.sponsorship_opportunities.data = current_user.sponsorship_opportunities
 

@@ -1,0 +1,83 @@
+Okay, I've reviewed your extensive input, including the code snippets, your descriptions, and your previous clarifying questions. Here's a comprehensive prompt designed for the Replit AI Assistant, broken down into manageable tasks, with considerations for potential issues and best practices.  I've focused on creating a structured, actionable prompt that the Replit AI can use effectively.
+
+**Prompt for Replit AI Assistant:**
+
+**Overall Context:**
+
+We are building a Flask-based event discovery platform called FunList.ai.  The core functionality includes user registration, event listing, event search, and (eventually) personalized recommendations.  The platform targets multiple user types (subscribers, event creators, organizers, vendors) and needs to be location-aware.  We are working within the Replit environment.  *Before making ANY code changes, thoroughly review the existing codebase (all provided files) to understand the current structure, dependencies, and potential conflicts.*
+
+**Crucial Instruction:** Address each task below *individually*, providing code modifications and explanations for *each step*.  Do *not* combine changes unless explicitly instructed.  After each task, verify that the application still runs and that no existing functionality is broken.
+
+**Task 1: Database and Model Updates (User Roles and Preferences)**
+
+1.  **Analyze Existing Models:** Examine the `models.py` file. Identify the `User` model and its existing fields.
+2.  **Add Audience Buckets:**  Modify the `User` model to include a new field called `audience_type`. This field should be a `StringField` (or `db.String` in SQLAlchemy) with a maximum length of, say, 20 characters.  It should *not* be nullable (i.e., it's required).
+3.  **Add Location Preferences:** Add a field to the `User` model called `preferred_locations`.  This will store a *comma-separated list* of city names (e.g., "Olympia,Lacey,Tumwater"). Use a `StringField` with a reasonable maximum length (e.g., 255 characters). This field can be nullable initially.
+4.  **Add Event Interest Categories:** Add a field named `event_interests` to the `User` model.  This will also store a *comma-separated list* of event categories (e.g., "sports,music,outdoors").  Use a `StringField` with a reasonable maximum length (e.g., 255 characters). This field can be nullable initially.
+5.  **Vendor Type Enhancement (if needed):**  Review the existing `vendor_type` field in the `User` model. If it's not already a `StringField` (or a `SelectField` in the *form* that maps to a `StringField` in the *model*), modify it accordingly.  Ensure the choices defined in `forms.py` are comprehensive.
+6.  **Database Migration:**  *After* making the model changes, create a database migration using Flask-Migrate.  Provide the exact commands to run in the Replit shell to generate and apply the migration.  *Do not assume the migration environment is set up.*  If `Flask-Migrate` is not already installed and configured, provide the steps to do so.  The steps should be something like:
+    *   `pip install Flask-Migrate`
+    *   In `app.py` (or wherever your Flask app is initialized), add:
+        ```python
+        from flask_migrate import Migrate
+        migrate = Migrate(app, db)
+        ```
+    *   In the Replit shell:
+        ```bash
+        flask db init  # Only if migrations haven't been initialized before
+        flask db migrate -m "Add user audience, location, and interest fields"
+        flask db upgrade
+        ```
+7.  **Verify:** After the migration, confirm that the database schema has been updated correctly.  You can do this by inspecting the database directly (if possible in Replit) or by writing a simple test route that queries for users and prints their new fields.
+
+**Task 2: Form Updates (Signup and Profile)**
+
+1.  **Signup Form (`SignupForm` in `forms.py`):**
+    *   **Audience Type:** Add a `SelectField` for `audience_type`.  The choices should be: `('', 'Select audience type...')`, `('single', 'Single (18+)'), ('senior', 'Senior'), ('professional', 'Professional'), ('parent', 'Parent'), ('adult', 'Adult'), ('family', 'Family'), ('21+', '21+')`. Use appropriate validators (e.g., `DataRequired`).
+    *   **Preferred Locations:** Add a `StringField` for `preferred_locations`.  Include a helpful description (e.g., "Enter up to 5 cities, separated by commas"). Use a `Length` validator with a reasonable maximum. Consider adding a custom validator (using `wtforms.validators.Regexp`) to enforce the comma-separated format, but this is optional for now.
+    *   **Event Interests:** Add a `StringField` for `event_interests`. Provide a similar description and `Length` validator.  Consider a custom validator for the comma-separated format (optional).
+2.  **Profile Form (`ProfileForm` in `forms.py`):**
+    *   Add the same fields as in the `SignupForm` (audience type, preferred locations, event interests) *if they don't already exist*. Use the *same* field types and validators.
+3.  **Review Vendor/Organizer Forms:**  Examine `VendorProfileForm` and `OrganizerProfileForm`.  Determine if any of the new fields (audience type, locations, interests) are relevant to these user types. If so, add them to the respective forms, using appropriate field types and validators.  *Be mindful of redundancy.* If a vendor or organizer is *also* a subscriber (which is likely), avoid duplicating fields that are already captured in the `User` model.
+4.  **Template Updates:**  Modify the corresponding HTML templates (`signup.html`, `edit_profile.html`, and potentially `vendor_profile.html` and `organizer_profile.html`) to include the new form fields.  Use appropriate Bootstrap classes for consistent styling.  Ensure proper labels, error handling (displaying validation errors), and help text are included.
+
+**Task 3: Route Updates (Signup and Profile)**
+
+1.  **Signup Route (`/signup` in `routes.py`):**
+    *   **Data Handling:** Modify the route to correctly handle the new form data.  Retrieve the values from the submitted form (`form.audience_type.data`, `form.preferred_locations.data`, `form.event_interests.data`) and assign them to the corresponding fields of the newly created `User` object *before* adding the user to the database.
+    *   **Error Handling:** Ensure proper error handling and validation.  If there are any database errors (e.g., integrity errors), roll back the transaction and display appropriate error messages.
+2.  **Profile Edit Route (`/profile/edit` in `routes.py`):**
+    *   **Data Handling:** Similarly, update the route to handle the new fields when updating the user's profile.  Retrieve the data from the form and update the corresponding fields of the `current_user` object.
+    *   **GET Request:** Ensure that the `GET` request handler for this route pre-populates the form fields with the user's existing data (including the new fields).
+3. **Vendor/Organizer Profile:** If the database and forms updates have been made for these profile types, perform the changes to update the associated data
+
+**Task 4: Post-Registration Wizard (Optional, but Recommended)**
+
+1.  **Wizard Integration:**  You mentioned a post-registration wizard.  Review the existing wizard implementation (likely in `post_registration_wizard.html` and related JavaScript).
+2.  **Data Collection:**  Modify the wizard to collect the *same* information as the new fields in the signup/profile forms (audience type, preferred locations, event interests).
+3.  **Data Submission:** Ensure the wizard's data is submitted to the `/save-preferences` route (or a similar route designed for updating user preferences).  Adapt the `/save-preferences` route (or the chosen route) to handle this data correctly and update the user's profile in the database.
+
+**Task 5: Freemium Model Considerations (Conceptual - No Code Changes Yet)**
+
+1.  **"Personal Fun Assistant":**  Based on your description, the "Personal Fun Assistant" sounds like an *AI-powered recommendation system*.  *Do not implement the recommendation logic yet.*  For now, focus on collecting the necessary user data (audience, location, interests) that will be *input* to this system.
+2.  **Freemium Structure:**  You've suggested a freemium model.  This is a good approach.  Again, *no code changes yet*.  We'll need to define the specific features that will be limited in the free tier and the benefits of the paid tier.  This could include:
+    *   **Free Tier:**  Basic event search, limited number of location preferences, limited access to event details.
+    *   **Paid Tier ("Personal Fun Assistant"):**  AI-powered recommendations, unlimited location preferences, access to all event details, potentially exclusive content or early access to event listings.
+3. **DATABASE Changes:** Add is_premium to the USER table to track users that would be paying for the extra features
+
+**Task 6: Geographic Selection (Conceptual - No Code Changes Yet)**
+
+1.  **User Input vs. Auto-Detection:**  You've raised the question of manual city selection vs. auto-detection.  For the *initial* implementation, stick with *manual* city selection (comma-separated list). This is simpler to implement and gives users more control.
+2.  **Future Enhancements:**  We can *later* add auto-detection (using IP address or GPS) as an *optional* feature. This could be presented as a "Use my current location" button or checkbox that pre-populates the location field.
+
+**General Instructions and Reminders:**
+
+*   **Error Handling:** Implement comprehensive error handling throughout.  Use `try...except` blocks to catch potential exceptions (especially database errors) and provide informative error messages to the user.
+*   **Logging:** Use Python's `logging` module extensively to log important events, errors, and debugging information. This will be invaluable for troubleshooting.
+*   **Testing:**  While we're not focusing on writing formal unit tests *yet*, *manually* test each change thoroughly.  After each modification, run the application, try to sign up, edit your profile, and ensure that the data is being saved and displayed correctly.
+*   **Replit Environment:**  Be mindful of the Replit environment.  Use environment variables (Secrets) for sensitive information (database credentials, API keys).
+*   **Version Control:** Use Git within Replit to commit your changes frequently.  This will allow you to easily revert to previous versions if something goes wrong.
+* **Check Dependencies:** Before making substantial changes, examine the `pyproject.toml`, `package.json` `replit.nix` and `package-lock.json` files for the required libraries.
+* **Address Security:** As you make changes, keep in mind all the places we discussed and ensure proper security protocols are followed
+
+This detailed prompt breaks down the complex task into smaller, more manageable steps. It prioritizes a systematic approach, focusing on data integrity, user experience, and maintainability. Remember, the goal is to provide the Replit AI with clear, actionable instructions that it can follow effectively.
