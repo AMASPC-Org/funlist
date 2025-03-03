@@ -1,4 +1,3 @@
-
 import logging
 import os
 import signal
@@ -17,7 +16,7 @@ def check_port_usage(ports):
                 text=True
             )
             pids = result.stdout.strip().split('\n')
-            
+
             if pids and pids[0]:
                 logging.info(f"Port {port} is in use by PIDs: {', '.join(pids)}")
             else:
@@ -42,22 +41,27 @@ if __name__ == "__main__":
         # In development, use PORT from environment or default to 8080
         port = int(os.environ.get('PORT', 8080))
         print(f"Starting development server on port {port}...")
-        
-        # Try to start the server, with clearer error handling
+
+        # Try to start the server, with improved fallback port handling
         try:
             app.run(host='0.0.0.0', port=port, debug=True)
         except OSError as e:
             if "Address already in use" in str(e):
-                print(f"ERROR: Port {port} is already in use. Please try:")
-                print(f"  1. Wait a moment for the previous server to shut down")
-                print(f"  2. Or edit .replit to use a different port")
-                
-                # Try one alternate port as a fallback
-                fallback_port = 5000
-                print(f"Attempting fallback on port {fallback_port}...")
-                try:
-                    app.run(host='0.0.0.0', port=fallback_port, debug=True)
-                except:
-                    print(f"Fallback port {fallback_port} also failed.")
+                # Try multiple fallback ports in sequence
+                fallback_ports = [5000, 5006, 3000, 8081]
+
+                for fallback_port in fallback_ports:
+                    print(f"Port {port} is in use. Attempting fallback on port {fallback_port}...")
+                    try:
+                        app.run(host='0.0.0.0', port=fallback_port, debug=True)
+                        # If we get here, the server started successfully
+                        break
+                    except OSError as inner_e:
+                        if "Address already in use" not in str(inner_e):
+                            print(f"Error on fallback port {fallback_port}: {inner_e}")
+                            break
+                        print(f"Fallback port {fallback_port} also in use, trying next...")
+                else:
+                    print("All fallback ports are in use. Please manually stop running processes.")
             else:
                 print(f"Error starting server: {e}")
