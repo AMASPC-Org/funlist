@@ -419,13 +419,22 @@ def init_routes(app):
     @app.route("/map")
     def map():
         events = Event.query.all()
-        return render_template("map.html", events=events)
+        return render_template("map.html", events=events, title="Map")
 
     @app.route("/event/<int:event_id>")
     def event_detail(event_id):
         event = Event.query.get_or_404(event_id)
         return render_template("event_detail.html", event=event)
 
+    @app.route("/")
+    def index():
+        return render_template("index.html", title="Home")
+        
+    @app.route("/events")
+    def events():
+        events = Event.query.all()
+        return render_template("events.html", events=events, title="Events")
+        
     @app.errorhandler(404)
     def not_found_error(error):
         return render_template("404.html"), 404
