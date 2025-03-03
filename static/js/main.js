@@ -8,14 +8,18 @@ document.addEventListener('DOMContentLoaded', function() {
     setupModals();
     setupFloatingButtons();
     setupCookieConsent();
-    initializeMap(); //Added this line to initialize the map on load
-    initializeSponsorsCarousel(); //Added this line to initialize the sponsors carousel on load
-    setupFormValidation();
+
+    // Set up map-related functionality
+    setupMapEvents();
     setupLocationServices();
+
+    // Other initializations
+    setupFormValidation();
     setupFilters();
 
     // Initialize any carousels or sliders
     initializeCarousels();
+    initializeSponsorsCarousel();
 });
 
 // Global error handling
@@ -544,4 +548,23 @@ function initializeMap() {
         console.error('Error initializing map:', error);
         mapContainer.innerHTML = '<div class="alert alert-danger">Map could not be loaded. Please try again later.</div>';
     }
+}
+
+// Added to handle map-specific events and initialization.  Implementation is a best guess based on context.
+function setupMapEvents() {
+    const mapContainer = document.getElementById('map');
+    if (!mapContainer) return;
+
+    mapContainer.addEventListener('user-location-ready', function(e) {
+        console.log('User location ready, initializing map with:', e.detail);
+        initializeMap(e.detail.lat, e.detail.lng); // Pass coordinates to initializeMap
+    });
+
+    // Attempt to initialize the map without user location if needed
+    setTimeout(() => {
+        if(!mapContainer.dataset.userLat) {
+            console.log("Initializing map without user location");
+            initializeMap();
+        }
+    }, 3000); // Wait 3 seconds before trying this fallback
 }

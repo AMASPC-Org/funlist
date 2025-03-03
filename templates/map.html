@@ -92,104 +92,53 @@
 
 {% block extra_js %}
 <script>
+  // Create a global array of event locations for the map to use
+  const eventLocations = [
+    {% for event in events %}
+      {% if event.latitude and event.longitude %}
+        {
+          id: {{ event.id }},
+          title: "{{ event.title|safe }}",
+          description: "{{ event.description|truncate(100)|safe }}",
+          latitude: {{ event.latitude }},
+          longitude: {{ event.longitude }}
+        },
+      {% endif %}
+    {% endfor %}
+  ];
+
   document.addEventListener('DOMContentLoaded', function() {
-    // Make sure Leaflet is loaded
-    if (typeof L === 'undefined') {
-      console.error('Leaflet library not loaded');
-      return;
-    }
-
-    // Initialize the map only if the map container exists
-    const mapContainer = document.getElementById('map');
-    if (mapContainer) {
-      try {
-        var map = L.map('map').setView([47.0379, -122.9007], 10); // Default to Olympia, WA
-
-        // Add the OpenStreetMap tile layer
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
-
-        // Force map to recalculate its container size after small delay
-        setTimeout(function() {
-          map.invalidateSize();
-        }, 100);
-
-      // Try to get user's location if available
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function(position) {
-          var userLat = position.coords.latitude;
-          var userLng = position.coords.longitude;
-
-          // Center map on user's location
-          map.setView([userLat, userLng], 12);
-
-          // Add a marker for user's location
-          L.marker([userLat, userLng])
-            .addTo(map)
-            .bindPopup("Your location")
-            .openPopup();
-        }, function() {
-          console.log("Geolocation permission denied or error occurred");
-        });
-      }
-
-      // Add markers for events
-      {% for event in events %}
-        {% if event.latitude and event.longitude %}
-          L.marker([{{ event.latitude }}, {{ event.longitude }}])
-            .addTo(map)
-            .bindPopup("<strong>{{ event.title }}</strong><br>{{ event.description|truncate(100) }}<br><a href='/event/{{ event.id }}'>View details</a>");
-        {% endif %}
-      {% endfor %}
-          // Add event listeners if elements exist
-          const categoryFilter = document.getElementById('categoryFilter');
-          const dateFilter = document.getElementById('dateFilter');
-          const funFilter = document.getElementById('funFilter');
-          const locationSearch = document.getElementById('locationSearch');
-
-          if (categoryFilter) categoryFilter.addEventListener('change', filterEvents);
-          if (dateFilter) dateFilter.addEventListener('change', filterEvents);
-          if (funFilter) funFilter.addEventListener('change', filterEvents);
-
-          // Location search functionality
-          if (locationSearch) locationSearch.addEventListener('input', debounce(function(e) {
-              const searchQuery = e.target.value;
-              if (searchQuery.length > 2) {
-                  fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`)
-                      .then(response => response.json())
-                      .then(data => {
-                          if (data.length > 0) {
-                              const location = data[0];
-                              map.setView([location.lat, location.lon], 12);
-                              //filterEvents(); //removed filterEvents to prevent error
-                          }
-                      });
-              }
-          }, 500));
-
-          // Debounce function to limit API calls
-          function debounce(func, wait) {
-              let timeout;
-              return function executedFunction(...args) {
-                  const later = () => {
-                      clearTimeout(timeout);
-                      func(...args);
-                  };
-                  clearTimeout(timeout);
-                  timeout = setTimeout(later, wait);
-              };
-          }
-
-          function filterEvents(){
-            //This function is not implemented because it is not needed for the edited code.
-          }
-      } catch(error) {
-        console.error('Error initializing map:', error);
-        mapContainer.innerHTML = '<div class="alert alert-danger">Map could not be loaded. Please try again later.</div>';
-      }
+    console.log('Map page loaded - initializing map');
+    
+    // Let the main.js handle map initialization through setupMapEvents
+    if (typeof setupMapEvents === 'function') {
+      setupMapEvents();
     } else {
-      console.error('Map container not found');
+      console.error('Map setup function not available');
+      
+      // Fallback initialization if main.js doesn't load properly
+      if (typeof L !== 'undefined') {
+        const mapContainer = document.getElementById('map');
+        if (mapContainer) {
+          try {
+            const map = L.map('map').setView([47.0379, -122.9007], 10);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+              attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            
+            setTimeout(() => map.invalidateSize(), 300);
+            
+            // Add event markers
+            eventLocations.forEach(event => {
+              L.marker([event.latitude, event.longitude])
+                .addTo(map)
+                .bindPopup(`<strong>${event.title}</strong><br>${event.description}<br><a href='/event/${event.id}'>View details</a>`);
+            });
+          } catch(error) {
+            console.error('Error in fallback map initialization:', error);
+          }
+        }
+      }
     }
   });
 </script>
