@@ -477,7 +477,7 @@ def init_routes(app):
 
     @app.route("/admin/login", methods=["GET", "POST"])
     def admin_login():
-        if current_user.is_authenticated and current_user.is_admin:
+        if current_user.is_authenticated and current_user.email == 'ryan@funlist.ai':
             return redirect(url_for("admin_dashboard"))
         form = LoginForm()
         if form.validate_on_submit():
@@ -486,79 +486,24 @@ def init_routes(app):
                 password = form.password.data
                 logger.info(f"Admin login attempt: {email}")
 
-                # Special handling for admin account with direct SQL to avoid model incompatibilities
-                admin_email = 'ryan@americanmarketingalliance.com'
-                admin_password = '120M2025*v7'
+                # Only ryan@funlist.ai should have admin access
+                admin_email = 'ryan@funlist.ai'
 
-                # Check if email is admin and password matches
-                if email == admin_email and password == admin_password:
-                    # Get admin user directly from database
-                    user = None
-                    try:
-                        # Try using ORM
-                        user = User.query.filter_by(email=admin_email).first()
-                    except Exception as e:
-                        logger.warning(f"ORM query failed, trying direct SQL: {str(e)}")
-                        # Fall back to direct SQL
-                        result = db.session.execute(text(f"SELECT id, email, is_admin FROM \"user\" WHERE email = '{admin_email}'")).fetchone()
-                        if result:
-                            # Create a minimal user object with just what we need
-                            user = User()
-                            user.id = result[0]
-                            user.email = result[1]
-                            user.is_admin = result[2]
-                    
-                    if user:
-                        # Ensure admin privileges
-                        try:
-                            db.session.execute(text(f"UPDATE \"user\" SET is_admin = TRUE, account_active = TRUE WHERE email = '{admin_email}'"))
-                            db.session.commit()
-                        except Exception as e:
-                            logger.error(f"Failed to update admin status: {str(e)}")
-                            db.session.rollback()
+                # Standard login check
+                try:
+                    user = User.query.filter_by(email=email).first()
+                    if user and user.check_password(password) and user.email == admin_email:
+                        # Ensure admin privileges for the correct admin
+                        user.is_admin = True
+                        db.session.commit()
                         
-                        # Login manually
+                        # Login the user
                         login_user(user)
                         session["user_id"] = user.id
                         session["login_time"] = datetime.utcnow().isoformat()
                         session["last_activity"] = datetime.utcnow().isoformat()
                         
                         logger.info(f"Admin login successful: {admin_email}")
-                        return redirect(url_for("admin_dashboard"))
-                    else:
-                        # Create admin if it doesn't exist
-                        try:
-                            db.session.execute(text(f"""
-                                INSERT INTO "user" (email, password_hash, is_admin, account_active, is_subscriber, created_at) 
-                                VALUES ('{admin_email}', 
-                                      'pbkdf2:sha256:600000$jEvAVRjlYYYSbtQb$9c2a7da5e79cb28ed9ec2308a2f0d2a4d0b268694fbb4e4ab6c1c6f9939ac2ae', 
-                                      TRUE, TRUE, TRUE, CURRENT_TIMESTAMP)
-                                ON CONFLICT (email) DO NOTHING
-                            """))
-                            db.session.commit()
-                            
-                            # Try to get user again
-                            user = User.query.filter_by(email=admin_email).first()
-                            
-                            if user:
-                                login_user(user)
-                                session["user_id"] = user.id
-                                session["login_time"] = datetime.utcnow().isoformat()
-                                session["last_activity"] = datetime.utcnow().isoformat()
-                                
-                                logger.info(f"Created and logged in admin: {admin_email}")
-                                return redirect(url_for("admin_dashboard"))
-                        except Exception as e:
-                            logger.error(f"Failed to create admin: {str(e)}")
-                            db.session.rollback()
-                            flash("Failed to create admin account. Please check database integrity.", "danger")
-                
-                # Standard login check as fallback
-                try:
-                    user = User.query.filter_by(email=email).first()
-                    if user and user.check_password(password) and user.is_admin:
-                        login_user(user)
-                        logger.info(f"Admin login successful via standard flow: {user.email}")
                         return redirect(url_for("admin_dashboard"))
                     else:
                         flash("Invalid credentials or insufficient privileges.", "danger")
@@ -576,7 +521,7 @@ def init_routes(app):
     @login_required
     def admin_events():
         if current_user.email != 'ryan@funlist.ai':
-            flash("Access denied. Admin privileges required.", "danger")
+            flash("Access denied. Only authorized administrators can access this page.", "danger")
             return redirect(url_for("index"))
         events = Event.query.order_by(Event.created_at.desc()).all()
         return render_template("admin_events.html", events=events)
@@ -620,7 +565,7 @@ def init_routes(app):
     @login_required
     def admin_users():
         if current_user.email != 'ryan@funlist.ai':
-            flash("Access denied. Admin privileges required.", "danger")
+            flash("Access denied. Only authorized administrators can access this page.", "danger")
             return redirect(url_for("index"))
         users = User.query.order_by(User.created_at.desc()).all()
         return render_template("admin_users.html", users=users)
@@ -753,7 +698,7 @@ def init_routes(app):
     @login_required
     def admin_analytics():
         if current_user.email != 'ryan@funlist.ai':
-            flash("Access denied. Admin privileges required.", "danger")
+            flash("Access denied. Only authorized administrators can access this page.", "danger")
             return redirect(url_for("index"))
         # Get events by category data
 
@@ -807,7 +752,7 @@ def init_routes(app):
     @login_required
     def admin_event_action(event_id, action):
         if current_user.email != 'ryan@funlist.ai':
-            return jsonify({"success": False, "message": "Unauthorized"}), 403
+            return jsonify({"success": False, "message": "Unauthorized. Only administrators can perform this action."}), 403
 
         try:
             event = Event.query.get_or_404(event_id)
@@ -928,7 +873,7 @@ def init_routes(app):
     @login_required
     def admin_dashboard():
         if current_user.email != 'ryan@funlist.ai':
-            flash("Access denied. Admin privileges required.", "danger")
+            flash("Access denied. Only authorized administrators can access this page.", "danger")
             return redirect(url_for("index"))
         tab = request.args.get("tab", "overview")
         status = request.args.get("status", "pending")
@@ -1010,7 +955,7 @@ def init_routes(app):
     @login_required
     def admin_deactivate_user(user_id):
         if current_user.email != 'ryan@funlist.ai':
-            return jsonify({"error": "Unauthorized"}), 403
+            return jsonify({"error": "Unauthorized. Only administrators can perform this action."}), 403
         user = User.query.get_or_404(user_id)
         user.account_active = False
         db.session.commit()
@@ -1021,7 +966,7 @@ def init_routes(app):
     @login_required
     def admin_activate_user(user_id):
         if current_user.email != 'ryan@funlist.ai':
-            return jsonify({"error": "Unauthorized"}), 403
+            return jsonify({"error": "Unauthorized. Only administrators can perform this action."}), 403
         user = User.query.get_or_404(user_id)
         user.account_active = True
         db.session.commit()

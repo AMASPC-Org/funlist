@@ -22,12 +22,14 @@
           <li>
             <div class="px-3 py-2 text-muted small border-bottom">
               <strong>Account Type:</strong> 
-              {% if current_user.is_organizer %}
-                Organization/Venue
+              {% if current_user.is_organizer and current_user.company_name and 'venue' in current_user.company_name.lower() %}
+                Venue
+              {% elif current_user.is_organizer %}
+                Organization
               {% elif current_user.is_vendor %}
                 Vendor
               {% elif current_user.is_event_creator %}
-                Event Creator
+                Event Manager
               {% else %}
                 Attendee
               {% endif %}
@@ -37,7 +39,7 @@
           <li><a class="dropdown-item" href="{{ url_for('edit_profile') }}">Edit Profile</a></li>
           <li><a class="dropdown-item" href="{{ url_for('events') }}?filter=my_events">My Events</a></li>
           <li><a class="dropdown-item" href="{{ url_for('events') }}?filter=saved">Saved Events</a></li>
-          {% if current_user.is_admin %}
+          {% if current_user.email == 'ryan@funlist.ai' %}
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="{{ url_for('admin_dashboard') }}">Admin Dashboard</a></li>
             <li><a class="dropdown-item" href="{{ url_for('admin_events') }}">Event Management</a></li>
