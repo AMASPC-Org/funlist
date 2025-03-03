@@ -341,13 +341,26 @@ function setupFeedbackForm() {
 // Cookie consent management
 document.addEventListener('DOMContentLoaded', function() {
     console.log('main.js loaded');
-    initCookieConsent();
+    
+    // Add a small delay to ensure all DOM elements are fully loaded
+    setTimeout(() => {
+        try {
+            initCookieConsent();
+        } catch (error) {
+            console.error("Error initializing cookie consent:", error);
+        }
+    }, 500);
     
     // Other initialization code...
 });
 
 function initCookieConsent() {
     const cookieBanner = document.getElementById('cookie-consent');
+    if (!cookieBanner) {
+        console.log('Cookie banner element not found');
+        return;
+    }
+    
     const acceptButton = document.getElementById('accept-cookies');
     const savePreferencesButton = document.getElementById('save-cookie-preferences');
     
@@ -355,102 +368,146 @@ function initCookieConsent() {
     if (!hasAcceptedCookies()) {
         // Show the cookie banner with a slight delay
         setTimeout(() => {
-            cookieBanner.style.display = 'block';
-            document.body.classList.add('cookie-consent-visible');
+            try {
+                cookieBanner.style.display = 'block';
+                document.body.classList.add('cookie-consent-visible');
+            } catch (error) {
+                console.error("Error displaying cookie banner:", error);
+            }
         }, 1000);
     }
     
     // Handle accept all button
     if (acceptButton) {
         acceptButton.addEventListener('click', function() {
-            acceptAllCookies();
-            hideCookieBanner();
+            try {
+                acceptAllCookies();
+                hideCookieBanner();
+            } catch (error) {
+                console.error("Error handling accept cookies:", error);
+            }
         });
     }
     
     // Handle save preferences button
     if (savePreferencesButton) {
         savePreferencesButton.addEventListener('click', function() {
-            const analyticsCookies = document.getElementById('analytics-cookies').checked;
-            const advertisingCookies = document.getElementById('advertising-cookies').checked;
-            
-            saveCookiePreferences({
-                essential: true, // Always required
-                analytics: analyticsCookies,
-                advertising: advertisingCookies
-            });
-            
-            hideCookieBanner();
-            
-            // Close the modal
-            const cookieModal = bootstrap.Modal.getInstance(document.getElementById('cookieModal'));
-            if (cookieModal) {
-                cookieModal.hide();
+            try {
+                const analyticsCookies = document.getElementById('analytics-cookies');
+                const advertisingCookies = document.getElementById('advertising-cookies');
+                
+                saveCookiePreferences({
+                    essential: true, // Always required
+                    analytics: analyticsCookies ? analyticsCookies.checked : false,
+                    advertising: advertisingCookies ? advertisingCookies.checked : false
+                });
+                
+                hideCookieBanner();
+                
+                // Close the modal
+                const cookieModal = document.getElementById('cookieModal');
+                if (cookieModal && window.bootstrap) {
+                    const modalInstance = bootstrap.Modal.getInstance(cookieModal);
+                    if (modalInstance) {
+                        modalInstance.hide();
+                    }
+                }
+            } catch (error) {
+                console.error("Error saving cookie preferences:", error);
             }
         });
     }
 }
 
 function hasAcceptedCookies() {
-    return localStorage.getItem('cookieConsent') !== null;
+    try {
+        return localStorage.getItem('cookieConsent') !== null;
+    } catch (error) {
+        console.error("Error checking cookie consent:", error);
+        return false;
+    }
 }
 
 function acceptAllCookies() {
-    saveCookiePreferences({
-        essential: true,
-        analytics: true,
-        advertising: true
-    });
+    try {
+        saveCookiePreferences({
+            essential: true,
+            analytics: true,
+            advertising: true
+        });
+    } catch (error) {
+        console.error("Error accepting all cookies:", error);
+    }
 }
 
 function saveCookiePreferences(preferences) {
-    // Save to localStorage with expiration of 6 months (in milliseconds)
-    const sixMonths = 180 * 24 * 60 * 60 * 1000;
-    const expirationDate = new Date().getTime() + sixMonths;
-    
-    localStorage.setItem('cookieConsent', JSON.stringify({
-        preferences: preferences,
-        expires: expirationDate
-    }));
-    
-    // Apply cookie settings
-    applyCookieSettings(preferences);
+    try {
+        // Save to localStorage with expiration of 6 months (in milliseconds)
+        const sixMonths = 180 * 24 * 60 * 60 * 1000;
+        const expirationDate = new Date().getTime() + sixMonths;
+        
+        localStorage.setItem('cookieConsent', JSON.stringify({
+            preferences: preferences,
+            expires: expirationDate
+        }));
+        
+        // Apply cookie settings
+        applyCookieSettings(preferences);
+    } catch (error) {
+        console.error("Error saving cookie preferences:", error);
+    }
 }
 
 function applyCookieSettings(preferences) {
-    // Here you would enable/disable tracking based on preferences
-    // For example:
-    if (preferences.analytics) {
-        // Enable analytics tracking
-        console.log('Analytics tracking enabled');
-    }
-    
-    if (preferences.advertising) {
-        // Enable advertising cookies
-        console.log('Advertising cookies enabled');
+    try {
+        // Here you would enable/disable tracking based on preferences
+        // For example:
+        if (preferences.analytics) {
+            // Enable analytics tracking
+            console.log('Analytics tracking enabled');
+        }
+        
+        if (preferences.advertising) {
+            // Enable advertising cookies
+            console.log('Advertising cookies enabled');
+        }
+    } catch (error) {
+        console.error("Error applying cookie settings:", error);
     }
 }
 
 function hideCookieBanner() {
-    const cookieBanner = document.getElementById('cookie-consent');
-    if (cookieBanner) {
-        cookieBanner.style.display = 'none';
-        document.body.classList.remove('cookie-consent-visible');
+    try {
+        const cookieBanner = document.getElementById('cookie-consent');
+        if (cookieBanner) {
+            cookieBanner.style.display = 'none';
+            document.body.classList.remove('cookie-consent-visible');
+        }
+    } catch (error) {
+        console.error("Error hiding cookie banner:", error);
     }
 }
 
 // Check for expired cookie consent
 function checkCookieConsentExpiration() {
-    const consent = JSON.parse(localStorage.getItem('cookieConsent'));
-    if (consent && consent.expires) {
-        if (new Date().getTime() > consent.expires) {
-            // Consent has expired, remove it
-            localStorage.removeItem('cookieConsent');
-            return false;
+    try {
+        const consentData = localStorage.getItem('cookieConsent');
+        if (!consentData) return false;
+        
+        const consent = JSON.parse(consentData);
+        if (consent && consent.expires) {
+            if (new Date().getTime() > consent.expires) {
+                // Consent has expired, remove it
+                localStorage.removeItem('cookieConsent');
+                return false;
+            }
+            return true;
         }
-        return true;
+        return false;
+    } catch (error) {
+        console.error("Error checking cookie consent expiration:", error);
+        return false;
     }
-    return false;
 }
 
 function showNewUserWizard() {

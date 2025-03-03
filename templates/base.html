@@ -113,6 +113,9 @@
     });
 </script>
 
+<!-- Event Emitter Helper -->
+<script src="{{ url_for('static', filename='js/emitter.js') }}"></script>
+
 <!-- Custom JavaScript -->
 <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
 
@@ -120,8 +123,21 @@
       // Global error handler for all scripts
       window.onerror = function(message, source, lineno, colno, error) {
         console.error("Global error handler caught:", message);
+        
+        // Check if it's a cross-origin script error
+        if (message === "Script error." || message === "Script error") {
+          console.log("Cross-origin script error detected. Check for cross-origin issues.");
+        } else if (error) {
+          console.error("Error details:", error);
+        }
+        
         return true; // Prevents the default browser error handling
       };
+      
+      // Unhandled promise rejection handler
+      window.addEventListener('unhandledrejection', function(event) {
+        console.error('Unhandled promise rejection:', event.reason);
+      });
     </script>
 
     {% block scripts %}{% endblock %}
