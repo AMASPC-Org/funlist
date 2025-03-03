@@ -462,12 +462,12 @@ function applyCookieSettings(preferences) {
     try {
         // Here you would enable/disable tracking based on preferences
         // For example:
-        if (preferences.analytics) {
+        if (preferences && preferences.analytics) {
             // Enable analytics tracking
             console.log('Analytics tracking enabled');
         }
         
-        if (preferences.advertising) {
+        if (preferences && preferences.advertising) {
             // Enable advertising cookies
             console.log('Advertising cookies enabled');
         }

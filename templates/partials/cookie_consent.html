@@ -1,11 +1,11 @@
-
 <div id="cookie-consent" class="cookie-banner" style="display: none;" role="alert" aria-live="polite">
     <div class="cookie-content">
         <p>We use cookies to enhance your experience. By continuing to visit this site you agree to our use of cookies. 
            <a href="#" data-bs-toggle="modal" data-bs-target="#cookieModal">Learn more</a>
         </p>
         <div class="cookie-buttons">
-            <button id="accept-cookies" class="btn btn-primary btn-sm" type="button">Accept All</button>
+            <button id="accept-all-cookies" class="btn btn-primary btn-sm" type="button">Accept All</button>
+            <button id="reject-non-essential-cookies" class="btn btn-outline-primary btn-sm" type="button">Reject Non-Essential</button>
             <button id="customize-cookies" class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#cookieModal">Customize</button>
         </div>
     </div>
@@ -20,29 +20,31 @@
             </div>
             <div class="modal-body">
                 <p>Manage how we use cookies to improve your experience on FunList.ai.</p>
-                <div class="cookie-settings">
-                    <div class="form-check mb-3">
-                        <input class="form-check-input" type="checkbox" id="essential-cookies" checked disabled>
-                        <label class="form-check-label" for="essential-cookies">
-                            <strong>Essential Cookies</strong>
-                            <p class="text-muted small">Required for the website to function. Cannot be disabled.</p>
-                        </label>
+                <form id="cookie-preferences-form">
+                    <div class="cookie-settings">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="essential-cookies" checked disabled>
+                            <label class="form-check-label" for="essential-cookies">
+                                <strong>Essential Cookies</strong>
+                                <p class="text-muted small">Required for the website to function. Cannot be disabled.</p>
+                            </label>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="analytics-cookies">
+                            <label class="form-check-label" for="analytics-cookies">
+                                <strong>Analytics Cookies</strong>
+                                <p class="text-muted small">Help us improve our website by collecting anonymous usage data.</p>
+                            </label>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="advertising-cookies">
+                            <label class="form-check-label" for="advertising-cookies">
+                                <strong>Advertising Cookies</strong>
+                                <p class="text-muted small">Used to show you relevant advertisements across other websites.</p>
+                            </label>
+                        </div>
                     </div>
-                    <div class="form-check mb-3">
-                        <input class="form-check-input" type="checkbox" id="analytics-cookies">
-                        <label class="form-check-label" for="analytics-cookies">
-                            <strong>Analytics Cookies</strong>
-                            <p class="text-muted small">Help us improve our website by collecting anonymous usage data.</p>
-                        </label>
-                    </div>
-                    <div class="form-check mb-3">
-                        <input class="form-check-input" type="checkbox" id="advertising-cookies">
-                        <label class="form-check-label" for="advertising-cookies">
-                            <strong>Advertising Cookies</strong>
-                            <p class="text-muted small">Used to show you relevant advertisements across other websites.</p>
-                        </label>
-                    </div>
-                </div>
+                </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -51,3 +53,121 @@
         </div>
     </div>
 </div>
+
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        initCookieConsent();
+    });
+
+    function initCookieConsent() {
+        // Initialize the cookie consent
+        const cookieConsent = document.getElementById('cookie-consent');
+        const cookieForm = document.getElementById('cookie-preferences-form');
+
+        if (!cookieConsent || !cookieForm) return;
+
+        // Check if user has already set preferences
+        const hasConsent = localStorage.getItem('cookie_consent');
+
+        if (!hasConsent) {
+            // Show the banner if no consent is stored
+            cookieConsent.style.display = 'block';
+            document.body.classList.add('cookie-consent-visible');
+        } else {
+            // Apply saved preferences
+            try {
+                const preferences = JSON.parse(localStorage.getItem('cookie_preferences') || '{}');
+                if (typeof window.applyCookieSettings === 'function') {
+                    window.applyCookieSettings(preferences);
+                }
+            } catch (error) {
+                console.error("Error parsing cookie preferences:", error);
+            }
+        }
+
+        // Handle form submission
+        cookieForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const preferences = {
+                essential: true, // Always required
+                analytics: document.getElementById('analytics-cookies').checked,
+                advertising: document.getElementById('advertising-cookies').checked
+            };
+
+            // Save preferences and consent
+            localStorage.setItem('cookie_preferences', JSON.stringify(preferences));
+            localStorage.setItem('cookie_consent', 'true');
+            localStorage.setItem('cookie_consent_date', new Date().toISOString());
+
+            // Apply the settings
+            if (typeof window.applyCookieSettings === 'function') {
+                window.applyCookieSettings(preferences);
+            }
+
+            // Hide the banner
+            if (typeof window.hideCookieBanner === 'function') {
+                window.hideCookieBanner();
+            }
+        });
+
+        // Setup button listeners
+        setupCookieButtons();
+    }
+
+    function setupCookieButtons() {
+        // Accept all button
+        const acceptAllBtn = document.getElementById('accept-all-cookies');
+        if (acceptAllBtn) {
+            acceptAllBtn.addEventListener('click', function() {
+                const preferences = {
+                    essential: true,
+                    analytics: true,
+                    advertising: true
+                };
+
+                // Save preferences and consent
+                localStorage.setItem('cookie_preferences', JSON.stringify(preferences));
+                localStorage.setItem('cookie_consent', 'true');
+                localStorage.setItem('cookie_consent_date', new Date().toISOString());
+
+                // Apply the settings
+                if (typeof window.applyCookieSettings === 'function') {
+                    window.applyCookieSettings(preferences);
+                }
+
+                // Hide the banner
+                if (typeof window.hideCookieBanner === 'function') {
+                    window.hideCookieBanner();
+                }
+            });
+        }
+
+        // Reject non-essential button
+        const rejectBtn = document.getElementById('reject-non-essential-cookies');
+        if (rejectBtn) {
+            rejectBtn.addEventListener('click', function() {
+                const preferences = {
+                    essential: true,
+                    analytics: false,
+                    advertising: false
+                };
+
+                // Save preferences and consent
+                localStorage.setItem('cookie_preferences', JSON.stringify(preferences));
+                localStorage.setItem('cookie_consent', 'true');
+                localStorage.setItem('cookie_consent_date', new Date().toISOString());
+
+                // Apply the settings
+                if (typeof window.applyCookieSettings === 'function') {
+                    window.applyCookieSettings(preferences);
+                }
+
+                // Hide the banner
+                if (typeof window.hideCookieBanner === 'function') {
+                    window.hideCookieBanner();
+                }
+            });
+        }
+    }
+</script>

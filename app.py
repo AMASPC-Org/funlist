@@ -60,8 +60,20 @@ def create_app():
         logger.debug(f"Request headers: {dict(request.headers)}")
 
     @app.after_request
-    def log_response(response):
-        logger.info(f"Response status: {response.status}")
+    def after_request(response):
+        """Add security headers and log response details after each request."""
+        # Set Content Security Policy header
+        csp = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com; "
+            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
+            "img-src 'self' data: https:; "
+            "font-src 'self' https://cdnjs.cloudflare.com;"
+        )
+        response.headers['Content-Security-Policy'] = csp
+
+        # Log response details
+        app.logger.info(f'Response status: {response.status}')
         return response
 
     try:
