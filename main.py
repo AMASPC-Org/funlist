@@ -55,8 +55,6 @@ if __name__ == "__main__":
                 print(f"Port {port} is already in use. Please free up the port and try again.")
             else:
                 print(f"Error starting server: {e}")
-                    print(f"Port {port} is already in use, trying next port...")
-                else:
-                    raise
+                raise
         else:
-            print("Could not find an available port. Please check your running processes.")
+            print("Server started successfully on port {port}")
