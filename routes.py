@@ -147,30 +147,32 @@ def init_routes(app):
 
                 # Set default role as subscriber
                 user.is_subscriber = True
-
-                # Process user intentions (can select multiple)
-                try:
-                    user_intentions = request.form.getlist('user_intention[]')
-                    if not user_intentions:
-                        user_intentions = ['find_events']  # Default
-
-                    if 'create_events' in user_intentions:
-                        user.is_event_creator = True
-                    if 'represent_organization' in user_intentions:
-                        user.is_organizer = True
-                        user.is_event_creator = True  # Organizers can also create events
-                except Exception as e:
-                    logger.warning(f"Error processing user intentions: {str(e)}")
-                    # Fallback to form fields if available
-                    if hasattr(form, 'is_event_creator') and form.is_event_creator.data:
-                        user.is_event_creator = True
-                    if hasattr(form, 'is_organizer') and form.is_organizer.data:
-                        user.is_organizer = True
-                        user.is_event_creator = True  # Organizers can also create events
-                    if hasattr(form, 'is_vendor') and form.is_vendor.data:
-                        user.is_vendor = True
-                        if hasattr(form, 'vendor_type') and form.vendor_type.data:
-                            user.vendor_type = form.vendor_type.data
+                
+                # Process user intention from the form
+                user_intention = form.user_intention.data
+                
+                # Set user roles based on intention
+                if user_intention == 'find_events':
+                    # Default role is already subscriber
+                    pass
+                elif user_intention == 'create_events':
+                    user.is_event_creator = True
+                elif user_intention == 'represent_organization':
+                    user.is_organizer = True
+                    user.is_event_creator = True  # Organizers can also create events
+                elif user_intention == 'vendor_services':
+                    user.is_vendor = True
+                
+                # Store profile information if provided
+                # Convert the multiselect audience_type to a comma-separated string
+                if form.audience_type.data:
+                    user.audience_type = ','.join(form.audience_type.data)
+                
+                if form.preferred_locations.data:
+                    user.preferred_locations = form.preferred_locations.data
+                    
+                if form.event_interests.data:
+                    user.event_interests = form.event_interests.data
 
                 db.session.add(user)
                 db.session.commit()
@@ -308,8 +310,20 @@ def init_routes(app):
             form.location.data = current_user.location
             form.interests.data = current_user.interests
             form.birth_date.data = current_user.birth_date
+            
+            # Handle the new fields
+            if current_user.audience_type:
+                form.audience_type.data = current_user.audience_type.split(',')
+            if current_user.preferred_locations:
+                form.preferred_locations.data = current_user.preferred_locations
+            if current_user.event_interests:
+                form.event_interests.data = current_user.event_interests
+                
         if form.validate_on_submit():
             try:
+                # Convert audience_type from list to comma-separated string
+                audience_type_value = ','.join(form.audience_type.data) if form.audience_type.data else None
+                
                 profile_data = {
                     "username": form.username.data,
                     "first_name": form.first_name.data,
@@ -317,6 +331,9 @@ def init_routes(app):
                     "bio": form.bio.data,
                     "location": form.location.data,
                     "interests": form.interests.data,
+                    "audience_type": audience_type_value,
+                    "preferred_locations": form.preferred_locations.data,
+                    "event_interests": form.event_interests.data,
                     "birth_date": form.birth_date.data,
                 }
 

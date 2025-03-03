@@ -86,13 +86,13 @@ class User(UserMixin, db.Model):
     bio = db.Column(db.Text)
     location = db.Column(db.String(100))
     interests = db.Column(db.String(200))
+    audience_type = db.Column(db.String(200), nullable=True)  # Comma-separated values
+    preferred_locations = db.Column(db.String(255), nullable=True)  # Comma-separated values
+    event_interests = db.Column(db.String(255), nullable=True)  # Comma-separated values
     birth_date = db.Column(db.Date)
     profile_updated_at = db.Column(db.DateTime)
 
     # User preferences
-    audience_type = db.Column(db.String(20), nullable=True)
-    preferred_locations = db.Column(db.String(255), nullable=True)
-    event_interests = db.Column(db.String(255), nullable=True)
     is_premium = db.Column(db.Boolean, default=False)
 
 

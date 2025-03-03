@@ -64,11 +64,10 @@
                         <h4 class="mt-4 mb-3">Additional Preferences</h4>
 
                         <div class="mb-3">
+                            <p class="text-muted mb-1">Tell us who you are so we can match you with the right events.</p>
                             {{ form.audience_type.label(class="form-label") }}
-                            {{ form.audience_type(class="form-select") }}
-                            {% if form.audience_type.description %}
-                            <div class="form-text">{{ form.audience_type.description }}</div>
-                            {% endif %}
+                            {{ form.audience_type(class="form-select select2-multiple") }}
+                            <div class="form-text">Select all that apply to you</div>
                             {% for error in form.audience_type.errors %}
                             <div class="invalid-feedback">{{ error }}</div>
                             {% endfor %}
@@ -76,10 +75,8 @@
 
                         <div class="mb-3">
                             {{ form.preferred_locations.label(class="form-label") }}
-                            {{ form.preferred_locations(class="form-control", placeholder="e.g., Olympia,Lacey,Tumwater") }}
-                            {% if form.preferred_locations.description %}
-                            <div class="form-text">{{ form.preferred_locations.description }}</div>
-                            {% endif %}
+                            {{ form.preferred_locations(class="form-control") }}
+                            <div class="form-text">Areas where you'd like to find events (e.g., Downtown, West Side)</div>
                             {% for error in form.preferred_locations.errors %}
                             <div class="invalid-feedback">{{ error }}</div>
                             {% endfor %}
@@ -87,10 +84,8 @@
 
                         <div class="mb-3">
                             {{ form.event_interests.label(class="form-label") }}
-                            {{ form.event_interests(class="form-control", placeholder="e.g., sports,music,outdoors") }}
-                            {% if form.event_interests.description %}
-                            <div class="form-text">{{ form.event_interests.description }}</div>
-                            {% endif %}
+                            {{ form.event_interests(class="form-control select2-tags") }}
+                            <div class="form-text">Types of events you're interested in</div>
                             {% for error in form.event_interests.errors %}
                             <div class="invalid-feedback">{{ error }}</div>
                             {% endfor %}

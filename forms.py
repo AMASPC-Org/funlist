@@ -1,68 +1,78 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, DateField, TimeField, SelectField, FloatField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, DateField, TimeField, SelectField, FloatField, SelectMultipleField
 from wtforms.validators import DataRequired, Email, Length, EqualTo, ValidationError, Regexp, Optional, NumberRange, URL
 from models import User
 
 class SignupForm(FlaskForm):
-    email = StringField('Email', validators=[
-        DataRequired(message="Please enter your email address"),
-        Email(message="Please enter a valid email address"),
-        Length(max=120, message="Email address is too long")
-    ])
-    password = PasswordField('Password', validators=[
-        DataRequired(message="Please enter your password"),
-        Length(min=8, max=128, message="Password must be between 8 and 128 characters long"),
-        Regexp(r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]+$',
-               message="Password must contain at least one letter, one number, and one special character")
-    ])
-    confirm_password = PasswordField('Confirm Password', validators=[
-        DataRequired(message="Please confirm your password"),
-        EqualTo('password', message='Passwords do not match. Please try again.')
-    ])
-    is_event_creator = BooleanField('I want to create events')
-    is_organizer = BooleanField('I represent an organization or venue')
-    is_vendor = BooleanField('I am a vendor')
-    vendor_type = SelectField('Vendor Type', choices=[
-        ('', 'Select vendor type...'),
-        ('food', 'Food Vendor'),
-        ('alcohol', 'Alcohol Vendor'),
-        ('sound', 'Sound and Audio'),
-        ('print', 'Printing Services'),
-        ('entertainment', 'Entertainer (Magician, Clown, etc.)'),
-        ('face_paint', 'Face Painter'),
-        ('music', 'Live Music Performer'),
-        ('photography', 'Photography/Videography'),
-        ('decor', 'Decoration Services'),
-        ('other', 'Other')
-    ], validators=[Optional()])
-    audience_type = SelectField(
-        "Audience Type", 
+    user_intention = SelectField(
+        "I'm here to...",
         choices=[
-            ('', 'Select audience type...'),
-            ('single', 'Single (18+)'),
-            ('senior', 'Senior'),
-            ('professional', 'Professional'),
-            ('parent', 'Parent'),
-            ('adult', 'Adult'),
-            ('family', 'Family'),
-            ('21+', '21+')
+            ('', 'Select an option...'),
+            ('find_events', 'Find Events'),
+            ('create_events', 'Create Events'),
+            ('represent_organization', 'Represent an Organization'),
+            ('vendor_services', 'Offer Vendor Services')
         ],
-        validators=[Optional()]
+        validators=[DataRequired()],
+        render_kw={"class": "form-control", "id": "user-intention"}
     )
+
+    email = StringField(
+        "Email",
+        validators=[
+            DataRequired(),
+            Email(),
+            Length(min=6, max=120, message="Email must be between 6 and 120 characters"),
+        ],
+    )
+    password = PasswordField(
+        "Password",
+        validators=[
+            DataRequired(),
+            Length(min=8, message="Password must be at least 8 characters"),
+            Regexp(
+                "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$",
+                message="Password must include at least one lowercase letter, one uppercase letter, and one number",
+            ),
+        ],
+        render_kw={"id": "password-field"}
+    )
+    confirm_password = PasswordField(
+        "Confirm Password", 
+        validators=[DataRequired(), EqualTo("password")],
+        render_kw={"id": "confirm-password-field"}
+    )
+
+    audience_type = SelectMultipleField(
+        "Audience Type",
+        choices=[
+            ('individual', 'Individual'),
+            ('family', 'Family'),
+            ('professional', 'Professional'),
+            ('senior', 'Senior'),
+            ('student', 'Student'),
+            ('parent', 'Parent'),
+            ('tourist', 'Tourist')
+        ],
+        render_kw={"class": "form-control", "id": "audience-type", "multiple": "multiple"}
+    )
+
     preferred_locations = StringField(
         "Preferred Locations",
-        description="Enter up to 5 cities, separated by commas",
-        validators=[Optional(), Length(max=255)]
+        validators=[Optional(), Length(max=255)],
+        render_kw={"class": "form-control", "id": "preferred-locations", "placeholder": "Enter locations separated by commas"}
     )
+
     event_interests = StringField(
         "Event Interests",
-        description="Enter interests separated by commas (e.g., sports,music,outdoors)",
-        validators=[Optional(), Length(max=255)]
+        validators=[Optional(), Length(max=255)],
+        render_kw={"class": "form-control", "id": "event-interests", "placeholder": "Enter interests separated by commas"}
     )
-    terms_accepted = BooleanField('I accept the <a href="/terms" target="_blank">Terms and Conditions</a> and <a href="/privacy" target="_blank">Privacy Policy</a>', validators=[
-        DataRequired(message="You must accept the Terms and Conditions and Privacy Policy to continue")
-    ])
-    submit = SubmitField('Sign Up')
+
+    terms_accepted = BooleanField(
+        "I accept the Terms and Conditions and Privacy Policy", validators=[DataRequired()]
+    )
+    submit = SubmitField("Sign Up")
 
     def validate_email(self, email):
         user = User.query.filter_by(email=email.data).first()
@@ -81,42 +91,51 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Sign In')
 
 class ProfileForm(FlaskForm):
-    username = StringField('Username', validators=[
-        Optional(),
-        Length(min=3, max=50, message="Username must be between 3 and 50 characters"),
-        Regexp(r'^[\w.]+$', message="Username can only contain letters, numbers, dots, and underscores")
-    ])
-    first_name = StringField('First Name', validators=[Optional(), Length(max=50)])
-    last_name = StringField('Last Name', validators=[Optional(), Length(max=50)])
-    bio = TextAreaField('Bio', validators=[Optional(), Length(max=500)])
-    location = StringField('Location', validators=[Optional(), Length(max=100)])
-    interests = StringField('Interests', validators=[Optional(), Length(max=255)])
-    audience_type = SelectField(
-        "Audience Type", 
-        choices=[
-            ('', 'Select audience type...'),
-            ('single', 'Single (18+)'),
-            ('senior', 'Senior'),
-            ('professional', 'Professional'),
-            ('parent', 'Parent'),
-            ('adult', 'Adult'),
-            ('family', 'Family'),
-            ('21+', '21+')
+    username = StringField(
+        "Username",
+        validators=[
+            Optional(),
+            Length(min=3, max=64),
+            Regexp(
+                "^[A-Za-z0-9_]*$",
+                message="Username can only contain letters, numbers, and underscores",
+            ),
         ],
-        validators=[Optional()]
     )
+    first_name = StringField("First Name", validators=[Optional(), Length(max=50)])
+    last_name = StringField("Last Name", validators=[Optional(), Length(max=50)])
+    bio = TextAreaField("Bio", validators=[Optional(), Length(max=1000)])
+    location = StringField("Location", validators=[Optional(), Length(max=100)])
+    interests = StringField("Interests", validators=[Optional(), Length(max=200)])
+
+    audience_type = SelectMultipleField(
+        "Audience Type",
+        choices=[
+            ('individual', 'Individual'),
+            ('family', 'Family'),
+            ('professional', 'Professional'),
+            ('senior', 'Senior'),
+            ('student', 'Student'),
+            ('parent', 'Parent'),
+            ('tourist', 'Tourist')
+        ],
+        render_kw={"class": "form-control", "id": "audience-type", "multiple": "multiple"}
+    )
+
     preferred_locations = StringField(
         "Preferred Locations",
-        description="Enter up to 5 cities, separated by commas",
-        validators=[Optional(), Length(max=255)]
+        validators=[Optional(), Length(max=255)],
+        render_kw={"class": "form-control", "id": "preferred-locations", "placeholder": "Enter locations separated by commas"}
     )
+
     event_interests = StringField(
         "Event Interests",
-        description="Enter interests separated by commas (e.g., sports,music,outdoors)",
-        validators=[Optional(), Length(max=255)]
+        validators=[Optional(), Length(max=255)],
+        render_kw={"class": "form-control", "id": "event-interests", "placeholder": "Enter interests separated by commas"}
     )
-    birth_date = DateField('Birth Date', validators=[Optional()])
-    submit = SubmitField('Update Profile')
+
+    birth_date = DateField("Birth Date", validators=[Optional()], format="%Y-%m-%d")
+    submit = SubmitField("Update Profile")
 
     def validate_username(self, username):
         if username.data:

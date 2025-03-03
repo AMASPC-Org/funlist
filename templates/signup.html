@@ -1,146 +1,221 @@
+
 {% extends "base.html" %}
 
-{% block title %}Sign Up{% endblock %}
+{% block title %}Sign Up | FunList.ai{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center auth-page-content">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h2 class="text-center mb-0">Sign Up</h2>
-            </div>
-            <div class="card-body">
-                <form method="POST" action="{{ url_for('signup') }}">
-                    {{ form.hidden_tag() }}
-
-                    <div class="mb-3">
-                        {{ form.email.label(class="form-label") }}
-                        {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
-                        {% for error in form.email.errors %}
-                            <div class="invalid-feedback">
-                                <i class="fas fa-exclamation-circle"></i> {{ error }}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h1 class="h3 mb-0">Create Your Account</h1>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('signup') }}" id="signup-form">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.user_intention.id }}" class="form-label fw-bold">{{ form.user_intention.label }}</label>
+                            {{ form.user_intention(class="form-select") }}
+                            <div class="form-text text-muted">This helps us personalize your experience</div>
+                            {% for error in form.user_intention.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.email.id }}" class="form-label fw-bold">{{ form.email.label }}</label>
+                            {{ form.email(class="form-control") }}
+                            <div class="form-text text-muted">We'll never share your email with anyone else</div>
+                            {% for error in form.email.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-4 position-relative">
+                            <label for="password-field" class="form-label fw-bold">{{ form.password.label }}</label>
+                            <div class="input-group">
+                                {{ form.password(class="form-control") }}
+                                <span class="input-group-text password-toggle" data-target="password-field">
+                                    <i class="fas fa-eye"></i>
+                                </span>
                             </div>
-                        {% endfor %}
-                    </div>
-
-                    <div class="mb-3">
-                        {{ form.password.label(class="form-label") }}
-                        {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else "")) }}
-                        <small class="form-text text-muted">
-                            Password must be at least 8 characters long and contain a mix of letters, numbers, and special characters.
-                        </small>
-                        {% for error in form.password.errors %}
-                            <div class="invalid-feedback">
-                                <i class="fas fa-exclamation-circle"></i> {{ error }}
+                            <div class="form-text text-muted">At least 8 characters with uppercase, lowercase, and numbers</div>
+                            {% for error in form.password.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-4 position-relative">
+                            <label for="confirm-password-field" class="form-label fw-bold">{{ form.confirm_password.label }}</label>
+                            <div class="input-group">
+                                {{ form.confirm_password(class="form-control") }}
+                                <span class="input-group-text password-toggle" data-target="confirm-password-field">
+                                    <i class="fas fa-eye"></i>
+                                </span>
                             </div>
-                        {% endfor %}
-                    </div>
-
-                    <div class="mb-3">
-                        {{ form.confirm_password.label(class="form-label") }}
-                        {{ form.confirm_password(class="form-control" + (" is-invalid" if form.confirm_password.errors else "")) }}
-                        <small class="form-text text-muted">
-                            Please enter your password again to confirm.
-                        </small>
-                        {% for error in form.confirm_password.errors %}
-                            <div class="invalid-feedback">
-                                <i class="fas fa-exclamation-circle"></i> {{ error }}
+                            {% for error in form.confirm_password.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- User profile section - displayed conditionally -->
+                        <div id="user-profile-section" class="d-none">
+                            <h4 class="mt-4 mb-3">Tell us about yourself</h4>
+                            
+                            <div class="mb-4">
+                                <p class="text-muted mb-1">Tell us who you are so we can match you with the right events.</p>
+                                <label for="{{ form.audience_type.id }}" class="form-label fw-bold">{{ form.audience_type.label }}</label>
+                                {{ form.audience_type(class="form-select select2-multiple") }}
+                                <div class="form-text text-muted">Select all that apply</div>
+                                {% for error in form.audience_type.errors %}
+                                    <div class="text-danger">{{ error }}</div>
+                                {% endfor %}
                             </div>
-                        {% endfor %}
-                    </div>
-
-                    <h4 class="mt-4 mb-3">Your Preferences</h4>
-
-                    <div class="mb-3">
-                        {{ form.audience_type.label(class="form-label") }}
-                        {{ form.audience_type(class="form-select") }}
-                        {% if form.audience_type.description %}
-                        <div class="form-text">{{ form.audience_type.description }}</div>
-                        {% endif %}
-                        {% for error in form.audience_type.errors %}
-                        <div class="text-danger small">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-
-                    <div class="mb-3">
-                        {{ form.preferred_locations.label(class="form-label") }}
-                        {{ form.preferred_locations(class="form-control", placeholder="e.g., Olympia,Lacey,Tumwater") }}
-                        {% if form.preferred_locations.description %}
-                        <div class="form-text">{{ form.preferred_locations.description }}</div>
-                        {% endif %}
-                        {% for error in form.preferred_locations.errors %}
-                        <div class="text-danger small">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-
-                    <div class="mb-3">
-                        {{ form.event_interests.label(class="form-label") }}
-                        {{ form.event_interests(class="form-control", placeholder="e.g., sports,music,outdoors") }}
-                        {% if form.event_interests.description %}
-                        <div class="form-text">{{ form.event_interests.description }}</div>
-                        {% endif %}
-                        {% for error in form.event_interests.errors %}
-                        <div class="text-danger small">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">I'm here to:</label>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="user_intention[]" id="find_events" value="find_events" checked>
-                            <label class="form-check-label" for="find_events">
-                                Find events to attend
+                            
+                            <div class="mb-4">
+                                <label for="{{ form.preferred_locations.id }}" class="form-label fw-bold">{{ form.preferred_locations.label }}</label>
+                                {{ form.preferred_locations(class="form-control") }}
+                                <div class="form-text text-muted">Areas where you'd like to find events (e.g., Downtown, West Side)</div>
+                                {% for error in form.preferred_locations.errors %}
+                                    <div class="text-danger">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="{{ form.event_interests.id }}" class="form-label fw-bold">{{ form.event_interests.label }}</label>
+                                {{ form.event_interests(class="form-control select2-tags") }}
+                                <div class="form-text text-muted">Types of events you're interested in</div>
+                                {% for error in form.event_interests.errors %}
+                                    <div class="text-danger">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- Organization section - displayed conditionally -->
+                        <div id="organization-section" class="d-none">
+                            <h4 class="mt-4 mb-3">Organization Information</h4>
+                            <p class="alert alert-info">
+                                We'll collect more details about your organization after you create your account.
+                            </p>
+                        </div>
+                        
+                        <!-- Vendor section - displayed conditionally -->
+                        <div id="vendor-section" class="d-none">
+                            <h4 class="mt-4 mb-3">Vendor Information</h4>
+                            <p class="alert alert-info">
+                                We'll collect more details about your vendor services after you create your account.
+                            </p>
+                        </div>
+                        
+                        <div class="mb-4 form-check">
+                            {{ form.terms_accepted(class="form-check-input") }}
+                            <label class="form-check-label" for="{{ form.terms_accepted.id }}">
+                                {{ form.terms_accepted.label }}
+                                <a href="{{ url_for('terms') }}" target="_blank">Terms and Conditions</a> and 
+                                <a href="{{ url_for('privacy') }}" target="_blank">Privacy Policy</a>
                             </label>
+                            {% for error in form.terms_accepted.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
                         </div>
-                        <div class="form-check">
-                            {{ form.is_event_creator(class="form-check-input") }}
-                            {{ form.is_event_creator.label(class="form-check-label") }}
+                        
+                        <div class="d-grid gap-2">
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
                         </div>
-
-                        <div class="form-check mb-2">
-                            {{ form.is_vendor(class="form-check-input", id="is_vendor_checkbox") }}
-                            {{ form.is_vendor.label(class="form-check-label") }}
-                        </div>
-                        <div id="vendor_type_container" class="mb-3" style="display: none;">
-                            {{ form.vendor_type.label(class="form-label") }}
-                            {{ form.vendor_type(class="form-select") }}
-                        </div>
-
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="user_intention[]" id="represent_organization" value="represent_organization">
-                            <label class="form-check-label" for="represent_organization">
-                                I represent an organization or venue
-                            </label>
-                        </div>
+                    </form>
+                    
+                    <div class="mt-4 text-center">
+                        <p>Already have an account? <a href="{{ url_for('login') }}">Log In</a></p>
                     </div>
-
-                    <div class="form-check mb-4 mt-3">
-                        {{ form.terms_accepted(class="form-check-input") }}
-                        <label class="form-check-label" for="terms_accepted">
-                            I accept the <a href="{{ url_for('terms') }}" target="_blank">Terms and Conditions</a> and <a href="{{ url_for('privacy') }}" target="_blank">Privacy Policy</a>
-                        </label>
-                        {% if form.terms_accepted.errors %}
-                            <div class="invalid-feedback d-block">
-                                <i class="fas fa-exclamation-circle"></i> {{ form.terms_accepted.errors[0] }}
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    <script>
-                        document.getElementById('is_vendor_checkbox').addEventListener('change', function() {
-                            document.getElementById('vendor_type_container').style.display = this.checked ? 'block' : 'none';
-                        });
-                    </script>
-
-                    <div class="d-grid">
-                        {{ form.submit(class="btn btn-primary") }}
-                    </div>
-                </form>
-            </div>
-            <div class="card-footer text-center">
-                Already have an account? <a href="{{ url_for('login') }}">Login here</a>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+{% block extra_js %}
+<script>
+    // Load libraries via CDN
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Select2 for multiselect fields
+        if (typeof $ !== 'undefined' && $.fn.select2) {
+            $('.select2-multiple').select2({
+                theme: 'bootstrap4',
+                placeholder: 'Select options',
+                allowClear: true
+            });
+            
+            // Initialize Select2 with tags for event interests
+            $('.select2-tags').select2({
+                theme: 'bootstrap4',
+                placeholder: 'Type interests and press Enter',
+                tags: true,
+                tokenSeparators: [','],
+                data: [
+                    {id: 'Sports', text: 'Sports'},
+                    {id: 'Music', text: 'Music'},
+                    {id: 'Arts', text: 'Arts'},
+                    {id: 'Food & Drink', text: 'Food & Drink'},
+                    {id: 'Outdoors', text: 'Outdoors'},
+                    {id: 'Nightlife', text: 'Nightlife'},
+                    {id: 'Family', text: 'Family'},
+                    {id: 'Kids', text: 'Kids'},
+                    {id: 'Seniors', text: 'Seniors'},
+                    {id: 'Workshops', text: 'Workshops'},
+                    {id: 'Conferences', text: 'Conferences'},
+                    {id: 'Networking', text: 'Networking'},
+                    {id: 'Other', text: 'Other'}
+                ]
+            });
+        } else {
+            console.log('Select2 library not loaded, falling back to standard form controls');
+        }
+        
+        // Password visibility toggle
+        document.querySelectorAll('.password-toggle').forEach(function(toggle) {
+            toggle.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target');
+                const passwordField = document.getElementById(targetId);
+                
+                if (passwordField.type === 'password') {
+                    passwordField.type = 'text';
+                    this.querySelector('i').classList.remove('fa-eye');
+                    this.querySelector('i').classList.add('fa-eye-slash');
+                } else {
+                    passwordField.type = 'password';
+                    this.querySelector('i').classList.remove('fa-eye-slash');
+                    this.querySelector('i').classList.add('fa-eye');
+                }
+            });
+        });
+        
+        // Dynamic form fields based on user intention
+        const userIntentionField = document.getElementById('user-intention');
+        const userProfileSection = document.getElementById('user-profile-section');
+        const organizationSection = document.getElementById('organization-section');
+        const vendorSection = document.getElementById('vendor-section');
+        
+        userIntentionField.addEventListener('change', function() {
+            // Hide all sections first
+            userProfileSection.classList.add('d-none');
+            organizationSection.classList.add('d-none');
+            vendorSection.classList.add('d-none');
+            
+            // Show the relevant section based on selection
+            const intention = this.value;
+            if (intention === 'find_events') {
+                userProfileSection.classList.remove('d-none');
+            } else if (intention === 'create_events') {
+                userProfileSection.classList.remove('d-none');
+            } else if (intention === 'represent_organization') {
+                organizationSection.classList.remove('d-none');
+            } else if (intention === 'vendor_services') {
+                vendorSection.classList.remove('d-none');
+            }
+        });
+    });
+</script>
+{% endblock %}
 {% endblock %}
