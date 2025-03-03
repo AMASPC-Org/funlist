@@ -1,20 +1,31 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('main.js loaded');
 
+    // Add global error handling
+    window.addEventListener('error', function(event) {
+        console.log("JavaScript error caught:", event.error);
+        console.log(event);
+
+        // Check if it's a cross-origin error
+        if (!event.message || event.message === 'Script error.') {
+            console.log("Cross-origin script error detected. Check for cross-origin issues.");
+        }
+
+        // Prevent the error from bubbling up
+        event.preventDefault();
+    });
+
     try {
         // Initialize sponsors carousel if it exists
         if (document.querySelector('.sponsors-carousel')) {
             console.log('Populating sponsors carousel');
-            populateSponsorsCarousel();
+            try{
+                populateSponsorsCarousel();
+            } catch (e) {
+                console.error('Error populating sponsors carousel:', e);
+            }
         }
 
-        // Add global error handler for all JavaScript errors
-        window.addEventListener('error', function(event) {
-            console.log('JavaScript error caught:', event.error);
-            console.log(event);
-            // Prevent the error from bubbling up
-            event.preventDefault();
-        });
 
         try {
             initializeSponsorsCarousel();
@@ -54,12 +65,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Setup subscription form events if they exist
         if (document.getElementById('floatingSubscribeForm')) {
-            setupSubscriptionForm();
+            try{
+                setupSubscriptionForm();
+            } catch (e) {
+                console.error('Error setting up subscription form:', e);
+            }
         }
 
         // Setup feedback form events if they exist
         if (document.getElementById('feedbackForm')) {
-            setupFeedbackForm();
+            try{
+                setupFeedbackForm();
+            } catch (e) {
+                console.error('Error setting up feedback form:', e);
+            }
         }
 
         // Setup new user wizard if necessary
@@ -76,20 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Global error handling
-window.addEventListener('error', function(event) {
-    console.log('JavaScript error caught:', event.error);
-    console.log(event);
-    
-    // Prevent the error from being hidden
-    if (event && event.message && event.message.includes('Script error')) {
-        // Most likely a cross-origin error
-        console.log('Cross-origin script error detected. Check for cross-origin issues.');
-    }
-    
-    // Don't show alerts in production, this is just for debugging
-    // alert('Error occurred: ' + (event.error ? event.error.message : event.message));
-});
+
 function setupErrorHandling() {
     window.addEventListener('error', function(event) {
         console.log('JavaScript error caught:', event.error);

@@ -114,14 +114,23 @@
 </script>
 
 <!-- Custom JavaScript -->
-<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+
+    <script>
+      // Global error handler for all scripts
+      window.onerror = function(message, source, lineno, colno, error) {
+        console.error("Global error handler caught:", message);
+        return true; // Prevents the default browser error handling
+      };
+    </script>
+
+    {% block scripts %}{% endblock %}
 <script src="{{ url_for('static', filename='js/admin_events.js') }}"></script>
 
 {% if new_registration %}
 <script src="{{ url_for('static', filename='js/post_registration_wizard.js') }}"></script>
 {% endif %}
 
-{% block scripts %}{% endblock %}
 {% block extra_js %}{% endblock %}
 {% include 'partials/cookie_consent.html' %}
 </body>

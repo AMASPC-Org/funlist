@@ -3,7 +3,24 @@
 {% block head %}
 {{ super() }}
 {% set random_version = range(1, 10000) | random %}
-<script src="{{ url_for('static', filename='js/admin_events.js') }}?v={{ random_version }}"></script>
+<script src="{{ url_for('static', filename='js/admin_events.js') }}" defer onerror="console.error('Failed to load admin_events.js');"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Check if we have necessary elements before initializing admin functionality
+    const adminContainer = document.getElementById('admin-events-container');
+    if (!adminContainer) {
+      console.warn('Admin events container not found, some functionality may be limited');
+    }
+
+    // Add admin-specific error handling
+    try {
+      // Initialize any admin-specific functionality here
+      console.log('Admin events page initialized');
+    } catch (err) {
+      console.error('Error initializing admin events page:', err);
+    }
+  });
+</script>
 {% endblock %}
 
 {% block content %}

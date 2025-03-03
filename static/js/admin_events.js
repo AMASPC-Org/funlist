@@ -1,6 +1,52 @@
 // Admin events functionality
 console.log("Admin events script loaded");
 
+// Add error handling for admin events script
+try {
+  document.addEventListener('DOMContentLoaded', function() {
+    try {
+      // Safely check if we're on the admin events page
+      const adminEventContainer = document.getElementById('admin-events-container');
+      
+      if (adminEventContainer) {
+        // Initialize admin event handlers
+        const approveButtons = document.querySelectorAll('.approve-event');
+        const rejectButtons = document.querySelectorAll('.reject-event');
+        
+        approveButtons.forEach(button => {
+          button.addEventListener('click', function(e) {
+            try {
+              e.preventDefault();
+              const eventId = this.getAttribute('data-event-id');
+              console.log(`Approve event ${eventId} clicked`);
+              // Implement approval logic
+            } catch (err) {
+              console.error("Error handling approve event:", err);
+            }
+          });
+        });
+        
+        rejectButtons.forEach(button => {
+          button.addEventListener('click', function(e) {
+            try {
+              e.preventDefault();
+              const eventId = this.getAttribute('data-event-id');
+              console.log(`Reject event ${eventId} clicked`);
+              // Implement rejection logic
+            } catch (err) {
+              console.error("Error handling reject event:", err);
+            }
+          });
+        });
+      }
+    } catch (error) {
+      console.error("Error in admin events DOMContentLoaded:", error);
+    }
+  });
+} catch (error) {
+  console.error("Error in admin_events.js:", error);
+}
+
 // Define window functions for event management
 window.approveEvent = function(eventId) {
   if (confirm('Are you sure you want to approve this event?')) {
