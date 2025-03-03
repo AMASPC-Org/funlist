@@ -1,4 +1,3 @@
-
 /* Toast notifications */
 .toast {
   position: fixed;
@@ -781,8 +780,61 @@ main {
 
 .footer {
     flex-shrink: 0;
-    background-color: #f8f9fa;
+    background-color: #222; /* Darker background color */
+    color: #f8f9fa;
+    padding: 40px 0 20px;
+    margin-top: 30px;
 }
+
+.footer h5 {
+    color: #fff;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 15px;
+    letter-spacing: 0.5px;
+}
+
+.footer a {
+    color: #f8f9fa;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 8px;
+    transition: color 0.2s ease;
+}
+
+.footer a:hover,
+.footer a:focus {
+    color: #FF8C42; /* Orange accent color from the site theme */
+    text-decoration: none;
+}
+
+.footer .social-buttons a {
+    display: inline-block;
+    margin-right: 12px;
+    font-size: 1.2em;
+}
+
+.footer .social-buttons a:hover {
+    color: #1AC8ED; /* Teal accent color from the site theme */
+}
+
+.footer .copyright {
+    margin-top: 25px;
+    font-size: 0.9em;
+    color: #aaa;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767px) {
+    footer h5 {
+        margin-top: 20px;
+    }
+
+    footer .col-md-3:first-child h5 {
+        margin-top: 0;
+    }
+}
+
 
 .footer h5 {
     color: var(--text-primary);
@@ -1759,19 +1811,19 @@ body.cookie-consent-visible .floating-buttons-container {
   footer .row > div {
     margin-bottom: 20px;
   }
-  
+
   footer h5 {
     margin-bottom: 15px;
   }
-  
+
   footer p {
     margin-bottom: 10px;
   }
-  
+
   footer .row.align-items-center {
     text-align: center;
   }
-  
+
   footer .col-md-5.col-lg-4.text-md-end {
     text-align: center !important;
     margin-top: 15px;
