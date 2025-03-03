@@ -48,10 +48,13 @@ def create_app():
 
     # Session configuration
     app.config['SESSION_TYPE'] = 'filesystem'
-    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
-    app.config['SESSION_COOKIE_SECURE'] = True  # Enable for HTTPS
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=60)
+    app.config['SESSION_COOKIE_SECURE'] = False  # Disable for local development
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+    app.config['SESSION_USE_SIGNER'] = True
+    app.config['SESSION_FILE_DIR'] = './flask_session'
+    app.config['SESSION_FILE_THRESHOLD'] = 100
 
     # Add request logging
     @app.before_request

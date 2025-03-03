@@ -40,8 +40,8 @@ if __name__ == "__main__":
         print(f"Running in deployment environment. Starting server on port {port}...")
         app.run(host='0.0.0.0', port=port, debug=False)
     else:
-        # In development, prioritize port 5000 from environment
-        port = int(os.environ.get('PORT', 5000))
+        # In development, use port 3000 by default to avoid conflicts
+        port = int(os.environ.get('PORT', 3000))
         print(f"Starting development server on port {port}...")
 
         # Try to start the server, with improved fallback port handling
