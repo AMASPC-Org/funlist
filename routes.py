@@ -521,7 +521,9 @@ def init_routes(app):
 
                 # Standard login check
                 try:
-                    user = User.query.filter_by(email=email).first()
+                    # Use a simpler query to avoid column issues
+                    user = User.query.filter(User.email == email).first()
+                    
                     if user and user.check_password(password) and user.email == admin_email:
                         # Ensure admin privileges for the correct admin
                         user.is_admin = True
@@ -537,9 +539,24 @@ def init_routes(app):
                         return redirect(url_for("admin_dashboard"))
                     else:
                         flash("Invalid credentials or insufficient privileges.", "danger")
+                except SQLAlchemyError as e:
+                    db.session.rollback()
+                    logger.error(f"Database error during admin login: {str(e)}", exc_info=True)
+                    flash("Login check failed. Running database maintenance...", "warning")
+                    
+                    # Try to fix the schema on the fly
+                    try:
+                        from update_schema import update_schema
+                        if update_schema():
+                            flash("Database maintenance completed. Please try logging in again.", "info")
+                        else:
+                            flash("Database maintenance failed. Please contact support.", "danger")
+                    except Exception as schema_error:
+                        logger.error(f"Schema update failed: {str(schema_error)}", exc_info=True)
+                        flash("Database maintenance failed. Please contact support.", "danger")
                 except Exception as e:
-                    logger.error(f"Standard login check failed: {str(e)}")
-                    flash("Login check failed. Database may need maintenance.", "danger")
+                    logger.error(f"Standard login check failed: {str(e)}", exc_info=True)
+                    flash("Login check failed. Please try again later.", "danger")
 
             except Exception as e:
                 logger.error(f"Unexpected error in admin login: {str(e)}", exc_info=True)
