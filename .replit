@@ -69,5 +69,5 @@ task = "packager.installForAll"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python main.py"
+args = "PORT=3000 python main.py"
 waitForPort = 5000
