@@ -40,8 +40,8 @@ if __name__ == "__main__":
         print(f"Running in deployment environment. Starting server on port {port}...")
         app.run(host='0.0.0.0', port=port, debug=False)
     else:
-        # In development, use port 5050 by default to avoid conflicts
-        port = int(os.environ.get('PORT', 5050))
+        # In development, try ports in sequence to avoid conflicts
+        port = int(os.environ.get('PORT', 5000))
         print(f"Starting development server on port {port}...")
 
         # Try to start the server, with improved fallback port handling
@@ -50,7 +50,7 @@ if __name__ == "__main__":
         except OSError as e:
             if "Address already in use" in str(e):
                 # Try multiple fallback ports in sequence, prioritizing less commonly used ports
-                fallback_ports = [5050, 4000, 4040, 4080, 6000, 7000]
+                fallback_ports = [3000, 3001, 4000, 4040, 5050, 6000, 7000]
 
                 for fallback_port in fallback_ports:
                     print(f"Port {port} is in use. Attempting fallback on port {fallback_port}...")
