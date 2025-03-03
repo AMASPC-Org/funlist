@@ -55,5 +55,22 @@ logger.info(f"Starting Flask server...")
 # Create and run the Flask app
 app = create_app()
 if __name__ == "__main__":
-    # Run the app with the appropriate host and port
-    app.run(host='0.0.0.0', port=port, debug=True)
+    # Try to run on the specified port, fall back to other ports if needed
+    max_port_tries = 10
+    current_port = port
+    
+    for attempt in range(max_port_tries):
+        try:
+            logger.info(f"Attempting to start server on port {current_port}...")
+            app.run(host='0.0.0.0', port=current_port, debug=True)
+            break
+        except OSError as e:
+            if "Address already in use" in str(e):
+                logger.warning(f"Port {current_port} is already in use, trying next port")
+                current_port += 1
+                if attempt == max_port_tries - 1:
+                    logger.error(f"Could not find an available port after {max_port_tries} attempts")
+                    raise
+            else:
+                logger.error(f"Error starting server: {e}")
+                raise
