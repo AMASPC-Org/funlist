@@ -532,9 +532,15 @@ function initializeMap() {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        // Force map to recalculate its container size
+        // Force map to recalculate its container size with multiple attempts to ensure it renders
         setTimeout(function() {
             map.invalidateSize();
+            
+            // Try again after a longer delay to ensure map is fully rendered
+            setTimeout(function() {
+                map.invalidateSize();
+                console.log('Map size recalculated after delay');
+            }, 500);
         }, 100);
 
         // Add event markers if they exist
@@ -542,12 +548,48 @@ function initializeMap() {
             eventLocations.forEach(event => {
                 const marker = L.marker([event.latitude, event.longitude]).addTo(map);
                 marker.bindPopup(`<b>${event.title}</b><br>${event.description}<br><a href="/event/${event.id}">View Details</a>`);
+                
+                // Add click handler to highlight corresponding card
+                marker.on('click', function() {
+                    highlightEventCard(event.id);
+                });
             });
         }
+        
+        // Connect event cards with map markers for interaction
+        const eventCards = document.querySelectorAll('.event-card');
+        eventCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const eventId = this.dataset.eventId;
+                // Find the corresponding marker and open its popup
+                if (typeof eventLocations !== 'undefined') {
+                    const event = eventLocations.find(e => e.id == eventId);
+                    if (event) {
+                        map.setView([event.latitude, event.longitude], 14);
+                        // The marker's popup would open automatically in a complete implementation
+                    }
+                }
+            });
+        });
+        
+        return map;
     } catch (error) {
         console.error('Error initializing map:', error);
         mapContainer.innerHTML = '<div class="alert alert-danger">Map could not be loaded. Please try again later.</div>';
+        return null;
     }
+}
+
+// Helper function to highlight event card when marker is clicked
+function highlightEventCard(eventId) {
+    const eventCards = document.querySelectorAll('.event-card');
+    eventCards.forEach(card => {
+        card.classList.remove('highlighted');
+        if (card.dataset.eventId === eventId.toString()) {
+            card.classList.add('highlighted');
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    });
 }
 
 // Added to handle map-specific events and initialization.  Implementation is a best guess based on context.

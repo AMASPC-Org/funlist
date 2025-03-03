@@ -1598,9 +1598,37 @@ body.cookie-consent-visible .floating-buttons-container {
     gap: 0.5rem;
 }
 
+/* Map page specific styles */
+#map {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    z-index: 1;
+}
+
+.map-container-wrapper {
+    margin-bottom: 2rem;
+}
+
+.event-cards-container {
+    padding-right: 0.5rem;
+}
+
+.event-cards-container .event-card {
+    cursor: pointer;
+}
+
+.event-cards-container .event-card.highlighted {
+    border-left: 4px solid var(--primary-color);
+}
+
 @media (max-width: 768px) {
     .event-card .card-img-top {
         height: 160px;
+    }
+    
+    #map {
+        height: 400px !important;
+        margin-bottom: 1.5rem;
+    }
     }
 
     .event-card .btn-group {

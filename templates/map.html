@@ -1,22 +1,29 @@
+
 {% extends "base.html" %}
 
-{% block title %}Map | FunList.ai{% endblock %}
-
 {% block head %}
-  {{ super() }}
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<link rel="canonical" href="{{ url_for('map', _external=True) }}" />
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
 {% endblock %}
 
 {% block content %}
-<div class="container my-4">
-  <h1 class="text-center mb-4">Event Map</h1>
-
-  <div class="row mb-4">
-    <div class="col-12">
-      <div id="map" style="height: 600px; width: 100%;"></div>
+<div class="container map-container-wrapper">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Event Map</h2>
+        <div class="view-toggle btn-group" role="group">
+            <a href="{{ url_for('map') }}" class="btn btn-primary active">Map</a>
+            <a href="{{ url_for('events') }}" class="btn btn-outline-primary">List</a>
+        </div>
     </div>
-  </div>
-  <div class="filter-bar mb-4">
+    
+    <div class="filter-bar mb-4">
         <div class="row g-3">
             <div class="col-md">
                 <input type="text" class="form-control" id="locationSearch" placeholder="Search location...">
@@ -51,94 +58,145 @@
         </div>
     </div>
 
-  <div class="row">
-        <div class="col-md-7">
-
+    <div class="row">
+        <!-- Map Column - Left Side -->
+        <div class="col-md-7 mb-4">
+            <div id="map" style="height: 700px; width: 100%; border-radius: 8px;"></div>
         </div>
+        
+        <!-- Event Cards Column - Right Side -->
         <div class="col-md-5">
             <div class="event-cards-container" style="height: 700px; overflow-y: auto;">
                 {% for event in events %}
-                    {% if loop.index == 3 %}
-                    <div class="card mb-3 sponsored-card">
-                        <div class="card-body">
-                            <div class="text-muted small mb-2">Advertisement</div>
-                            <div class="sponsored-content">
-                                <!-- Ad content will go here -->
-                                <div class="text-center p-3">
-                                    <h5>Sponsored Content</h5>
-                                    <p>Advertisement space available</p>
-                                </div>
-                            </div>
+                <div class="card mb-3 event-card" data-event-id="{{ event.id }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ event.title }}</h5>
+                        <p class="card-text text-muted mb-2">
+                            <i class="far fa-calendar me-2"></i>{{ event.start_date.strftime('%B %d, %Y') }}
+                            {% if event.start_time %} at {{ event.start_time.strftime('%I:%M %p') }}{% endif %}
+                        </p>
+                        <p class="card-text text-muted mb-3">
+                            <i class="fas fa-map-marker-alt me-2"></i>{{ event.city }}, {{ event.state }}
+                        </p>
+                        <p class="card-text">{{ event.description|truncate(100) }}</p>
+                        <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-primary">View Details</a>
+                    </div>
+                </div>
+                {% if loop.index == 3 %}
+                <div class="card mb-3 sponsored-card">
+                    <div class="card-body">
+                        <div class="text-muted small mb-2">Advertisement</div>
+                        <div class="sponsored-content">
+                            <!-- Ad content here -->
+                            <p>Sponsored content</p>
                         </div>
                     </div>
-                    {% endif %}
-                    <div class="card mb-3 event-card" data-event-id="{{ event.id }}">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ event.title }}</h5>
-                            <p class="card-text">{{ event.description|truncate(100) }}</p>
-                            <p class="card-text">
-                                <small class="text-muted">{{ event.start_date.strftime('%B %d, %Y') }}{% if event.start_time %} at {{ event.start_time.strftime('%I:%M %p') }}{% endif %}</small>
-                            </p>
-                            <p class="card-text"><small class="text-muted">{{ event.location }}</small></p>
-                            <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-primary">View Details</a>
-                        </div>
-                    </div>
+                </div>
+                {% endif %}
                 {% endfor %}
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
 <script>
-  // Create a global array of event locations for the map to use
-  const eventLocations = [
-    {% for event in events %}
-      {% if event.latitude and event.longitude %}
-        {
-          id: {{ event.id }},
-          title: "{{ event.title|safe }}",
-          description: "{{ event.description|truncate(100)|safe }}",
-          latitude: {{ event.latitude }},
-          longitude: {{ event.longitude }}
-        },
-      {% endif %}
-    {% endfor %}
-  ];
-
   document.addEventListener('DOMContentLoaded', function() {
-    console.log('Map page loaded - initializing map');
-    
-    // Let the main.js handle map initialization through setupMapEvents
-    if (typeof setupMapEvents === 'function') {
-      setupMapEvents();
-    } else {
-      console.error('Map setup function not available');
-      
-      // Fallback initialization if main.js doesn't load properly
-      if (typeof L !== 'undefined') {
-        const mapContainer = document.getElementById('map');
-        if (mapContainer) {
-          try {
-            const map = L.map('map').setView([47.0379, -122.9007], 10);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-              attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
-            
-            setTimeout(() => map.invalidateSize(), 300);
-            
-            // Add event markers
-            eventLocations.forEach(event => {
-              L.marker([event.latitude, event.longitude])
-                .addTo(map)
-                .bindPopup(`<strong>${event.title}</strong><br>${event.description}<br><a href='/event/${event.id}'>View details</a>`);
-            });
-          } catch(error) {
-            console.error('Error in fallback map initialization:', error);
-          }
-        }
+    // Check if Leaflet is loaded
+    if (typeof L === 'undefined') {
+      console.error('Leaflet library not loaded');
+      const mapElement = document.getElementById('map');
+      if (mapElement) {
+        mapElement.innerHTML = '<div class="alert alert-danger">Map could not be loaded. Please try again later.</div>';
       }
+      return;
+    }
+
+    // Initialize the map only if the map container exists
+    const mapContainer = document.getElementById('map');
+    if (mapContainer) {
+      try {
+        // Initialize the map
+        const map = L.map('map').setView([47.0379, -122.9007], 10); // Default to Olympia, WA
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        
+        // Force map to recalculate its container size after small delay
+        setTimeout(function() {
+          map.invalidateSize();
+        }, 100);
+
+        // Add event markers
+        {% for event in events %}
+        {% if event.latitude and event.longitude %}
+        L.marker([{{ event.latitude }}, {{ event.longitude }}])
+          .addTo(map)
+          .bindPopup("<b>{{ event.title }}</b><br>{{ event.description|truncate(100) }}<br><a href='/event/{{ event.id }}'>View details</a>");
+        {% endif %}
+        {% endfor %}
+
+        // Add event listeners if elements exist
+        const categoryFilter = document.getElementById('categoryFilter');
+        const dateFilter = document.getElementById('dateFilter');
+        const funFilter = document.getElementById('funFilter');
+        const locationSearch = document.getElementById('locationSearch');
+
+        if (categoryFilter) categoryFilter.addEventListener('change', filterEvents);
+        if (dateFilter) dateFilter.addEventListener('change', filterEvents);
+        if (funFilter) funFilter.addEventListener('change', filterEvents);
+
+        // Location search functionality
+        if (locationSearch) locationSearch.addEventListener('input', debounce(function(e) {
+            const searchQuery = e.target.value;
+            if (searchQuery.length > 2) {
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.length > 0) {
+                            const location = data[0];
+                            map.setView([location.lat, location.lon], 12);
+                        }
+                    })
+                    .catch(error => console.error('Error searching location:', error));
+            }
+        }, 500));
+
+        // Highlight event card when marker is clicked
+        function highlightEventCard(eventId) {
+            const eventCards = document.querySelectorAll('.event-card');
+            eventCards.forEach(card => {
+                card.classList.remove('highlighted');
+                if (card.dataset.eventId === eventId.toString()) {
+                    card.classList.add('highlighted');
+                    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
+        }
+
+        // Filter events function
+        function filterEvents() {
+            // Implementation for filtering events
+            console.log('Filtering events...');
+            // This would typically involve filtering the markers and cards
+        }
+
+        // Debounce function to limit API calls
+        function debounce(func, wait) {
+            let timeout;
+            return function() {
+                const context = this;
+                const args = arguments;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(context, args), wait);
+            };
+        }
+      } catch (error) {
+        console.error('Error initializing map:', error);
+        mapContainer.innerHTML = '<div class="alert alert-danger">Map could not be loaded. Please try again later.</div>';
+      }
+    } else {
+      console.error('Map container not found');
     }
   });
 </script>
