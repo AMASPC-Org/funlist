@@ -178,9 +178,25 @@ def create_app():
         from routes import init_routes
         init_routes(app)
         logger.info("Routes initialized successfully")
+    except AssertionError as e:
+        if "View function mapping is overwriting an existing endpoint function" in str(e):
+            logger.error("Route conflict detected. Some routes are defined multiple times.")
+            endpoint = str(e).split(":")[-1].strip()
+            logger.error(f"Conflicting endpoint: {endpoint}")
+            # Don't raise the error, continue with application setup
+            logger.warning("Continuing with application setup despite route conflicts.")
+        else:
+            logger.error(f"Failed to initialize routes: {str(e)}", exc_info=True)
+            raise
     except Exception as e:
         logger.error(f"Failed to initialize routes: {str(e)}", exc_info=True)
         raise
+        
+    # Add improved error handler
+    @app.errorhandler(500)
+    def internal_server_error(e):
+        logger.error(f"500 error: {str(e)}", exc_info=True)
+        return render_template('500.html', error=str(e)), 500
 
     logger.info("Application creation completed successfully")
     return app

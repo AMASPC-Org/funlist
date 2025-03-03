@@ -1,19 +1,42 @@
+
 {% extends "base.html" %}
 
 {% block title %}Server Error{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
+<div class="row justify-content-center mt-5">
+    <div class="col-md-8">
         <div class="card">
-            <div class="card-header">
+            <div class="card-header bg-danger text-white">
                 <h2 class="text-center mb-0">Server Error</h2>
             </div>
             <div class="card-body text-center">
                 <i class="fas fa-exclamation-circle fa-3x text-danger mb-3"></i>
-                <p>An unexpected error has occurred.</p>
+                <p class="lead">An unexpected error has occurred.</p>
                 <p>Our technical team has been notified. Please try again later.</p>
-                <a href="{{ url_for('index') }}" class="btn btn-primary">Go to Homepage</a>
+                <div class="mt-4">
+                    <a href="{{ url_for('index') }}" class="btn btn-primary">Go to Homepage</a>
+                </div>
+                {% if config.DEBUG %}
+                <div class="mt-4 p-3 bg-light text-left">
+                    <h5>Debug Information:</h5>
+                    {% if error %}
+                    <div class="alert alert-danger">
+                        <strong>Error:</strong> {{ error }}
+                    </div>
+                    {% endif %}
+                    <p><strong>URL:</strong> {{ request.url }}</p>
+                    <p><strong>Method:</strong> {{ request.method }}</p>
+                    <div>
+                        <strong>Request Headers:</strong>
+                        <ul>
+                            {% for header, value in request.headers.items() %}
+                            <li>{{ header }}: {{ value }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>

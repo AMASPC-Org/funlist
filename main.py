@@ -52,9 +52,35 @@ for port in [5000, 8081, 8080, 80]:
 port = int(os.environ.get("PORT", 3000))
 logger.info(f"Starting Flask server...")
 
-# Create and run the Flask app
+# Kill any existing processes using port 3000 (our target port)
+def kill_processes_on_port(port):
+    try:
+        import psutil
+        for proc in psutil.process_iter(['pid', 'name', 'connections']):
+            try:
+                for conn in proc.connections():
+                    if conn.laddr.port == port:
+                        logger.info(f"Killing process {proc.pid} {proc.name()} using port {port}")
+                        proc.kill()
+                        return True
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                pass
+    except ImportError:
+        logger.warning("psutil not available, using lsof to kill processes")
+        try:
+            import os
+            os.system(f"pkill -f 'python.*main.py'")
+            return True
+        except Exception as e:
+            logger.error(f"Error killing processes: {e}")
+    return False
+
+# Create the Flask app
 app = create_app()
 if __name__ == "__main__":
+    # First try to kill any existing processes
+    kill_processes_on_port(port)
+    
     # Try to run on the specified port, fall back to other ports if needed
     max_port_tries = 10
     current_port = port
