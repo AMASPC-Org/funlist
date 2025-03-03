@@ -199,7 +199,38 @@ class OrganizerProfileForm(FlaskForm):
     website = StringField('Website', validators=[Optional(), URL()])
     advertising_opportunities = TextAreaField('Advertising Opportunities', validators=[Optional(), Length(max=500)])
     sponsorship_opportunities = TextAreaField('Sponsorship Opportunities', validators=[Optional(), Length(max=500)])
-    submit = SubmitField('Save Organizer Profile')
+    submit = SubmitField('Save Profile')
+
+class VendorProfileForm(FlaskForm):
+    company_name = StringField('Company Name', validators=[Optional(), Length(max=100)])
+    vendor_type = SelectField('Vendor Type', choices=[
+        ('Event Planner', 'Event Planner'),
+        ('Catering', 'Catering'),
+        ('Photography', 'Photography'),
+        ('Videography', 'Videography'),
+        ('Audio/Visual', 'Audio/Visual'),
+        ('Decoration', 'Decoration'),
+        ('Entertainment', 'Entertainment'),
+        ('Transportation', 'Transportation'),
+        ('Security', 'Security'),
+        ('Other', 'Other')
+    ], validators=[DataRequired()])
+    description = TextAreaField('About Your Services', validators=[Optional(), Length(max=500)])
+    website = StringField('Website', validators=[Optional(), URL()])
+    services = TextAreaField('Services Offered', validators=[Optional(), Length(max=500)])
+    pricing = TextAreaField('Pricing Information', validators=[Optional(), Length(max=300)])
+    submit = SubmitField('Save Profile')
+
+class VenueProfileForm(FlaskForm):
+    company_name = StringField('Venue Name', validators=[DataRequired(), Length(max=100)])
+    description = TextAreaField('About Your Venue', validators=[Optional(), Length(max=500)])
+    location = StringField('Address', validators=[Optional(), Length(max=200)])
+    website = StringField('Website', validators=[Optional(), URL()])
+    capacity = StringField('Venue Capacity', validators=[Optional(), Length(max=50)])
+    features = TextAreaField('Venue Features', validators=[Optional(), Length(max=500)])
+    advertising_opportunities = TextAreaField('Advertising Opportunities', validators=[Optional(), Length(max=500)])
+    sponsorship_opportunities = TextAreaField('Sponsorship Opportunities', validators=[Optional(), Length(max=500)])
+    submit = SubmitField('Save Profile')ield('Save Organizer Profile')
 
 class VendorProfileForm(FlaskForm):
     vendor_type = SelectField('Vendor Type', choices=[

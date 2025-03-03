@@ -896,6 +896,83 @@ def init_routes(app):
         # Get events by this organizer
         events = Event.query.filter_by(user_id=organizer.id).order_by(Event.start_date.desc()).all()
         return render_template("organizer_detail.html", organizer=organizer, events=events)
+        
+    @app.route("/vendors")
+    def vendors():
+        # Get all users who are vendors
+        vendors = User.query.filter_by(is_vendor=True).all()
+        return render_template("vendors.html", vendors=vendors)
+
+    @app.route("/vendor/<int:user_id>")
+    def vendor_detail(user_id):
+        vendor = User.query.get_or_404(user_id)
+        if not vendor.is_vendor:
+            flash("This user is not registered as an event vendor.", "warning")
+            return redirect(url_for("vendors"))
+
+        return render_template("vendor_detail.html", vendor=vendor)
+        
+    @app.route("/venues")
+    def venues():
+        # For this implementation, we're treating venues as a subset of organizers
+        # who have marked themselves specifically as venues
+        venues = User.query.filter_by(is_organizer=True).filter(User.is_venue==True).all()
+        return render_template("venues.html", venues=venues)
+
+    @app.route("/venue/<int:user_id>")
+    def venue_detail(user_id):
+        venue = User.query.get_or_404(user_id)
+        if not venue.is_venue:
+            flash("This user is not registered as a venue.", "warning")
+            return redirect(url_for("venues"))
+
+        # Get events at this venue
+        events = Event.query.filter_by(venue_id=venue.id).order_by(Event.start_date.desc()).all()
+        return render_template("venue_detail.html", venue=venue, events=events)
+        
+    @app.route("/venue-profile", methods=["GET", "POST"])
+    @login_required
+    def venue_profile():
+        # Import the form
+        form = VenueProfileForm()
+
+        if request.method == "GET":
+            # Pre-populate form with existing data if available
+            form.company_name.data = current_user.company_name
+            form.description.data = current_user.organizer_description
+            form.location.data = current_user.location
+            form.website.data = current_user.organizer_website
+            form.capacity.data = current_user.venue_capacity
+            form.features.data = current_user.venue_features
+            form.advertising_opportunities.data = current_user.advertising_opportunities
+            form.sponsorship_opportunities.data = current_user.sponsorship_opportunities
+
+        if form.validate_on_submit():
+            try:
+                venue_data = {
+                    "company_name": form.company_name.data,
+                    "organizer_description": form.description.data,
+                    "location": form.location.data,
+                    "organizer_website": form.website.data,
+                    "venue_capacity": form.capacity.data,
+                    "venue_features": form.features.data,
+                    "advertising_opportunities": form.advertising_opportunities.data,
+                    "sponsorship_opportunities": form.sponsorship_opportunities.data,
+                }
+
+                # Mark as both organizer and venue
+                current_user.is_organizer = True
+                current_user.is_venue = True
+                current_user.update_organizer_profile(venue_data)
+                db.session.commit()
+                flash("Venue profile updated successfully!", "success")
+                return redirect(url_for("profile"))
+            except Exception as e:
+                db.session.rollback()
+                logger.error(f"Error updating venue profile: {str(e)}")
+                flash("There was a problem updating your venue profile. Please try again.", "danger")
+
+        return render_template("venue_profile.html", form=form)
 
     @app.route("/admin/dashboard")
     @login_required

@@ -32,6 +32,7 @@ class Event(db.Model):
     target_audience = db.Column(db.String(50), nullable=False)
     fun_meter = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    venue_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     website = db.Column(db.String(200))
     facebook = db.Column(db.String(200))
     instagram = db.Column(db.String(200))
@@ -109,7 +110,15 @@ class User(UserMixin, db.Model):
     is_vendor = db.Column(db.Boolean, default=False)
     vendor_type = db.Column(db.String(50))
     vendor_description = db.Column(db.Text)
+    services = db.Column(db.Text)
+    pricing = db.Column(db.Text)
     vendor_profile_updated_at = db.Column(db.DateTime)
+    
+    # Venue fields
+    is_venue = db.Column(db.Boolean, default=False)
+    venue_capacity = db.Column(db.String(50))
+    venue_features = db.Column(db.Text)
+    venue_profile_updated_at = db.Column(db.DateTime)
 
     def update_organizer_profile(self, organizer_data):
         for key, value in organizer_data.items():
