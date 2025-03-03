@@ -46,12 +46,17 @@ def create_app():
     }
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    # Session configuration
+    # Enhanced session configuration
     app.config['SESSION_TYPE'] = 'filesystem'
-    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
-    app.config['SESSION_COOKIE_SECURE'] = True  # Enable for HTTPS
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)  # Longer session lifetime
+    app.config['SESSION_COOKIE_SECURE'] = False  # Disable for local development
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+    app.config['SESSION_USE_SIGNER'] = True
+    app.config['SESSION_FILE_DIR'] = './flask_session'
+    app.config['SESSION_FILE_THRESHOLD'] = 500
+    app.config['SESSION_REFRESH_EACH_REQUEST'] = True
+    app.config['SESSION_COOKIE_NAME'] = 'funlist_session'
 
     # Add request logging
     @app.before_request
