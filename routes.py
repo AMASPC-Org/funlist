@@ -15,6 +15,17 @@ logger.setLevel(logging.DEBUG)
 
 
 def init_routes(app):
+    # Add CSP report endpoint
+    @app.route('/csp-report', methods=['POST'])
+    def csp_report():
+        try:
+            report = request.get_json(force=True).get('csp-report', {})
+            app.logger.warning(f"CSP Violation: {report}")
+            return '', 204
+        except Exception as e:
+            app.logger.error(f"Error handling CSP report: {str(e)}")
+            return '', 400
+    
     # Add global error handler for application context errors
     @app.errorhandler(Exception)
     def handle_exception(e):

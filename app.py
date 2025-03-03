@@ -72,15 +72,15 @@ def create_app():
     @app.after_request
     def after_request(response):
         """Add security headers and log response details after each request."""
-        # Set Content Security Policy header
+        # Set Content Security Policy header with more permissive options
         csp = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://auth.util.repl.co https://*.replit.dev https://*.repl.co; "
-            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https: https://cdn.jsdelivr.net https://unpkg.com https://code.jquery.com https://auth.util.repl.co https://*.replit.dev https://*.repl.co; "
+            "style-src 'self' 'unsafe-inline' https: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
             "img-src 'self' data: https:; "
-            "font-src 'self' https://cdnjs.cloudflare.com; "
+            "font-src 'self' data: https: https://cdnjs.cloudflare.com; "
             "connect-src 'self' https:; "
-            "frame-src 'self' https://auth.util.repl.co https://*.replit.dev https://*.repl.co; "
+            "frame-src 'self' https: https://auth.util.repl.co https://*.replit.dev https://*.repl.co; "
             "report-uri /csp-report"
         )
         response.headers['Content-Security-Policy'] = csp
