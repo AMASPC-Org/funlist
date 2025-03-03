@@ -164,7 +164,11 @@ def run_flask_app():
 
 
     try:
+        # Clear all console output with an escape sequence
+        print("\033c", flush=True)
         logger.info(f"Starting Flask server on port {port}")
+        print(f"\n🚀 Server running at: https://{os.environ.get('REPL_SLUG')}.{os.environ.get('REPL_OWNER')}.repl.co")
+        print(f"📝 Local URL: http://0.0.0.0:{port}")
         app.run(host='0.0.0.0', port=port, debug=True, use_reloader=False, threaded=True)
     except Exception as e:
         logger.error(f"Failed to start Flask server: {str(e)}", exc_info=True)
