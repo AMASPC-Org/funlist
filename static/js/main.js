@@ -347,59 +347,8 @@ function setupFeedbackForm() {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('main.js loaded');
     
-    // Add a small delay to ensure all DOM elements are fully loaded
-    setTimeout(() => {
-        try {
-            initCookieConsent();
-        } catch (error) {
-            console.error("Error initializing cookie consent:", error);
-        }
-    }, 500);
-    
     // Other initialization code...
 });
-
-function initCookieConsent() {
-    const cookieBanner = document.getElementById('cookie-consent');
-    if (!cookieBanner) {
-        console.log('Cookie banner element not found');
-        return;
-    }
-    
-    const acceptButton = document.getElementById('accept-cookies');
-    const savePreferencesButton = document.getElementById('save-cookie-preferences');
-    
-    // Check if user already accepted cookies
-    if (!hasAcceptedCookies()) {
-        // Show the cookie banner with a slight delay
-        setTimeout(() => {
-            try {
-                cookieBanner.style.display = 'block';
-                document.body.classList.add('cookie-consent-visible');
-            } catch (error) {
-                console.error("Error displaying cookie banner:", error);
-            }
-        }, 1000);
-    }
-    
-    // Handle accept all button
-    if (acceptButton) {
-        acceptButton.addEventListener('click', function() {
-            try {
-                acceptAllCookies();
-                hideCookieBanner();
-            } catch (error) {
-                console.error("Error handling accept cookies:", error);
-            }
-        });
-    }
-    
-    // Handle save preferences button
-    if (savePreferencesButton) {
-        savePreferencesButton.addEventListener('click', function() {
-            try {
-                const analyticsCookies = document.getElementById('analytics-cookies');
-                const advertisingCookies = document.getElementById('advertising-cookies');
                 
                 saveCookiePreferences({
                     essential: true, // Always required
@@ -424,76 +373,7 @@ function initCookieConsent() {
     }
 }
 
-function hasAcceptedCookies() {
-    try {
-        return localStorage.getItem('cookieConsent') !== null;
-    } catch (error) {
-        console.error("Error checking cookie consent:", error);
-        return false;
-    }
-}
-
-function acceptAllCookies() {
-    try {
-        saveCookiePreferences({
-            essential: true,
-            analytics: true,
-            advertising: true
-        });
-    } catch (error) {
-        console.error("Error accepting all cookies:", error);
-    }
-}
-
-function saveCookiePreferences(preferences) {
-    try {
-        // Save to localStorage with expiration of 6 months (in milliseconds)
-        const sixMonths = 180 * 24 * 60 * 60 * 1000;
-        const expirationDate = new Date().getTime() + sixMonths;
-        
-        localStorage.setItem('cookieConsent', JSON.stringify({
-            preferences: preferences,
-            expires: expirationDate
-        }));
-        
-        // Apply cookie settings
-        applyCookieSettings(preferences);
-    } catch (error) {
-        console.error("Error saving cookie preferences:", error);
-    }
-}
-
-function applyCookieSettings(preferences) {
-    try {
-        // Here you would enable/disable tracking based on preferences
-        // For example:
-        if (preferences && preferences.analytics) {
-            // Enable analytics tracking
-            console.log('Analytics tracking enabled');
-        }
-        
-        if (preferences && preferences.advertising) {
-            // Enable advertising cookies
-            console.log('Advertising cookies enabled');
-        }
-    } catch (error) {
-        console.error("Error applying cookie settings:", error);
-    }
-}
-
-function hideCookieBanner() {
-    try {
-        const cookieBanner = document.getElementById('cookie-consent');
-        if (cookieBanner) {
-            cookieBanner.style.display = 'none';
-            document.body.classList.remove('cookie-consent-visible');
-        }
-    } catch (error) {
-        console.error("Error hiding cookie banner:", error);
-    }
-}
-
-// Check for expired cookie consent
+// Empty space - cookie consent functions moved to cookie_consent.html
 function checkCookieConsentExpiration() {
     try {
         const consentData = localStorage.getItem('cookieConsent');
