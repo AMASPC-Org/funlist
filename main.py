@@ -126,7 +126,7 @@ def run_flask_app():
     # Create and run the Flask app
     from app import create_app
     app = create_app()
-    
+
     # Update database schema before starting
     try:
         # Import the database update function
@@ -139,7 +139,7 @@ def run_flask_app():
             logger.warning("Database schema update completed with warnings")
     except Exception as e:
         logger.error(f"Error updating database schema: {str(e)}")
-    
+
     # Register signal handlers for graceful shutdown
     def signal_handler(sig, frame):
         logger.info(f"Received signal {sig}, shutting down")
@@ -147,6 +147,25 @@ def run_flask_app():
 
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
+
+    #Assuming db and render_template are available from app import create_app
+    @app.route("/")
+    def index():
+        # Use a more basic query that only selects specific columns
+        try:
+            # Get only essential columns to avoid errors with missing columns
+            events = db.session.query(
+                Event.id, Event.title, Event.description, Event.start_date, 
+                Event.end_date, Event.category, Event.fun_meter, 
+                Event.city, Event.state
+            ).order_by(Event.start_date.desc()).all()
+        except Exception as e:
+            app.logger.error(f"Error fetching events: {str(e)}")
+            events = []
+        # Check if this is a new registration to show the wizard
+        new_registration = session.pop('new_registration', False)
+        return render_template("index.html", events=events, user=current_user, new_registration=new_registration)
+
 
     logger.info(f"Starting Flask server on port {port}")
     app.run(host='0.0.0.0', port=port, debug=True, use_reloader=False, threaded=True)
