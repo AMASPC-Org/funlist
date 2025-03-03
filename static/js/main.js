@@ -1,126 +1,14 @@
 document.addEventListener('DOMContentLoaded', function() {
-  console.log("main.js loaded");
+    console.log("DOM fully loaded");
+    setupEventHandlers();
+    setupTippy();
+    setupModals();
 
-  // Global error handler to catch and log script errors
-  window.addEventListener('error', function(event) {
-    console.log("JavaScript error caught:", event.error);
-    if (event.message && event.message.indexOf('Script error') !== -1) {
-      console.log("Cross-origin script error detected. Check for cross-origin issues.");
-    }
-    // Prevent the error from bubbling up
-    event.stopPropagation();
-    return true;
-  });
-
-  // Prevent errors from undefined functions
-  window.approveEvent = window.approveEvent || function() {
-    console.log("approveEvent function called but not defined for this user role");
-  };
-
-  window.rejectEvent = window.rejectEvent || function() {
-    console.log("rejectEvent function called but not defined for this user role");
-  };
-
-    try {
-        // Initialize sponsors carousel if it exists
-        if (document.querySelector('.sponsors-carousel')) {
-            console.log('Populating sponsors carousel');
-            // Check if function exists before calling
-            if (typeof populateSponsorsCarousel === 'function') {
-                try {
-                    populateSponsorsCarousel();
-                } catch (e) {
-                    console.error('Error populating sponsors carousel:', e);
-                }
-            }
-        }
-
-        // Check if function exists before calling
-        if (typeof initializeSponsorsCarousel === 'function') {
-            try {
-                initializeSponsorsCarousel();
-            } catch (e) {
-                console.error('Error initializing sponsors carousel:', e);
-            }
-        }
-
-        try {
-            setupErrorHandling();
-        } catch (e) {
-            console.error('Error setting up error handling:', e);
-        }
-
-        try {
-            setupFormValidation();
-        } catch (e) {
-            console.error('Error setting up form validation:', e);
-        }
-
-        try {
-            setupLocationServices();
-        } catch (e) {
-            console.error('Error setting up location services:', e);
-        }
-
-        try {
-            setupFilters();
-        } catch (e) {
-            console.error('Error setting up filters:', e);
-        }
-
-        try {
-            setupModals();
-        } catch (e) {
-            console.error('Error setting up modals:', e);
-        }
-
-        // Setup subscription form events if they exist
-        if (document.getElementById('floatingSubscribeForm')) {
-            try{
-                setupSubscriptionForm();
-            } catch (e) {
-                console.error('Error setting up subscription form:', e);
-            }
-        }
-
-        // Setup feedback form events if they exist
-        if (document.getElementById('feedbackForm')) {
-            try{
-                setupFeedbackForm();
-            } catch (e) {
-                console.error('Error setting up feedback form:', e);
-            }
-        }
-
-        // Setup new user wizard if necessary
-        const isNewRegistration = document.body.dataset.newRegistration === 'True';
-        if (isNewRegistration) {
-            try {
-                showNewUserWizard();
-            } catch (e) {
-                console.error('Error showing new user wizard:', e);
-            }
-        }
-
-        // Cookie consent handling
-        function initCookieConsent() {
-            try {
-                setupCookieConsent();
-            } catch (error) {
-                console.error("Error initializing cookie consent:", error);
-            }
-        }
-
-        // Initialize cookie consent when DOM is loaded
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initCookieConsent);
-        } else {
-            // DOM already loaded, initialize directly
-            initCookieConsent();
-        }
-    } catch (error) {
-        console.error('Error in main.js initialization:', error);
-    }
+    // Log when buttons are found in DOM
+    const feedbackBtn = document.getElementById('feedbackButton');
+    const subscribeBtn = document.getElementById('subscribeButton');
+    console.log("Feedback button in DOM:", !!feedbackBtn);
+    console.log("Subscribe button in DOM:", !!subscribeBtn);
 });
 
 
@@ -457,3 +345,11 @@ function checkCookieConsentExpiration() {
 }
 
 // Cookie functions are handled in the cookie_consent.html partial
+
+function setupEventHandlers() {
+    // Placeholder for event handler setup (needs to be implemented)
+}
+
+function setupTippy() {
+    // Placeholder for Tippy setup (needs to be implemented)
+}
