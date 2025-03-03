@@ -6,6 +6,7 @@ import time
 import socket
 import subprocess
 import psutil
+import importlib
 
 # Configure logging
 logging.basicConfig(
@@ -93,82 +94,81 @@ def free_port(port):
 def run_flask_app():
     """Run the Flask application on the appropriate port."""
     # Get the preferred port from environment or use default
-    preferred_ports = [3000, 5000, 8080, 8081]
+    preferred_ports = [5000, 3000, 8081, 8080]  # Changed order to prioritize 5000
     port = int(os.environ.get("PORT", preferred_ports[0]))
-
-    # Check each port and try to free it if needed
+    
+    # Try to find an available port
+    available_port = None
     for current_port in preferred_ports:
-        if is_port_in_use(current_port):
-            logger.info(f"Port {current_port} is in use, attempting to free it")
+        if not is_port_in_use(current_port):
+            logger.info(f"Port {current_port} is available")
+            available_port = current_port
+            break
+        else:
+            logger.info(f"Port {current_port} is in use")
+    
+    # If no ports are available, try to free one
+    if available_port is None:
+        for current_port in preferred_ports:
+            logger.info(f"Attempting to free port {current_port}")
             if free_port(current_port):
                 logger.info(f"Successfully freed port {current_port}")
-                port = current_port
+                available_port = current_port
                 break
-        else:
-            logger.info(f"Port {current_port} is available")
-            port = current_port
-            break
+    
+    # If we still don't have a port, use a fallback
+    if available_port is None:
+        available_port = 5050  # Use an uncommon port as last resort
+        logger.warning(f"Using fallback port {available_port}")
+    
+    port = available_port
+    logger.info(f"Selected port {port} for the application")
 
-    # Function to ensure database schema is consistent
+    # Update database schema function
     def update_database_schema():
         try:
             # Import the database update function
-            from update_schema import update_schema
+            update_schema_module = importlib.import_module('update_schema')
             logger.info("Running database schema update...")
-            result = update_schema()
+            result = update_schema_module.update_schema()
             if result:
                 logger.info("Database schema updated successfully")
             else:
                 logger.warning("Database schema update completed with warnings")
+            return True
         except Exception as e:
             logger.error(f"Error updating database schema: {str(e)}")
+            return False
 
-    # Create and run the Flask app
-    from app import create_app
-    app = create_app()
-
-    # Update database schema before starting
+    # Create the Flask app
     try:
-        # Import the database update function
-        from update_schema import update_schema
-        logger.info("Running database schema update...")
-        result = update_schema()
-        if result:
-            logger.info("Database schema updated successfully")
-        else:
-            logger.warning("Database schema update completed with warnings")
+        from app import create_app
+        app = create_app()
+        
+        # Update database schema before starting
+        update_database_schema()
+        
+        # Register signal handlers for graceful shutdown
+        def signal_handler(sig, frame):
+            logger.info(f"Received signal {sig}, shutting down")
+            sys.exit(0)
+
+        signal.signal(signal.SIGINT, signal_handler)
+        signal.signal(signal.SIGTERM, signal_handler)
     except Exception as e:
-        logger.error(f"Error updating database schema: {str(e)}")
+        logger.error(f"Error creating Flask app: {str(e)}", exc_info=True)
+        sys.exit(1)
 
-    # Register signal handlers for graceful shutdown
-    def signal_handler(sig, frame):
-        logger.info(f"Received signal {sig}, shutting down")
-        sys.exit(0)
-
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
-
-    #Assuming db and render_template are available from app import create_app
-    @app.route("/")
-    def index():
-        # Use a more basic query that only selects specific columns
-        try:
-            # Get only essential columns to avoid errors with missing columns
-            events = db.session.query(
-                Event.id, Event.title, Event.description, Event.start_date, 
-                Event.end_date, Event.category, Event.fun_meter, 
-                Event.city, Event.state
-            ).order_by(Event.start_date.desc()).all()
-        except Exception as e:
-            app.logger.error(f"Error fetching events: {str(e)}")
-            events = []
-        # Check if this is a new registration to show the wizard
-        new_registration = session.pop('new_registration', False)
-        return render_template("index.html", events=events, user=current_user, new_registration=new_registration)
+    # Route definitions are handled in routes.py through init_routes
+    # Don't define routes here to avoid conflicts
 
 
-    logger.info(f"Starting Flask server on port {port}")
-    app.run(host='0.0.0.0', port=port, debug=True, use_reloader=False, threaded=True)
+    try:
+        logger.info(f"Starting Flask server on port {port}")
+        app.run(host='0.0.0.0', port=port, debug=True, use_reloader=False, threaded=True)
+    except Exception as e:
+        logger.error(f"Failed to start Flask server: {str(e)}", exc_info=True)
+        sys.exit(1)
 
 if __name__ == "__main__":
     try:
