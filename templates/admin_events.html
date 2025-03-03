@@ -3,7 +3,7 @@
 {% block head %}
 {{ super() }}
 {% set random_version = range(1, 10000) | random %}
-<script src="{{ url_for('static', filename='js/admin_events.js') }}" defer onerror="console.error('Failed to load admin_events.js');"></script>
+<script src="{{ url_for('static', filename='js/admin_events.js') }}?v={{ random_version }}" crossorigin="anonymous" defer></script>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     // Check if we have necessary elements before initializing admin functionality

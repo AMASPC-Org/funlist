@@ -17,7 +17,7 @@
      crossorigin=""/>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
     <!-- Load Leaflet JS after the page has loaded -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
 </head>
 <body {% if new_registration %}data-new-registration="true"{% endif %}>
   {% include 'partials/navbar.html' %}
@@ -122,7 +122,7 @@
       // Enhanced global error handler for all scripts
       window.onerror = function(message, source, lineno, colno, error) {
         console.error("Global error handler caught:", message);
-        
+
         // Check if it's a cross-origin script error
         if (message === "Script error." || message === "Script error") {
           console.log("Cross-origin script error detected. Check for cross-origin issues.");
@@ -135,15 +135,15 @@
         } else if (error) {
           console.error("Error details:", error);
         }
-        
+
         return true; // Prevents the default browser error handling
       };
-      
+
       // Unhandled promise rejection handler
       window.addEventListener('unhandledrejection', function(event) {
         console.error('Unhandled promise rejection:', event.reason);
       });
-      
+
       // Safe function execution wrapper
       window.safeExecute = function(fn, fallback) {
         try {
