@@ -252,8 +252,8 @@ def init_routes(app):
                 email = form.email.data
                 logger.info(f"Attempting login for: {email}")
 
-                # Simplified query that avoids problematic columns
-                user = db.session.execute(db.select(User).filter_by(email=email)).scalar_one_or_none()
+                # Direct query to improve reliability
+                user = User.query.filter_by(email=email).first()
 
                 if user:
                     logger.info(f"User found: {user.id}")

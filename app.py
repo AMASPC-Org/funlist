@@ -126,7 +126,7 @@ def create_app():
 
     try:
         logger.info("Initializing Session...")
-        Session(app)
+        # Session(app)  # Already initialized above, don't initialize twice
     except Exception as e:
         logger.error(f"Failed to initialize Session: {str(e)}", exc_info=True)
         raise
@@ -138,7 +138,10 @@ def create_app():
         login_manager.login_view = "login"
         login_manager.login_message = "Please log in to access this page."
         login_manager.login_message_category = "info"
-        login_manager.session_protection = "strong"
+        login_manager.session_protection = "basic"  # Changed from strong to basic for better compatibility
+        login_manager.refresh_view = "login"  # Set refresh view for session timeouts
+        login_manager.needs_refresh_message = "Please login again to confirm your identity"
+        login_manager.needs_refresh_message_category = "info"
     except Exception as e:
         logger.error(f"Failed to initialize login manager: {str(e)}",
                      exc_info=True)
@@ -154,7 +157,17 @@ def create_app():
     @login_manager.user_loader
     def load_user(user_id):
         try:
-            return db.session.get(User, int(user_id))
+            # More robust user loading
+            if user_id is None:
+                return None
+            
+            # Try to convert to integer, but handle gracefully if it's not
+            try:
+                user_id_int = int(user_id)
+                return User.query.get(user_id_int)
+            except (ValueError, TypeError):
+                logger.warning(f"Invalid user_id format: {user_id}")
+                return None
         except Exception as e:
             logger.error(f"Error loading user {user_id}: {str(e)}",
                          exc_info=True)
