@@ -618,6 +618,7 @@ dependencies = [
     { name = "psycopg2-binary" },
     { name = "requests" },
     { name = "scikit-learn" },
+    { name = "slugify" },
     { name = "sqlalchemy" },
     { name = "werkzeug" },
     { name = "wtforms" },
@@ -641,6 +642,7 @@ requires-dist = [
     { name = "psycopg2-binary", specifier = ">=2.9.9" },
     { name = "requests", specifier = ">=2.32.3" },
     { name = "scikit-learn", specifier = ">=1.5.2" },
+    { name = "slugify", specifier = ">=0.0.1" },
     { name = "sqlalchemy", specifier = ">=2.0.35" },
     { name = "werkzeug", specifier = ">=3.0.4" },
     { name = "wtforms", specifier = ">=3.1.2" },
@@ -737,6 +739,12 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/32/cd/9d86f7ed7f4497c9fd3e39f8918dd93d9f647ba80d7e34e4946c0c2d1a7c/scipy-1.14.1-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:e4f5a7c49323533f9103d4dacf4e4f07078f360743dec7f7596949149efeec06", size = 42524647 },
     { url = "https://files.pythonhosted.org/packages/f5/1b/6ee032251bf4cdb0cc50059374e86a9f076308c1512b61c4e003e241efb7/scipy-1.14.1-cp313-cp313-win_amd64.whl", hash = "sha256:baff393942b550823bfce952bb62270ee17504d02a1801d7fd0719534dfb9c84", size = 44469524 },
 ]
+
+[[package]]
+name = "slugify"
+version = "0.0.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/7b/89/fbb7391d777b60c82d4e1376bb181b98e75adf506b3f7ffe837eca64570b/slugify-0.0.1.tar.gz", hash = "sha256:c5703cc11c1a6947536f3ce8bb306766b8bb5a84a53717f5a703ce0f18235e4c", size = 1156 }
 
 [[package]]
 name = "sqlalchemy"
