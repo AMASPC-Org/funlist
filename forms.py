@@ -230,7 +230,7 @@ class VenueProfileForm(FlaskForm):
     features = TextAreaField('Venue Features', validators=[Optional(), Length(max=500)])
     advertising_opportunities = TextAreaField('Advertising Opportunities', validators=[Optional(), Length(max=500)])
     sponsorship_opportunities = TextAreaField('Sponsorship Opportunities', validators=[Optional(), Length(max=500)])
-    submit = SubmitField('Save Profile')ield('Save Organizer Profile')
+    submit = SubmitField('Save Profile')
 
 class VendorProfileForm(FlaskForm):
     vendor_type = SelectField('Vendor Type', choices=[
