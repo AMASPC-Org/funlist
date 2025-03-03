@@ -3,11 +3,11 @@
 {% block title %}Map | FunList.ai{% endblock %}
 
 {% block content %}
-<div class="container my-4">
-  <h1 class="text-center mb-4">Event Map</h1>
+<div class="container mt-3">
+  <h1 class="text-center mb-3">Event Map</h1>
 
-  <div class="filter-bar mb-4">
-        <div class="row g-3">
+  <div class="filter-bar mb-3">
+        <div class="row g-2">
             <div class="col-md">
                 <input type="text" class="form-control" id="locationSearch" placeholder="Search location...">
             </div>
@@ -43,17 +43,16 @@
 
   <div class="row">
         <div class="col-md-7">
-            <div id="map" style="height: 600px; width: 100%;"></div>
+            <div id="map"></div>
         </div>
         <div class="col-md-5">
-            <div class="event-cards-container" style="height: 700px; overflow-y: auto;">
+            <div class="event-cards-container">
                 {% for event in events %}
                     {% if loop.index == 3 %}
                     <div class="card mb-3 sponsored-card">
                         <div class="card-body">
                             <div class="text-muted small mb-2">Advertisement</div>
                             <div class="sponsored-content">
-                                <!-- Ad content will go here -->
                                 <div class="text-center p-3">
                                     <h5>Sponsored Content</h5>
                                     <p>Advertisement space available</p>
@@ -81,7 +80,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="{{ url_for('static', filename='js/map.js') }}"></script>
 <script>
   // Store markers for event handling
@@ -117,7 +115,7 @@
     {% for event in events %}
       {% if event.latitude and event.longitude %}
       (function() { // Use IIFE to create a new scope for each event
-        let eventPopupContent = `
+        const popupContent = `
           <div class='event-popup'>
             <h5>{{ event.title }}</h5>
             <p>{{ event.description|truncate(100) }}</p>
@@ -126,11 +124,11 @@
           </div>
         `;
         
-        let eventMarker = window.FunlistMap.addMarker(
+        const eventMarker = window.FunlistMap.addMarker(
           map, 
           {{ event.latitude }}, 
           {{ event.longitude }}, 
-          eventPopupContent
+          popupContent
         );
         
         if (eventMarker) {
@@ -212,105 +210,3 @@
   });
 </script>
 {% endblock %}
-
-<style>
-/* Map styles */
-#map {
-    height: 600px;
-    width: 100%;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    z-index: 1;
-}
-
-/* Popup styles */
-.event-popup {
-    min-width: 220px;
-    padding: 5px;
-}
-.event-popup h5 {
-    margin-bottom: 10px;
-    font-weight: 600;
-}
-.event-popup p {
-    margin-bottom: 5px;
-    font-size: 0.9rem;
-}
-.event-popup .btn {
-    margin-top: 8px;
-}
-
-/* Event card styles */
-.event-card {
-    transition: all 0.3s ease;
-    border-left: 3px solid transparent;
-    margin-bottom: 15px;
-}
-.event-card:hover {
-    background-color: #f8f9fa;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-.event-card.highlighted {
-    background-color: #e9ecef;
-    border-left-color: var(--primary-color);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-/* Filter bar styles */
-.filter-bar {
-    background-color: #f8f9fa;
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-/* Sponsored card styles */
-.sponsored-card {
-    border: 1px dashed #ccc;
-    background-color: #fffaf0;
-}
-.sponsored-content {
-    padding: 1rem;
-    background-color: #f9f9f9;
-}
-
-/* Event cards container */
-.event-cards-container {
-    height: 700px;
-    overflow-y: auto;
-    padding-right: 10px;
-    /* Improve scrollbar appearance */
-    scrollbar-width: thin;
-    scrollbar-color: #ccc #f5f5f5;
-}
-.event-cards-container::-webkit-scrollbar {
-    width: 8px;
-}
-.event-cards-container::-webkit-scrollbar-track {
-    background: #f5f5f5;
-    border-radius: 4px;
-}
-.event-cards-container::-webkit-scrollbar-thumb {
-    background-color: #ccc;
-    border-radius: 4px;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    #map {
-        height: 400px;
-        margin-bottom: 20px;
-    }
-    .event-cards-container {
-        height: 500px;
-    }
-    .filter-bar .row {
-        flex-direction: column;
-    }
-    .filter-bar .col-md {
-        margin-bottom: 10px;
-    }
-}
-</style>
