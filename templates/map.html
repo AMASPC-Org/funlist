@@ -81,28 +81,56 @@
 <script src="{{ url_for('static', filename='js/map.js') }}"></script>
 <script>
 console.log("Map page loaded, initializing map...");
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize the map
-    var map = FunlistMap.init('map');
-    
-    // Add markers for events
-    {% for event in events %}
-        {% if event.latitude and event.longitude %}
-            FunlistMap.addMarker(map, {{ event.latitude }}, {{ event.longitude }},
-            `<div><h5>{{ event.title }}</h5><p>{{ event.description|truncate(100) }}</p><a href="/event/{{event.id}}">View Details</a></div>`);
-        {% endif %}
-    {% endfor %}
-    
-    console.log("Added {{ events|length }} event markers to map");
-    
-    // Get user location and center map
-    FunlistMap.getUserLocation(map, function(success, location) {
-        if (success) {
-            console.log("centered map");
+// Wait for both DOM and map.js to fully load
+window.addEventListener('load', function() {
+    // Check if FunlistMap is defined
+    if (typeof FunlistMap === 'undefined') {
+        console.error("FunlistMap module not loaded. Retrying...");
+        // Try to reload the map.js file
+        var mapScript = document.createElement('script');
+        mapScript.src = "{{ url_for('static', filename='js/map.js') }}";
+        mapScript.onload = initializeMap;
+        document.head.appendChild(mapScript);
+    } else {
+        initializeMap();
+    }
+
+    function initializeMap() {
+        console.log("Initializing map with FunlistMap:", typeof FunlistMap);
+        // Initialize the map
+        var map = FunlistMap.init('map');
+        
+        if (map) {
+            // Add markers for events
+            {% for event in events %}
+                {% if event.latitude and event.longitude %}
+                    FunlistMap.addMarker(map, {{ event.latitude }}, {{ event.longitude }},
+                    `<div><h5>{{ event.title }}</h5><p>{{ event.description|truncate(100) }}</p><a href="/event/{{event.id}}">View Details</a></div>`);
+                {% endif %}
+            {% endfor %}
+            
+            console.log("Added {{ events|length }} event markers to map");
+            
+            // Get user location and center map
+            FunlistMap.getUserLocation(map, function(success, location) {
+                if (success) {
+                    console.log("centered map");
+                } else {
+                    console.log("failed to center map");
+                }
+            });
+            
+            // Force a resize of the map after a short delay to handle any rendering issues
+            setTimeout(function() {
+                if (map && typeof map.invalidateSize === 'function') {
+                    map.invalidateSize();
+                    console.log("Map size invalidated");
+                }
+            }, 500);
         } else {
-            console.log("failed to center map");
+            console.error("Failed to initialize map");
         }
-    });
+    }
 });
 </script>
 {% endblock %}
