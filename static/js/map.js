@@ -45,6 +45,30 @@ window.FunlistMap = (function() {
       callback(false, null);
       return;
     }
+    
+    // Try to get user location
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        function(position) {
+          // Success
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          console.log("User location set as map center");
+          map.setView([lat, lng], defaultZoom);
+          callback(true, {lat: lat, lng: lng});
+        },
+        function(error) {
+          // Error
+          console.warn("Error getting user location:", error.message);
+          callback(false, error);
+        }
+      );
+    } else {
+      // Browser doesn't support geolocation
+      console.warn("Geolocation not supported by this browser");
+      callback(false, {message: "Geolocation not supported"});
+    }
+  }
 
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(

@@ -1900,6 +1900,13 @@ body.cookie-consent-visible .floating-buttons-container {
     background-color: #f9f9f9;
 }
 
+/* Map container */
+#map {
+    height: 700px;
+    width: 100%;
+    z-index: 1;
+}
+
 /* Event cards container */
 .event-cards-container {
     height: 700px;

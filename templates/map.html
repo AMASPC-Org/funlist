@@ -86,59 +86,71 @@
   let eventMarkers = [];
   let mapInstance = null;
   
-  // Main function to initialize everything when the DOM is loaded
+  // Main function to initialize everything when the DOM is fully loaded
   document.addEventListener('DOMContentLoaded', function() {
     console.log("Map page loaded, initializing map...");
     
-    // Initialize map using our map module
-    mapInstance = window.FunlistMap.init('map');
-    if (!mapInstance) {
-      console.error("Failed to initialize map");
+    // Make sure Leaflet is loaded
+    if (typeof L === 'undefined') {
+      console.error("Leaflet library not loaded. Please check your network connection.");
       return;
     }
     
-    // Force map resize after a short delay to ensure it's visible
-    setTimeout(function() {
-      if (mapInstance) {
-        try {
-          mapInstance.invalidateSize(true);
-          console.log("Forcing map resize");
-        } catch (e) {
-          console.error("Error resizing map:", e);
-        }
-      }
-    }, 500);
-    
-    // Get user location
-    window.FunlistMap.getUserLocation(mapInstance, function(success, data) {
-      if (success) {
-        console.log("User location set as map center");
-      } else {
-        console.log("Using default map location");
-      }
-    });
-    
-    // Add event markers to the map
-    {% for event in events %}
-      {% if event.latitude and event.longitude %}
-      (function() { // Use IIFE to create a new scope for each event
-        const popupContent = `
-          <div class='event-popup'>
-            <h5>{{ event.title }}</h5>
-            <p>{{ event.description|truncate(100) }}</p>
-            <p><small>{{ event.start_date.strftime('%B %d, %Y') }}</small></p>
-            <a href='/event/{{ event.id }}' class='btn btn-sm btn-primary'>View Details</a>
-          </div>
-        `;
-        
-        const eventMarker = window.FunlistMap.addMarker(
-          mapInstance, 
-          {{ event.latitude }}, 
-          {{ event.longitude }}, 
-          popupContent
+    // Initialize map directly with Leaflet
+    try {
+      // Create map instance
+      mapInstance = L.map('map', {
+        center: [47.0379, -122.9007], // Default: Olympia, WA
+        zoom: 13,
+        zoomControl: true
+      });
+      
+      // Add tile layer (OpenStreetMap)
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+      }).addTo(mapInstance);
+      
+      console.log("Map initialized successfully");
+      
+      // Force map resize after a short delay to ensure it's visible
+      setTimeout(function() {
+        mapInstance.invalidateSize();
+        console.log("Forcing map resize");
+      }, 500);
+      
+      // Get user location
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          function(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            console.log("User location found:", lat, lng);
+            mapInstance.setView([lat, lng], 13);
+          },
+          function(error) {
+            console.warn("Error getting user location:", error.message);
+          }
         );
-        
-        if (eventMarker) {
+      }
+      
+      // Add event markers to the map
+      {% for event in events %}
+        {% if event.latitude and event.longitude %}
+        (function() {
+          const popupContent = `
+            <div class='event-popup'>
+              <h5>{{ event.title }}</h5>
+              <p>{{ event.description|truncate(100) }}</p>
+              <p><small>{{ event.start_date.strftime('%B %d, %Y') }}</small></p>
+              <a href='/event/{{ event.id }}' class='btn btn-sm btn-primary'>View Details</a>
+            </div>
+          `;
+          
+          const eventMarker = L.marker([{{ event.latitude }}, {{ event.longitude }}])
+            .addTo(mapInstance)
+            .bindPopup(popupContent);
+          
           // Store the event ID on the marker for later reference
           eventMarker.eventId = {{ event.id }};
           eventMarkers.push(eventMarker);
@@ -157,63 +169,70 @@
               eventCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
           });
-        }
-      })();
-      {% endif %}
-    {% endfor %}
-    
-    console.log("Added {{ events|length }} event markers to map");
-    
-    // Setup location search filter
-    const locationSearch = document.getElementById('locationSearch');
-    if (locationSearch) {
-      locationSearch.addEventListener('input', window.FunlistMap.debounce(function(e) {
-        const searchQuery = e.target.value;
-        if (searchQuery.length > 2) {
-          window.FunlistMap.searchLocation(searchQuery, function(success, location) {
-            if (success && mapInstance) {
-              console.log("Location found:", location.display_name);
-              mapInstance.setView([parseFloat(location.lat), parseFloat(location.lon)], 12);
-            }
-          });
-        }
-      }, 500));
-    }
-    
-    // Connect filter UI elements
-    const categoryFilter = document.getElementById('categoryFilter');
-    const dateFilter = document.getElementById('dateFilter');
-    const funFilter = document.getElementById('funFilter');
-    
-    // Setup filter event listeners
-    [categoryFilter, dateFilter, funFilter].forEach(filter => {
-      if (filter) {
-        filter.addEventListener('change', function() {
-          console.log(`${filter.id} changed to:`, this.value);
-          // This would call your filter implementation in the future
+        })();
+        {% endif %}
+      {% endfor %}
+      
+      console.log("Added {{ events|length }} event markers to map");
+      
+      // Connect event cards with map markers
+      document.querySelectorAll('.event-card').forEach(function(card) {
+        // Add hover effects to connect cards and map markers
+        card.addEventListener('mouseenter', function() {
+          const eventId = parseInt(this.getAttribute('data-event-id'), 10);
+          const marker = eventMarkers.find(m => m.eventId === eventId);
+          if (marker) {
+            marker.openPopup();
+          }
         });
+        
+        card.addEventListener('mouseleave', function() {
+          const eventId = parseInt(this.getAttribute('data-event-id'), 10);
+          const marker = eventMarkers.find(m => m.eventId === eventId);
+          if (marker) {
+            marker.closePopup();
+          }
+        });
+      });
+      
+      // Connect filter UI elements
+      const locationSearch = document.getElementById('locationSearch');
+      const categoryFilter = document.getElementById('categoryFilter');
+      const dateFilter = document.getElementById('dateFilter');
+      const funFilter = document.getElementById('funFilter');
+      
+      // Simple debounce function
+      function debounce(func, wait) {
+        let timeout;
+        return function() {
+          const context = this, args = arguments;
+          clearTimeout(timeout);
+          timeout = setTimeout(function() {
+            func.apply(context, args);
+          }, wait);
+        };
       }
-    });
-    
-    // Connect event cards with map markers
-    document.querySelectorAll('.event-card').forEach(function(card) {
-      // Add hover effects to connect cards and map markers
-      card.addEventListener('mouseenter', function() {
-        const eventId = parseInt(this.getAttribute('data-event-id'), 10);
-        const marker = eventMarkers.find(m => m.eventId === eventId);
-        if (marker) {
-          marker.openPopup();
+      
+      // Setup location search filter
+      if (locationSearch) {
+        locationSearch.addEventListener('input', debounce(function(e) {
+          const searchQuery = e.target.value;
+          // Basic geocoding functionality would go here
+        }, 500));
+      }
+      
+      // Setup filter event listeners
+      [categoryFilter, dateFilter, funFilter].forEach(filter => {
+        if (filter) {
+          filter.addEventListener('change', function() {
+            console.log(`${filter.id} changed to:`, this.value);
+          });
         }
       });
       
-      card.addEventListener('mouseleave', function() {
-        const eventId = parseInt(this.getAttribute('data-event-id'), 10);
-        const marker = eventMarkers.find(m => m.eventId === eventId);
-        if (marker) {
-          marker.closePopup();
-        }
-      });
-    });
+    } catch (error) {
+      console.error("Error setting up map:", error);
+    }
   });
   
   // Handle window resize events to make the map responsive
@@ -221,7 +240,7 @@
     if (mapInstance) {
       try {
         setTimeout(function() {
-          mapInstance.invalidateSize(true);
+          mapInstance.invalidateSize();
         }, 200);
       } catch (e) {
         console.error("Error resizing map on window resize:", e);
