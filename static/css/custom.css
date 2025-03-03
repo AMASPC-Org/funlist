@@ -780,7 +780,7 @@ main {
 
 .footer {
     flex-shrink: 0;
-    background-color: #222; /* Darker background color */
+    background-color: #1a1a1a; /* Darker background color */
     color: #f8f9fa;
     padding: 40px 0 20px;
     margin-top: 30px;
@@ -792,46 +792,81 @@ main {
     text-transform: uppercase;
     margin-bottom: 15px;
     letter-spacing: 0.5px;
+    font-size: 0.95rem;
 }
 
-.footer a {
+/* Remove underlines from all footer links */
+.footer a,
+footer a,
+footer a.text-white,
+footer a.text-primary {
     color: #f8f9fa;
-    text-decoration: none;
+    text-decoration: none !important;
     display: block;
     margin-bottom: 8px;
-    transition: color 0.2s ease;
+    transition: all 0.3s ease;
 }
 
 .footer a:hover,
-.footer a:focus {
+.footer a:focus,
+footer a:hover,
+footer a:focus,
+footer a.text-white:hover,
+footer a.text-primary:hover {
     color: #FF8C42; /* Orange accent color from the site theme */
-    text-decoration: none;
+    text-decoration: none !important;
+    transform: translateX(3px);
 }
 
-.footer .social-buttons a {
+/* Social media icons styling */
+.footer .social-buttons a,
+footer .social-buttons a {
     display: inline-block;
     margin-right: 12px;
     font-size: 1.2em;
 }
 
-.footer .social-buttons a:hover {
+.footer .social-buttons a:hover,
+footer .social-buttons a:hover {
     color: #1AC8ED; /* Teal accent color from the site theme */
+    transform: translateY(-3px);
 }
 
-.footer .copyright {
+.footer .copyright,
+footer .copyright {
     margin-top: 25px;
     font-size: 0.9em;
     color: #aaa;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 20px;
+}
+
+/* Bottom footer links */
+.footer .row.align-items-center a,
+footer .row.align-items-center a {
+    display: inline-block;
+    padding: 0 8px;
 }
 
 /* Responsive adjustments */
 @media (max-width: 767px) {
     footer h5 {
         margin-top: 20px;
+        margin-bottom: 10px;
     }
 
     footer .col-md-3:first-child h5 {
         margin-top: 0;
+    }
+    
+    .footer .row.align-items-center,
+    footer .row.align-items-center {
+        flex-direction: column;
+    }
+    
+    .footer .row.align-items-center .col-md-5,
+    footer .row.align-items-center .col-md-5 {
+        margin-top: 15px;
     }
 }
 
