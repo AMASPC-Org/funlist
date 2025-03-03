@@ -99,7 +99,7 @@ class User(UserMixin, db.Model):
         self.organizer_profile_updated_at = datetime.utcnow()
 
     last_name = db.Column(db.String(50))
-    is_admin = db.Column(db.Boolean, default=False)
+    # is_admin is already defined above
     bio = db.Column(db.Text)
     location = db.Column(db.String(100))
     interests = db.Column(db.String(200))

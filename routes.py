@@ -143,23 +143,24 @@ def init_routes(app):
                 # Set default role as subscriber
                 user.is_subscriber = True
 
-                # Set additional roles based on form choices
-                if hasattr(form, 'is_event_creator') and form.is_event_creator.data:
-                    user.is_event_creator = True
-
-                if hasattr(form, 'is_organizer') and form.is_organizer.data:
-                    user.is_organizer = True
-
                 # Process user intentions (can select multiple)
-                user_intentions = request.form.getlist('user_intention[]')
-                if not user_intentions:
-                    user_intentions = ['find_events']  # Default
-                
-                if 'create_events' in user_intentions:
-                    user.is_event_creator = True
-                if 'represent_organization' in user_intentions:
-                    user.is_organizer = True
-                    user.is_event_creator = True  # Organizers can also create events
+                try:
+                    user_intentions = request.form.getlist('user_intention[]')
+                    if not user_intentions:
+                        user_intentions = ['find_events']  # Default
+                    
+                    if 'create_events' in user_intentions:
+                        user.is_event_creator = True
+                    if 'represent_organization' in user_intentions:
+                        user.is_organizer = True
+                        user.is_event_creator = True  # Organizers can also create events
+                except Exception as e:
+                    logger.warning(f"Error processing user intentions: {str(e)}")
+                    # Fallback to form fields if available
+                    if hasattr(form, 'is_event_creator') and form.is_event_creator.data:
+                        user.is_event_creator = True
+                    if hasattr(form, 'is_organizer') and form.is_organizer.data:
+                        user.is_organizer = True
                 
                 db.session.add(user)
                 db.session.commit()
@@ -254,13 +255,13 @@ def init_routes(app):
                     flash("Invalid email or password. Please try again.", "danger")
             except SQLAlchemyError as e:
                 db.session.rollback()
-                logger.error(f"Database error during login: {str(e)}")
+                logger.error(f"Database error during login: {str(e)}", exc_info=True)
                 flash(
                     "We encountered a technical issue. Please try again later.",
                     "danger",
                 )
             except Exception as e:
-                logger.error(f"Unexpected error during login: {str(e)}")
+                logger.error(f"Unexpected error during login: {str(e)}", exc_info=True)
                 flash("An unexpected error occurred. Please try again.", "danger")
         return render_template("login.html", form=form)
 

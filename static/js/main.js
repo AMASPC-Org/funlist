@@ -1,102 +1,342 @@
-// Ensure floating buttons are fully visible
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Function to adjust button position
-    function adjustButtonPosition() {
-        const cookieConsent = document.querySelector('.cookie-consent');
-        const floatingButtons = document.querySelector('.floating-buttons-container');
-
-        if (cookieConsent && floatingButtons) {
-            if (cookieConsent.classList.contains('show')) {
-                floatingButtons.style.bottom = (cookieConsent.offsetHeight + 20) + 'px';
-            } else {
-                floatingButtons.style.bottom = '2.5rem';
-            }
-        }
+    console.log('main.js loaded');
+    
+    // Try/catch blocks for each major functionality to avoid script errors
+    try {
+        initializeSponsorsCarousel();
+    } catch (e) {
+        console.error('Error initializing sponsors carousel:', e);
+    }
+    
+    try {
+        setupErrorHandling();
+    } catch (e) {
+        console.error('Error setting up error handling:', e);
+    }
+    
+    try {
+        setupFormValidation();
+    } catch (e) {
+        console.error('Error setting up form validation:', e);
+    }
+    
+    try {
+        setupLocationServices();
+    } catch (e) {
+        console.error('Error setting up location services:', e);
+    }
+    
+    try {
+        setupFilters();
+    } catch (e) {
+        console.error('Error setting up filters:', e);
+    }
+    
+    try {
+        setupModals();
+    } catch (e) {
+        console.error('Error setting up modals:', e);
     }
 
-    // Run once on load
-    adjustButtonPosition();
-
-    // Also run when window resizes
-    window.addEventListener('resize', adjustButtonPosition);
-
-    // Check if the buttons are in the viewport
-    function isInViewport(element) {
-        const rect = element.getBoundingClientRect();
-        return (
-            rect.top >= 0 &&
-            rect.left >= 0 &&
-            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-            rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-        );
+    // Setup subscription form events if they exist
+    if (document.getElementById('floatingSubscribeForm')) {
+        setupSubscriptionForm();
+    }
+    
+    // Setup feedback form events if they exist
+    if (document.getElementById('feedbackForm')) {
+        setupFeedbackForm();
     }
 
-    // Adjust if buttons are cut off
-    const buttons = document.querySelectorAll('.floating-button');
-    buttons.forEach(button => {
-        if (!isInViewport(button)) {
-            const container = document.querySelector('.floating-buttons-container');
-            container.style.bottom = '2.5rem';
+    // Setup new user wizard if necessary
+    const isNewRegistration = document.body.dataset.newRegistration === 'True';
+    if (isNewRegistration) {
+        try {
+            showNewUserWizard();
+        } catch (e) {
+            console.error('Error showing new user wizard:', e);
         }
-    });
+    }
 });
 
-
-// Placeholder function to populate sponsors - needs a proper data source
-function populateSponsors() {
-  console.log("Populating sponsors carousel");
-  const sponsors = [
-    { name: 'Rutledge Corn Maze', image: '/static/images/rutledge_logo.png' },
-    // Add other sponsors here...
-  ];
-
-  const sponsorsCarousel = document.getElementById('sponsors-carousel');
-  if (sponsorsCarousel) {
-    console.log('Populating sponsors carousel');
-    let html = '';
-    sponsors.forEach(sponsor => {
-      html += `<div class="col-md-4 mb-4"><div class="sponsor-card"><div class="sponsor-content"><img src="${sponsor.image}" alt="${sponsor.name}"></div></div></div>`;
+// Global error handling
+function setupErrorHandling() {
+    window.addEventListener('error', function(event) {
+        console.log('JavaScript error caught:', event.error);
     });
-    sponsorsCarousel.innerHTML = html;
-  }
 }
 
-document.addEventListener("DOMContentLoaded", function() {
-  console.log("main.js loaded");
+// Initialize sponsors carousel
+function initializeSponsorsCarousel() {
+    // Check if the element exists first
+    const sponsorsContainer = document.querySelector('.sponsors-container');
+    if (!sponsorsContainer) return;
+    
+    console.log('Populating sponsors carousel');
+    
+    // Add carousel functionality
+    const sponsorCards = document.querySelectorAll('.sponsor-card');
+    if (sponsorCards.length <= 1) return;
+    
+    // Simple auto-scrolling for sponsors if multiple sponsors exist
+    let currentIndex = 0;
+    setInterval(() => {
+        currentIndex = (currentIndex + 1) % sponsorCards.length;
+        sponsorsContainer.scrollTo({
+            left: sponsorCards[currentIndex].offsetLeft,
+            behavior: 'smooth'
+        });
+    }, 5000);
+}
 
-// Global error handler
-window.addEventListener('error', function(event) {
-  console.error('JavaScript error caught:', event.error);
-  // Prevent the error from propagating
-  event.preventDefault();
-});
+// Form validation setup
+function setupFormValidation() {
+    // Validate forms with class 'needs-validation'
+    const forms = document.querySelectorAll('.needs-validation');
+    
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+}
 
-  // Populate sponsors carousel if it exists
-  const sponsorsCarousel = document.getElementById('sponsors-carousel');
-  if (sponsorsCarousel) {
-    console.log("Populating sponsors carousel");
-    populateSponsors();
-  }
+// Location services setup
+function setupLocationServices() {
+    const mapContainer = document.getElementById('map');
+    if (!mapContainer) return;
+    
+    // If browser supports geolocation, get user's location
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            position => {
+                const userLat = position.coords.latitude;
+                const userLng = position.coords.longitude;
+                
+                // Store coordinates in data attributes for the map to use
+                mapContainer.dataset.userLat = userLat;
+                mapContainer.dataset.userLng = userLng;
+                
+                // Trigger custom event for map to initialize with these coordinates
+                const event = new CustomEvent('user-location-ready', {
+                    detail: { lat: userLat, lng: userLng }
+                });
+                mapContainer.dispatchEvent(event);
+                
+                // Fetch featured events based on location
+                if (window.fetchFeaturedEvents) {
+                    fetchFeaturedEvents(userLat, userLng);
+                }
+            },
+            error => {
+                console.warn('Error getting user location:', error.message);
+                // Fallback to default location or prompt user
+            }
+        );
+    }
+}
 
-  // Add CSRF token to all AJAX requests
-  setupAjaxCSRF();
-});
+// Setup filters
+function setupFilters() {
+    // Handle specific date selection visibility
+    const dateRangeSelects = document.querySelectorAll('select[name="date_range"]');
+    dateRangeSelects.forEach(select => {
+        select.addEventListener('change', handleDateRangeChange);
+    });
+}
 
-// Setup CSRF token for AJAX requests
-function setupAjaxCSRF() {
-  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+function handleDateRangeChange(event) {
+    const value = event.target ? event.target.value : event.value;
+    const isMobile = event.target ? event.target.id.includes('mobile') : event.id.includes('mobile');
+    const specificDateId = isMobile ? 'specificDate-mobile' : 'specificDate';
+    const specificDateField = document.getElementById(specificDateId);
+    
+    if (specificDateField) {
+        specificDateField.style.display = value === 'specific' ? 'block' : 'none';
+    }
+}
 
-  if (csrfToken) {
-    // Add CSRF token to all fetch requests
-    const originalFetch = window.fetch;
-    window.fetch = function(url, options = {}) {
-      // Only add the CSRF token to same-origin POST/PUT/DELETE requests
-      if (typeof url === 'string' && url.startsWith('/') && 
-          options.method && ['POST', 'PUT', 'DELETE'].includes(options.method.toUpperCase())) {
-        options.headers = options.headers || {};
-        options.headers['X-CSRFToken'] = csrfToken;
-      }
-      return originalFetch.call(this, url, options);
-    };
-  }
+// Setup modals
+function setupModals() {
+    // Setup subscription form
+    const subscribeForms = document.querySelectorAll('#floatingSubscribeForm, #emailSignupForm');
+    subscribeForms.forEach(form => {
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const email = form.querySelector('input[type="email"]').value;
+                
+                // Collect preferences if they exist
+                let preferences = {};
+                const preferenceCheckboxes = form.querySelectorAll('input[type="checkbox"]:checked');
+                preferenceCheckboxes.forEach(checkbox => {
+                    preferences[checkbox.id] = true;
+                });
+                
+                // Submit subscription
+                fetch('/subscribe', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        preferences: preferences
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Thank you for subscribing!');
+                        // Close modal if it exists
+                        const modal = bootstrap.Modal.getInstance(document.querySelector('.modal.show'));
+                        if (modal) modal.hide();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again.');
+                });
+            });
+        }
+    });
+}
+
+// Setup subscription form
+function setupSubscriptionForm() {
+    const subscribeForm = document.getElementById('floatingSubscribeForm');
+    if (!subscribeForm) return;
+    
+    subscribeForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const email = document.getElementById('subscribeEmail').value;
+        
+        // Collect preferences
+        const preferences = {
+            events: document.getElementById('preferenceEvents')?.checked || false,
+            deals: document.getElementById('preferenceDeals')?.checked || false
+        };
+        
+        // Submit subscription
+        fetch('/subscribe', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                email: email,
+                preferences: preferences
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Thank you for subscribing!');
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.querySelector('#subscribeModal'));
+                if (modal) modal.hide();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        });
+    });
+}
+
+// Setup feedback form
+function setupFeedbackForm() {
+    const feedbackForm = document.getElementById('feedbackForm');
+    if (!feedbackForm) return;
+    
+    feedbackForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const feedbackType = document.getElementById('feedbackType').value;
+        const message = document.getElementById('feedbackMessage').value;
+        const email = document.getElementById('feedbackEmail').value;
+        
+        fetch('/submit-feedback', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                type: feedbackType,
+                message: message,
+                email: email
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Thank you for your feedback!');
+                feedbackForm.reset();
+                
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.querySelector('#feedbackModal'));
+                if (modal) modal.hide();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        });
+    });
+}
+
+// Show new user wizard
+function showNewUserWizard() {
+    // Implementation for new user wizard/onboarding
+    const wizardModal = new bootstrap.Modal(document.getElementById('onboardingWizardModal'));
+    if (wizardModal) {
+        wizardModal.show();
+    }
+}
+
+// Save user preferences from wizard
+function saveUserPreferences(data) {
+    fetch('/save-preferences', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken() // Function to get CSRF token
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            // Close wizard and show success message
+            const wizardModal = bootstrap.Modal.getInstance(document.getElementById('onboardingWizardModal'));
+            if (wizardModal) wizardModal.hide();
+            
+            alert('Your preferences have been saved!');
+            // Optional: reload the page to show personalized content
+            // window.location.reload();
+        } else {
+            alert('Error: ' + result.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error saving preferences:', error);
+        alert('An error occurred while saving your preferences. Please try again.');
+    });
+}
+
+// Helper function to get CSRF token
+function getCsrfToken() {
+    const tokenMeta = document.querySelector('meta[name="csrf-token"]');
+    return tokenMeta ? tokenMeta.content : '';
 }
