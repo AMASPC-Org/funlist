@@ -148,12 +148,12 @@
             // Save to localStorage with expiration of 6 months (in milliseconds)
             const sixMonths = 180 * 24 * 60 * 60 * 1000;
             const expirationDate = new Date().getTime() + sixMonths;
-            
+
             localStorage.setItem('cookieConsent', JSON.stringify({
                 preferences: preferences,
                 expires: expirationDate
             }));
-            
+
             // Apply cookie settings
             applyCookieSettings(preferences);
         } catch (error) {
@@ -167,7 +167,7 @@
             if (preferences && preferences.analytics) {
                 console.log('Analytics tracking enabled');
             }
-            
+
             if (preferences && preferences.advertising) {
                 console.log('Advertising cookies enabled');
             }

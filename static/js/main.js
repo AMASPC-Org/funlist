@@ -11,12 +11,12 @@ document.addEventListener('DOMContentLoaded', function() {
     event.stopPropagation();
     return true;
   });
-  
+
   // Prevent errors from undefined functions
   window.approveEvent = window.approveEvent || function() {
     console.log("approveEvent function called but not defined for this user role");
   };
-  
+
   window.rejectEvent = window.rejectEvent || function() {
     console.log("rejectEvent function called but not defined for this user role");
   };
@@ -100,6 +100,23 @@ document.addEventListener('DOMContentLoaded', function() {
             } catch (e) {
                 console.error('Error showing new user wizard:', e);
             }
+        }
+
+        // Cookie consent handling
+        function initCookieConsent() {
+            try {
+                setupCookieConsent();
+            } catch (error) {
+                console.error("Error initializing cookie consent:", error);
+            }
+        }
+
+        // Initialize cookie consent when DOM is loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initCookieConsent);
+        } else {
+            // DOM already loaded, initialize directly
+            initCookieConsent();
         }
     } catch (error) {
         console.error('Error in main.js initialization:', error);
@@ -343,58 +360,6 @@ function setupFeedbackForm() {
 }
 
 // Show new user wizard
-// Cookie consent management
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('main.js loaded');
-    
-    // Other initialization code...
-});
-                
-                saveCookiePreferences({
-                    essential: true, // Always required
-                    analytics: analyticsCookies ? analyticsCookies.checked : false,
-                    advertising: advertisingCookies ? advertisingCookies.checked : false
-                });
-                
-                hideCookieBanner();
-                
-                // Close the modal
-                const cookieModal = document.getElementById('cookieModal');
-                if (cookieModal && window.bootstrap) {
-                    const modalInstance = bootstrap.Modal.getInstance(cookieModal);
-                    if (modalInstance) {
-                        modalInstance.hide();
-                    }
-                }
-            } catch (error) {
-                console.error("Error saving cookie preferences:", error);
-            }
-        });
-    }
-}
-
-// Empty space - cookie consent functions moved to cookie_consent.html
-function checkCookieConsentExpiration() {
-    try {
-        const consentData = localStorage.getItem('cookieConsent');
-        if (!consentData) return false;
-        
-        const consent = JSON.parse(consentData);
-        if (consent && consent.expires) {
-            if (new Date().getTime() > consent.expires) {
-                // Consent has expired, remove it
-                localStorage.removeItem('cookieConsent');
-                return false;
-            }
-            return true;
-        }
-        return false;
-    } catch (error) {
-        console.error("Error checking cookie consent expiration:", error);
-        return false;
-    }
-}
-
 function showNewUserWizard() {
     // Implementation for new user wizard/onboarding
     const wizardModal = new bootstrap.Modal(document.getElementById('onboardingWizardModal'));
@@ -441,4 +406,155 @@ function getCsrfToken() {
 
 function populateSponsorsCarousel() {
     //Implementation for populating sponsors carousel.  This function was not defined in the original code.
+}
+
+function setupCookieConsent() {
+    // Check if cookie consent is already set
+    if (checkCookieConsentExpiration()) {
+        return; // Consent is valid, exit early
+    }
+
+    setupCookieButtons();
+    showCookieBanner();
+
+    // Event listener for cookie preference changes
+    const cookiePreferencesForm = document.getElementById('cookie-preferences-form');
+    if (cookiePreferencesForm) {
+        cookiePreferencesForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const essentialCookies = document.getElementById('essential-cookies');
+            const analyticsCookies = document.getElementById('analytics-cookies');
+            const advertisingCookies = document.getElementById('advertising-cookies');
+
+
+            try {
+                saveCookiePreferences({
+                    essential: true, // Always required
+                    analytics: analyticsCookies ? analyticsCookies.checked : false,
+                    advertising: advertisingCookies ? advertisingCookies.checked : false
+                });
+
+                hideCookieBanner();
+
+                // Close the modal
+                const cookieModal = document.getElementById('cookieModal');
+                if (cookieModal && window.bootstrap) {
+                    const modalInstance = bootstrap.Modal.getInstance(cookieModal);
+                    if (modalInstance) {
+                        modalInstance.hide();
+                    }
+                }
+            } catch (error) {
+                console.error("Error saving cookie preferences:", error);
+            }
+        });
+    }
+}
+
+function saveCookiePreferences(preferences) {
+    try {
+        // Save to localStorage
+        localStorage.setItem('cookiePreferences', JSON.stringify(preferences));
+        console.log('Cookie preferences saved:', preferences);
+
+        // Apply cookie settings based on preferences
+        if (preferences.analytics) {
+            console.log("Analytics tracking enabled");
+            // Enable analytics code here
+        }
+
+        if (preferences.advertising) {
+            console.log("Advertising cookies enabled");
+            // Enable advertising code here
+        }
+    } catch (error) {
+        console.error("Error saving cookie preferences:", error);
+    }
+}
+
+
+function checkCookieConsentExpiration() {
+    try {
+        const consentData = localStorage.getItem('cookieConsent');
+        if (!consentData) return false;
+
+        const consent = JSON.parse(consentData);
+        if (consent && consent.expires) {
+            if (new Date().getTime() > consent.expires) {
+                // Consent has expired, remove it
+                localStorage.removeItem('cookieConsent');
+                return false;
+            }
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error("Error checking cookie consent expiration:", error);
+        return false;
+    }
+}
+
+function showCookieBanner() {
+    const cookieBanner = document.getElementById('cookie-consent-banner');
+    if (cookieBanner) {
+        cookieBanner.style.display = 'block';
+        console.log("Cookie banner shown");
+    } else {
+        console.error("Cookie banner element not found");
+    }
+}
+
+function acceptAllCookies() {
+    saveCookiePreferences({
+        essential: true,
+        analytics: true,
+        advertising: true
+    });
+}
+
+function hideCookieBanner() {
+    const cookieBanner = document.getElementById('cookie-consent-banner');
+    if (cookieBanner) {
+        cookieBanner.style.display = 'none';
+        console.log("Cookie banner hidden");
+    } else {
+        console.error("Cookie banner element not found");
+    }
+}
+
+function setupCookieButtons() {
+    console.log("Setting up cookie consent buttons");
+
+    // Accept all button
+    const acceptAllBtn = document.getElementById('accept-all-cookies');
+    if (acceptAllBtn) {
+        console.log("Found accept-all-cookies button");
+        acceptAllBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log("Accept all cookies clicked");
+            acceptAllCookies();
+            hideCookieBanner();
+        });
+    } else {
+        console.log("Accept all cookies button not found");
+    }
+
+    // Reject non-essential button
+    const rejectBtn = document.getElementById('reject-non-essential-cookies');
+    if (rejectBtn) {
+        console.log("Found reject-non-essential-cookies button");
+        rejectBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log("Reject non-essential cookies clicked");
+            saveCookiePreferences({
+                essential: true,
+                analytics: false,
+                advertising: false
+            });
+            hideCookieBanner();
+        });
+    } else {
+        console.log("Reject non-essential cookies button not found");
+    }
 }
