@@ -109,10 +109,26 @@ def run_flask_app():
             port = current_port
             break
 
+    # Function to ensure database schema is consistent
+    def update_database_schema():
+        try:
+            # Import the database update function
+            from update_schema import update_schema
+            logger.info("Running database schema update...")
+            result = update_schema()
+            if result:
+                logger.info("Database schema updated successfully")
+            else:
+                logger.warning("Database schema update completed with warnings")
+        except Exception as e:
+            logger.error(f"Error updating database schema: {str(e)}")
+
     # Create and run the Flask app
     from app import create_app
-    app = create_app()
-
+    with app.app_context():
+        app = create_app()
+        # Update database schema before starting
+        update_database_schema()
     # Register signal handlers for graceful shutdown
     def signal_handler(sig, frame):
         logger.info(f"Received signal {sig}, shutting down")
