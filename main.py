@@ -38,5 +38,18 @@ logging.info("Starting Flask server...")
 app = create_app()
 
 if __name__ == "__main__":
-    port = int(os.environ.get('PORT', 8080))
-    app.run(host='0.0.0.0', port=port, debug=False)
+    # Try different ports if the default one is in use
+    ports_to_try = [8080, 8081, 8082]
+    
+    for port in ports_to_try:
+        try:
+            print(f"Attempting to start server on port {port}...")
+            app.run(host='0.0.0.0', port=port, debug=False)
+            break  # If successful, exit the loop
+        except OSError as e:
+            if "Address already in use" in str(e):
+                print(f"Port {port} is already in use, trying next port...")
+            else:
+                raise
+    else:
+        print("Could not find an available port. Please check your running processes.")
