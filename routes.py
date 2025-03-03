@@ -471,70 +471,94 @@ def init_routes(app):
             return redirect(url_for("admin_dashboard"))
         form = LoginForm()
         if form.validate_on_submit():
-            email = form.email.data
-            password = form.password.data
-            logger.info(f"Admin login attempt: {email}")
+            try:
+                email = form.email.data
+                password = form.password.data
+                logger.info(f"Admin login attempt: {email}")
 
-            # Get the user
-            user = User.query.filter_by(email=email).first()
+                # Special handling for admin account with direct SQL to avoid model incompatibilities
+                admin_email = 'ryan@americanmarketingalliance.com'
+                admin_password = '120M2025*v7'
 
-            # Special handling for admin account
-            admin_email = 'ryan@americanmarketingalliance.com'
-
-            # If attempting login with admin email
-            if email == admin_email:
-                # Create admin if doesn't exist
-                if not user:
-                    logger.info(f"Admin user not found. Creating admin account with email: {admin_email}")
-                    user = User(email=admin_email)
-                    user.set_password('120M2025*v7')
-                    user.is_admin = True
-                    user.account_active = True
-                    db.session.add(user)
-                    db.session.commit()
-                    user = User.query.filter_by(email=admin_email).first()  # Reload after creation
-                    logger.info(f"Admin user created with ID: {user.id}")
-
-                # Force admin privileges
-                if not user.is_admin or not user.account_active:
-                    logger.info(f"Fixing admin status for user {user.id}")
-                    user.is_admin = True
-                    user.account_active = True
-                    db.session.commit()
-                    logger.info(f"Admin status updated. New values - is_admin: {user.is_admin}, active: {user.account_active}")
-
-                # Special check for admin login with correct password
-                if password == '120M2025*v7':
-                    # Ensure password hash is correct
-                    user.set_password('120M2025*v7')
-                    db.session.commit()
-                    logger.info("Admin password reset successfully")
-
-                    # Login the admin
-                    login_user(user)
-                    logger.info(f"Admin login successful: {user.email}")
-                    return redirect(url_for("admin_dashboard"))
-
-            # Standard login check for all users
-            if user:
-                logger.info(f"User found: ID: {user.id}, Email: {user.email}, is_admin: {user.is_admin}, active: {user.account_active}")
-                password_check = user.check_password(password)
-                logger.info(f"Password check result: {password_check}")
-
-                if password_check and user.is_admin:
-                    login_user(user)
-                    logger.info(f"Admin login successful: {user.email}")
-                    return redirect(url_for("admin_dashboard"))
-                else:
-                    if not password_check:
-                        logger.warning(f"Password check failed for user: {user.email}")
-                        flash("Invalid password.", "danger")
-                    elif not user.is_admin:
-                        logger.warning(f"Non-admin user attempted admin login: {user.email}")
-                        flash("This user does not have admin privileges.", "danger")
-            else:
-                logger.warning(f"No user found with email: {email}")
-                flash("User not found.", "danger")
+                # Check if email is admin and password matches
+                if email == admin_email and password == admin_password:
+                    # Get admin user directly from database
+                    user = None
+                    try:
+                        # Try using ORM
+                        user = User.query.filter_by(email=admin_email).first()
+                    except Exception as e:
+                        logger.warning(f"ORM query failed, trying direct SQL: {str(e)}")
+                        # Fall back to direct SQL
+                        result = db.session.execute(text(f"SELECT id, email, is_admin FROM \"user\" WHERE email = '{admin_email}'")).fetchone()
+                        if result:
+                            # Create a minimal user object with just what we need
+                            user = User()
+                            user.id = result[0]
+                            user.email = result[1]
+                            user.is_admin = result[2]
+                    
+                    if user:
+                        # Ensure admin privileges
+                        try:
+                            db.session.execute(text(f"UPDATE \"user\" SET is_admin = TRUE, account_active = TRUE WHERE email = '{admin_email}'"))
+                            db.session.commit()
+                        except Exception as e:
+                            logger.error(f"Failed to update admin status: {str(e)}")
+                            db.session.rollback()
+                        
+                        # Login manually
+                        login_user(user)
+                        session["user_id"] = user.id
+                        session["login_time"] = datetime.utcnow().isoformat()
+                        session["last_activity"] = datetime.utcnow().isoformat()
+                        
+                        logger.info(f"Admin login successful: {admin_email}")
+                        return redirect(url_for("admin_dashboard"))
+                    else:
+                        # Create admin if it doesn't exist
+                        try:
+                            db.session.execute(text(f"""
+                                INSERT INTO "user" (email, password_hash, is_admin, account_active, is_subscriber, created_at) 
+                                VALUES ('{admin_email}', 
+                                      'pbkdf2:sha256:600000$jEvAVRjlYYYSbtQb$9c2a7da5e79cb28ed9ec2308a2f0d2a4d0b268694fbb4e4ab6c1c6f9939ac2ae', 
+                                      TRUE, TRUE, TRUE, CURRENT_TIMESTAMP)
+                                ON CONFLICT (email) DO NOTHING
+                            """))
+                            db.session.commit()
+                            
+                            # Try to get user again
+                            user = User.query.filter_by(email=admin_email).first()
+                            
+                            if user:
+                                login_user(user)
+                                session["user_id"] = user.id
+                                session["login_time"] = datetime.utcnow().isoformat()
+                                session["last_activity"] = datetime.utcnow().isoformat()
+                                
+                                logger.info(f"Created and logged in admin: {admin_email}")
+                                return redirect(url_for("admin_dashboard"))
+                        except Exception as e:
+                            logger.error(f"Failed to create admin: {str(e)}")
+                            db.session.rollback()
+                            flash("Failed to create admin account. Please check database integrity.", "danger")
+                
+                # Standard login check as fallback
+                try:
+                    user = User.query.filter_by(email=email).first()
+                    if user and user.check_password(password) and user.is_admin:
+                        login_user(user)
+                        logger.info(f"Admin login successful via standard flow: {user.email}")
+                        return redirect(url_for("admin_dashboard"))
+                    else:
+                        flash("Invalid credentials or insufficient privileges.", "danger")
+                except Exception as e:
+                    logger.error(f"Standard login check failed: {str(e)}")
+                    flash("Login check failed. Database may need maintenance.", "danger")
+            
+            except Exception as e:
+                logger.error(f"Unexpected error in admin login: {str(e)}", exc_info=True)
+                flash("We encountered a technical issue. Please try again later.", "danger")
 
         return render_template("admin_login.html", form=form)
 
