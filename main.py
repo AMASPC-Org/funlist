@@ -38,18 +38,25 @@ logging.info("Starting Flask server...")
 app = create_app()
 
 if __name__ == "__main__":
-    # Try different ports if the default one is in use
-    ports_to_try = [8080, 8081, 8082]
-    
-    for port in ports_to_try:
-        try:
-            print(f"Attempting to start server on port {port}...")
-            app.run(host='0.0.0.0', port=port, debug=False)
-            break  # If successful, exit the loop
-        except OSError as e:
-            if "Address already in use" in str(e):
-                print(f"Port {port} is already in use, trying next port...")
-            else:
-                raise
+    # Check if running in production/deployment environment
+    if 'REPL_SLUG' in os.environ and os.environ.get('REPL_ENVIRONMENT') == 'production':
+        # In production deployment, use port 80
+        port = 80
+        print(f"Running in deployment environment. Starting server on port {port}...")
+        app.run(host='0.0.0.0', port=port, debug=False)
     else:
-        print("Could not find an available port. Please check your running processes.")
+        # In development, try different ports if the default one is in use
+        ports_to_try = [8080, 8081, 8082]
+        
+        for port in ports_to_try:
+            try:
+                print(f"Attempting to start server on port {port}...")
+                app.run(host='0.0.0.0', port=port, debug=False)
+                break  # If successful, exit the loop
+            except OSError as e:
+                if "Address already in use" in str(e):
+                    print(f"Port {port} is already in use, trying next port...")
+                else:
+                    raise
+        else:
+            print("Could not find an available port. Please check your running processes.")
