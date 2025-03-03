@@ -56,20 +56,36 @@ logger.info(f"Starting Flask server...")
 def kill_processes_on_port(port):
     try:
         import psutil
-        for proc in psutil.process_iter(['pid', 'name']):
+        # Use net_connections() instead of deprecated connections()
+        connections = psutil.net_connections(kind='inet')
+        connected_pids = set()
+        
+        # First find all PIDs using the port
+        for conn in connections:
+            if conn.laddr.port == port:
+                if conn.pid is not None:
+                    connected_pids.add(conn.pid)
+                    
+        # Then kill those processes
+        for pid in connected_pids:
             try:
-                for conn in proc.connections(kind='inet'):
-                    if hasattr(conn.laddr, 'port') and conn.laddr.port == port:
-                        logger.info(f"Killing process {proc.pid} {proc.name()} using port {port}")
-                        proc.kill()
-                        return True
-            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-                pass
-            except AttributeError:
-                # Skip if connections() is not properly available
-                pass
+                proc = psutil.Process(pid)
+                logger.info(f"Killing process {pid} {proc.name()} using port {port}")
+                proc.kill()
+                return True
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess) as e:
+                logger.warning(f"Failed to kill process {pid}: {str(e)}")
     except ImportError:
         logger.warning("psutil not available, using lsof to kill processes")
+        try:
+            import os
+            os.system(f"pkill -f 'python.*main.py'")
+            return True
+        except Exception as e:
+            logger.error(f"Error killing processes: {e}")
+    except Exception as e:
+        logger.error(f"Error in kill_processes_on_port: {str(e)}")
+    return False
         try:
             import os
             os.system(f"pkill -f 'python.*main.py'")
@@ -82,7 +98,11 @@ def kill_processes_on_port(port):
 app = create_app()
 if __name__ == "__main__":
     # First try to kill any existing processes
-    kill_processes_on_port(port)
+    if kill_processes_on_port(port):
+        # Add a small delay to ensure port is released
+        import time
+        logger.info(f"Waiting for port {port} to be released...")
+        time.sleep(2)
     
     # Try to run on the specified port, fall back to other ports if needed
     max_port_tries = 10
