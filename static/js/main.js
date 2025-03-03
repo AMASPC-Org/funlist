@@ -349,15 +349,21 @@ function setupFormValidation() {
 }
 
 function setupLocationServices() {
+    console.log("Setting up location services");
     const mapContainer = document.getElementById('map');
-    if (!mapContainer) return;
+    if (!mapContainer) {
+        console.log("Map container not found, skipping location services");
+        return;
+    }
 
+    console.log("Map container found, requesting user location");
     // If browser supports geolocation, get user's location
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             position => {
                 const userLat = position.coords.latitude;
                 const userLng = position.coords.longitude;
+                console.log("User location obtained:", userLat, userLng);
 
                 // Store coordinates in data attributes for the map to use
                 mapContainer.dataset.userLat = userLat;
@@ -368,9 +374,11 @@ function setupLocationServices() {
                     detail: { lat: userLat, lng: userLng }
                 });
                 mapContainer.dispatchEvent(event);
+                console.log("Dispatched user-location-ready event");
 
                 // Fetch featured events based on location
                 if (window.fetchFeaturedEvents) {
+                    console.log("Fetching featured events");
                     fetchFeaturedEvents(userLat, userLng);
                 }
             },
@@ -379,8 +387,28 @@ function setupLocationServices() {
                 // Fallback to default location or prompt user
             }
         );
+    } else {
+        console.warn("Geolocation not supported by this browser");
+    }
+    
+    // Ensure any map instance is properly sized (for tabs, hidden elements, etc.)
+    if (window.Leaflet || window.L) {
+        setTimeout(() => {
+            console.log("Forcing map resize");
+            const mapInstance = document.querySelector('.leaflet-container');
+            if (mapInstance && mapInstance._leaflet_id) {
+                console.log("Found Leaflet map instance, invalidating size");
+                mapInstance._leaflet.invalidateSize();
+            }
+        }, 500);
     }
 }
+
+// Call setupLocationServices when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("DOM loaded, calling setupLocationServices");
+    setupLocationServices();
+});
 
 function setupFilters() {
     // Handle specific date selection visibility
