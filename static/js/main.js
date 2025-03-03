@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setupModals();
     setupFloatingButtons();
     setupCookieConsent();
+    setupFilters();
 
     // Initialize any carousels or sliders
     initializeCarousels();
@@ -631,3 +632,31 @@ function getUserLocation() {
     console.error("Error in getUserLocation:", e);
   }
 }
+
+// If on map page, initialize the map
+if (document.getElementById('map-container')) {
+    console.log("Map page loaded, initializing map...");
+    try {
+        initializeMap();
+    } catch (e) {
+        console.error("Error initializing map:", e);
+    }
+}
+
+function resizeMap() {
+    setTimeout(function() {
+        if (map && typeof map.invalidateSize === 'function') {
+            console.log("Forcing map resize");
+            try {
+                map.invalidateSize();
+            } catch (e) {
+                console.error("Error resizing map:", e);
+            }
+        }
+    }, 100);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("DOM loaded, calling getUserLocation");
+    getUserLocation();
+});

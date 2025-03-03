@@ -57,6 +57,7 @@ class Event(db.Model):
     start_date = Column(DateTime, nullable=False)
     end_date = Column(DateTime)
     location = Column(String(255))
+    street = Column(String(255))
     address = Column(String(255))
     city = Column(String(100))
     state = Column(String(100))
@@ -73,11 +74,14 @@ class Event(db.Model):
     user_id = Column(Integer, ForeignKey('users.id'))
     price = Column(String(100))
     category = Column(String(100))
+    target_audience = Column(String(255))
     tags = Column(String(255))  # Comma-separated tags
     attendance_count = Column(Integer, default=0)
     views_count = Column(Integer, default=0)
     featured = Column(Boolean, default=False)
     fun_rating = Column(Integer, default=3)  # Scale of 1-5
+    fun_meter = Column(Integer, default=3)  # Alias for fun_rating
+    status = Column(String(50), default="pending")  # draft, pending, approved, rejected
     
     # Define relationships
     user = relationship("User", back_populates="events")
