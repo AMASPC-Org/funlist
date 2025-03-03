@@ -1,0 +1,4679 @@
+See above the fold and below the fold and tell me how to fix this page:  Based on the map page you're viewing, the following files are connected to it:
+
+Templates:
+
+templates/map.html - The main template for the map page ({% extends "base.html" %}
+
+{% block title %}Map | FunList.ai{% endblock %}
+
+{% block content %}
+<div class="container mt-3">
+  <h1 class="text-center mb-3">Event Map</h1>
+
+  <div class="filter-bar mb-3">
+        <div class="row g-2">
+            <div class="col-md">
+                <input type="text" class="form-control" id="locationSearch" placeholder="Search location...">
+            </div>
+            <div class="col-md">
+                <select class="form-select" id="categoryFilter">
+                    <option selected>All Categories</option>
+                    <option>Sports</option>
+                    <option>Music</option>
+                    <option>Arts</option>
+                    <option>Food</option>
+                    <option>Other</option>
+                </select>
+            </div>
+            <div class="col-md">
+                <select class="form-select" id="dateFilter">
+                    <option selected>Any Date</option>
+                    <option>Today</option>
+                    <option>Tomorrow</option>
+                    <option>This Weekend</option>
+                    <option>Next Week</option>
+                </select>
+            </div>
+            <div class="col-md">
+                <select class="form-select" id="funFilter">
+                    <option selected>All Fun Ratings</option>
+                    <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+                    <option value="4">⭐⭐⭐⭐ (4+)</option>
+                    <option value="3">⭐⭐⭐ (3+)</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+  <div class="row">
+        <div class="col-md-7">
+            <div id="map"></div>
+        </div>
+        <div class="col-md-5">
+            <div class="event-cards-container">
+                {% for event in events %}
+                    {% if loop.index == 3 %}
+                    <div class="card mb-3 sponsored-card">
+                        <div class="card-body">
+                            <div class="text-muted small mb-2">Advertisement</div>
+                            <div class="sponsored-content">
+                                <div class="text-center p-3">
+                                    <h5>Sponsored Content</h5>
+                                    <p>Advertisement space available</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="card mb-3 event-card" data-event-id="{{ event.id }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ event.title }}</h5>
+                            <p class="card-text">{{ event.description|truncate(100) }}</p>
+                            <p class="card-text">
+                                <small class="text-muted">{{ event.start_date.strftime('%B %d, %Y') }}{% if event.start_time %} at {{ event.start_time.strftime('%I:%M %p') }}{% endif %}</small>
+                            </p>
+                            <p class="card-text"><small class="text-muted">{{ event.location }}</small></p>
+                            <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-primary">View Details</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/map.js') }}"></script>
+<script>
+  // Store markers for event handling
+  let eventMarkers = [];
+  let mapInstance = null;
+  
+  // Main function to initialize everything when the DOM is fully loaded
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log("Map page loaded, initializing map...");
+    
+    // Make sure Leaflet is loaded
+    if (typeof L === 'undefined') {
+      console.error("Leaflet library not loaded. Please check your network connection.");
+      return;
+    }
+    
+    // Initialize map directly with Leaflet
+    try {
+      // Create map instance
+      mapInstance = L.map('map', {
+        center: [47.0379, -122.9007], // Default: Olympia, WA
+        zoom: 13,
+        zoomControl: true
+      });
+      
+      // Add tile layer (OpenStreetMap)
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+      }).addTo(mapInstance);
+      
+      console.log("Map initialized successfully");
+      
+      // Force map resize after a short delay to ensure it's visible
+      setTimeout(function() {
+        mapInstance.invalidateSize();
+        console.log("Forcing map resize");
+      }, 500);
+      
+      // Get user location
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          function(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            console.log("User location found:", lat, lng);
+            mapInstance.setView([lat, lng], 13);
+          },
+          function(error) {
+            console.warn("Error getting user location:", error.message);
+          }
+        );
+      }
+      
+      // Add event markers to the map
+      {% for event in events %}
+        {% if event.latitude and event.longitude %}
+        (function() {
+          const popupContent = `
+            <div class='event-popup'>
+              <h5>{{ event.title }}</h5>
+              <p>{{ event.description|truncate(100) }}</p>
+              <p><small>{{ event.start_date.strftime('%B %d, %Y') }}</small></p>
+              <a href='/event/{{ event.id }}' class='btn btn-sm btn-primary'>View Details</a>
+            </div>
+          `;
+          
+          const eventMarker = L.marker([{{ event.latitude }}, {{ event.longitude }}])
+            .addTo(mapInstance)
+            .bindPopup(popupContent);
+          
+          // Store the event ID on the marker for later reference
+          eventMarker.eventId = {{ event.id }};
+          eventMarkers.push(eventMarker);
+          
+          // Add click listener to highlight corresponding card
+          eventMarker.on('click', function() {
+            // Remove highlight from all cards
+            document.querySelectorAll('.event-card').forEach(function(card) {
+              card.classList.remove('highlighted');
+            });
+            
+            // Highlight the corresponding card if it exists
+            const eventCard = document.querySelector(`.event-card[data-event-id="${this.eventId}"]`);
+            if (eventCard) {
+              eventCard.classList.add('highlighted');
+              eventCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          });
+        })();
+        {% endif %}
+      {% endfor %}
+      
+      console.log("Added {{ events|length }} event markers to map");
+      
+      // Connect event cards with map markers
+      document.querySelectorAll('.event-card').forEach(function(card) {
+        // Add hover effects to connect cards and map markers
+        card.addEventListener('mouseenter', function() {
+          const eventId = parseInt(this.getAttribute('data-event-id'), 10);
+          const marker = eventMarkers.find(m => m.eventId === eventId);
+          if (marker) {
+            marker.openPopup();
+          }
+        });
+        
+        card.addEventListener('mouseleave', function() {
+          const eventId = parseInt(this.getAttribute('data-event-id'), 10);
+          const marker = eventMarkers.find(m => m.eventId === eventId);
+          if (marker) {
+            marker.closePopup();
+          }
+        });
+      });
+      
+      // Connect filter UI elements
+      const locationSearch = document.getElementById('locationSearch');
+      const categoryFilter = document.getElementById('categoryFilter');
+      const dateFilter = document.getElementById('dateFilter');
+      const funFilter = document.getElementById('funFilter');
+      
+      // Simple debounce function
+      function debounce(func, wait) {
+        let timeout;
+        return function() {
+          const context = this, args = arguments;
+          clearTimeout(timeout);
+          timeout = setTimeout(function() {
+            func.apply(context, args);
+          }, wait);
+        };
+      }
+      
+      // Setup location search filter
+      if (locationSearch) {
+        locationSearch.addEventListener('input', debounce(function(e) {
+          const searchQuery = e.target.value;
+          // Basic geocoding functionality would go here
+        }, 500));
+      }
+      
+      // Setup filter event listeners
+      [categoryFilter, dateFilter, funFilter].forEach(filter => {
+        if (filter) {
+          filter.addEventListener('change', function() {
+            console.log(`${filter.id} changed to:`, this.value);
+          });
+        }
+      });
+      
+    } catch (error) {
+      console.error("Error setting up map:", error);
+    }
+  });
+  
+  // Handle window resize events to make the map responsive
+  window.addEventListener('resize', function() {
+    if (mapInstance) {
+      try {
+        setTimeout(function() {
+          mapInstance.invalidateSize();
+        }, 200);
+      } catch (e) {
+        console.error("Error resizing map on window resize:", e);
+      }
+    }
+  });
+</script>
+{% endblock %}) and base.html (<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="FunList.ai - Your AI-powered guide to fun events and activities in your area">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://auth.util.repl.co; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; img-src 'self' data: https:; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https:; frame-src 'self' https://auth.util.repl.co https://*.replit.dev;">
+
+    <title>{% block title %}FunList.ai{% endblock %}</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        .user-location-marker {
+            color: #ff4500;
+            font-size: 24px;
+        }
+        .event-popup {
+            min-width: 200px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin="anonymous"/>
+
+    <!-- Leaflet JS (must come after CSS) -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}?v={{ range(1, 10000) | random }}">
+    
+    <!-- Ensure Leaflet loads properly -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Check if Leaflet is properly loaded
+        if (typeof L === 'undefined') {
+          console.error("Leaflet library not loaded properly");
+        } else {
+          console.log("Leaflet library loaded successfully");
+        }
+      });
+    </script>
+</head>
+<body {% if new_registration %}data-new-registration="true"{% endif %}>
+  {% include 'partials/navbar.html' %}
+
+<main role="main" class="mt-2">
+    <!-- Flash messages - positioned below navbar -->
+    <div class="flash-messages-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    {% block content %}{% endblock %}
+</main>
+
+  {% if new_registration %}
+    {% include 'partials/post_registration_wizard.html' %}
+  {% endif %}
+
+  <!-- Footer -->
+<footer class="footer mt-5 py-4 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3">
+                <h5>COMPANY</h5>
+                <ul class="list-unstyled">
+                    <li><a href="{{ url_for('about') }}">About Us</a></li>
+                    <li><a href="{{ url_for('about') }}">Help Center</a></li>
+                    <li><a href="{{ url_for('advertising') }}">Advertise with Us</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3">
+                <h5>CONNECT</h5>
+                <ul class="list-unstyled">
+                    <li><a href="tel:3602008768"><i class="fas fa-phone"></i> (360) 200-8768</a></li>
+                    <li><a href="mailto:contact@funlist.ai"><i class="fas fa-envelope"></i> contact@funlist.ai</a></li>
+                    <li>Olympia, WA</li>
+                </ul>
+                <div class="social-buttons">
+                    <a href="https://www.facebook.com/funlistai" target="_blank" class="btn-social"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://www.instagram.com/funlistai" target="_blank" class="btn-social"><i class="fab fa-instagram"></i></a>
+                    <a href="https://www.tiktok.com/@funlistai" target="_blank" class="btn-social"><i class="fab fa-tiktok"></i></a>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <h5>ACCOUNT</h5>
+                <ul class="list-unstyled">
+                    <li><a href="{{ url_for('login') }}">Sign In</a></li>
+                    <li><a href="{{ url_for('signup') }}">Sign Up</a></li>
+                </ul>
+            </div>
+          <div class="col-md-3">
+              <h5>LEGAL</h5>
+              <ul class="list-unstyled">
+                  <li><a href="#">Terms & Conditions</a></li>
+                  <li><a href="{{ url_for('privacy') }}" class="footer-link btn-footer">Privacy Policy</a></li>
+              </ul>
+          </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col text-center">
+                <p class="mb-0">© 2025 FunList.ai. All rights reserved | Brought to you by 
+                <a href="https://americanmarketingalliance.com" target="_blank">American Marketing Alliance SPC</a></p>
+            </div>
+        </div>
+    </div>
+</footer>
+{% include 'partials/floating_buttons.html' %}
+
+<!-- Bootstrap Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Global bootstrap variable
+  var bootstrap = window.bootstrap;
+</script>
+
+<!-- Initialize Bootstrap components -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize all tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+
+<!-- Event Emitter Helper -->
+<script src="{{ url_for('static', filename='js/emitter.js') }}"></script>
+
+<!-- Custom JavaScript -->
+<script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+
+    <script>
+      // Enhanced global error handler for all scripts
+      window.onerror = function(message, source, lineno, colno, error) {
+        console.error("Global error handler caught:", message);
+
+        // Check if it's a cross-origin script error
+        if (message === "Script error." || message === "Script error") {
+          console.log("Cross-origin script error detected. Check for cross-origin issues.");
+          // Add crossorigin attribute to scripts dynamically
+          document.querySelectorAll('script[src^="https://"]').forEach(function(script) {
+            if (!script.hasAttribute('crossorigin')) {
+              script.setAttribute('crossorigin', 'anonymous');
+            }
+          });
+        } else if (error) {
+          console.error("Error details:", error);
+        }
+
+        return true; // Prevents the default browser error handling
+      };
+
+      // Unhandled promise rejection handler
+      window.addEventListener('unhandledrejection', function(event) {
+        console.error('Unhandled promise rejection:', event.reason);
+      });
+
+      // Safe function execution wrapper
+      window.safeExecute = function(fn, fallback) {
+        try {
+          if (typeof fn === 'function') {
+            return fn();
+          }
+        } catch (e) {
+          console.error('Error executing function:', e);
+          if (typeof fallback === 'function') {
+            return fallback();
+          }
+        }
+        return null;
+      };
+    </script>
+
+    {% block scripts %}{% endblock %}
+{% if current_user.is_authenticated and current_user.email == 'ryan@funlist.ai' %}
+<script src="{{ url_for('static', filename='js/admin_events.js') }}"></script>
+{% endif %}
+
+{% if new_registration %}
+<script src="{{ url_for('static', filename='js/post_registration_wizard.js') }}"></script>
+{% endif %}
+
+{% block extra_js %}{% endblock %}
+{% include 'partials/cookie_consent.html' %}
+</body>
+</html>)
+templates/base.html - The base template that map.html extends
+JavaScript:
+
+static/js/map.js - Contains the map initialization and functionality (// Map handling module for FunList.ai
+window.FunlistMap = (function() {
+  // Private variables
+  let mapInstance = null;
+  const defaultLocation = [47.0379, -122.9007]; // Default to Olympia, WA
+  const defaultZoom = 13;
+
+  // Initialize map on the specified element
+  function initMap(elementId) {
+    console.log("Initializing map in element:", elementId);
+
+    // Check if element exists
+    const mapElement = document.getElementById(elementId);
+    if (!mapElement) {
+      console.error("Map container element not found:", elementId);
+      return null;
+    }
+
+    try {
+      // Create the map instance
+      mapInstance = L.map(elementId, {
+        center: defaultLocation,
+        zoom: defaultZoom,
+        zoomControl: true
+      });
+
+      // Add tile layer (OpenStreetMap)
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+      }).addTo(mapInstance);
+
+      console.log("Map initialized successfully");
+      return mapInstance;
+    } catch (error) {
+      console.error("Error initializing map:", error);
+      return null;
+    }
+  }
+
+  // Get user's location and center map there
+  function getUserLocation(map, callback) {
+    if (!map) {
+      console.error("Map is not initialized");
+      callback(false, null);
+      return;
+    }
+    
+    // Try to get user location
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        function(position) {
+          // Success
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          console.log("User location set as map center");
+          map.setView([lat, lng], defaultZoom);
+          callback(true, {lat: lat, lng: lng});
+        },
+        function(error) {
+          // Error
+          console.warn("Error getting user location:", error.message);
+          callback(false, error);
+        }
+      );
+    } else {
+      // Browser doesn't support geolocation
+      console.warn("Geolocation not supported by this browser");
+      callback(false, {message: "Geolocation not supported"});
+    }
+  }
+
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        function(position) {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+
+          console.log("User location obtained:", lat, lng);
+
+          // Center map on user location
+          try {
+            map.setView([lat, lng], defaultZoom);
+
+            // Add a marker for user location
+            const userMarker = L.marker([lat, lng], {
+              icon: L.divIcon({
+                className: 'user-location-marker',
+                html: '<div class="pulse"></div>',
+                iconSize: [15, 15]
+              })
+            }).addTo(map);
+            userMarker.bindPopup('You are here').openPopup();
+
+            // Dispatch custom event for other components
+            const event = new CustomEvent('user-location-ready', {
+              detail: { lat, lng }
+            });
+            document.dispatchEvent(event);
+            console.log("Dispatched user-location-ready event");
+
+            callback(true, { lat, lng });
+          } catch (error) {
+            console.error("Error setting user location:", error);
+            callback(false, null);
+          }
+        },
+        function(error) {
+          console.warn("Geolocation error:", error.message);
+          callback(false, null);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 5000,
+          maximumAge: 0
+        }
+      );
+    } else {
+      console.warn("Geolocation not available in this browser");
+      callback(false, null);
+    }
+  }
+
+  // Add a marker to the map
+  function addMarker(map, lat, lng, popupContent) {
+    if (!map) {
+      console.error("Map is not initialized");
+      return null;
+    }
+
+    try {
+      const marker = L.marker([lat, lng]).addTo(map);
+
+      if (popupContent) {
+        marker.bindPopup(popupContent);
+      }
+
+      return marker;
+    } catch (error) {
+      console.error("Error adding marker:", error);
+      return null;
+    }
+  }
+
+  // Search for a location using OpenStreetMap Nominatim API
+  function searchLocation(query, callback) {
+    if (!query || query.trim() === '') {
+      callback(false, null);
+      return;
+    }
+
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`;
+
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        if (data && data.length > 0) {
+          callback(true, data[0]);
+        } else {
+          callback(false, null);
+        }
+      })
+      .catch(error => {
+        console.error("Location search error:", error);
+        callback(false, null);
+      });
+  }
+
+  // Simple debounce function to limit API calls
+  function debounce(func, wait) {
+    let timeout;
+    return function(...args) {
+      const context = this;
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(context, args), wait);
+    };
+  }
+
+  // Public API
+  return {
+    init: initMap,
+    getUserLocation: getUserLocation,
+    addMarker: addMarker,
+    searchLocation: searchLocation,
+    debounce: debounce,
+    // Allow access to the map instance
+    getMap: function() {
+      return mapInstance;
+    }
+  };
+})();) and main.js: (// Main JavaScript for FunList.ai
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("DOM fully loaded");
+    setupErrorHandling();
+    setupEventHandlers();
+    setupTippy();
+    setupModals();
+    setupFloatingButtons();
+    setupCookieConsent();
+
+    // Initialize any carousels or sliders
+    initializeCarousels();
+});
+
+// Global error handling
+function setupErrorHandling() {
+    // Global error handler
+    window.addEventListener('error', function(event) {
+        console.log('JavaScript error caught:', event.error);
+        console.log(event);
+    });
+
+    // Unhandled promise rejection handler
+    window.addEventListener('unhandledrejection', function(event) {
+        console.log('Unhandled Promise Rejection:', event.reason);
+    });
+}
+
+// Setup event handlers for various elements
+function setupEventHandlers() {
+    // Setup any global event handlers here
+    document.addEventListener('click', function(e) {
+        // Optional: Global click handler for analytics or other purposes
+    });
+}
+
+// Setup tooltips using Tippy.js if available
+function setupTippy() {
+    if (typeof tippy !== 'undefined') {
+        tippy('[data-tippy-content]');
+    }
+}
+
+// Setup modals and their forms
+function setupModals() {
+    // Setup feedback form
+    const feedbackForm = document.getElementById('feedbackForm');
+    if (feedbackForm) {
+        console.log("Found feedback form, setting up submit handler");
+        feedbackForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log("Feedback form submitted");
+
+            const feedbackType = document.getElementById('feedbackType').value;
+            const message = document.getElementById('feedbackMessage').value;
+            const email = document.getElementById('feedbackEmail').value;
+
+            // Submit feedback
+            fetch('/submit-feedback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    type: feedbackType,
+                    message: message,
+                    email: email
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Thank you for your feedback!');
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('feedbackModal'));
+                    if (modal) modal.hide();
+                    else console.log("Couldn't find modal instance");
+                } else {
+                    alert('Error: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error submitting feedback:', error);
+                alert('An error occurred. Please try again.');
+            });
+        });
+    } else {
+        console.log("Feedback form not found");
+    }
+
+    // Setup subscription forms (both the floating one and any others on the page)
+    const subscribeForms = document.querySelectorAll('#floatingSubscribeForm, #emailSignupForm');
+    subscribeForms.forEach(form => {
+        if (form) {
+            console.log(`Found subscribe form: ${form.id}, setting up submit handler`);
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                console.log(`Subscribe form submitted: ${form.id}`);
+
+                // Find the email input within this specific form
+                const email = form.querySelector('input[type="email"]').value;
+
+                // Get checkbox values if they exist in this form
+                const preferenceEvents = form.querySelector('#preferenceEvents')?.checked || false;
+                const preferenceDeals = form.querySelector('#preferenceDeals')?.checked || false;
+
+                // Submit subscription
+                fetch('/subscribe', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        preferences: {
+                            events: preferenceEvents,
+                            deals: preferenceDeals
+                        }
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Thank you for subscribing!');
+                        // Determine which modal to close based on form ID
+                        let modalId = 'subscribeModal';
+                        if (form.id === 'emailSignupForm') {
+                            modalId = 'emailSignupModal';
+                        }
+
+                        try {
+                            const modal = bootstrap.Modal.getInstance(document.getElementById(modalId));
+                            if (modal) modal.hide();
+                            else console.log(`Couldn't find ${modalId} instance`);
+                        } catch (error) {
+                            console.error(`Error hiding ${modalId}:`, error);
+                        }
+                    } else {
+                        alert('Error: ' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error subscribing:', error);
+                    alert('An error occurred. Please try again.');
+                });
+            });
+        }
+    });
+}
+
+// Setup floating buttons interaction
+function setupFloatingButtons() {
+    // Setup feedback button
+    const feedbackBtn = document.getElementById('feedbackButton');
+    if (feedbackBtn) {
+        console.log("Found feedback button, setting up click handler");
+        feedbackBtn.addEventListener('click', function(e) {
+            console.log("Feedback button clicked");
+            try {
+                const feedbackModal = new bootstrap.Modal(document.getElementById('feedbackModal'));
+                feedbackModal.show();
+            } catch (error) {
+                console.error("Error showing feedback modal:", error);
+                alert("Sorry, there was an error opening the feedback form.");
+            }
+        });
+    } else {
+        console.log("Feedback button not found in DOM");
+    }
+
+    // Setup subscribe button
+    const subscribeBtn = document.getElementById('subscribeButton');
+    if (subscribeBtn) {
+        console.log("Found subscribe button, setting up click handler");
+        subscribeBtn.addEventListener('click', function(e) {
+            console.log("Subscribe button clicked");
+            try {
+                const subscribeModal = new bootstrap.Modal(document.getElementById('subscribeModal'));
+                subscribeModal.show();
+            } catch (error) {
+                console.error("Error showing subscribe modal:", error);
+                alert("Sorry, there was an error opening the subscription form.");
+            }
+        });
+    } else {
+        console.log("Subscribe button not found in DOM");
+    }
+}
+
+// Cookie consent handling
+function setupCookieConsent() {
+    // Check if cookie is already set
+    const cookieConsent = getCookie('cookie_consent');
+
+    if (!cookieConsent) {
+        const cookieBanner = document.getElementById('cookieConsent');
+        if (cookieBanner) {
+            cookieBanner.classList.add('show');
+            document.body.classList.add('cookie-consent-visible');
+
+            // Setup cookie consent buttons
+            const acceptAllBtn = document.getElementById('acceptAllCookies');
+            const rejectNonEssentialBtn = document.getElementById('rejectNonEssentialCookies');
+            const customizeBtn = document.getElementById('customizeCookies');
+
+            if (acceptAllBtn) {
+                acceptAllBtn.addEventListener('click', function() {
+                    setCookie('cookie_consent', 'all', 365);
+                    hideCookieConsent();
+                });
+            }
+
+            if (rejectNonEssentialBtn) {
+                rejectNonEssentialBtn.addEventListener('click', function() {
+                    setCookie('cookie_consent', 'essential', 365);
+                    hideCookieConsent();
+                });
+            }
+
+            if (customizeBtn) {
+                customizeBtn.addEventListener('click', function() {
+                    // Show cookie preferences modal
+                    const cookiePreferencesModal = new bootstrap.Modal(document.getElementById('cookiePreferencesModal'));
+                    if (cookiePreferencesModal) cookiePreferencesModal.show();
+                });
+            }
+        }
+    }
+}
+
+// Hide cookie consent banner
+function hideCookieConsent() {
+    const cookieBanner = document.getElementById('cookieConsent');
+    if (cookieBanner) {
+        cookieBanner.classList.remove('show');
+        document.body.classList.remove('cookie-consent-visible');
+    }
+}
+
+// Set a cookie
+function setCookie(name, value, days) {
+    const date = new Date();
+    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+    const expires = "; expires=" + date.toUTCString();
+    document.cookie = name + "=" + (value || "") + expires + "; path=/; SameSite=Strict";
+}
+
+// Get a cookie value
+function getCookie(name) {
+    const nameEQ = name + "=";
+    const ca = document.cookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+    }
+    return null;
+}
+
+// Initialize carousels if they exist
+function initializeCarousels() {
+    // Sponsors carousel
+    const sponsorsCarousel = document.querySelector('.sponsors-carousel');
+    if (sponsorsCarousel) {
+        console.log("Populating sponsors carousel");
+        // Initialize carousel logic here if needed
+    }
+}
+
+// Admin-specific functionality
+if (document.getElementById('adminEventTable')) {
+    console.log("Admin events script loaded");
+    setupAdminEventHandlers();
+}
+
+// Setup admin event handlers
+function setupAdminEventHandlers() {
+    // Admin event approval/rejection buttons
+    const adminActionButtons = document.querySelectorAll('.admin-event-action');
+    adminActionButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const eventId = this.dataset.eventId;
+            const action = this.dataset.action;
+
+            if (confirm(`Are you sure you want to ${action} this event?`)) {
+                fetch(`/admin/event/${eventId}/${action}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        // Refresh page to show updated status
+                        window.location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again.');
+                });
+            }
+        });
+    });
+}
+
+function initializeSponsorsCarousel() {
+    // Check if the element exists first
+    const sponsorsContainer = document.querySelector('.sponsors-container');
+    if (!sponsorsContainer) return;
+
+    console.log('Populating sponsors carousel');
+
+    // Add carousel functionality
+    const sponsorCards = document.querySelectorAll('.sponsor-card');
+    if (sponsorCards.length <= 1) return;
+
+    // Simple auto-scrolling for sponsors if multiple sponsors exist
+    let currentIndex = 0;
+    setInterval(() => {
+        currentIndex = (currentIndex + 1) % sponsorCards.length;
+        sponsorsContainer.scrollTo({
+            left: sponsorCards[currentIndex].offsetLeft,
+            behavior: 'smooth'
+        });
+    }, 5000);
+}
+
+function setupFormValidation() {
+    // Validate forms with class 'needs-validation'
+    const forms = document.querySelectorAll('.needs-validation');
+
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+}
+
+function setupLocationServices() {
+    console.log("Setting up location services");
+    const mapContainer = document.getElementById('map');
+    if (!mapContainer) {
+        console.log("Map container not found, skipping location services");
+        return;
+    }
+
+    console.log("Map container found, requesting user location");
+    // If browser supports geolocation, get user's location
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            position => {
+                const userLat = position.coords.latitude;
+                const userLng = position.coords.longitude;
+                console.log("User location obtained:", userLat, userLng);
+
+                // Store coordinates in data attributes for the map to use
+                mapContainer.dataset.userLat = userLat;
+                mapContainer.dataset.userLng = userLng;
+
+                // Trigger custom event for map to initialize with these coordinates
+                const event = new CustomEvent('user-location-ready', {
+                    detail: { lat: userLat, lng: userLng }
+                });
+                mapContainer.dispatchEvent(event);
+                console.log("Dispatched user-location-ready event");
+
+                // Fetch featured events based on location
+                if (window.fetchFeaturedEvents) {
+                    console.log("Fetching featured events");
+                    fetchFeaturedEvents(userLat, userLng);
+                }
+            },
+            error => {
+                console.warn('Error getting user location:', error.message);
+                // Fallback to default location or prompt user
+            }
+        );
+    } else {
+        console.warn("Geolocation not supported by this browser");
+    }
+    
+    // Ensure any map instance is properly sized (for tabs, hidden elements, etc.)
+    if (window.Leaflet || window.L) {
+        setTimeout(() => {
+            console.log("Forcing map resize");
+            const mapInstance = document.querySelector('.leaflet-container');
+            if (mapInstance && mapInstance._leaflet_id) {
+                console.log("Found Leaflet map instance, invalidating size");
+                mapInstance._leaflet.invalidateSize();
+            }
+        }, 500);
+    }
+}
+
+// Call setupLocationServices when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("DOM loaded, calling setupLocationServices");
+    setupLocationServices();
+});
+
+function setupFilters() {
+    // Handle specific date selection visibility
+    const dateRangeSelects = document.querySelectorAll('select[name="date_range"]');
+    dateRangeSelects.forEach(select => {
+        select.addEventListener('change', handleDateRangeChange);
+    });
+}
+
+function handleDateRangeChange(event) {
+    const value = event.target ? event.target.value : event.value;
+    const isMobile = event.target ? event.target.id.includes('mobile') : event.id.includes('mobile');
+    const specificDateId = isMobile ? 'specificDate-mobile' : 'specificDate';
+    const specificDateField = document.getElementById(specificDateId);
+
+    if (specificDateField) {
+        specificDateField.style.display = value === 'specific' ? 'block' : 'none';
+    }
+}
+
+function populateSponsorsCarousel() {
+    //Implementation for populating sponsors carousel.  This function was not defined in the original code.
+}
+
+function saveCookiePreferences(preferences) {
+    try {
+        // Save to localStorage
+        localStorage.setItem('cookiePreferences', JSON.stringify(preferences));
+        console.log('Cookie preferences saved:', preferences);
+
+        // Apply cookie settings based on preferences
+        if (preferences.analytics) {
+            console.log("Analytics tracking enabled");
+            // Enable analytics code here
+        }
+
+        if (preferences.advertising) {
+            console.log("Advertising cookies enabled");
+            // Enable advertising code here
+        }
+    } catch (error) {
+        console.error("Error saving cookie preferences:", error);
+    }
+}
+
+
+function checkCookieConsentExpiration() {
+    try {
+        const consentData = localStorage.getItem('cookieConsent');
+        if (!consentData) return false;
+
+        const consent = JSON.parse(consentData);
+        if (consent && consent.expires) {
+            if (new Date().getTime() > consent.expires) {
+                // Consent has expired, remove it
+                localStorage.removeItem('cookieConsent');
+                return false;
+            }
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error("Error checking cookie consent expiration:", error);
+        return false;
+    }
+}
+
+//Added this function because it was missing from the original code
+function getCsrfToken() {
+    const tokenMeta = document.querySelector('meta[name="csrf-token"]');
+    return tokenMeta ? tokenMeta.content : '';
+}
+
+function showNewUserWizard() {
+    // Implementation for new user wizard/onboarding
+    const wizardModal = new bootstrap.Modal(document.getElementById('onboardingWizardModal'));
+    if (wizardModal) {
+        wizardModal.show();
+    }
+}
+
+function saveUserPreferences(data) {
+    fetch('/save-preferences', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken() // Function to get CSRF token
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            // Close wizard and show success message
+            const wizardModal = bootstrap.Modal.getInstance(document.getElementById('onboardingWizardModal'));
+            if (wizardModal) wizardModal.hide();
+
+            alert('Your preferences have been saved!');
+            // Optional: reload the page to show personalized content
+            // window.location.reload();
+        } else {
+            alert('Error: ' + result.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error saving preferences:', error);
+        alert('An error occurred while saving your preferences. Please try again.');
+    });
+}) and custom.css (/* Toast notifications */
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 15px;
+  background-color: #333;
+  color: white;
+  z-index: 9999;
+  border-radius: 4px;
+  max-width: 300px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.3s;
+}
+
+.toast-success {
+  background-color: #4CAF50;
+}
+
+.toast-danger {
+  background-color: #f44336;
+}
+
+.toast-warning {
+  background-color: #ff9800;
+}
+
+.toast-info {
+  background-color: #2196F3;
+}
+
+.toast-fade-out {
+  animation: fadeOut 0.5s forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+:root {
+    --primary-color: #FF8A00;    /* Brighter Orange from image */
+    --secondary-color: #00D4E0;  /* Bright Teal */
+    --accent-color: #FF6B00;     /* Deeper Orange */
+    --dark-color: #1A1A1A;       /* Darker Gray for contrast */
+    --light-color: #ffffff;      /* White */
+    --text-primary: #1A1A1A;     /* Main text color */
+    --text-secondary: #4A4A4A;   /* Secondary text color */
+}
+
+/* Enhanced Feature Boxes */
+.feature-box {
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.feature-box:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary-color);
+    box-shadow: 0 8px 24px rgba(255, 138, 0, 0.15);
+}
+
+/* Enhanced Fun Assistant Section */
+.fun-assistant-section {
+    background: linear-gradient(135deg, rgba(255,138,0,0.05) 0%, rgba(0,212,224,0.05) 100%);
+}
+
+/* About page CTA buttons */
+#about-page-ctas {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+#about-page-ctas .cta-button-host,
+#about-page-ctas .cta-button-subscribe {
+    min-width: 200px;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 576px) {
+    #about-page-ctas {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #about-page-ctas .cta-button-host,
+    #about-page-ctas .cta-button-subscribe {
+        width: 100%;
+    }
+}
+
+/* Enhanced Rating System */
+.rating-scale {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 2rem;
+    flex-wrap: nowrap;
+    padding: 1rem;
+}
+
+.rating-scale .rating-item {
+    padding: 1.5rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.rating-scale .rating-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(255,138,0,0.15);
+}
+
+/* Advertising Page Styles */
+.ad-specs table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.ad-specs th, .ad-specs td {
+    padding: 12px;
+    border: 1px solid #ddd;
+}
+
+.pricing-card {
+    transition: transform 0.3s ease;
+}
+
+.pricing-card:hover {
+    transform: translateY(-5px);
+}
+
+.border-primary {
+    border-width: 2px !important;
+}
+
+/* Enhanced Buttons */
+.btn.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+    border: none;
+    box-shadow: 0 4px 12px rgba(255,138,0,0.2);
+}
+
+.btn.btn-primary:hover {
+    background: linear-gradient(135deg, var(--accent-color) 0%, var(--primary-color) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(255,138,0,0.3);
+}
+
+.btn.btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* Hero Section */
+#hero.hero-section {
+    background: url("/static/images/Have-Fun-FunList.ai-home.jpeg") center center / cover no-repeat;
+    background-color: var(--light-color);  /* Fallback */
+    height: 60vh;
+    margin: 0;
+    padding: 0;
+    max-width: 100vw;
+    position: relative;
+    z-index: 1;
+    margin-top: 0;
+    min-height: 500px; /* Ensure minimum height */
+}
+
+@media (max-width: 768px) {
+    #hero.hero-section {
+        height: 45vh;
+        background-size: 300%;
+        background-position: center 40%;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .hero-content h1 {
+        margin-top: -20px;
+    }
+}
+
+@media (max-width: 480px) {
+    #hero.hero-section {
+        height: 35vh;
+        margin-bottom: 8px;
+        background-size: 250%;
+        background-position: center 45%;
+    }
+}
+
+.content-section {
+    background-color: var(--light-color);
+    color: var(--text-primary);
+}
+
+.content-section h1 {
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .container {
+        text-align: center;
+    }
+
+    .cta-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .view-options {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .view-options .btn {
+        width: 200px;
+        margin: 5px auto;
+    }
+
+    .primary-cta {
+        width: 200px;
+        margin: 10px auto;
+    }
+
+    .fun-rating-scale {
+        padding: 0 15px;
+    }
+
+    .rating-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .rating-item {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+#hero.hero-section .hero-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+    position: relative;
+    z-index: 2;
+}
+
+
+/* Help Center Styles */
+.help-categories .help-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    text-align: center;
+    height: 100%;
+    transition: transform 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.help-categories .help-card:hover {
+    transform: translateY(-5px);
+}
+
+.help-icon {
+    margin-bottom: 1rem;
+}
+
+.search-input {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 1rem;
+    border-radius: 30px;
+    border: 1px solid #e5e7eb;
+}
+
+.accordion-item {
+    margin-bottom: 1rem;
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 8px;
+}
+
+.accordion-button {
+    padding: 1.25rem;
+    font-weight: 500;
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.faq-section {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+#hero.hero-section h1,
+#hero.hero-section p {
+    color: var(--light-color);
+    text-shadow: 0 0 5px rgba(0,0,0,0.5);
+}
+
+/* Navbar Styles */
+.navbar {
+    background-color: #fff !important;
+    box-shadow: 0px 2px 12px rgba(0,0,0,0.1);
+    padding: 0.75rem 0;
+    min-height: 70px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1030;
+    margin-bottom: 0;
+}
+
+.alert {
+    position: fixed;
+    top: 70px;
+    left: 0;
+    right: 0;
+    margin-bottom: 0;
+    z-index: 1020;
+    border-radius: 0;
+}
+
+.alert + main {
+    padding-top: 130px !important;
+}
+
+.navbar-brand {
+    color: var(--primary-color);
+    font-weight: 600;
+    z-index: 1030;
+}
+
+/* Ensure brand stays centered on all screens */
+@media (max-width: 991px) {
+    .navbar-brand {
+        z-index: 1030;
+    }
+
+    .navbar .dropdown {
+        margin-left: auto;
+    }
+
+    .navbar-collapse {
+        margin-top: 1rem;
+    }
+}
+
+/* Desktop specific styles */
+@media (min-width: 992px) {
+    .navbar-brand {
+        margin-right: 2rem;
+    }
+
+    .navbar-nav.mx-auto {
+        margin: 0 auto !important;
+    }
+
+    .navbar .nav-item {
+        margin: 0 0.5rem;
+    }
+}
+
+.navbar .nav-link {
+    color: var(--text-primary) !important;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    transition: color 0.2s ease;
+}
+
+.navbar .nav-link:hover {
+    color: var(--primary-color) !important;
+}
+
+.navbar .dropdown-menu {
+    border: none;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    min-width: 200px;
+}
+
+@media (max-width: 991px) {
+    .navbar-collapse {
+        position: fixed;
+        top: 70px;
+        left: 0;
+        padding-left: 15px;
+        padding-right: 15px;
+        padding-bottom: 15px;
+        width: 100%;
+        height: auto;
+        background-color: white;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+
+    .navbar-collapse.collapsing,
+    .navbar-collapse.show {
+        transition: all 0.3s ease;
+    }
+
+    .navbar-nav {
+        margin-top: 1rem;
+    }
+}
+
+.navbar .dropdown-item:hover {
+    background-color: rgba(255, 138, 0, 0.1);
+}
+
+@media (max-width: 991px) {
+    .navbar-collapse {
+        background: white;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-top: 0.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        position: absolute;
+        width: 200px;
+        left: 1rem;
+        top: 100%;
+    }
+
+    .navbar-nav {
+        gap: 0.5rem;
+    }
+
+    .navbar-nav .nav-item {
+        width: 100%;
+    }
+
+    .navbar-nav .nav-link {
+        padding: 0.75rem 1rem;
+        display: block;
+        text-align: left;
+        border-radius: 4px;
+    }
+
+    .navbar-nav .nav-link:hover {
+        background-color: rgba(255, 138, 0, 0.1);
+    }
+}
+
+/* Header Styles */
+header {
+    background-color: rgba(255, 255, 255, 0.98) !important;
+    box-shadow: 0px 2px 12px rgba(0,0,0,0.1);
+    position: relative;
+    width: 100%;
+    z-index: 1000;
+}
+
+.modal {
+    z-index: 99999;
+}
+
+.modal-backdrop {
+    z-index: 99998;
+}
+
+/* Cookie Consent Styles */
+.cookie-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 1rem;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    border-top: 1px solid #dee2e6;
+}
+
+.cookie-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.cookie-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .cookie-content {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .cookie-buttons {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Add padding to main content to prevent navbar overlap */
+main {
+    padding-top: 90px;
+    width: 100%;
+    overflow-x: hidden;
+}
+
+@media (max-width: 768px) {
+    main {
+        padding-top: 90px;
+    }
+    .map-container-wrapper,
+    .events-container {
+        padding-top: 1rem;
+        margin-top: 1rem;
+    }
+    .page-header {
+        margin-top: 1rem;
+    }
+    .alert + main {
+        padding-top: 150px !important;
+    }
+}
+
+/* Extra padding for auth pages */
+.row.justify-content-center {
+    margin-top: 2rem;
+}
+
+/* Specific styling for auth pages */
+.auth-page-content {
+    margin-top: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Special handling for hero section */
+#hero.hero-section {
+    margin-top: 1rem;
+    padding-top: 1.5rem;
+    min-height: 400px;
+}
+
+.navbar .nav-link {
+    color: var(--text-primary) !important;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 5px;
+}
+
+.navbar .nav-link:hover {
+    color: var(--primary-color) !important;
+}
+
+.nav-icon {
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
+.navbar-toggler {
+    border: none;
+    padding: 0.5rem;
+}
+
+.navbar-toggler:focus {
+    box-shadow: none;
+}
+
+.navbar {
+    padding: 0.75rem 0;
+    min-height: 70px;
+}
+
+.navbar .btn-success {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: var(--light-color) !important;
+    font-weight: 700;
+    padding: 10px 15px;
+}
+
+.navbar .btn-success:hover {
+    background-color: var(--accent-color) !important;
+    border-color: var(--accent-color) !important;
+}
+
+
+/* Ad Container Styles */
+.banner-container {
+    background: #f8f9fa;
+    padding: 0;
+    margin: 0;
+    position: relative;
+    z-index: 999;
+    line-height: 0;
+    font-size: 0;
+}
+
+.banner-ad {
+    position: relative;
+    text-align: center;
+    line-height: 0;
+    font-size: 0;
+    display: block;
+    height: 70px;
+    overflow: hidden;
+}
+
+.ad-label {
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.ad-slot {
+    margin: 0 auto;
+    background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+}
+
+.ad-slot[data-ad-size="728x90"] {
+    width: 728px;
+    height: 90px;
+    max-width: 100%;
+}
+
+.ad-slot[data-ad-size="300x250"] {
+    width: 300px;
+    height: 250px;
+    max-width: 100%;
+}
+
+.sponsor-card {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    height: 300px;
+    width: 100%;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.sponsor-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+}
+
+.sponsor-content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.sponsor-content img {
+    max-height: 100%;
+    max-width: 100%;
+    width: auto;
+    object-fit: contain;
+}
+
+@media (max-width: 768px) {
+    .ad-slot[data-ad-size="728x90"] {
+        height: 60px;
+    }
+
+    .sponsors-grid {
+        margin: 0 -10px;
+    }
+}
+
+/* Featured Events Carousel */
+.featured-events-section {
+    background: linear-gradient(135deg, rgba(255,138,0,0.05) 0%, rgba(0,212,224,0.05) 100%);
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+/* Button Styles */
+.btn.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--light-color);
+    font-weight: 600;
+    padding: 12px 20px;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn.btn-primary:hover {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 171, 0, 0.3);
+}
+
+/* Remove the blue shaded box */
+.hero-image {
+    display: none !important;
+}
+
+/* General Styling Updates */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap');
+
+body {
+    font-family: 'Quicksand', sans-serif;
+    line-height: 1.6;
+    background-color: var(--light-color);
+    overflow-x: hidden; 
+    max-width: 100vw; 
+    margin: 0 auto;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    letter-spacing: 0.2px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+}
+
+.content-section h1 {
+    font-size: 2.5rem;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+}
+
+.lead {
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 500;
+    font-size: 1.2rem;
+    line-height: 1.4;
+}
+
+.btn {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+main {
+    flex: 1 0 auto;
+}
+
+.footer {
+    flex-shrink: 0;
+    background-color: #f8f9fa;
+}
+
+.footer h5 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.footer a {
+    color: var(--text-secondary);
+    text-decoration: none;
+}
+
+.footer a:hover {
+    color: var(--primary-color);
+}
+
+/* Feature Boxes */
+.feature-box {
+    border-radius: 8px;
+    transition: transform 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 2rem;
+    text-align: center;
+}
+
+.feature-box:hover {
+    transform: translateY(-5px);
+}
+
+.feature-box h3 {
+    margin-bottom: 1rem;
+}
+
+.feature-box p {
+    flex-grow: 1;
+    margin-bottom: 1.5rem;
+}
+
+.feature-box .btn {
+    width: 80%;
+    margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+    .feature-box {
+        padding-bottom: 70px;
+    }
+
+    .feature-box .btn {
+        bottom: 15px;
+        left: 15px;
+        right: 15px;
+    }
+}
+
+/* Fun Assistant Section */
+.feature-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.feature-list li {
+    margin-bottom: 1rem;
+    padding-left: 2rem;
+    position: relative;
+}
+
+.feature-list li:before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: var(--primary-color);
+}
+
+/* Rating System */
+.fun-rating-scale {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    gap: 1rem;
+    margin: 2rem 0;
+}
+
+.rating-stack {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.rating-item {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.rating-item .stars {
+    font-size: 1.5rem;
+}
+
+.rating-item .label {
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.rating-item .stars {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .rating-scale {
+        flex-direction: column;
+    }
+
+/* Target Market Suggestions */
+.suggestion-dropdown {
+    display: none;
+    position: absolute;
+    z-index: 1000;
+    background-color: white;
+    border: 1px solid #ddd;
+    max-height: 200px;
+    overflow-y: auto;
+    width: 100%;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    border-radius: 4px;
+}
+
+.suggestion-item {
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.suggestion-item:hover {
+    background-color: #f8f9fa;
+}
+
+
+    .rating-item {
+        margin-bottom: 1rem;
+    }
+}
+
+
+/* View Switcher */
+.view-switcher {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.view-switcher .btn {
+    min-width: 150px;
+    text-align: center;
+}
+
+/* Search Section */
+.search-section {
+    margin-bottom: 2rem;
+    padding: 2rem 0;
+    background: linear-gradient(135deg, rgba(255,138,0,0.05) 0%, rgba(0,212,224,0.05) 100%);
+}
+
+.search-form .input-group {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.search-form .form-control {
+    border: none;
+    padding: 1rem 1.5rem;
+}
+
+.search-form .btn {
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+
+@media (max-width: 768px) {
+    .search-form .btn {
+        padding-left: 1rem;
+        padding-right: 1rem;
+        font-size: 0.9rem;
+    }
+    .search-form .input-group {
+        flex-wrap: nowrap;
+    }
+}
+
+.map-container-wrapper {
+    padding-top: 2rem;
+    margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+    .map-container-wrapper {
+        padding-top: 1.5rem;
+        margin-top: 1.5rem;
+    }
+}
+
+.map-container {
+    width: 100%;
+    height: 500px;
+    border-radius: 8px;
+    z-index: 1;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.filter-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.view-switcher {
+    display: flex;
+    align-items: center;
+}
+
+.learn-more-btn {
+    color: var(--primary-color) !important;
+    border: 1px solid var(--primary-color) !important;
+    background: transparent !important;
+    padding: 8px 24px !important;
+    border-radius: 4px !important;
+    transition: all 0.3s ease !important;
+}
+
+.learn-more-btn:hover {
+    background: var(--primary-color) !important;
+    color: white !important;
+    transform: translateY(-2px);
+}
+
+.view-options {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+/* Map Styles */
+.event-popup {
+    min-width: 200px;
+}
+
+.event-popup h5 {
+    margin-bottom: 10px;
+    color: var(--primary-color);
+}
+
+.event-popup p {
+    margin-bottom: 5px;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+    .map-container {
+        height: 400px;
+    }
+
+    .view-switcher {
+        margin-top: 1rem;
+        width: 100%;
+    }
+
+    .view-switcher .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .filter-label {
+        margin-top: 0.5rem;
+    }
+}
+
+
+.social-icons {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: flex-start;
+    margin-bottom: 2rem;
+}
+
+.social-icons a {
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+    transition: color 0.2s ease;
+}
+
+.social-icons a:hover {
+    color: var(--primary-color);
+}
+
+.chat-message {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.chat-message.user {
+    background-color: #f8f9fa;
+}
+
+.chat-message.assistant {
+    background-color: #e9ecef;
+}
+
+@media (max-width: 768px) {
+    .feature-box {
+        margin-bottom: 2rem;
+        padding: 2rem !important;
+    }
+
+    .footer {
+        text-align: left;
+        padding: 3rem 1rem;
+    }
+
+    .footer h5 {
+        margin-bottom: 1.5rem;
+        color: var(--primary-color);
+    }
+
+    .footer {
+    background-color: #f8f9fa;
+    padding: 3rem 0;
+}
+
+.footer h5 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+    text-transform: uppercase;
+    color: #333;
+}
+
+.footer ul li {
+    margin-bottom: 0.75rem;
+}
+
+.footer ul li a {
+    color: #666;
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition: color 0.2s;
+}
+
+.footer ul li a:hover {
+    color: #333;
+    text-decoration: none;
+}
+
+.footer .fas {
+    margin-right: 0.5rem;
+    color: #666;
+}
+
+.footer .cookie-settings {
+    cursor: pointer;
+}
+
+.social-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-start;
+    margin-top: 1rem;
+}
+
+.btn-social {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #f8f9fa;
+    color: #666;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: 1px solid #ddd;
+    margin-right: 10px;
+}
+
+.btn-social:hover {
+    background-color: #4CAF50;
+    color: white;
+    transform: translateY(-3px);
+}
+
+@media (max-width: 768px) {
+    .footer .col-md-3 {
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .social-icons, .social-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin: 1rem auto;
+    }
+
+    .footer {
+        text-align: center;
+    }
+
+    .subscribe-form .input-group {
+        margin: 0 auto;
+    }
+
+    .btn-social {
+        margin: 0 5px;
+    }
+}
+    }
+
+    .chat-demo {
+        margin-top: 2rem;
+    }
+
+    .fun-assistant-section .btn {
+        width: 100%;
+        margin-bottom: 2rem;
+    }
+
+    .feature-list {
+        marginleft: 1rem;
+    }
+}
+
+.container {
+    width: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+    padding-top: 1rem;
+    padding-bottom: 2rem;
+}
+
+@media (min-width: 769px) {
+    .container {
+        padding-top: 2rem;
+    }
+}
+
+/* Consistent top spacing for map and events pages */
+.map-container-wrapper {
+    margin-top: 2rem;
+    padding-top: 2rem;
+}
+
+@media (max-width: 768px) {
+    .map-container-wrapper {
+        margin-top: 1rem;
+        padding-top: 1rem;
+    }
+}
+
+/* Ensure hero section buttons stand out */
+.primary-cta {
+    background-color: var(--accent-color);
+    color: white;
+    font-size: 1.1rem;
+    padding: 1rem 2rem;
+    border: none;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    display: inline-block;
+    text-align: center;
+}
+
+/* Floating Buttons */
+.floating-buttons-container {
+    position: fixed;
+    bottom: 2.5rem; /* Increased from 1.5rem to provide more space */
+    width: 100%;
+    z-index: 1040; /* Below modals (1050) but above most content */
+    pointer-events: none; /* Allow clicks to pass through the container */
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Make buttons more visible when scrolling */
+body.is-scrolled .floating-buttons-container {
+    opacity: 0.95;
+    transform: translateY(-10px);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+}
+
+.floating-button {
+    position: absolute;
+    padding: 0.75rem 1.25rem; /* Increased horizontal padding */
+    border-radius: 2rem;
+    background-color: #4CAF50;
+    color: white;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    pointer-events: auto; /* Make the button clickable */
+    text-decoration: none;
+    bottom: 0; /* Ensure buttons align to bottom of container */
+}
+
+.floating-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    color: white; /* Maintain text color on hover */
+    text-decoration: none;
+}
+
+.floating-button i {
+    margin-right: 0.5rem;
+}
+
+.feedback-button {
+    left: 1.5rem;
+    background-color: #5d78ff;
+}
+
+.subscribe-button {
+    right: 1.5rem;
+}
+
+/* For logged-in users, we can style differently */
+body.user-logged-in .floating-button {
+    opacity: 0.85;
+}
+
+/* For smaller mobile screens - FUNKY STYLES */
+@media (max-width: 576px) {
+    .floating-buttons-container {
+        bottom: 1.5rem; /* Adjust position for mobile */
+    }
+
+    .floating-button {
+        padding: 0.65rem;
+        font-size: 0.9rem;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+        transition: all 0.3s ease;
+        width: 3rem; /* Fixed width for circle buttons */
+        height: 3rem; /* Fixed height for circle buttons */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .floating-button span {
+        display: none; /* Hide text, show only icon on small screens */
+    }
+
+    .floating-button i {
+        margin-right: 0;
+        font-size: 1.2rem;
+    }
+
+    /* Different pulse animations for each button */
+    .feedback-button {
+        animation: pulse-left 2.5s infinite;
+        background: linear-gradient(135deg, #4e54c8, #8f94fb);
+        box-shadow: 0 2px 15px rgba(78, 84, 200, 0.6);
+    }
+
+    .subscribe-button {
+        animation: pulse-right 2.5s infinite;
+        background: linear-gradient(135deg, #11998e, #38ef7d);
+        box-shadow: 0 2px 15px rgba(17, 153, 142, 0.6);
+    }
+
+    /* When cookie consent is visible, move buttons up */
+    body.cookie-consent-visible .floating-buttons-container {
+        bottom: 5rem;
+    }
+
+    /* Animation keyframes */
+    @keyframes pulse-left {
+        0% {
+            transform: scale(1) rotate(0deg);
+        }
+        50% {
+            transform: scale(1.15) rotate(-5deg);
+        }
+        100% {
+            transform: scale(1) rotate(0deg);
+        }
+    }
+
+    @keyframes pulse-right {
+        0% {
+            transform: scale(1) rotate(0deg);
+        }
+        50% {
+            transform: scale(1.15) rotate(5deg);
+        }
+        100% {
+            transform: scale(1) rotate(0deg);
+        }
+    }
+
+    /* Active/pressed state */
+    .floating-button:active {
+        transform: scale(0.85);
+    }
+}
+}
+
+/* Adjust when cookie consent is visible */
+body.cookie-consent-visible .floating-buttons-container {
+    bottom: 4.5rem; /* Move up to avoid overlapping with cookie banner */
+}
+
+@media (max-width: 768px) {
+    body.cookie-consent-visible .floating-buttons-container {
+        bottom: 6rem; /* More space on mobile for the cookie banner */
+    }
+}
+}
+
+.primary-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    background-color: #ea580c;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .rating-scale {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}
+
+/* Rating Details Accordion Styles */
+.rating-details {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.accordion-button:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(255, 138, 0, 0.25);
+}
+
+.accordion-item {
+    border: 1px solid rgba(255, 138, 0, 0.2);
+    margin-bottom: 0.5rem;
+}
+
+.event-card.highlighted {
+    background-color: #e9ecef;
+    border-color: var(--primary-color);
+}
+
+.sponsored-card {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+}
+
+.sponsored-card .card-body {
+    padding: 1rem;
+}
+
+.sponsored-content {
+    min-height: 120px;
+}
+
+.event-card {
+    transition: all 0.3s ease;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.event-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+}
+
+.event-card .card-img-top {
+    height: 200px;
+    object-fit: cover;
+}
+
+.event-card .default-event-img {
+    height: 200px;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    opacity: 0.1;
+}
+
+.event-card .card-title {
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.event-card .fun-rating .stars {
+    color: var(--primary-color);
+}
+
+.event-card .social-links a {
+    font-size: 1.1rem;
+    transition: color 0.2s ease;
+}
+
+.event-card .social-links a:hover {
+    color: var(--primary-color) !important;
+}
+
+.event-card .btn-group {
+    gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .event-card .card-img-top {
+        height: 160px;
+    }
+
+    .event-card .btn-group {
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+
+    .event-card .btn-group .btn {
+        flex: 1;
+    }
+
+    .event-card .card-footer .d-flex {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .event-card .social-links {
+        margin-top: 1rem;
+        text-align: center;
+    }
+}
+
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.search-filters {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.filter-bar {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.filter-form .form-control,
+.filter-form .form-select {
+    border: 1px solid #dee2e6;
+    transition: all 0.2s ease;
+}
+
+.filter-form .form-control:focus,
+.filter-form .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(255, 138, 0, 0.25);
+}
+
+/* Filter Styles */
+.filter-bar {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.filter-bar-mobile .card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.view-toggle {
+    display: flex;
+    justify-content: center;
+}
+
+.view-toggle .btn-group {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+@media (max-width: 768px) {
+    .filter-bar-mobile .collapse {
+        margin-top: 1rem;
+    }
+
+    .filter-bar-mobile .card-body {
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+}
+
+@media (max-width: 768px) {
+    .filter-bar {
+        padding: 1rem;
+    }
+
+    .filter-form .row > div {
+        margin-bottom: 0.5rem;
+    }
+}
+
+.search-container {
+    margin-bottom: 2.5rem;
+}
+
+.search-container .text-center {
+    margin-top: 1.5rem;
+}
+
+.view-full-map-link {
+    margin-top: 2.5rem; /* Increased spacing */
+}
+
+.add-event-link { /* Added for desktop navigation */
+    margin-right: 1rem; /* Adjust spacing as needed */
+}
+
+@media (max-width: 991px) {
+    .add-event-mobile { /* Added for mobile navigation */
+        margin-bottom: 1rem;
+    }
+}
+
+/* Submit Event Form Container */
+.container form {
+    padding: 1rem;
+    max-width: 800px;
+    margin: 2rem auto 0;
+}
+
+/* Alert positioning */
+.alert {
+    position: fixed;
+    top: 70px;
+    left: 0;
+    right: 0;
+    z-index: 1020;
+    margin: 0;
+    border-radius: 0;
+}
+
+/* Adjust main content when alert is present */
+.alert + main {
+    padding-top: 120px !important;
+}
+
+/* Form pages specific spacing */
+.auth-form-container {
+    margin-top: 2rem;
+}
+
+/* Add extra spacing to signup, login, and other form pages */
+.row.justify-content-center {
+    margin-top: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .alert + main {
+        padding-top: 140px !important;
+    }
+}
+
+.pre-hero-banner,
+.organizer-banner {
+    display: none;
+}
+
+/* Add additional custom styles here */
+
+/* About page CTA styles */
+#about-page-ctas .cta-button-host,
+#about-page-ctas .cta-button-subscribe {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+#about-page-ctas .cta-button-host:hover {
+    background-color: #0d6efd;
+    box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
+    transform: translateY(-2px);
+}
+
+/* Target Market Suggestions */
+.suggestion-dropdown {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    width: calc(100% - 24px);
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    display: none;
+}
+
+.suggestion-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.suggestion-item:hover {
+    background-color: #f5f5f5;
+}
+}
+
+#about-page-ctas .cta-button-subscribe:hover {
+    border-color: #0d6efd;
+    background-color: rgba(13, 110, 253, 0.1);
+    box-shadow: 0 5px 15px rgba(13, 110, 253, 0.2);
+    transform: translateY(-2px);
+}
+
+.cta-section {
+    transition: all 0.3s ease;
+}
+
+.cta-section:hover {
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Add padding to container to prevent content from being hidden under navbar */
+.container {
+    padding-top: 1rem;
+}
+
+/* Additional top padding for pages with alerts to prevent double padding */
+.alert + .container {
+    padding-top: 0;
+}
+
+/* Dropdown enhancements */
+.dropdown-menu {
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* User type indicator styles */
+.dropdown-menu .border-bottom {
+    border-bottom: 1px solid #e9ecef;
+    margin-bottom: 0.5rem;
+}
+
+.sponsored-content {
+    padding: 1rem;
+    background-color: #f9f9f9;
+}
+
+/* Map specific styling */
+#map {
+    height: 600px;
+    width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1; /* Lower z-index for map container */
+}
+
+/* Fix z-index issues with map container */
+.leaflet-container {
+    height: 100%;
+    width: 100%;
+}
+
+/* Reset Leaflet default z-indexes to work properly */
+.leaflet-control {
+    z-index: 800 !important;
+}
+
+.leaflet-pane {
+    z-index: 400 !important;
+}
+
+.leaflet-map-pane {
+    z-index: 400 !important;
+}
+
+.leaflet-overlay-pane {
+    z-index: 400 !important;
+}
+
+.leaflet-shadow-pane {
+    z-index: 500 !important;
+}
+
+.leaflet-marker-pane {
+    z-index: 600 !important;
+}
+
+.leaflet-tooltip-pane {
+    z-index: 650 !important;
+}
+
+/* Higher z-index for controls and popups */
+.leaflet-popup-pane {
+    z-index: 700 !important;
+}
+
+.leaflet-popup {
+    z-index: 700 !important;
+}
+
+/* Ensure dropdown menus appear above the map */
+.dropdown-menu {
+    z-index: 1000 !important;
+}
+
+/* Navigation bar should be above the map */
+.navbar {
+    z-index: 1100 !important;
+    position: relative;
+}
+
+/* Custom user location marker */
+.user-location-marker {
+    background-color: #4285F4;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px white;
+}
+
+.pulse {
+    display: block;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: rgba(66, 133, 244, 0.6);
+    box-shadow: 0 0 0 rgba(66, 133, 244, 0.6);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(66, 133, 244, 0.6);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(66, 133, 244, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(66, 133, 244, 0);
+    }
+}
+
+.event-popup h5 {
+    margin-bottom: 8px;
+    color: var(--primary-color);
+}
+
+.event-popup p {
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+/* Map page additional styles */
+.filter-bar {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Event card styles */
+.event-card {
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+    margin-bottom: 15px;
+}
+.event-card:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.event-card.highlighted {
+    background-color: #e9ecef;
+    border-left-color: var(--primary-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Sponsored card styles */
+.sponsored-card {
+    border: 1px dashed #ccc;
+    background-color: #fffaf0;
+}
+.sponsored-content {
+    padding: 1rem;
+    background-color: #f9f9f9;
+}
+
+/* Map container */
+#map {
+    height: 700px;
+    width: 100%;
+    z-index: 1;
+}
+
+/* Event cards container */
+.event-cards-container {
+    height: 700px;
+    overflow-y: auto;
+    padding-right: 10px;
+    /* Improve scrollbar appearance */
+    scrollbar-width: thin;
+    scrollbar-color: #ccc #f5f5f5;
+}
+.event-cards-container::-webkit-scrollbar {
+    width: 8px;
+}
+.event-cards-container::-webkit-scrollbar-track {
+    background: #f5f5f5;
+    border-radius: 4px;
+}
+.event-cards-container::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 4px;
+}
+
+/* Map popup styles */
+.event-popup {
+    min-width: 220px;
+    padding: 5px;
+}
+.event-popup h5 {
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+.event-popup p {
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+}
+.event-popup .btn {
+    margin-top: 8px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #map {
+        height: 400px;
+        margin-bottom: 20px;
+    }
+    .event-cards-container {
+        height: 500px;
+    }
+    .filter-bar .row {
+        flex-direction: column;
+    }
+    .filter-bar .col-md {
+        margin-bottom: 10px;
+    }
+}
+}) and routes.py (from flask import render_template, flash, redirect, url_for, request, session, jsonify
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import current_user, login_required, login_user, logout_user
+from forms import SignupForm, LoginForm, ProfileForm, EventForm, ResetPasswordRequestForm, ResetPasswordForm
+from models import User, Event, Subscriber
+from db_init import db
+from utils import geocode_address, send_password_reset_email
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+import logging
+from datetime import datetime, timedelta
+import json
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+
+def init_routes(app):
+    # Add global error handler for application context errors
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        app.logger.error(f"Unhandled exception: {str(e)}", exc_info=True)
+        return render_template('500.html'), 500
+
+    @app.route("/about")
+    def about():
+        return render_template('about.html')
+
+    @app.route("/subscribe", methods=["POST"])
+    def subscribe():
+        data = request.get_json()
+        email = data.get('email')
+        preferences = data.get('preferences', {})
+
+        if not email:
+            return jsonify({'success': False, 'message': 'Email is required'})
+
+        # Here you would typically add the email to your database or newsletter service
+        # This is a placeholder implementation
+
+        # Log the subscription for demo purposes
+        app.logger.info(f"New subscription: {email} with preferences: {preferences}")
+
+        return jsonify({'success': True, 'message': 'Subscription successful'})
+
+    @app.route('/submit-feedback', methods=['POST'])
+    def submit_feedback():
+        data = request.get_json()
+        feedback_type = data.get('type')
+        message = data.get('message')
+        email = data.get('email', 'Anonymous')
+
+        if not feedback_type or not message:
+            return jsonify({'success': False, 'message': 'Feedback type and message are required'})
+
+        # Here you would typically store the feedback in your database
+        # This is a placeholder implementation
+
+        # Log the feedback for demo purposes
+        app.logger.info(f"New feedback from {email} - Type: {feedback_type} - Message: {message}")
+
+        return jsonify({'success': True, 'message': 'Feedback submitted successfully'})
+
+    @app.before_request
+    def before_request():
+        if current_user.is_authenticated:
+            current_time = datetime.utcnow()
+            if "last_activity" not in session:
+                session["last_activity"] = current_time
+                return
+            last_activity = session.get("last_activity")
+            if isinstance(last_activity, str):
+                try:
+                    last_activity = datetime.fromisoformat(last_activity)
+                except ValueError:
+                    last_activity = current_time
+            if (current_time - last_activity) > timedelta(minutes=30):
+                session.clear()
+                logout_user()
+                flash("Your session has expired. Please log in again.", "info")
+                return redirect(url_for("login"))
+            session["last_activity"] = current_time
+
+    @app.route("/")
+    def index():
+        events = Event.query.order_by(Event.start_date.desc()).all()
+        # Check if this is a new registration to show the wizard
+        new_registration = session.pop('new_registration', False)
+        return render_template("index.html", events=events, user=current_user, new_registration=new_registration)
+
+    @app.route("/save-preferences", methods=["POST"])
+    @login_required
+    def save_preferences():
+        try:
+            data = request.get_json()
+
+            # Update user profile with preferences
+            profile_data = {}
+
+            if 'location' in data and data['location']:
+                profile_data['location'] = data['location']
+
+            if 'interests' in data and data['interests']:
+                profile_data['interests'] = ','.join(data['interests'])
+
+            # Update organizer profile if applicable
+            if current_user.is_organizer:
+                organizer_data = {}
+
+                if 'organizationName' in data and data['organizationName']:
+                    organizer_data['company_name'] = data['organizationName']
+
+                if 'organizationWebsite' in data and data['organizationWebsite']:
+                    organizer_data['organizer_website'] = data['organizationWebsite']
+
+                if organizer_data:
+                    current_user.update_organizer_profile(organizer_data)
+
+            # Update user profile
+            if profile_data:
+                current_user.update_profile(profile_data)
+
+            db.session.commit()
+
+            return jsonify({"success": True, "message": "Preferences saved successfully"})
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error saving preferences: {str(e)}")
+            return jsonify({"success": False, "message": str(e)}), 500
+
+    @app.route("/signup", methods=["GET", "POST"])
+    def signup():
+        if current_user.is_authenticated:
+            return redirect(url_for("index"))
+        form = SignupForm()
+        if form.validate_on_submit():
+            try:
+                # Check if user already exists
+                existing_user = User.query.filter_by(email=form.email.data).first()
+                if existing_user:
+                    flash("This email address is already registered. Please use a different email or try logging in.", "danger")
+                    form.email.errors = list(form.email.errors) + ["Email already registered"]
+                    return render_template("signup.html", form=form)
+
+                user = User()
+                user.email = form.email.data
+                user.set_password(form.password.data)
+                user.account_active = True
+
+                # Set default role as subscriber
+                user.is_subscriber = True
+
+                # Process user intentions (can select multiple)
+                try:
+                    user_intentions = request.form.getlist('user_intention[]')
+                    if not user_intentions:
+                        user_intentions = ['find_events']  # Default
+
+                    if 'create_events' in user_intentions:
+                        user.is_event_creator = True
+                    if 'represent_organization' in user_intentions:
+                        user.is_organizer = True
+                        user.is_event_creator = True  # Organizers can also create events
+                except Exception as e:
+                    logger.warning(f"Error processing user intentions: {str(e)}")
+                    # Fallback to form fields if available
+                    if hasattr(form, 'is_event_creator') and form.is_event_creator.data:
+                        user.is_event_creator = True
+                    if hasattr(form, 'is_organizer') and form.is_organizer.data:
+                        user.is_organizer = True
+                        user.is_event_creator = True  # Organizers can also create events
+                    if hasattr(form, 'is_vendor') and form.is_vendor.data:
+                        user.is_vendor = True
+                        if hasattr(form, 'vendor_type') and form.vendor_type.data:
+                            user.vendor_type = form.vendor_type.data
+
+                db.session.add(user)
+                db.session.commit()
+
+                # Auto-login the user
+                login_user(user)
+                session["user_id"] = user.id
+                session["login_time"] = datetime.utcnow().isoformat()
+                session["last_activity"] = datetime.utcnow().isoformat()
+
+                # Verify terms acceptance
+                if not form.terms_accepted.data:
+                    flash("You must accept the Terms and Conditions and Privacy Policy to register.", "danger")
+                    return render_template("signup.html", form=form)
+
+                # Set welcome message and indicate this is a new registration
+                flash("Welcome to FunList.ai! Let's set up your profile.", "success")
+
+                # Set session flag for new registration to trigger wizard
+                session['new_registration'] = True
+
+                # Redirect to index which will show the wizard
+                return redirect(url_for("index"))
+            except IntegrityError as e:
+                db.session.rollback()
+                logger.error(f"Database integrity error during sign up: {str(e)}")
+                error_msg = str(e).lower()
+
+                if "email" in error_msg and "unique constraint" in error_msg:
+                    flash(
+                        "This email address is already registered. Please use a different email or try logging in.",
+                        "danger",
+                    )
+                    form.email.errors = list(form.email.errors) + [
+                        "Email already registered"
+                    ]
+                else:
+                    flash(
+                        "There was a problem with your sign up. Please verify your information and try again.",
+                        "danger",
+                    )
+            except SQLAlchemyError as e:
+                db.session.rollback()
+                logger.error(f"Database error during sign up: {str(e)}")
+                flash(
+                    "We encountered a technical issue. Our team has been notified. Please try again later.",
+                    "danger",
+                )
+            except Exception as e:
+                db.session.rollback()
+                logger.error(f"Unexpected error during sign up: {str(e)}")
+                flash(
+                    "An unexpected error occurred. Please try again. If the problem persists, contact support.",
+                    "danger",
+                )
+        return render_template("signup.html", form=form)
+
+    @app.route("/login", methods=["GET", "POST"])
+    def login():
+        if current_user.is_authenticated:
+            return redirect(url_for("index"))
+        form = LoginForm()
+        if form.validate_on_submit():
+            try:
+                # Use a simpler query to avoid column issues
+                email = form.email.data
+                logger.info(f"Attempting login for: {email}")
+
+                # Simplified query that avoids problematic columns
+                user = db.session.execute(db.select(User).filter_by(email=email)).scalar_one_or_none()
+
+                if user:
+                    logger.info(f"User found: {user.id}")
+                    if user.check_password(form.password.data):
+                        if form.remember_me.data:
+                            session.permanent = True
+                        session["user_id"] = user.id
+                        session["login_time"] = datetime.utcnow().isoformat()
+                        session["last_activity"] = datetime.utcnow().isoformat()
+
+                        # Login the user
+                        login_user(user, remember=form.remember_me.data)
+
+                        # Update last login time
+                        user.last_login = datetime.utcnow()
+                        db.session.commit()
+
+                        logger.info(f"Login successful for user: {user.id}")
+                        flash("Logged in successfully!", "success")
+                        next_page = request.args.get("next")
+                        return redirect(next_page or url_for("index"))
+                    else:
+                        logger.warning(f"Failed login attempt - wrong password for email: {email}")
+                        flash("Invalid email or password. Please try again.", "danger")
+                else:
+                    logger.warning(f"Failed login attempt - user not found for email: {email}")
+                    flash("Invalid email or password. Please try again.", "danger")
+            except SQLAlchemyError as e:
+                db.session.rollback()
+                logger.error(f"Database error during login: {str(e)}", exc_info=True)
+                flash(
+                    "We encountered a technical issue. Please try again later.",
+                    "danger",
+                )
+            except Exception as e:
+                logger.error(f"Unexpected error during login: {str(e)}", exc_info=True)
+                flash("An unexpected error occurred. Please try again.", "danger")
+        return render_template("login.html", form=form)
+
+    @app.route("/logout")
+    @login_required
+    def logout():
+        session.clear()
+        logout_user()
+        flash("You have been logged out successfully.", "info")
+        return redirect(url_for("index"))
+
+    @app.route("/profile", methods=["GET"])
+    @login_required
+    def profile():
+        return render_template("profile.html", user=current_user)
+
+    @app.route("/profile/edit", methods=["GET", "POST"])
+    @login_required
+    def edit_profile():
+        form = ProfileForm()
+        form.user_id = current_user.id
+
+        if request.method == "GET":
+            form.username.data = current_user.username
+            form.first_name.data = current_user.first_name
+            form.last_name.data = current_user.last_name
+            form.bio.data = current_user.bio
+            form.location.data = current_user.location
+            form.interests.data = current_user.interests
+            form.birth_date.data = current_user.birth_date
+        if form.validate_on_submit():
+            try:
+                profile_data = {
+                    "username": form.username.data,
+                    "first_name": form.first_name.data,
+                    "last_name": form.last_name.data,
+                    "bio": form.bio.data,
+                    "location": form.location.data,
+                    "interests": form.interests.data,
+                    "birth_date": form.birth_date.data,
+                }
+
+                current_user.update_profile(profile_data)
+                db.session.commit()
+                flash("Profile updated successfully!", "success")
+                return redirect(url_for("profile"))
+            except IntegrityError as e:
+                db.session.rollback()
+                logger.error(
+                    f"Database integrity error during profile update: {str(e)}"
+                )
+                flash(
+                    "There was a problem updating your profile. Please try again.",
+                    "danger",
+                )
+            except SQLAlchemyError as e:
+                db.session.rollback()
+                logger.error(f"Database error during profile update: {str(e)}")
+                flash(
+                    "We encountered a technical issue. Please try again later.",
+                    "danger",
+                )
+            except Exception as e:
+                db.session.rollback()
+                logger.error(f"Unexpected error during profile update: {str(e)}")
+                flash("An unexpected error occurred. Please try again.", "danger")
+        return render_template("edit_profile.html", form=form)
+
+    @app.route("/events")
+    def events():
+        category = request.args.get("category")
+        date_range = request.args.get("date_range")
+        specific_date = request.args.get("specific_date")
+        location = request.args.get("search_location")
+        fun_rating = request.args.get("fun_rating")
+
+        query = Event.query
+
+        if category:
+            query = query.filter(Event.category == category)
+        if location:
+            query = query.filter(Event.location.ilike(f"%{location}%"))
+        if fun_rating:
+            query = query.filter(Event.fun_meter >= int(fun_rating))
+        today = datetime.now().date()
+        if date_range:
+            if date_range == "today":
+                query = query.filter(db.func.date(Event.start_date) == today)
+            elif date_range == "tomorrow":
+                query = query.filter(
+                    db.func.date(Event.start_date) == today + timedelta(days=1)
+                )
+            elif date_range == "weekend":
+                saturday = today + timedelta(days=(5 - today.weekday()))
+                sunday = saturday + timedelta(days=1)
+                query = query.filter(
+                    db.func.date(Event.start_date).between(saturday, sunday)
+                )
+            elif date_range == "week":
+                week_end = today + timedelta(days=7)
+                query = query.filter(
+                    db.func.date(Event.start_date).between(today, week_end)
+                )
+            elif date_range == "specific" and specific_date:
+                query = query.filter(db.func.date(Event.start_date) == specific_date)
+        events = query.order_by(Event.start_date).all()
+        return render_template("events.html", events=events)
+
+    @app.route("/map")
+    def map():
+        events = Event.query.all()
+        return render_template("map.html", events=events)
+
+    @app.route("/event/<int:event_id>")
+    def event_detail(event_id):
+        event = Event.query.get_or_404(event_id)
+        return render_template("event_detail.html", event=event)
+
+    @app.errorhandler(404)
+    def not_found_error(error):
+        return render_template("404.html"), 404
+
+    @app.route("/submit-event", methods=["GET", "POST"])
+    @login_required
+    def submit_event():
+        # Check if user has event creation permissions
+        if not (current_user.is_event_creator or current_user.is_organizer or current_user.is_admin):
+            # Allow them to request event creation access
+            current_user.is_event_creator = True
+            db.session.commit()
+            flash("You have been granted event creation permissions.", "success")
+
+        form = EventForm()
+        if request.method == "POST":
+            try:
+                if form.validate_on_submit():
+                    is_draft = request.form.get("is_draft", "false") == "true"
+                    coordinates = geocode_address(
+                        form.street.data,
+                        form.city.data,
+                        form.state.data,
+                        form.zip_code.data,
+                    )
+
+                    if not coordinates:
+                        flash(
+                            "Could not geocode address. Please verify the address is correct.",
+                            "danger",
+                        )
+                        return render_template("submit_event.html", form=form)
+                    event = Event(
+                        title=form.title.data,
+                        description=form.description.data,
+                        status="draft" if is_draft else "pending",
+                        start_date=form.date.data,
+                        end_date=form.date.data,
+                        street=form.street.data,
+                        city=form.city.data,
+                        state=form.state.data,
+                        zip_code=form.zip_code.data,
+                        latitude=coordinates[0],
+                        longitude=coordinates[1],
+                        category=form.category.data,
+                        target_audience=form.target_audience.data,
+                        fun_meter=form.fun_meter.data,
+                        user_id=current_user.id,
+                    )
+                    db.session.add(event)
+                    db.session.commit()
+                    flash("Event created successfully!", "success")
+                    return redirect(url_for("events"))
+                else:
+                    flash(
+                        "Form submission failed. Please check your inputs.", "danger"
+                    )  # Added flash message for form validation errors
+                    return render_template("submit_event.html", form=form)
+            except SQLAlchemyError as e:
+                db.session.rollback()
+                logger.exception(
+                    f"Database error during event submission: {str(e)}"
+                )  # Improved logging
+                flash("A database error occurred. Please try again later.", "danger")
+                return render_template("submit_event.html", form=form)
+            except Exception as e:
+                db.session.rollback()
+                logger.exception(
+                    f"Unexpected error during event submission: {str(e)}"
+                )  # Improved logging
+                flash("An unexpected error occurred. Please try again later.", "danger")
+                return render_template("submit_event.html", form=form)
+        return render_template("submit_event.html", form=form)
+
+    @app.errorhandler(500)
+    def internal_error(error):
+        db.session.rollback()
+        return render_template("500.html"), 500
+
+    @app.route("/admin/login", methods=["GET", "POST"])
+    def admin_login():
+        if current_user.is_authenticated and current_user.email == 'ryan@funlist.ai':
+            return redirect(url_for("admin_dashboard"))
+        form = LoginForm()
+        if form.validate_on_submit():
+            try:
+                email = form.email.data
+                password = form.password.data
+                logger.info(f"Admin login attempt: {email}")
+
+                # Only ryan@funlist.ai should have admin access
+                admin_email = 'ryan@funlist.ai'
+
+                # Standard login check
+                try:
+                    user = User.query.filter_by(email=email).first()
+                    if user and user.check_password(password) and user.email == admin_email:
+                        # Ensure admin privileges for the correct admin
+                        user.is_admin = True
+                        db.session.commit()
+
+                        # Login the user
+                        login_user(user)
+                        session["user_id"] = user.id
+                        session["login_time"] = datetime.utcnow().isoformat()
+                        session["last_activity"] = datetime.utcnow().isoformat()
+
+                        logger.info(f"Admin login successful: {admin_email}")
+                        return redirect(url_for("admin_dashboard"))
+                    else:
+                        flash("Invalid credentials or insufficient privileges.", "danger")
+                except Exception as e:
+                    logger.error(f"Standard login check failed: {str(e)}")
+                    flash("Login check failed. Database may need maintenance.", "danger")
+
+            except Exception as e:
+                logger.error(f"Unexpected error in admin login: {str(e)}", exc_info=True)
+                flash("We encountered a technical issue. Please try again later.", "danger")
+
+        return render_template("admin_login.html", form=form)
+
+    @app.route("/admin/events")
+    @login_required
+    def admin_events():
+        if current_user.email != 'ryan@funlist.ai':
+            flash("Access denied. Only authorized administrators can access this page.", "danger")
+            return redirect(url_for("index"))
+        events = Event.query.order_by(Event.created_at.desc()).all()
+        return render_template("admin_events.html", events=events)
+
+    @app.route("/admin/events/<int:event_id>/edit", methods=['GET', 'POST'])
+    @login_required
+    def admin_edit_event(event_id):
+        if current_user.email != 'ryan@funlist.ai':
+            flash("Access denied. Admin privileges required.", "danger")
+            return redirect(url_for("index"))
+        event = Event.query.get_or_404(event_id)
+
+        if request.method == 'POST':
+            # Update event details from form
+            event.title = request.form.get('title')
+            event.description = request.form.get('description')
+            event.location = request.form.get('location')
+            event.address = request.form.get('address')
+            event.city = request.form.get('city')
+            event.state = request.form.get('state')
+            event.zip_code = request.form.get('zip_code')
+            event.start_time = datetime.strptime(request.form.get('start_time'), '%Y-%m-%dT%H:%M')
+            event.end_time = datetime.strptime(request.form.get('end_time'), '%Y-%m-%dT%H:%M')
+            event.website = request.form.get('website')
+            event.organizer_name = request.form.get('organizer_name')
+            event.organizer_email = request.form.get('organizer_email')
+            event.organizer_phone = request.form.get('organizer_phone')
+            event.category = request.form.get('category')
+            event.tags = request.form.get('target_market') # Store target market in tags field
+            event.is_featured = True if request.form.get('is_featured') else False
+            event.status = request.form.get('status')
+
+            db.session.commit()
+            flash('Event updated successfully', 'success')
+            return redirect(url_for('admin_events'))
+
+        return render_template('edit_event.html', event=event, is_admin=True)
+
+
+    @app.route("/admin/users")
+    @login_required
+    def admin_users():
+        if current_user.email != 'ryan@funlist.ai':
+            flash("Access denied. Only authorized administrators can access this page.", "danger")
+            return redirect(url_for("index"))
+        users = User.query.order_by(User.created_at.desc()).all()
+        return render_template("admin_users.html", users=users)
+
+    @app.route("/api/featured-events")
+    def featured_events_api():
+        # Feature flag check
+        FEATURED_EVENTS_ENABLED = False
+        if not FEATURED_EVENTS_ENABLED:
+            return jsonify({"success": True, "events": [], "message": "Feature not yet available"}), 200
+
+        try:
+            lat = request.args.get("lat")
+            lng = request.args.get("lng")
+
+            if not lat or not lng:
+                return jsonify({"success": True, "events": [], "message": "No coordinates provided"}), 200
+
+            try:
+                lat = float(lat)
+                lng = float(lng)
+            except (ValueError, TypeError):
+                return jsonify({"success": False, "error": "Invalid coordinates"}), 400
+
+            try:
+                lat = float(lat)
+                lng = float(lng)
+            except (TypeError, ValueError):
+                return jsonify({"success": True, "events": []}), 200
+
+            events = Event.query.filter(
+                Event.latitude.isnot(None),
+                Event.longitude.isnot(None),
+                Event.fun_meter >= 4,
+                Event.status == "approved",
+            ).all()
+
+            featured = []
+            for event in events:
+                try:
+                    # Convert to miles (1 degree ≈ 69 miles)
+                    distance = (
+                        (float(event.latitude) - float(lat)) ** 2 +
+                        (float(event.longitude) - float(lng)) ** 2
+                    ) ** 0.5 * 69
+
+                    if distance <= 15:  # 15 miles radius
+                        featured.append({
+                            "id": event.id,
+                            "title": event.title,
+                            "description": event.description[:100] + "..." if len(event.description) > 100 else event.description,
+                            "date": event.start_date.strftime("%Y-%m-%d"),
+                            "fun_meter": event.fun_meter,
+                            "distance": round(distance, 1)
+                        })
+                except (TypeError, ValueError) as e:
+                    logger.error(f"Error calculating distance for event {event.id}: {str(e)}")
+                    continue
+
+            if not featured:
+                return jsonify({
+                    "success": True,
+                    "events": []
+                })
+            return jsonify({
+                "success": True,
+                "events": sorted(featured, key=lambda x: (-x["fun_meter"], x["date"]))[:5]
+            })
+        except Exception as e:
+            logger.error(f"Featured events API error: {str(e)}")
+            return jsonify({"success": False, "error": str(e)}), 500
+
+    @app.route("/advertising")
+    def advertising():
+        return render_template("advertising.html")
+
+    @app.route("/privacy")
+    def privacy():
+        return render_template('privacy.html')
+
+    @app.route("/terms")
+    def terms():
+        return render_template("terms.html")
+
+    @app.route("/reset-password-request", methods=["GET", "POST"])
+    def reset_password_request():
+        if current_user.is_authenticated:
+            return redirect(url_for("index"))
+        form = ResetPasswordRequestForm()
+        if form.validate_on_submit():
+            user = User.query.filter_by(email=form.email.data).first()
+            if user:
+                token = user.get_reset_token()
+                # In a real production environment, you'd send an email with a reset link
+                # For development, we'll just redirect to the reset page with the token
+                flash(f'Password reset link has been sent to {form.email.data}. Please check your email.', 'info')
+
+                # For demo purposes, we'll provide a direct link as well
+                reset_url = url_for('reset_password', token=token, _external=True)
+                flash(f'For demo purposes, you can also <a href="{reset_url}">click here</a> to reset your password.', 'info')
+
+                return redirect(url_for('login'))
+            else:
+                # Don't reveal that the user doesn't exist
+                flash('If an account with this email exists, a password reset link has been sent.', 'info')
+                return redirect(url_for('login'))
+        return render_template('reset_password_request.html', form=form)
+
+    @app.route("/reset-password/<token>", methods=["GET", "POST"])
+    def reset_password(token):
+        if current_user.is_authenticated:
+            return redirect(url_for("index"))
+
+        user = User.verify_reset_token(token)
+        if not user:
+            flash('Invalid or expired reset token. Please try again.', 'danger')
+            return redirect(url_for('reset_password_request'))
+
+        form = ResetPasswordForm()
+        if form.validate_on_submit():
+            user.set_password(form.password.data)
+            user.clear_reset_token()
+            db.session.commit()
+            flash('Your password has been reset successfully. You can now log in with your new password.', 'success')
+            return redirect(url_for('login'))
+
+        return render_template('reset_password.html', form=form, token=token)
+
+    @app.route("/admin/analytics")
+    @login_required
+    def admin_analytics():
+        if current_user.email != 'ryan@funlist.ai':
+            flash("Access denied. Only authorized administrators can access this page.", "danger")
+            return redirect(url_for("index"))
+        # Get events by category data
+
+        events_by_category = {
+            "labels": ["Sports", "Music", "Arts", "Food", "Other"],
+            "datasets": [
+                {
+                    "data": [
+                        Event.query.filter_by(category="Sports").count(),
+                        Event.query.filter_by(category="Music").count(),
+                        Event.query.filter_by(category="Arts").count(),
+                        Event.query.filter_by(category="Food").count(),
+                        Event.query.filter_by(category="Other").count(),
+                    ]
+                }
+            ],
+        }
+
+        # Get user growth data (last 7 days)
+
+        from datetime import datetime, timedelta
+
+        user_growth_data = {
+            "labels": [
+                (datetime.now() - timedelta(days=x)).strftime("%Y-%m-%d")
+                for x in range(7)
+            ],
+            "datasets": [
+                {
+                    "label": "New Users",
+                    "data": [
+                        User.query.filter(
+                            User.created_at
+                            >= datetime.now().date() - timedelta(days=x),
+                            User.created_at
+                            < datetime.now().date() - timedelta(days=x - 1),
+                        ).count()
+                        for x in range(7)
+                    ],
+                }
+            ],
+        }
+
+        return render_template(
+            "admin_analytics.html",
+            events_by_category=events_by_category,
+            user_growth_data=user_growth_data,
+        )
+
+    @app.route("/admin/event/<int:event_id>/<action>", methods=["POST"])
+    @login_required
+    def admin_event_action(event_id, action):
+        if current_user.email != 'ryan@funlist.ai':
+            return jsonify({"success": False, "message": "Unauthorized. Only administrators can perform this action."}), 403
+
+        # Exempt this route from CSRF protection for API calls
+        try:
+            event = Event.query.get_or_404(event_id)
+
+            if action == "approve":
+                event.status = "approved"
+                message = f"Event '{event.title}' has been approved"
+            elif action == "reject":
+                event.status = "rejected"
+                message = f"Event '{event.title}' has been rejected"
+            elif action == "delete":
+                title = event.title
+                db.session.delete(event)
+                message = f"Event '{title}' has been deleted"
+            else:
+                return jsonify({"success": False, "message": "Invalid action"}), 400
+
+            db.session.commit()
+            return jsonify({"success": True, "message": message})
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error in admin_event_action: {str(e)}")
+            return jsonify({"success": False, "message": f"Error: {str(e)}"}), 500
+
+    @app.route("/become-organizer")
+    @login_required
+    def become_organizer():
+        # Redirect user to the organizer profile page to set up their organizer account
+        return redirect(url_for("organizer_profile"))
+
+    @app.route("/organizer-profile", methods=["GET", "POST"])
+    @login_required
+    def organizer_profile():
+        # Import the form
+        from forms import OrganizerProfileForm
+
+        form = OrganizerProfileForm()
+
+        if request.method == "GET":
+            # Pre-populate form with existing data if available
+            form.company_name.data = current_user.company_name
+            form.description.data = current_user.organizer_description
+            form.website.data = current_user.organizer_website
+            form.advertising_opportunities.data = current_user.advertising_opportunities
+            form.sponsorship_opportunities.data = current_user.sponsorship_opportunities
+
+        if form.validate_on_submit():
+            try:
+                organizer_data = {
+                    "company_name": form.company_name.data,
+                    "organizer_description": form.description.data,
+                    "organizer_website": form.website.data,
+                    "advertising_opportunities": form.advertising_opportunities.data,
+                    "sponsorship_opportunities": form.sponsorship_opportunities.data,
+                }
+
+                current_user.update_organizer_profile(organizer_data)
+                db.session.commit()
+                flash("Organizer profile updated successfully!", "success")
+                return redirect(url_for("profile"))
+            except Exception as e:
+                db.session.rollback()
+                logger.error(f"Error updating organizer profile: {str(e)}")
+                flash("There was a problem updating your organizer profile. Please try again.", "danger")
+
+        return render_template("organizer_profile.html", form=form)
+
+    @app.route("/vendor-profile", methods=["GET", "POST"])
+    @login_required
+    def vendor_profile():
+        # Import the form
+        from forms import VendorProfileForm
+
+        form = VendorProfileForm()
+
+        if request.method == "GET":
+            # Pre-populate form with existing data if available
+            form.vendor_type.data = current_user.vendor_type
+            form.description.data = current_user.vendor_description
+            form.website.data = current_user.organizer_website  # Reuse the organizer_website field
+
+        if form.validate_on_submit():
+            try:
+                current_user.is_vendor = True
+                current_user.vendor_type = form.vendor_type.data
+                current_user.vendor_description = form.description.data
+                current_user.organizer_website = form.website.data  # Reuse the organizer_website field
+                current_user.vendor_profile_updated_at = datetime.utcnow()
+
+                db.session.commit()
+                flash("Vendor profile updated successfully!", "success")
+                return redirect(url_for("profile"))
+            except Exception as e:
+                db.session.rollback()
+                logger.error(f"Error updating vendor profile: {str(e)}")
+                flash("There was a problem updating your vendor profile. Please try again.", "danger")
+
+        return render_template("vendor_profile.html", form=form)
+
+    @app.route("/organizers")
+    def organizers():
+        # Get all users who are organizers
+        organizers = User.query.filter_by(is_organizer=True).all()
+        return render_template("organizers.html", organizers=organizers)
+
+    @app.route("/organizer/<int:user_id>")
+    def organizer_detail(user_id):
+        organizer = User.query.get_or_404(user_id)
+        if not organizer.is_organizer:
+            flash("This user is not registered as an event organizer.", "warning")
+            return redirect(url_for("organizers"))
+
+        # Get events by this organizer
+        events = Event.query.filter_by(user_id=organizer.id).order_by(Event.start_date.desc()).all()
+        return render_template("organizer_detail.html", organizer=organizer, events=events)
+
+    @app.route("/admin/dashboard")
+    @login_required
+    def admin_dashboard():
+        if current_user.email != 'ryan@funlist.ai':
+            flash("Access denied. Only authorized administrators can access this page.", "danger")
+            return redirect(url_for("index"))
+        tab = request.args.get("tab", "overview")
+        status = request.args.get("status", "pending")
+
+        # Get statistics for overview
+
+        stats = {
+            "pending_events": Event.query.filter_by(status="pending").count(),
+            "total_users": User.query.count(),
+            "todays_events": Event.query.filter(
+                Event.start_date >= datetime.now().date(),
+                Event.start_date < datetime.now().date() + timedelta(days=1),
+            ).count(),
+            "new_users_24h": User.query.filter(
+                User.created_at >= datetime.now() - timedelta(hours=24)
+            ).count(),
+        }
+
+        # Get events for event management
+
+        events = Event.query.filter_by(status=status).order_by(Event.start_date).all()
+
+        # Get users for user management
+
+        users = User.query.order_by(User.created_at.desc()).all()
+
+        # Get analytics data
+
+        events_by_category = {
+            "labels": ["Sports", "Music", "Arts", "Food", "Other"],
+            "datasets": [
+                {
+                    "data": [
+                        Event.query.filter_by(category="Sports").count(),
+                        Event.query.filter_by(category="Music").count(),
+                        Event.query.filter_by(category="Arts").count(),
+                        Event.query.filter_by(category="Food").count(),
+                        Event.query.filter_by(category="Other").count(),
+                    ]
+                }
+            ],
+        }
+
+        # User growth data (last 7 days)
+
+        user_growth_data = {
+            "labels": [
+                (datetime.now() - timedelta(days=x)).strftime("%Y-%m-%d")
+                for x in range(7)
+            ],
+            "datasets": [
+                {
+                    "label": "New Users",
+                    "data": [
+                        User.query.filter(
+                            User.created_at
+                            >= datetime.now().date() - timedelta(days=x),
+                            User.created_at
+                            < datetime.now().date() - timedelta(days=x - 1),
+                        ).count()
+                        for x in range(7)
+                    ],
+                }
+            ],
+        }
+
+        return render_template(
+            "admin_dashboard.html",
+            active_tab=tab,
+            stats=stats,
+            events=events,
+            users=users,
+            status=status,
+            events_by_category=events_by_category,
+            user_growth_data=user_growth_data,
+        )
+
+    @app.route("/admin/user/<int:user_id>/deactivate")
+    @login_required
+    def admin_deactivate_user(user_id):
+        if current_user.email != 'ryan@funlist.ai':
+            return jsonify({"error": "Unauthorized. Only administrators can perform this action."}), 403
+        user = User.query.get_or_404(user_id)
+        user.account_active = False
+        db.session.commit()
+        flash("User account deactivated.", "success")  # Fixed
+        return redirect(url_for("admin_dashboard", tab="users"))
+
+    @app.route("/admin/user/<int:user_id>/activate")
+    @login_required
+    def admin_activate_user(user_id):
+        if current_user.email != 'ryan@funlist.ai':
+            return jsonify({"error": "Unauthorized. Only administrators can perform this action."}), 403
+        user = User.query.get_or_404(user_id)
+        user.account_active = True
+        db.session.commit()
+        flash("User account activated.", "success")
+        return redirect(url_for("admin_dashboard", tab="users"))) and main.py (import logging
+import os
+import signal
+import sys
+import time
+import socket
+import subprocess
+import psutil
+import importlib
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[logging.StreamHandler()]
+)
+logger = logging.getLogger(__name__)
+
+def is_port_in_use(port):
+    """Check if a port is in use using socket."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        return s.connect_ex(('0.0.0.0', port)) == 0
+
+def find_process_on_port(port):
+    """Find process using a specific port using psutil."""
+    try:
+        for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+            try:
+                for conn in proc.connections(kind='inet'):
+                    if conn.laddr.port == port:
+                        return proc.pid
+            except (psutil.AccessDenied, psutil.NoSuchProcess):
+                continue
+    except Exception as e:
+        logger.error(f"Error finding process on port {port}: {e}")
+    return None
+
+def terminate_process(pid):
+    """Terminate a process by PID."""
+    if not pid:
+        return False
+
+    try:
+        process = psutil.Process(pid)
+        logger.info(f"Terminating process {pid} ({process.name()})")
+        process.terminate()
+
+        # Wait for termination
+        gone, alive = psutil.wait_procs([process], timeout=3)
+        if process in alive:
+            logger.info(f"Process {pid} did not terminate, sending SIGKILL")
+            process.kill()
+
+        return True
+    except (psutil.NoSuchProcess, psutil.AccessDenied) as e:
+        logger.error(f"Error terminating process {pid}: {e}")
+        return False
+
+def free_port(port):
+    """Free a port by terminating the process using it."""
+    if not is_port_in_use(port):
+        logger.info(f"Port {port} is already free")
+        return True
+
+    pid = find_process_on_port(port)
+    if pid:
+        logger.info(f"Found process {pid} using port {port}")
+        return terminate_process(pid)
+    else:
+        # Try lsof as a backup
+        try:
+            cmd = f"lsof -i :{port} -t"
+            output = subprocess.check_output(cmd, shell=True, stderr=subprocess.DEVNULL).decode().strip()
+            if output:
+                for pid_str in output.split('\n'):
+                    try:
+                        terminate_process(int(pid_str))
+                    except ValueError:
+                        continue
+                return not is_port_in_use(port)
+        except subprocess.SubprocessError:
+            pass
+
+    # Last resort: pkill
+    try:
+        subprocess.run(['pkill', '-f', f':{port}'], check=False)
+        time.sleep(1)
+        return not is_port_in_use(port)
+    except Exception as e:
+        logger.error(f"Error using pkill: {e}")
+
+    return False
+
+def run_flask_app():
+    """Run the Flask application."""
+    try:
+        # Check if development or deployment
+        is_development = "REPL_OWNER" in os.environ and "REPL_SLUG" in os.environ
+        if not is_development:
+            # In deployment, use PORT environment variable or default to 8080
+            port = int(os.environ.get('PORT', 8080))
+            print(f"Running in deployment environment. Starting server on port {port}...")
+            app.run(host='0.0.0.0', port=port, debug=False)
+        else:
+            # Try multiple ports in development to find an available one
+            ports_to_try = [3000, 5000, 5050, 8000, 8080]
+
+            # Use PORT from environment if specified
+            env_port = os.environ.get('PORT')
+            if env_port:
+                try:
+                    port = int(env_port)
+                    ports_to_try.insert(0, port)  # Try specified port first
+                except (ValueError, TypeError):
+                    pass
+
+            # Try each port until one works
+            for port in ports_to_try:
+                try:
+                    # Clear all console output with an escape sequence
+                    print("\033c", flush=True)
+                    print(f"Starting Flask server on port {port}")
+                    print(f"\n🚀 Server running at: https://{os.environ.get('REPL_SLUG')}.{os.environ.get('REPL_OWNER')}.repl.co")
+                    print(f"📝 Local URL: http://0.0.0.0:{port}")
+
+                    app.run(host='0.0.0.0', port=port, debug=True, use_reloader=False, threaded=True)
+                    break  # If server starts successfully, exit the loop
+                except OSError as e:
+                    if "Address already in use" in str(e):
+                        print(f"Port {port} is already in use, trying next port...")
+                    else:
+                        raise
+            else:
+                # This runs if all ports failed
+                print("All ports are in use. Please try again later or specify a different port with the PORT environment variable.")
+                return
+    except Exception as e:
+        logger.error(f"Error creating Flask app: {str(e)}", exc_info=True)
+        sys.exit(1)
+
+
+def update_database_schema():
+    try:
+        # Import the database update function
+        update_schema_module = importlib.import_module('update_schema')
+        logger.info("Running database schema update...")
+        result = update_schema_module.update_schema()
+        if result:
+            logger.info("Database schema updated successfully")
+        else:
+            logger.warning("Database schema update completed with warnings")
+        return True
+    except Exception as e:
+        logger.error(f"Error updating database schema: {str(e)}")
+        return False
+
+# Create the Flask app
+try:
+    from app import create_app
+    app = create_app()
+
+    # Update database schema before starting
+    update_database_schema()
+
+    # Register signal handlers for graceful shutdown
+    def signal_handler(sig, frame):
+        logger.info(f"Received signal {sig}, shutting down")
+        sys.exit(0)
+
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+except Exception as e:
+    logger.error(f"Error creating Flask app: {str(e)}", exc_info=True)
+    sys.exit(1)
+
+# Route definitions are handled in routes.py through init_routes
+# Don't define routes here to avoid conflicts
+
+
+
+if __name__ == "__main__":
+    try:
+        run_flask_app()
+    except Exception as e:
+        logger.error(f"Fatal error in main: {e}", exc_info=True)
+        sys.exit(1)) and app.py (import os
+import sys
+import logging
+import traceback
+from datetime import timedelta
+from flask import Flask, session, request, render_template
+from flask_login import LoginManager
+from flask_wtf.csrf import CSRFProtect
+from flask_session import Session
+from db_init import db
+from flask_migrate import Migrate
+from werkzeug.exceptions import RequestTimeout
+from functools import wraps
+import time
+
+# Configure logging with more detailed format
+logging.basicConfig(
+    level=logging.DEBUG,
+    format=
+    '%(asctime)s - %(name)s - %(levelname)s - %(message)s - %(pathname)s:%(lineno)d',
+    handlers=[logging.FileHandler('app.log'),
+              logging.StreamHandler()])
+logger = logging.getLogger(__name__)
+
+
+def create_app():
+    logger.info("Starting application creation...")
+    app = Flask(__name__, static_folder='static')
+
+    # Enhanced configurations for Replit environment
+    app.config["SECRET_KEY"] = os.environ.get(
+        "FLASK_SECRET_KEY", "dev_key")  # Use environment variable
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+    app.config["SERVER_NAME"] = None  # Allow all hostnames
+    app.config["APPLICATION_ROOT"] = "/"
+    app.config["PREFERRED_URL_SCHEME"] = "https"  # Added for Replit HTTPS
+
+    # Database configuration
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "pool_recycle": 300,
+        "pool_pre_ping": True,
+        "pool_timeout": 30,
+        "connect_args": {
+            "connect_timeout": 10
+        }
+    }
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+    # Enhanced session configuration
+    app.config['SESSION_TYPE'] = 'filesystem'
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)  # Longer session lifetime
+    app.config['SESSION_COOKIE_SECURE'] = False  # Disable for local development
+    app.config['SESSION_COOKIE_HTTPONLY'] = True
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+    app.config['SESSION_USE_SIGNER'] = False  # Disable signer to avoid bytes/string conversion issues
+    app.config['SESSION_FILE_DIR'] = './flask_session'
+    app.config['SESSION_FILE_THRESHOLD'] = 500
+    app.config['SESSION_REFRESH_EACH_REQUEST'] = True
+    app.config['SESSION_COOKIE_NAME'] = 'funlist_session'
+
+    # Add request logging
+    @app.before_request
+    def log_request():
+        logger.info(f"Incoming request: {request.method} {request.url}")
+        logger.debug(f"Request headers: {dict(request.headers)}")
+
+    @app.after_request
+    def after_request(response):
+        """Add security headers and log response details after each request."""
+        # Set Content Security Policy header
+        csp = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://auth.util.repl.co https://*.replit.dev https://*.repl.co; "
+            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
+            "img-src 'self' data: https:; "
+            "font-src 'self' https://cdnjs.cloudflare.com; "
+            "connect-src 'self' https:; "
+            "frame-src 'self' https://auth.util.repl.co https://*.replit.dev https://*.repl.co; "
+            "report-uri /csp-report"
+        )
+        response.headers['Content-Security-Policy'] = csp
+
+        # Log response details
+        app.logger.info(f'Response status: {response.status}')
+        return response
+
+    try:
+        logger.info("Initializing database...")
+        db.init_app(app)
+        with app.app_context():
+            db.create_all()
+            logger.info("Database tables created successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize database: {str(e)}", exc_info=True)
+        raise
+
+    try:
+        logger.info("Initializing Flask-Migrate...")
+        migrate = Migrate(app, db)
+        logger.info("Flask-Migrate initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize Flask-Migrate: {str(e)}",
+                     exc_info=True)
+        raise
+
+    try:
+        logger.info("Initializing CSRF protection...")
+        csrf = CSRFProtect(app)
+
+        # Exempt API routes from CSRF protection
+        @csrf.exempt
+        def csrf_exempt_api():
+            # Exempt all routes that are API routes
+            if request.path.startswith('/admin/event/') and request.method == 'POST':
+                return True
+            return False
+    except Exception as e:
+        logger.error(f"Failed to initialize CSRF protection: {str(e)}",
+                     exc_info=True)
+        raise
+
+    try:
+        logger.info("Initializing Session...")
+        Session(app)
+    except Exception as e:
+        logger.error(f"Failed to initialize Session: {str(e)}", exc_info=True)
+        raise
+
+    try:
+        logger.info("Setting up login manager...")
+        login_manager = LoginManager()
+        login_manager.init_app(app)
+        login_manager.login_view = "login"
+        login_manager.login_message = "Please log in to access this page."
+        login_manager.login_message_category = "info"
+        login_manager.session_protection = "strong"
+    except Exception as e:
+        logger.error(f"Failed to initialize login manager: {str(e)}",
+                     exc_info=True)
+        raise
+
+    try:
+        logger.info("Importing User model...")
+        from models import User
+    except Exception as e:
+        logger.error(f"Failed to import User model: {str(e)}", exc_info=True)
+        raise
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        try:
+            return db.session.get(User, int(user_id))
+        except Exception as e:
+            logger.error(f"Error loading user {user_id}: {str(e)}",
+                         exc_info=True)
+            return None
+
+    try:
+        logger.info("Initializing routes...")
+        from routes import init_routes
+        init_routes(app)
+        logger.info("Routes initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize routes: {str(e)}", exc_info=True)
+        raise
+
+    logger.info("Application creation completed successfully")
+    return app
+
+
+# No app.run() or port handling here!) and models.py (from flask_login import UserMixin
+from datetime import datetime, timedelta
+from db_init import db  # Import db from db_init.py
+import logging
+from werkzeug.security import generate_password_hash, check_password_hash
+import secrets
+import time
+
+logger = logging.getLogger(__name__)
+
+class Event(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    status = db.Column(db.String(20), default='pending')  # pending, approved, rejected
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    start_date = db.Column(db.Date, nullable=False)
+    end_date = db.Column(db.Date, nullable=False)
+    start_time = db.Column(db.Time)
+    end_time = db.Column(db.Time)
+    all_day = db.Column(db.Boolean, default=False)
+    recurring = db.Column(db.Boolean, default=False)
+    recurrence_type = db.Column(db.String(20))
+    recurrence_end_date = db.Column(db.Date)
+    street = db.Column(db.String(200), nullable=False)
+    city = db.Column(db.String(100), nullable=False)
+    state = db.Column(db.String(50), nullable=False)
+    zip_code = db.Column(db.String(20), nullable=False)
+    latitude = db.Column(db.Float)
+    longitude = db.Column(db.Float)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    category = db.Column(db.String(50), nullable=False)
+    target_audience = db.Column(db.String(50), nullable=False)
+    fun_meter = db.Column(db.Integer, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    website = db.Column(db.String(200))
+    facebook = db.Column(db.String(200))
+    instagram = db.Column(db.String(200))
+    twitter = db.Column(db.String(200))
+    event_url = db.Column(db.String(200))
+    ticket_url = db.Column(db.String(200))
+    ticket_price = db.Column(db.String(100))
+    source_website_id = db.Column(db.Integer, db.ForeignKey('source_website.id'))
+    scraped_at = db.Column(db.DateTime)
+    last_updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+    is_validated = db.Column(db.Boolean, default=False)
+    needs_permission = db.Column(db.Boolean, default=False)
+    permission_requested_at = db.Column(db.DateTime)
+    permission_granted = db.Column(db.Boolean, default=False)
+
+    # Add relationship to User and SourceWebsite models
+    organizer = db.relationship('User', backref='organized_events')
+    source_website = db.relationship('SourceWebsite', backref='events')
+
+    def __repr__(self):
+        return f'<Event {self.title}>'
+
+class SourceWebsite(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    url = db.Column(db.String(200), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<SourceWebsite {self.name}>'
+
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False, index=True)
+    password_hash = db.Column(db.String(256), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    account_active = db.Column(db.Boolean, default=True, nullable=False)
+    last_login = db.Column(db.DateTime)
+    reset_token = db.Column(db.String(100), nullable=True)
+    reset_token_expiry = db.Column(db.DateTime, nullable=True)
+
+    # User roles
+    is_subscriber = db.Column(db.Boolean, default=True)  # Default role for all users
+    is_event_creator = db.Column(db.Boolean, default=False)  # Can create events
+    is_admin = db.Column(db.Boolean, default=False)  # Admin access
+
+    # Profile fields
+    username = db.Column(db.String(50), unique=True)
+    first_name = db.Column(db.String(50))
+    last_name = db.Column(db.String(50))
+    # is_admin is already defined above
+    bio = db.Column(db.Text)
+    location = db.Column(db.String(100))
+    interests = db.Column(db.String(200))
+    birth_date = db.Column(db.Date)
+    profile_updated_at = db.Column(db.DateTime)
+
+    # User preferences
+    audience_type = db.Column(db.String(20), nullable=True)
+    preferred_locations = db.Column(db.String(255), nullable=True)
+    event_interests = db.Column(db.String(255), nullable=True)
+    is_premium = db.Column(db.Boolean, default=False)
+
+
+    # Organizer fields
+    is_organizer = db.Column(db.Boolean, default=False)
+    company_name = db.Column(db.String(100))
+    organizer_description = db.Column(db.Text)
+    organizer_website = db.Column(db.String(200))
+    advertising_opportunities = db.Column(db.Text)
+    sponsorship_opportunities = db.Column(db.Text)
+    organizer_profile_updated_at = db.Column(db.DateTime)
+
+    # Vendor fields
+    is_vendor = db.Column(db.Boolean, default=False)
+    vendor_type = db.Column(db.String(50))
+    vendor_description = db.Column(db.Text)
+    vendor_profile_updated_at = db.Column(db.DateTime)
+
+    def update_organizer_profile(self, organizer_data):
+        for key, value in organizer_data.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+        self.is_organizer = True
+        self.organizer_profile_updated_at = datetime.utcnow()
+
+    def update_vendor_profile(self, vendor_data):
+        for key, value in vendor_data.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+        self.is_vendor = True
+        self.vendor_profile_updated_at = datetime.utcnow()
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        if not self.password_hash:
+            return False
+        if not password:
+            return False
+        result = check_password_hash(self.password_hash, password)
+        return result
+
+    def get_id(self):
+        return str(self.id)
+
+    def is_active(self):
+        return self.account_active
+
+    def update_profile(self, profile_data):
+        for key, value in profile_data.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+        self.profile_updated_at = datetime.utcnow()
+
+    def __repr__(self):
+        return f'<User {self.email}>'
+
+    # Password reset token methods
+    def get_reset_token(self, expires_in=3600):
+        # Generate a secure token with 32 bytes of randomness
+        token = secrets.token_hex(32)
+        # Set expiration timestamp (current time + expiration in seconds)
+        expiry = int(time.time()) + expires_in
+
+        # Try setting the fields and handle missing column exceptions gracefully
+        try:
+            self.reset_token = token
+            self.reset_token_expiry = datetime.fromtimestamp(expiry)
+            db.session.commit()
+        except Exception as e:
+            logger.error(f"Error setting reset token: {e}")
+            # If the columns don't exist, we just return the token anyway
+            db.session.rollback()
+
+        return token
+
+    @staticmethod
+    def verify_reset_token(token):
+        try:
+            user = User.query.filter_by(reset_token=token).first()
+            if not user:
+                return None
+
+            # Check if token is expired
+            if datetime.utcnow() > user.reset_token_expiry:
+                # Clear expired token
+                user.reset_token = None
+                user.reset_token_expiry = None
+                db.session.commit()
+                return None
+
+            return user
+        except Exception as e:
+            logger.error(f"Error verifying reset token: {e}")
+            return None
+
+    def clear_reset_token(self):
+        try:
+            self.reset_token = None
+            self.reset_token_expiry = None
+            db.session.commit()
+        except Exception as e:
+            logger.error(f"Error clearing reset token: {e}")
+            db.session.rollback()
+
+# Add Subscriber Model
+class Subscriber(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    subscribed_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<Subscriber {self.email}>'
+static/js/main.js - For general site functionality
+CSS:
+
+static/css/custom.css - Contains styling for the map and related elements
+Backend/Routes:
+
+routes.py - Contains the /map route that renders the map page
+main.py - The main application file that runs the Flask server
+app.py - Additional application configuration
+Models:
+
+models.py - Contains the Event model that provides data for the map).  Please note, if there is a change to be made to a file, give me the entire edited and updated error free file, not a snippet.

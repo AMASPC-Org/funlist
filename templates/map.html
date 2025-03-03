@@ -43,20 +43,17 @@
 
   <div class="row">
         <div class="col-md-7">
-            <div id="map"></div>
+            <div id="map" style="height: 600px;"></div>  <!-- Added inline style for height -->
         </div>
         <div class="col-md-5">
-            <div class="event-cards-container">
+            <div class="event-cards-container" style="overflow-y: auto; height: 600px;"> <!-- Added overflow and height -->
                 {% for event in events %}
                     {% if loop.index == 3 %}
                     <div class="card mb-3 sponsored-card">
                         <div class="card-body">
                             <div class="text-muted small mb-2">Advertisement</div>
                             <div class="sponsored-content">
-                                <div class="text-center p-3">
-                                    <h5>Sponsored Content</h5>
-                                    <p>Advertisement space available</p>
-                                </div>
+                                <p>Sponsored Content - Advertisement space available</p>
                             </div>
                         </div>
                     </div>
@@ -80,172 +77,38 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', filename='js/map.js') }}"></script>
 <script>
-  // Store markers for event handling
-  let eventMarkers = [];
-  let mapInstance = null;
-  
-  // Main function to initialize everything when the DOM is fully loaded
-  document.addEventListener('DOMContentLoaded', function() {
-    console.log("Map page loaded, initializing map...");
-    
-    // Make sure Leaflet is loaded
-    if (typeof L === 'undefined') {
-      console.error("Leaflet library not loaded. Please check your network connection.");
-      return;
-    }
-    
-    // Initialize map directly with Leaflet
-    try {
-      // Create map instance
-      mapInstance = L.map('map', {
-        center: [47.0379, -122.9007], // Default: Olympia, WA
-        zoom: 13,
-        zoomControl: true
-      });
-      
-      // Add tile layer (OpenStreetMap)
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 19
-      }).addTo(mapInstance);
-      
-      console.log("Map initialized successfully");
-      
-      // Force map resize after a short delay to ensure it's visible
-      setTimeout(function() {
-        mapInstance.invalidateSize();
-        console.log("Forcing map resize");
-      }, 500);
-      
-      // Get user location
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          function(position) {
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
-            console.log("User location found:", lat, lng);
-            mapInstance.setView([lat, lng], 13);
-          },
-          function(error) {
-            console.warn("Error getting user location:", error.message);
-          }
-        );
-      }
-      
-      // Add event markers to the map
-      {% for event in events %}
-        {% if event.latitude and event.longitude %}
-        (function() {
-          const popupContent = `
-            <div class='event-popup'>
-              <h5>{{ event.title }}</h5>
-              <p>{{ event.description|truncate(100) }}</p>
-              <p><small>{{ event.start_date.strftime('%B %d, %Y') }}</small></p>
-              <a href='/event/{{ event.id }}' class='btn btn-sm btn-primary'>View Details</a>
-            </div>
-          `;
-          
-          const eventMarker = L.marker([{{ event.latitude }}, {{ event.longitude }}])
-            .addTo(mapInstance)
-            .bindPopup(popupContent);
-          
-          // Store the event ID on the marker for later reference
-          eventMarker.eventId = {{ event.id }};
-          eventMarkers.push(eventMarker);
-          
-          // Add click listener to highlight corresponding card
-          eventMarker.on('click', function() {
-            // Remove highlight from all cards
-            document.querySelectorAll('.event-card').forEach(function(card) {
-              card.classList.remove('highlighted');
-            });
-            
-            // Highlight the corresponding card if it exists
-            const eventCard = document.querySelector(`.event-card[data-event-id="${this.eventId}"]`);
-            if (eventCard) {
-              eventCard.classList.add('highlighted');
-              eventCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-          });
-        })();
-        {% endif %}
-      {% endfor %}
-      
-      console.log("Added {{ events|length }} event markers to map");
-      
-      // Connect event cards with map markers
-      document.querySelectorAll('.event-card').forEach(function(card) {
-        // Add hover effects to connect cards and map markers
-        card.addEventListener('mouseenter', function() {
-          const eventId = parseInt(this.getAttribute('data-event-id'), 10);
-          const marker = eventMarkers.find(m => m.eventId === eventId);
-          if (marker) {
-            marker.openPopup();
-          }
-        });
-        
-        card.addEventListener('mouseleave', function() {
-          const eventId = parseInt(this.getAttribute('data-event-id'), 10);
-          const marker = eventMarkers.find(m => m.eventId === eventId);
-          if (marker) {
-            marker.closePopup();
-          }
-        });
-      });
-      
-      // Connect filter UI elements
-      const locationSearch = document.getElementById('locationSearch');
-      const categoryFilter = document.getElementById('categoryFilter');
-      const dateFilter = document.getElementById('dateFilter');
-      const funFilter = document.getElementById('funFilter');
-      
-      // Simple debounce function
-      function debounce(func, wait) {
-        let timeout;
-        return function() {
-          const context = this, args = arguments;
-          clearTimeout(timeout);
-          timeout = setTimeout(function() {
-            func.apply(context, args);
-          }, wait);
-        };
-      }
-      
-      // Setup location search filter
-      if (locationSearch) {
-        locationSearch.addEventListener('input', debounce(function(e) {
-          const searchQuery = e.target.value;
-          // Basic geocoding functionality would go here
-        }, 500));
-      }
-      
-      // Setup filter event listeners
-      [categoryFilter, dateFilter, funFilter].forEach(filter => {
-        if (filter) {
-          filter.addEventListener('change', function() {
-            console.log(`${filter.id} changed to:`, this.value);
-          });
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize the map
+    var map = FunlistMap.init('map');
+
+    // Add markers (example - you'll need to adapt this to your data)
+   {% for event in events %}
+      {% if event.latitude and event.longitude %}
+        FunlistMap.addMarker(map, {{ event.latitude }}, {{ event.longitude }},
+        `<div><h5>{{ event.title }}</h5><p>{{ event.description|truncate(100) }}</p><a href="/event/{{event.id}}">View Details</a></div>`);
+
+       {% endif %}
+   {% endfor %}
+
+FunlistMap.getUserLocation(map, function(success, location){
+       if (success) {
+           console.log("centered map");
+       }
+       else {
+           console.log("failed to center map");
         }
-      });
-      
-    } catch (error) {
-      console.error("Error setting up map:", error);
-    }
-  });
-  
-  // Handle window resize events to make the map responsive
-  window.addEventListener('resize', function() {
-    if (mapInstance) {
-      try {
-        setTimeout(function() {
-          mapInstance.invalidateSize();
-        }, 200);
-      } catch (e) {
-        console.error("Error resizing map on window resize:", e);
-      }
-    }
-  });
+});
+
+    // Example of using the search (you'll need to integrate this with your UI)
+    // FunlistMap.searchLocation("Olympia, WA", function(success, result) {
+    //     if (success) {
+    //         map.setView([result.lat, result.lon], 13);
+    //     }
+    // });
+});
+
+
 </script>
+
 {% endblock %}

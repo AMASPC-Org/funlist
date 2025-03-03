@@ -26,7 +26,7 @@ window.FunlistMap = (function() {
 
       // Add tile layer (OpenStreetMap)
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         maxZoom: 19
       }).addTo(mapInstance);
 
@@ -38,14 +38,13 @@ window.FunlistMap = (function() {
     }
   }
 
-  // Get user's location and center map there
+// Get user's location and center map there, and add location marker
   function getUserLocation(map, callback) {
     if (!map) {
       console.error("Map is not initialized");
       callback(false, null);
       return;
     }
-    
     // Try to get user location
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -54,8 +53,31 @@ window.FunlistMap = (function() {
           const lat = position.coords.latitude;
           const lng = position.coords.longitude;
           console.log("User location set as map center");
-          map.setView([lat, lng], defaultZoom);
-          callback(true, {lat: lat, lng: lng});
+            // Center map on user location
+            try {
+              map.setView([lat, lng], defaultZoom);
+
+              // Add a marker for user location
+              const userMarker = L.marker([lat, lng], {
+                icon: L.divIcon({
+                  className: 'user-location-marker',
+                  html: '<div class="pulse"></div>',  // Keep this for a nice pulse effect
+                  iconSize: [15, 15]  // Adjust size as needed
+                })
+              }).addTo(map);
+              userMarker.bindPopup('You are here').openPopup();
+
+              // Dispatch custom event for other components (if needed)
+                const event = new CustomEvent('user-location-ready', {
+                  detail: { lat, lng }
+                });
+                document.dispatchEvent(event);
+                console.log("Dispatched user-location-ready event");
+              callback(true, { lat, lng });
+            } catch (error) {
+              console.error("Error setting user location:", error);
+              callback(false, null);
+            }
         },
         function(error) {
           // Error
@@ -70,56 +92,6 @@ window.FunlistMap = (function() {
     }
   }
 
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        function(position) {
-          const lat = position.coords.latitude;
-          const lng = position.coords.longitude;
-
-          console.log("User location obtained:", lat, lng);
-
-          // Center map on user location
-          try {
-            map.setView([lat, lng], defaultZoom);
-
-            // Add a marker for user location
-            const userMarker = L.marker([lat, lng], {
-              icon: L.divIcon({
-                className: 'user-location-marker',
-                html: '<div class="pulse"></div>',
-                iconSize: [15, 15]
-              })
-            }).addTo(map);
-            userMarker.bindPopup('You are here').openPopup();
-
-            // Dispatch custom event for other components
-            const event = new CustomEvent('user-location-ready', {
-              detail: { lat, lng }
-            });
-            document.dispatchEvent(event);
-            console.log("Dispatched user-location-ready event");
-
-            callback(true, { lat, lng });
-          } catch (error) {
-            console.error("Error setting user location:", error);
-            callback(false, null);
-          }
-        },
-        function(error) {
-          console.warn("Geolocation error:", error.message);
-          callback(false, null);
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 5000,
-          maximumAge: 0
-        }
-      );
-    } else {
-      console.warn("Geolocation not available in this browser");
-      callback(false, null);
-    }
-  }
 
   // Add a marker to the map
   function addMarker(map, lat, lng, popupContent) {
