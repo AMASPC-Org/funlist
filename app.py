@@ -52,7 +52,7 @@ def create_app():
     app.config['SESSION_COOKIE_SECURE'] = False  # Disable for local development
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-    app.config['SESSION_USE_SIGNER'] = True
+    app.config['SESSION_USE_SIGNER'] = False  # Disable signer to avoid bytes/string conversion issues
     app.config['SESSION_FILE_DIR'] = './flask_session'
     app.config['SESSION_FILE_THRESHOLD'] = 500
     app.config['SESSION_REFRESH_EACH_REQUEST'] = True
