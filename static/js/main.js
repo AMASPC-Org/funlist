@@ -399,7 +399,13 @@ function setupLocationServices() {
             const mapInstance = document.querySelector('.leaflet-container');
             if (mapInstance && mapInstance._leaflet_id) {
                 console.log("Found Leaflet map instance, invalidating size");
-                mapInstance._leaflet.invalidateSize();
+                if (mapInstance._leaflet && typeof mapInstance._leaflet.invalidateSize === 'function') {
+                    setTimeout(function() {
+                        mapInstance._leaflet.invalidateSize();
+                    }, 200);
+                } else {
+                    console.warn("Map not fully initialized yet or invalidateSize not available");
+                }
             }
         }, 500);
     }
@@ -544,7 +550,11 @@ function getUserLocation() {
           if (typeof map !== 'undefined' && map) {
             try {
               console.log("Forcing map resize");
-              map.invalidateSize();
+              if (map && typeof map.invalidateSize === 'function') {
+                setTimeout(function() {
+                  map.invalidateSize();
+                }, 100);
+              }
               map.setView([userLat, userLng], 11);
             } catch (e) {
               console.error("Error setting map view:", e);
@@ -578,7 +588,11 @@ function getUserLocation() {
           // If on map page, center the map on default location
           if (typeof map !== 'undefined' && map) {
             try {
-              map.invalidateSize();
+              if (map && typeof map.invalidateSize === 'function') {
+                setTimeout(function() {
+                  map.invalidateSize();
+                }, 100);
+              }
               map.setView([defaultLat, defaultLng], 11);
             } catch (e) {
               console.error("Error setting default map view:", e);
