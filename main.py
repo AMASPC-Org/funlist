@@ -139,6 +139,7 @@ def run_flask_app():
             logger.warning("Database schema update completed with warnings")
     except Exception as e:
         logger.error(f"Error updating database schema: {str(e)}")
+    
     # Register signal handlers for graceful shutdown
     def signal_handler(sig, frame):
         logger.info(f"Received signal {sig}, shutting down")
