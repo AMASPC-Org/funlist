@@ -1,5 +1,7 @@
 // Map handling module for FunList.ai
 window.FunlistMap = (function() {
+  'use strict';
+  
   // Private variables
   let mapInstance = null;
   const defaultLocation = [47.0379, -122.9007]; // Default to Olympia, WA
@@ -8,6 +10,12 @@ window.FunlistMap = (function() {
   // Initialize map on the specified element
   function initMap(elementId) {
     console.log("Initializing map in element:", elementId);
+
+    // Check if Leaflet is loaded
+    if (typeof L === 'undefined') {
+      console.error("Leaflet library not loaded yet. Cannot initialize map.");
+      return null;
+    }
 
     // Check if element exists
     const mapElement = document.getElementById(elementId);
@@ -31,6 +39,15 @@ window.FunlistMap = (function() {
       }).addTo(mapInstance);
 
       console.log("Map initialized successfully");
+      
+      // Force a resize of the map after a short delay
+      setTimeout(function() {
+        if (mapInstance) {
+          mapInstance.invalidateSize();
+          console.log("Map size invalidated on init");
+        }
+      }, 300);
+      
       return mapInstance;
     } catch (error) {
       console.error("Error initializing map:", error);
