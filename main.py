@@ -86,9 +86,6 @@ def kill_processes_on_port(port):
     except Exception as e:
         logger.error(f"Error in kill_processes_on_port: {str(e)}")
     return False
-        try:
-            import os
-            os.system(f"pkill -f 'python.*main.py'")
             return True
         except Exception as e:
             logger.error(f"Error killing processes: {e}")
@@ -111,7 +108,8 @@ if __name__ == "__main__":
     for attempt in range(max_port_tries):
         try:
             logger.info(f"Attempting to start server on port {current_port}...")
-            app.run(host='0.0.0.0', port=current_port, debug=True)
+            # Make sure we're binding to 0.0.0.0 to be accessible externally
+            app.run(host='0.0.0.0', port=current_port, debug=True, use_reloader=False)
             break
         except OSError as e:
             if "Address already in use" in str(e):
