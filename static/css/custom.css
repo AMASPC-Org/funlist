@@ -1139,22 +1139,22 @@ main {
         margin-bottom: 2rem;
         text-align: center;
     }
-    
+
     .social-icons, .social-buttons {
         display: flex;
         justify-content: center;
         gap: 0.5rem;
         margin: 1rem auto;
     }
-    
+
     .footer {
         text-align: center;
     }
-    
+
     .subscribe-form .input-group {
         margin: 0 auto;
     }
-    
+
     .btn-social {
         margin: 0 5px;
     }
@@ -1280,7 +1280,7 @@ body.user-logged-in .floating-button {
     .floating-buttons-container {
         bottom: 1.5rem; /* Adjust position for mobile */
     }
-    
+
     .floating-button {
         padding: 0.65rem;
         font-size: 0.9rem;
@@ -1694,4 +1694,17 @@ body.cookie-consent-visible .floating-buttons-container {
 /* Additional top padding for pages with alerts to prevent double padding */
 .alert + .container {
     padding-top: 0;
+}
+
+/* Dropdown enhancements */
+.dropdown-menu {
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* User type indicator styles */
+.dropdown-menu .border-bottom {
+    border-bottom: 1px solid #e9ecef;
+    margin-bottom: 0.5rem;
 }
