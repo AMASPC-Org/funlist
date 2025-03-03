@@ -75,6 +75,26 @@
                                 <strong>Interests:</strong> {{ user.interests }}
                             </li>
                             {% endif %}
+                            {% if user.audience_type %}
+                            <li class="mb-2">
+                                <strong>Audience Type:</strong> {{ user.audience_type }}
+                            </li>
+                            {% endif %}
+                            {% if user.preferred_locations %}
+                            <li class="mb-2">
+                                <strong>Preferred Locations:</strong> {{ user.preferred_locations }}
+                            </li>
+                            {% endif %}
+                            {% if user.event_interests %}
+                            <li class="mb-2">
+                                <strong>Event Interests:</strong> {{ user.event_interests }}
+                            </li>
+                            {% endif %}
+                            {% if user.is_premium %}
+                            <li class="mb-2">
+                                <span class="badge bg-success">Premium Member</span>
+                            </li>
+                            {% endif %}
                             {% if user.birth_date %}
                             <li class="mb-2">
                                 <strong>Birth Date:</strong> {{ user.birth_date.strftime('%B %d, %Y') }}
@@ -85,7 +105,7 @@
                             </li>
                         </ul>
                     </div>
-                    
+
                     {% if current_user.is_organizer %}
                     <div class="profile-section mb-4">
                         <h4>Organizer Profile</h4>

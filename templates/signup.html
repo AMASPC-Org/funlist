@@ -49,6 +49,41 @@
                         {% endfor %}
                     </div>
 
+                    <h4 class="mt-4 mb-3">Your Preferences</h4>
+
+                    <div class="mb-3">
+                        {{ form.audience_type.label(class="form-label") }}
+                        {{ form.audience_type(class="form-select") }}
+                        {% if form.audience_type.description %}
+                        <div class="form-text">{{ form.audience_type.description }}</div>
+                        {% endif %}
+                        {% for error in form.audience_type.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.preferred_locations.label(class="form-label") }}
+                        {{ form.preferred_locations(class="form-control", placeholder="e.g., Olympia,Lacey,Tumwater") }}
+                        {% if form.preferred_locations.description %}
+                        <div class="form-text">{{ form.preferred_locations.description }}</div>
+                        {% endif %}
+                        {% for error in form.preferred_locations.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.event_interests.label(class="form-label") }}
+                        {{ form.event_interests(class="form-control", placeholder="e.g., sports,music,outdoors") }}
+                        {% if form.event_interests.description %}
+                        <div class="form-text">{{ form.event_interests.description }}</div>
+                        {% endif %}
+                        {% for error in form.event_interests.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
                     <div class="mb-3">
                         <label class="form-label">I'm here to:</label>
                         <div class="form-check">
@@ -61,7 +96,7 @@
                             {{ form.is_event_creator(class="form-check-input") }}
                             {{ form.is_event_creator.label(class="form-check-label") }}
                         </div>
-                        
+
                         <div class="form-check mb-2">
                             {{ form.is_vendor(class="form-check-input", id="is_vendor_checkbox") }}
                             {{ form.is_vendor.label(class="form-check-label") }}
@@ -78,7 +113,7 @@
                             </label>
                         </div>
                     </div>
-                    
+
                     <div class="form-check mb-4 mt-3">
                         {{ form.terms_accepted(class="form-check-input") }}
                         <label class="form-check-label" for="terms_accepted">

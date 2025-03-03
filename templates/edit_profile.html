@@ -11,7 +11,7 @@
                 <div class="card-body">
                     <form method="POST" action="{{ url_for('edit_profile') }}">
                         {{ form.hidden_tag() }}
-                        
+
                         <div class="mb-3">
                             {{ form.username.label(class="form-label") }}
                             {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else "")) }}
@@ -58,6 +58,41 @@
                             {{ form.interests(class="form-control" + (" is-invalid" if form.interests.errors else "")) }}
                             {% for error in form.interests.errors %}
                                 <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <h4 class="mt-4 mb-3">Additional Preferences</h4>
+
+                        <div class="mb-3">
+                            {{ form.audience_type.label(class="form-label") }}
+                            {{ form.audience_type(class="form-select") }}
+                            {% if form.audience_type.description %}
+                            <div class="form-text">{{ form.audience_type.description }}</div>
+                            {% endif %}
+                            {% for error in form.audience_type.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.preferred_locations.label(class="form-label") }}
+                            {{ form.preferred_locations(class="form-control", placeholder="e.g., Olympia,Lacey,Tumwater") }}
+                            {% if form.preferred_locations.description %}
+                            <div class="form-text">{{ form.preferred_locations.description }}</div>
+                            {% endif %}
+                            {% for error in form.preferred_locations.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.event_interests.label(class="form-label") }}
+                            {{ form.event_interests(class="form-control", placeholder="e.g., sports,music,outdoors") }}
+                            {% if form.event_interests.description %}
+                            <div class="form-text">{{ form.event_interests.description }}</div>
+                            {% endif %}
+                            {% for error in form.event_interests.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
                             {% endfor %}
                         </div>
 

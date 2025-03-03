@@ -81,6 +81,20 @@ class User(UserMixin, db.Model):
     # Profile fields
     username = db.Column(db.String(50), unique=True)
     first_name = db.Column(db.String(50))
+    last_name = db.Column(db.String(50))
+    # is_admin is already defined above
+    bio = db.Column(db.Text)
+    location = db.Column(db.String(100))
+    interests = db.Column(db.String(200))
+    birth_date = db.Column(db.Date)
+    profile_updated_at = db.Column(db.DateTime)
+
+    # User preferences
+    audience_type = db.Column(db.String(20), nullable=True)
+    preferred_locations = db.Column(db.String(255), nullable=True)
+    event_interests = db.Column(db.String(255), nullable=True)
+    is_premium = db.Column(db.Boolean, default=False)
+
 
     # Organizer fields
     is_organizer = db.Column(db.Boolean, default=False)
@@ -90,34 +104,26 @@ class User(UserMixin, db.Model):
     advertising_opportunities = db.Column(db.Text)
     sponsorship_opportunities = db.Column(db.Text)
     organizer_profile_updated_at = db.Column(db.DateTime)
-    
+
     # Vendor fields
     is_vendor = db.Column(db.Boolean, default=False)
     vendor_type = db.Column(db.String(50))
     vendor_description = db.Column(db.Text)
     vendor_profile_updated_at = db.Column(db.DateTime)
-    
+
     def update_organizer_profile(self, organizer_data):
         for key, value in organizer_data.items():
             if hasattr(self, key):
                 setattr(self, key, value)
         self.is_organizer = True
         self.organizer_profile_updated_at = datetime.utcnow()
-        
+
     def update_vendor_profile(self, vendor_data):
         for key, value in vendor_data.items():
             if hasattr(self, key):
                 setattr(self, key, value)
         self.is_vendor = True
         self.vendor_profile_updated_at = datetime.utcnow()
-
-    last_name = db.Column(db.String(50))
-    # is_admin is already defined above
-    bio = db.Column(db.Text)
-    location = db.Column(db.String(100))
-    interests = db.Column(db.String(200))
-    birth_date = db.Column(db.Date)
-    profile_updated_at = db.Column(db.DateTime)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -144,14 +150,14 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return f'<User {self.email}>'
-        
+
     # Password reset token methods
     def get_reset_token(self, expires_in=3600):
         # Generate a secure token with 32 bytes of randomness
         token = secrets.token_hex(32)
         # Set expiration timestamp (current time + expiration in seconds)
         expiry = int(time.time()) + expires_in
-        
+
         # Try setting the fields and handle missing column exceptions gracefully
         try:
             self.reset_token = token
@@ -161,16 +167,16 @@ class User(UserMixin, db.Model):
             logger.error(f"Error setting reset token: {e}")
             # If the columns don't exist, we just return the token anyway
             db.session.rollback()
-            
+
         return token
-        
+
     @staticmethod
     def verify_reset_token(token):
         try:
             user = User.query.filter_by(reset_token=token).first()
             if not user:
                 return None
-                
+
             # Check if token is expired
             if datetime.utcnow() > user.reset_token_expiry:
                 # Clear expired token
@@ -178,12 +184,12 @@ class User(UserMixin, db.Model):
                 user.reset_token_expiry = None
                 db.session.commit()
                 return None
-                
+
             return user
         except Exception as e:
             logger.error(f"Error verifying reset token: {e}")
             return None
-        
+
     def clear_reset_token(self):
         try:
             self.reset_token = None

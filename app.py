@@ -91,7 +91,8 @@ def create_app():
 
     try:
         logger.info("Initializing Flask-Migrate...")
-        Migrate(app, db)
+        migrate = Migrate(app, db)
+        logger.info("Flask-Migrate initialized successfully")
     except Exception as e:
         logger.error(f"Failed to initialize Flask-Migrate: {str(e)}",
                      exc_info=True)

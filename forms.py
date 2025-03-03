@@ -35,6 +35,30 @@ class SignupForm(FlaskForm):
         ('decor', 'Decoration Services'),
         ('other', 'Other')
     ], validators=[Optional()])
+    audience_type = SelectField(
+        "Audience Type", 
+        choices=[
+            ('', 'Select audience type...'),
+            ('single', 'Single (18+)'),
+            ('senior', 'Senior'),
+            ('professional', 'Professional'),
+            ('parent', 'Parent'),
+            ('adult', 'Adult'),
+            ('family', 'Family'),
+            ('21+', '21+')
+        ],
+        validators=[Optional()]
+    )
+    preferred_locations = StringField(
+        "Preferred Locations",
+        description="Enter up to 5 cities, separated by commas",
+        validators=[Optional(), Length(max=255)]
+    )
+    event_interests = StringField(
+        "Event Interests",
+        description="Enter interests separated by commas (e.g., sports,music,outdoors)",
+        validators=[Optional(), Length(max=255)]
+    )
     terms_accepted = BooleanField('I accept the <a href="/terms" target="_blank">Terms and Conditions</a> and <a href="/privacy" target="_blank">Privacy Policy</a>', validators=[
         DataRequired(message="You must accept the Terms and Conditions and Privacy Policy to continue")
     ])
@@ -66,7 +90,31 @@ class ProfileForm(FlaskForm):
     last_name = StringField('Last Name', validators=[Optional(), Length(max=50)])
     bio = TextAreaField('Bio', validators=[Optional(), Length(max=500)])
     location = StringField('Location', validators=[Optional(), Length(max=100)])
-    interests = StringField('Interests', validators=[Optional(), Length(max=200)])
+    interests = StringField('Interests', validators=[Optional(), Length(max=255)])
+    audience_type = SelectField(
+        "Audience Type", 
+        choices=[
+            ('', 'Select audience type...'),
+            ('single', 'Single (18+)'),
+            ('senior', 'Senior'),
+            ('professional', 'Professional'),
+            ('parent', 'Parent'),
+            ('adult', 'Adult'),
+            ('family', 'Family'),
+            ('21+', '21+')
+        ],
+        validators=[Optional()]
+    )
+    preferred_locations = StringField(
+        "Preferred Locations",
+        description="Enter up to 5 cities, separated by commas",
+        validators=[Optional(), Length(max=255)]
+    )
+    event_interests = StringField(
+        "Event Interests",
+        description="Enter interests separated by commas (e.g., sports,music,outdoors)",
+        validators=[Optional(), Length(max=255)]
+    )
     birth_date = DateField('Birth Date', validators=[Optional()])
     submit = SubmitField('Update Profile')
 
@@ -152,7 +200,7 @@ class VendorProfileForm(FlaskForm):
     services = TextAreaField('Services Offered', validators=[Optional(), Length(max=500)])
     pricing = TextAreaField('Pricing Information', validators=[Optional(), Length(max=300)])
     submit = SubmitField('Save Vendor Profile')
-    
+
 class ResetPasswordRequestForm(FlaskForm):
     email = StringField('Email', validators=[
         DataRequired(message="Please enter your email address"),
