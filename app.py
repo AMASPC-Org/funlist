@@ -51,7 +51,7 @@ def create_app():
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
     app.config['SESSION_COOKIE_SECURE'] = False  # Disable for local development
     app.config['SESSION_COOKIE_HTTPONLY'] = True
-    app.config['SESSION_USE_SIGNER'] = True  # Enable signer for security
+    app.config['SESSION_USE_SIGNER'] = False  # Disable signer to avoid bytes/string issues
     app.config['SESSION_FILE_DIR'] = './flask_session'
     app.config['SESSION_KEY_PREFIX'] = 'funlist_'
     

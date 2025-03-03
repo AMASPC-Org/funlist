@@ -78,14 +78,14 @@ def init_routes(app):
             
             # Simplified session tracking that avoids encoding issues
             if "last_activity" not in session:
-                session["last_activity"] = str(current_time)
+                session["last_activity"] = current_time.isoformat()
                 return
                 
             # Only check for timeout if we're not on static resources
             if not request.path.startswith('/static/'):
                 try:
                     # Use a simpler approach to time tracking
-                    session["last_activity"] = str(current_time)
+                    session["last_activity"] = current_time.isoformat()
                 except Exception as e:
                     app.logger.error(f"Session error: {str(e)}")
                     # Don't interrupt the user experience if session tracking fails
@@ -265,9 +265,10 @@ def init_routes(app):
                         login_user(user, remember=form.remember_me.data)
                         
                         # Then set session data with simplified strings
-                        session["user_id"] = str(user.id)
-                        session["login_time"] = str(datetime.utcnow())
-                        session["last_activity"] = str(datetime.utcnow())
+                        # Use native Python types that will serialize properly
+                        session["user_id"] = user.id
+                        session["login_time"] = datetime.utcnow().isoformat()
+                        session["last_activity"] = datetime.utcnow().isoformat()
 
                         # Update last login time
                         user.last_login = datetime.utcnow()
