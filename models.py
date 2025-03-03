@@ -49,7 +49,8 @@ class Event(db.Model):
     permission_granted = db.Column(db.Boolean, default=False)
 
     # Add relationship to User and SourceWebsite models
-    organizer = db.relationship('User', backref='organized_events')
+    organizer = db.relationship('User', foreign_keys=[user_id], backref='organized_events')
+    venue = db.relationship('User', foreign_keys=[venue_id], backref='hosted_events')
     source_website = db.relationship('SourceWebsite', backref='events')
 
     def __repr__(self):
