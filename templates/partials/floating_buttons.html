@@ -1,3 +1,4 @@
+
 <div class="floating-buttons-container">
     <!-- Feedback button (left side) -->
     <button class="floating-button feedback-button" id="feedbackButton" aria-label="Provide Feedback">
@@ -13,23 +14,23 @@
 </div>
 
 <!-- Feedback Modal -->
-<div class="modal fade" id="feedbackModal" tabindex="-1">
+<div class="modal fade" id="feedbackModal" tabindex="-1" aria-labelledby="feedbackModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">We Value Your Feedback</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <h5 class="modal-title" id="feedbackModalLabel">We Value Your Feedback</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form id="feedbackForm">
                     <div class="mb-3">
-                        <label for="feedbackType" class="form-label">Type of Feedback</label>
+                        <label for="feedbackType" class="form-label">Feedback Type</label>
                         <select class="form-select" id="feedbackType" required>
-                            <option value="" selected disabled>Select type...</option>
+                            <option value="">Select a feedback type</option>
                             <option value="suggestion">Suggestion</option>
-                            <option value="issue">Report an Issue</option>
-                            <option value="compliment">Compliment</option>
-                            <option value="other">Other</option>
+                            <option value="problem">Problem</option>
+                            <option value="question">Question</option>
+                            <option value="praise">Praise</option>
                         </select>
                     </div>
                     <div class="mb-3">
@@ -39,6 +40,7 @@
                     <div class="mb-3">
                         <label for="feedbackEmail" class="form-label">Your Email (optional)</label>
                         <input type="email" class="form-control" id="feedbackEmail">
+                        <div class="form-text">We'll only use this to follow up if needed.</div>
                     </div>
                     <button type="submit" class="btn btn-primary">Submit Feedback</button>
                 </form>
@@ -47,13 +49,13 @@
     </div>
 </div>
 
-<!-- Subscribe Modal - Different from the existing email signup modal -->
-<div class="modal fade" id="subscribeModal" tabindex="-1">
+<!-- Subscribe Modal -->
+<div class="modal fade" id="subscribeModal" tabindex="-1" aria-labelledby="subscribeModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Subscribe to Updates</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <h5 class="modal-title" id="subscribeModalLabel">Subscribe to Updates</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form id="floatingSubscribeForm">

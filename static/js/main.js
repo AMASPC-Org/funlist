@@ -1,3 +1,19 @@
+// Main JavaScript for FunList.ai
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("DOM fully loaded");
+    setupErrorHandling();
+    setupEventHandlers();
+    setupTippy();
+    setupModals();
+    setupFloatingButtons();
+    setupCookieConsent();
+
+    // Initialize any carousels or sliders
+    initializeCarousels();
+});
+
+// Global error handling
 function setupErrorHandling() {
     // Global error handler
     window.addEventListener('error', function(event) {
@@ -11,67 +27,290 @@ function setupErrorHandling() {
     });
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    console.log("DOM fully loaded");
-    setupErrorHandling();
-    setupEventHandlers();
-    setupTippy();
-    setupModals();
-    setupFloatingButtons();
-
-    // Log when buttons are found in DOM
-    const feedbackBtn = document.getElementById('feedbackButton');
-    const subscribeBtn = document.getElementById('subscribeButton');
-    console.log("Feedback button in DOM:", !!feedbackBtn);
-    console.log("Subscribe button in DOM:", !!subscribeBtn);
-});
-
-
-function setupErrorHandling() {
-    window.addEventListener('error', function(event) {
-        console.log('JavaScript error caught:', event.error);
+// Setup event handlers for various elements
+function setupEventHandlers() {
+    // Setup any global event handlers here
+    document.addEventListener('click', function(e) {
+        // Optional: Global click handler for analytics or other purposes
     });
 }
 
+// Setup tooltips using Tippy.js if available
+function setupTippy() {
+    if (typeof tippy !== 'undefined') {
+        tippy('[data-tippy-content]');
+    }
+}
+
+// Setup modals and their forms
+function setupModals() {
+    // Setup feedback form
+    const feedbackForm = document.getElementById('feedbackForm');
+    if (feedbackForm) {
+        console.log("Found feedback form, setting up submit handler");
+        feedbackForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log("Feedback form submitted");
+
+            const feedbackType = document.getElementById('feedbackType').value;
+            const message = document.getElementById('feedbackMessage').value;
+            const email = document.getElementById('feedbackEmail').value;
+
+            // Submit feedback
+            fetch('/submit-feedback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    type: feedbackType,
+                    message: message,
+                    email: email
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Thank you for your feedback!');
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('feedbackModal'));
+                    if (modal) modal.hide();
+                    else console.log("Couldn't find modal instance");
+                } else {
+                    alert('Error: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error submitting feedback:', error);
+                alert('An error occurred. Please try again.');
+            });
+        });
+    } else {
+        console.log("Feedback form not found");
+    }
+
+    // Setup subscription forms (both the floating one and any others on the page)
+    const subscribeForms = document.querySelectorAll('#floatingSubscribeForm, #emailSignupForm');
+    subscribeForms.forEach(form => {
+        if (form) {
+            console.log(`Found subscribe form: ${form.id}, setting up submit handler`);
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                console.log(`Subscribe form submitted: ${form.id}`);
+
+                // Find the email input within this specific form
+                const email = form.querySelector('input[type="email"]').value;
+
+                // Get checkbox values if they exist in this form
+                const preferenceEvents = form.querySelector('#preferenceEvents')?.checked || false;
+                const preferenceDeals = form.querySelector('#preferenceDeals')?.checked || false;
+
+                // Submit subscription
+                fetch('/subscribe', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        preferences: {
+                            events: preferenceEvents,
+                            deals: preferenceDeals
+                        }
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Thank you for subscribing!');
+                        // Determine which modal to close based on form ID
+                        let modalId = 'subscribeModal';
+                        if (form.id === 'emailSignupForm') {
+                            modalId = 'emailSignupModal';
+                        }
+
+                        try {
+                            const modal = bootstrap.Modal.getInstance(document.getElementById(modalId));
+                            if (modal) modal.hide();
+                            else console.log(`Couldn't find ${modalId} instance`);
+                        } catch (error) {
+                            console.error(`Error hiding ${modalId}:`, error);
+                        }
+                    } else {
+                        alert('Error: ' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error subscribing:', error);
+                    alert('An error occurred. Please try again.');
+                });
+            });
+        }
+    });
+}
+
+// Setup floating buttons interaction
 function setupFloatingButtons() {
-    console.log("Setting up floating buttons");
-    
     // Setup feedback button
     const feedbackBtn = document.getElementById('feedbackButton');
     if (feedbackBtn) {
-        console.log("Feedback button found");
+        console.log("Found feedback button, setting up click handler");
         feedbackBtn.addEventListener('click', function(e) {
-            e.preventDefault();
+            console.log("Feedback button clicked");
             try {
                 const feedbackModal = new bootstrap.Modal(document.getElementById('feedbackModal'));
                 feedbackModal.show();
             } catch (error) {
                 console.error("Error showing feedback modal:", error);
+                alert("Sorry, there was an error opening the feedback form.");
             }
         });
     } else {
-        console.log("Feedback button not found");
+        console.log("Feedback button not found in DOM");
     }
 
     // Setup subscribe button
     const subscribeBtn = document.getElementById('subscribeButton');
     if (subscribeBtn) {
-        console.log("Subscribe button found");
+        console.log("Found subscribe button, setting up click handler");
         subscribeBtn.addEventListener('click', function(e) {
-            e.preventDefault();
+            console.log("Subscribe button clicked");
             try {
                 const subscribeModal = new bootstrap.Modal(document.getElementById('subscribeModal'));
                 subscribeModal.show();
             } catch (error) {
                 console.error("Error showing subscribe modal:", error);
+                alert("Sorry, there was an error opening the subscription form.");
             }
         });
     } else {
-        console.log("Subscribe button not found");
+        console.log("Subscribe button not found in DOM");
     }
 }
 
-// Initialize sponsors carousel
+// Cookie consent handling
+function setupCookieConsent() {
+    // Check if cookie is already set
+    const cookieConsent = getCookie('cookie_consent');
+
+    if (!cookieConsent) {
+        const cookieBanner = document.getElementById('cookieConsent');
+        if (cookieBanner) {
+            cookieBanner.classList.add('show');
+            document.body.classList.add('cookie-consent-visible');
+
+            // Setup cookie consent buttons
+            const acceptAllBtn = document.getElementById('acceptAllCookies');
+            const rejectNonEssentialBtn = document.getElementById('rejectNonEssentialCookies');
+            const customizeBtn = document.getElementById('customizeCookies');
+
+            if (acceptAllBtn) {
+                acceptAllBtn.addEventListener('click', function() {
+                    setCookie('cookie_consent', 'all', 365);
+                    hideCookieConsent();
+                });
+            }
+
+            if (rejectNonEssentialBtn) {
+                rejectNonEssentialBtn.addEventListener('click', function() {
+                    setCookie('cookie_consent', 'essential', 365);
+                    hideCookieConsent();
+                });
+            }
+
+            if (customizeBtn) {
+                customizeBtn.addEventListener('click', function() {
+                    // Show cookie preferences modal
+                    const cookiePreferencesModal = new bootstrap.Modal(document.getElementById('cookiePreferencesModal'));
+                    if (cookiePreferencesModal) cookiePreferencesModal.show();
+                });
+            }
+        }
+    }
+}
+
+// Hide cookie consent banner
+function hideCookieConsent() {
+    const cookieBanner = document.getElementById('cookieConsent');
+    if (cookieBanner) {
+        cookieBanner.classList.remove('show');
+        document.body.classList.remove('cookie-consent-visible');
+    }
+}
+
+// Set a cookie
+function setCookie(name, value, days) {
+    const date = new Date();
+    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+    const expires = "; expires=" + date.toUTCString();
+    document.cookie = name + "=" + (value || "") + expires + "; path=/; SameSite=Strict";
+}
+
+// Get a cookie value
+function getCookie(name) {
+    const nameEQ = name + "=";
+    const ca = document.cookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+    }
+    return null;
+}
+
+// Initialize carousels if they exist
+function initializeCarousels() {
+    // Sponsors carousel
+    const sponsorsCarousel = document.querySelector('.sponsors-carousel');
+    if (sponsorsCarousel) {
+        console.log("Populating sponsors carousel");
+        // Initialize carousel logic here if needed
+    }
+}
+
+// Admin-specific functionality
+if (document.getElementById('adminEventTable')) {
+    console.log("Admin events script loaded");
+    setupAdminEventHandlers();
+}
+
+// Setup admin event handlers
+function setupAdminEventHandlers() {
+    // Admin event approval/rejection buttons
+    const adminActionButtons = document.querySelectorAll('.admin-event-action');
+    adminActionButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const eventId = this.dataset.eventId;
+            const action = this.dataset.action;
+
+            if (confirm(`Are you sure you want to ${action} this event?`)) {
+                fetch(`/admin/event/${eventId}/${action}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        // Refresh page to show updated status
+                        window.location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again.');
+                });
+            }
+        });
+    });
+}
+
 function initializeSponsorsCarousel() {
     // Check if the element exists first
     const sponsorsContainer = document.querySelector('.sponsors-container');
@@ -94,7 +333,6 @@ function initializeSponsorsCarousel() {
     }, 5000);
 }
 
-// Form validation setup
 function setupFormValidation() {
     // Validate forms with class 'needs-validation'
     const forms = document.querySelectorAll('.needs-validation');
@@ -110,7 +348,6 @@ function setupFormValidation() {
     });
 }
 
-// Location services setup
 function setupLocationServices() {
     const mapContainer = document.getElementById('map');
     if (!mapContainer) return;
@@ -145,7 +382,6 @@ function setupLocationServices() {
     }
 }
 
-// Setup filters
 function setupFilters() {
     // Handle specific date selection visibility
     const dateRangeSelects = document.querySelectorAll('select[name="date_range"]');
@@ -165,296 +401,8 @@ function handleDateRangeChange(event) {
     }
 }
 
-// Setup modals
-function setupModals() {
-    console.log("Setting up modals");
-    
-    // Setup feedback form
-    const feedbackForm = document.getElementById('feedbackForm');
-    if (feedbackForm) {
-        console.log("Feedback form found");
-        feedbackForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            console.log("Feedback form submitted");
-            
-            const feedbackType = document.getElementById('feedbackType').value;
-            const message = document.getElementById('feedbackMessage').value;
-            const email = document.getElementById('feedbackEmail').value;
-
-            // Submit feedback
-            fetch('/submit-feedback', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json',
-                },
-                body: JSON.stringify({
-                    type: feedbackType,
-                    message: message,
-                    email: email
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Thank you for your feedback!');
-                    // Close modal
-                    try {
-                        const modal = bootstrap.Modal.getInstance(document.getElementById('feedbackModal'));
-                        if (modal) modal.hide();
-                    } catch (error) {
-                        console.error("Error hiding feedback modal:", error);
-                    }
-                } else {
-                    alert('Error: ' + (data.message || 'Unknown error'));
-                }
-            })
-            .catch(error => {
-                console.error('Error submitting feedback:', error);
-                alert('An error occurred. Please try again.');
-            });
-        });
-    } else {
-        console.log("Feedback form not found");
-    }
-    
-    // Setup subscription forms
-    const floatingSubscribeForm = document.getElementById('floatingSubscribeForm');
-    if (floatingSubscribeForm) {
-        console.log("Floating subscribe form found");
-        floatingSubscribeForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            console.log("Floating subscribe form submitted");
-            
-            const email = document.getElementById('subscribeEmail').value;
-            const preferenceEvents = document.getElementById('preferenceEvents')?.checked || false;
-            const preferenceDeals = document.getElementById('preferenceDeals')?.checked || false;
-
-            // Submit subscription
-            fetch('/subscribe', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json',
-                },
-                body: JSON.stringify({
-                    email: email,
-                    preferences: {
-                        events: preferenceEvents,
-                        deals: preferenceDeals
-                    }
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Thank you for subscribing!');
-                    // Close modal
-                    try {
-                        const modal = bootstrap.Modal.getInstance(document.getElementById('subscribeModal'));
-                        if (modal) modal.hide();
-                    } catch (error) {
-                        console.error("Error hiding subscribe modal:", error);
-                    }
-                } else {
-                    alert('Error: ' + (data.message || 'Unknown error'));
-                }
-            })
-            .catch(error => {
-                console.error('Error subscribing:', error);
-                alert('An error occurred. Please try again.');
-            });
-        });
-    } else {
-        console.log("Floating subscribe form not found");
-    }
-    
-    // Setup other subscription forms (like in footer, etc.)
-    const emailSignupForm = document.getElementById('emailSignupForm');
-    if (emailSignupForm) {
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const email = form.querySelector('input[type="email"]').value;
-
-                // Collect preferences if they exist
-                let preferences = {};
-                const preferenceCheckboxes = form.querySelectorAll('input[type="checkbox"]:checked');
-                preferenceCheckboxes.forEach(checkbox => {
-                    preferences[checkbox.id] = true;
-                });
-
-                // Submit subscription
-                fetch('/subscribe', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        email: email,
-                        preferences: preferences
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Thank you for subscribing!');
-                        // Close modal if it exists
-                        const modal = bootstrap.Modal.getInstance(document.querySelector('.modal.show'));
-                        if (modal) modal.hide();
-                    } else {
-                        alert('Error: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred. Please try again.');
-                });
-            });
-        }
-    });
-}
-
-// Setup subscription form
-function setupSubscriptionForm() {
-    const subscribeForm = document.getElementById('floatingSubscribeForm');
-    if (!subscribeForm) return;
-
-    subscribeForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const email = document.getElementById('subscribeEmail').value;
-
-        // Collect preferences
-        const preferences = {
-            events: document.getElementById('preferenceEvents')?.checked || false,
-            deals: document.getElementById('preferenceDeals')?.checked || false
-        };
-
-        // Submit subscription
-        fetch('/subscribe', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                email: email,
-                preferences: preferences
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Thank you for subscribing!');
-                // Close modal
-                const modal = bootstrap.Modal.getInstance(document.querySelector('#subscribeModal'));
-                if (modal) modal.hide();
-            } else {
-                alert('Error: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred. Please try again.');
-        });
-    });
-}
-
-// Setup feedback form
-function setupFeedbackForm() {
-    const feedbackForm = document.getElementById('feedbackForm');
-    if (!feedbackForm) return;
-
-    feedbackForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const feedbackType = document.getElementById('feedbackType').value;
-        const message = document.getElementById('feedbackMessage').value;
-        const email = document.getElementById('feedbackEmail').value;
-
-        fetch('/submit-feedback', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                type: feedbackType,
-                message: message,
-                email: email
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Thank you for your feedback!');
-                feedbackForm.reset();
-
-                // Close modal
-                const modal = bootstrap.Modal.getInstance(document.querySelector('#feedbackModal'));
-                if (modal) modal.hide();
-            } else {
-                alert('Error: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred. Please try again.');
-        });
-    });
-}
-
-// Show new user wizard
-function showNewUserWizard() {
-    // Implementation for new user wizard/onboarding
-    const wizardModal = new bootstrap.Modal(document.getElementById('onboardingWizardModal'));
-    if (wizardModal) {
-        wizardModal.show();
-    }
-}
-
-// Save user preferences from wizard
-function saveUserPreferences(data) {
-    fetch('/save-preferences', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCsrfToken() // Function to get CSRF token
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(result => {
-        if (result.success) {
-            // Close wizard and show success message
-            const wizardModal = bootstrap.Modal.getInstance(document.getElementById('onboardingWizardModal'));
-            if (wizardModal) wizardModal.hide();
-
-            alert('Your preferences have been saved!');
-            // Optional: reload the page to show personalized content
-            // window.location.reload();
-        } else {
-            alert('Error: ' + result.message);
-        }
-    })
-    .catch(error => {
-        console.error('Error saving preferences:', error);
-        alert('An error occurred while saving your preferences. Please try again.');
-    });
-}
-
-// Helper function to get CSRF token
-function getCsrfToken() {
-    const tokenMeta = document.querySelector('meta[name="csrf-token"]');
-    return tokenMeta ? tokenMeta.content : '';
-}
-
 function populateSponsorsCarousel() {
     //Implementation for populating sponsors carousel.  This function was not defined in the original code.
-}
-
-function setupCookieConsent() {
-    // This function is now handled directly in the cookie_consent.html partial
-    console.log("Cookie consent setup handled in template");
 }
 
 function saveCookiePreferences(preferences) {
@@ -500,12 +448,45 @@ function checkCookieConsentExpiration() {
     }
 }
 
-// Cookie functions are handled in the cookie_consent.html partial
-
-function setupEventHandlers() {
-    // Placeholder for event handler setup (needs to be implemented)
+//Added this function because it was missing from the original code
+function getCsrfToken() {
+    const tokenMeta = document.querySelector('meta[name="csrf-token"]');
+    return tokenMeta ? tokenMeta.content : '';
 }
 
-function setupTippy() {
-    // Placeholder for Tippy setup (needs to be implemented)
+function showNewUserWizard() {
+    // Implementation for new user wizard/onboarding
+    const wizardModal = new bootstrap.Modal(document.getElementById('onboardingWizardModal'));
+    if (wizardModal) {
+        wizardModal.show();
+    }
+}
+
+function saveUserPreferences(data) {
+    fetch('/save-preferences', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken() // Function to get CSRF token
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            // Close wizard and show success message
+            const wizardModal = bootstrap.Modal.getInstance(document.getElementById('onboardingWizardModal'));
+            if (wizardModal) wizardModal.hide();
+
+            alert('Your preferences have been saved!');
+            // Optional: reload the page to show personalized content
+            // window.location.reload();
+        } else {
+            alert('Error: ' + result.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error saving preferences:', error);
+        alert('An error occurred while saving your preferences. Please try again.');
+    });
 }
