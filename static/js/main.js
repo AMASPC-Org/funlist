@@ -11,6 +11,15 @@ document.addEventListener('DOMContentLoaded', function() {
     event.stopPropagation();
     return true;
   });
+  
+  // Prevent errors from undefined functions
+  window.approveEvent = window.approveEvent || function() {
+    console.log("approveEvent function called but not defined for this user role");
+  };
+  
+  window.rejectEvent = window.rejectEvent || function() {
+    console.log("rejectEvent function called but not defined for this user role");
+  };
 
     try {
         // Initialize sponsors carousel if it exists
