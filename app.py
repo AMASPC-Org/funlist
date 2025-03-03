@@ -60,7 +60,6 @@ def create_app():
     app.session_interface.serializer.loads = lambda x: x
     
     # Clear existing session files to start fresh
-    import os
     for f in os.listdir('./flask_session'):
         if f != '.gitkeep':
             os.remove(os.path.join('./flask_session', f))
