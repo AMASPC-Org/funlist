@@ -10,33 +10,41 @@ def update_event_model():
     app = create_app()
 
     with app.app_context():
-        # Check if the columns already exist first
-        columns = [column.name for column in Event.__table__.columns]
-        
-        # Add the new columns if they don't exist
-        if 'fun_rating_justification' not in columns:
-            print("Adding fun_rating_justification field to Event model...")
-            # Create a migration
-            migrate = Migrate(app, db)
+        try:
+            # Check if the columns already exist first using raw SQL to be more reliable
+            columns = []
             with db.engine.connect() as conn:
-                conn.execute(db.text('ALTER TABLE event ADD COLUMN fun_rating_justification TEXT'))
-                print("Field fun_rating_justification added successfully")
-        else:
-            print("Field fun_rating_justification already exists")
+                result = conn.execute(db.text("PRAGMA table_info(event)"))
+                columns = [row[1] for row in result]
             
-        if 'target_audience_description' not in columns:
-            print("Adding target_audience_description field to Event model...")
-            # Create a migration
-            migrate = Migrate(app, db)
+            # Add the new columns if they don't exist
             with db.engine.connect() as conn:
-                conn.execute(db.text('ALTER TABLE event ADD COLUMN target_audience_description TEXT'))
-                print("Field target_audience_description added successfully")
-        else:
-            print("Field target_audience_description already exists")
+                # Use transactions for better reliability
+                conn = conn.execution_options(isolation_level="AUTOCOMMIT")
+                
+                if 'fun_rating_justification' not in columns:
+                    print("Adding fun_rating_justification field to Event model...")
+                    conn.execute(db.text('ALTER TABLE event ADD COLUMN fun_rating_justification TEXT'))
+                    print("Field fun_rating_justification added successfully")
+                else:
+                    print("Field fun_rating_justification already exists")
+                
+                if 'target_audience_description' not in columns:
+                    print("Adding target_audience_description field to Event model...")
+                    conn.execute(db.text('ALTER TABLE event ADD COLUMN target_audience_description TEXT'))
+                    print("Field target_audience_description added successfully")
+                else:
+                    print("Field target_audience_description already exists")
             
-        # Commit the changes
-        db.session.commit()
-        print("Database updated successfully")
+            # Ensure SQLAlchemy knows about these new columns
+            db.session.commit()
+            db.metadata.clear()
+            db.reflect()
+            print("Database updated successfully")
+        except Exception as e:
+            print(f"Error updating database: {e}")
+            db.session.rollback()
+            raise
 
 if __name__ == "__main__":
     update_event_model()
