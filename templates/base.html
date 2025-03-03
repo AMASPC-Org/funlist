@@ -119,13 +119,19 @@
 <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
 
     <script>
-      // Global error handler for all scripts
+      // Enhanced global error handler for all scripts
       window.onerror = function(message, source, lineno, colno, error) {
         console.error("Global error handler caught:", message);
         
         // Check if it's a cross-origin script error
         if (message === "Script error." || message === "Script error") {
           console.log("Cross-origin script error detected. Check for cross-origin issues.");
+          // Add crossorigin attribute to scripts dynamically
+          document.querySelectorAll('script[src^="https://"]').forEach(function(script) {
+            if (!script.hasAttribute('crossorigin')) {
+              script.setAttribute('crossorigin', 'anonymous');
+            }
+          });
         } else if (error) {
           console.error("Error details:", error);
         }
@@ -137,6 +143,21 @@
       window.addEventListener('unhandledrejection', function(event) {
         console.error('Unhandled promise rejection:', event.reason);
       });
+      
+      // Safe function execution wrapper
+      window.safeExecute = function(fn, fallback) {
+        try {
+          if (typeof fn === 'function') {
+            return fn();
+          }
+        } catch (e) {
+          console.error('Error executing function:', e);
+          if (typeof fallback === 'function') {
+            return fallback();
+          }
+        }
+        return null;
+      };
     </script>
 
     {% block scripts %}{% endblock %}

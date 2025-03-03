@@ -65,12 +65,13 @@ def create_app():
         # Set Content Security Policy header
         csp = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://auth.util.repl.co; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://auth.util.repl.co https://*.replit.dev https://*.repl.co; "
             "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
             "img-src 'self' data: https:; "
             "font-src 'self' https://cdnjs.cloudflare.com; "
             "connect-src 'self' https:; "
-            "frame-src 'self' https://auth.util.repl.co https://*.replit.dev;"
+            "frame-src 'self' https://auth.util.repl.co https://*.replit.dev https://*.repl.co; "
+            "report-uri /csp-report"
         )
         response.headers['Content-Security-Policy'] = csp
 

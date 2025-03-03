@@ -25,18 +25,23 @@ document.addEventListener('DOMContentLoaded', function() {
         // Initialize sponsors carousel if it exists
         if (document.querySelector('.sponsors-carousel')) {
             console.log('Populating sponsors carousel');
-            try{
-                populateSponsorsCarousel();
-            } catch (e) {
-                console.error('Error populating sponsors carousel:', e);
+            // Check if function exists before calling
+            if (typeof populateSponsorsCarousel === 'function') {
+                try {
+                    populateSponsorsCarousel();
+                } catch (e) {
+                    console.error('Error populating sponsors carousel:', e);
+                }
             }
         }
 
-
-        try {
-            initializeSponsorsCarousel();
-        } catch (e) {
-            console.error('Error initializing sponsors carousel:', e);
+        // Check if function exists before calling
+        if (typeof initializeSponsorsCarousel === 'function') {
+            try {
+                initializeSponsorsCarousel();
+            } catch (e) {
+                console.error('Error initializing sponsors carousel:', e);
+            }
         }
 
         try {

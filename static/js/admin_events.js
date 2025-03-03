@@ -1,6 +1,28 @@
 // Admin events functionality
 console.log("Admin events script loaded");
 
+// Get CSRF token from meta tag
+function getCsrfToken() {
+  const tokenMeta = document.querySelector('meta[name="csrf-token"]');
+  return tokenMeta ? tokenMeta.getAttribute('content') : '';
+}
+
+// Show toast notification
+function showToast(message, type) {
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type || 'info'}`;
+  toast.innerHTML = message;
+  document.body.appendChild(toast);
+  
+  // Auto remove after 3 seconds
+  setTimeout(() => {
+    toast.classList.add('toast-fade-out');
+    setTimeout(() => {
+      document.body.removeChild(toast);
+    }, 500);
+  }, 3000);
+}
+
 // Add error handling for admin events script
 try {
   document.addEventListener('DOMContentLoaded', function() {
@@ -19,9 +41,10 @@ try {
               e.preventDefault();
               const eventId = this.getAttribute('data-event-id');
               console.log(`Approve event ${eventId} clicked`);
-              // Implement approval logic
+              window.approveEvent(eventId);
             } catch (err) {
               console.error("Error handling approve event:", err);
+              showToast("Error approving event: " + err.message, "danger");
             }
           });
         });
