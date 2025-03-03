@@ -64,6 +64,13 @@ function populateSponsors() {
 document.addEventListener("DOMContentLoaded", function() {
   console.log("main.js loaded");
 
+// Global error handler
+window.addEventListener('error', function(event) {
+  console.error('JavaScript error caught:', event.error);
+  // Prevent the error from propagating
+  event.preventDefault();
+});
+
   // Populate sponsors carousel if it exists
   const sponsorsCarousel = document.getElementById('sponsors-carousel');
   if (sponsorsCarousel) {

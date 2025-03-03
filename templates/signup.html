@@ -12,7 +12,7 @@
             <div class="card-body">
                 <form method="POST" action="{{ url_for('signup') }}">
                     {{ form.hidden_tag() }}
-                    
+
                     <div class="mb-3">
                         {{ form.email.label(class="form-label") }}
                         {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
@@ -52,19 +52,19 @@
                     <div class="mb-3">
                         <label class="form-label">I'm here to:</label>
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="user_intention" id="find_events" value="find_events" checked>
+                            <input class="form-check-input" type="checkbox" name="user_intention[]" id="find_events" value="find_events" checked>
                             <label class="form-check-label" for="find_events">
                                 Find events to attend
                             </label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="user_intention" id="create_events" value="create_events">
+                            <input class="form-check-input" type="checkbox" name="user_intention[]" id="create_events" value="create_events">
                             <label class="form-check-label" for="create_events">
                                 Create and list my own events
                             </label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="user_intention" id="represent_organization" value="represent_organization">
+                            <input class="form-check-input" type="checkbox" name="user_intention[]" id="represent_organization" value="represent_organization">
                             <label class="form-check-label" for="represent_organization">
                                 I represent an organization or venue
                             </label>
