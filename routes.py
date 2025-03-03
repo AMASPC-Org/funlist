@@ -1037,9 +1037,9 @@ def init_routes(app):
             return redirect(url_for("index"))
         tab = request.args.get("tab", "overview")
         status = request.args.get("status", "pending")
+        user_type = request.args.get("user_type", "all")
 
         # Get statistics for overview
-
         stats = {
             "pending_events": Event.query.filter_by(status="pending").count(),
             "total_users": User.query.count(),
@@ -1053,15 +1053,26 @@ def init_routes(app):
         }
 
         # Get events for event management
-
         events = Event.query.filter_by(status=status).order_by(Event.start_date).all()
 
-        # Get users for user management
-
-        users = User.query.order_by(User.created_at.desc()).all()
+        # Get users for user management with filtering by type
+        user_query = User.query
+        
+        if user_type == 'subscribers':
+            user_query = user_query.filter_by(is_subscriber=True)
+        elif user_type == 'event_creators':
+            user_query = user_query.filter_by(is_event_creator=True)
+        elif user_type == 'organizers':
+            user_query = user_query.filter_by(is_organizer=True)
+        elif user_type == 'vendors':
+            user_query = user_query.filter_by(is_vendor=True)
+        elif user_type == 'venues':
+            user_query = user_query.filter_by(is_venue=True)
+        # 'all' doesn't need a filter
+        
+        users = user_query.order_by(User.created_at.desc()).all()
 
         # Get analytics data
-
         events_by_category = {
             "labels": ["Sports", "Music", "Arts", "Food", "Other"],
             "datasets": [
@@ -1078,7 +1089,6 @@ def init_routes(app):
         }
 
         # User growth data (last 7 days)
-
         user_growth_data = {
             "labels": [
                 (datetime.now() - timedelta(days=x)).strftime("%Y-%m-%d")
@@ -1107,6 +1117,7 @@ def init_routes(app):
             events=events,
             users=users,
             status=status,
+            user_type=user_type,
             events_by_category=events_by_category,
             user_growth_data=user_growth_data,
         )
