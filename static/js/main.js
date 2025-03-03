@@ -9,52 +9,8 @@ document.addEventListener('DOMContentLoaded', function() {
     setupFloatingButtons();
     setupCookieConsent();
 
-    // Set up map-related functionality
-    setupMapEvents();
-    setupLocationServices();
-
-    // Other initializations
-    setupFormValidation();
-    setupFilters();
-
     // Initialize any carousels or sliders
     initializeCarousels();
-    initializeSponsorsCarousel();
-
-    // Map page functionality
-    // Check if on map page and if map element exists
-    const mapElement = document.getElementById('map');
-
-    if (mapElement) {
-        try {
-            console.log('Map element found, initializing...');
-
-            // Add resize handler to ensure map renders correctly when window size changes
-            window.addEventListener('resize', function() {
-                if (typeof L !== 'undefined') {
-                    setTimeout(function() {
-                        if (window.map) {
-                            window.map.invalidateSize();
-                        }
-                    }, 200);
-                }
-            });
-
-            // Ensure map is properly sized on page load
-            setTimeout(function() {
-                if (typeof L !== 'undefined' && window.map) {
-                    window.map.invalidateSize();
-                }
-            }, 500);
-
-        } catch (error) {
-            console.error('Error in map initialization:', error);
-        }
-    } else {
-        if (window.location.pathname.includes('/map')) {
-            console.error('Map container not found, skipping location services');
-        }
-    }
 });
 
 // Global error handling
@@ -394,16 +350,7 @@ function setupFormValidation() {
 
 function setupLocationServices() {
     const mapContainer = document.getElementById('map');
-    if (!mapContainer) {
-        console.log('Map container not found, skipping location services');
-        return;
-    }
-
-    // Check if Leaflet is loaded
-    if (typeof L === 'undefined') {
-        console.error('Leaflet library not loaded');
-        return;
-    }
+    if (!mapContainer) return;
 
     // If browser supports geolocation, get user's location
     if (navigator.geolocation) {
@@ -542,107 +489,4 @@ function saveUserPreferences(data) {
         console.error('Error saving preferences:', error);
         alert('An error occurred while saving your preferences. Please try again.');
     });
-}
-
-function initializeMap() {
-    const mapContainer = document.getElementById('map');
-    if (!mapContainer) {
-        console.log('Map container not found');
-        return;
-    }
-
-    // Make sure Leaflet is loaded
-    if (typeof L === 'undefined') {
-        console.error('Leaflet library not loaded');
-        mapContainer.innerHTML = '<div class="alert alert-danger">Map could not be loaded. Please refresh the page.</div>';
-        return;
-    }
-
-    try {
-        // Initialize the map
-        const map = L.map('map').setView([47.0379, -122.9007], 10); // Default to Olympia, WA
-
-        // Add the OpenStreetMap tile layer
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
-
-        // Force map to recalculate its container size with multiple attempts to ensure it renders
-        setTimeout(function() {
-            map.invalidateSize();
-
-            // Try again after a longer delay to ensure map is fully rendered
-            setTimeout(function() {
-                map.invalidateSize();
-                console.log('Map size recalculated after delay');
-            }, 500);
-        }, 100);
-
-        // Add event markers if they exist
-        if (typeof eventLocations !== 'undefined' && eventLocations.length > 0) {
-            eventLocations.forEach(event => {
-                const marker = L.marker([event.latitude, event.longitude]).addTo(map);
-                marker.bindPopup(`<b>${event.title}</b><br>${event.description}<br><a href="/event/${event.id}">View Details</a>`);
-
-                // Add click handler to highlight corresponding card
-                marker.on('click', function() {
-                    highlightEventCard(event.id);
-                });
-            });
-        }
-
-        // Connect event cards with map markers for interaction
-        const eventCards = document.querySelectorAll('.event-card');
-        eventCards.forEach(card => {
-            card.addEventListener('click', function() {
-                const eventId = this.dataset.eventId;
-                // Find the corresponding marker and open its popup
-                if (typeof eventLocations !== 'undefined') {
-                    const event = eventLocations.find(e => e.id == eventId);
-                    if (event) {
-                        map.setView([event.latitude, event.longitude], 14);
-                        // The marker's popup would open automatically in a complete implementation
-                    }
-                }
-            });
-        });
-
-        window.map = map; // Make map globally accessible for resize handling
-        return map;
-    } catch (error) {
-        console.error('Error initializing map:', error);
-        mapContainer.innerHTML = '<div class="alert alert-danger">Map could not be loaded. Please try again later.</div>';
-        return null;
-    }
-}
-
-// Helper function to highlight event card when marker is clicked
-function highlightEventCard(eventId) {
-    const eventCards = document.querySelectorAll('.event-card');
-    eventCards.forEach(card => {
-        card.classList.remove('highlighted');
-        if (card.dataset.eventId === eventId.toString()) {
-            card.classList.add('highlighted');
-            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-    });
-}
-
-// Added to handle map-specific events and initialization.  Implementation is a best guess based on context.
-function setupMapEvents() {
-    const mapContainer = document.getElementById('map');
-    if (!mapContainer) return;
-
-    mapContainer.addEventListener('user-location-ready', function(e) {
-        console.log('User location ready, initializing map with:', e.detail);
-        initializeMap(e.detail.lat, e.detail.lng); // Pass coordinates to initializeMap
-    });
-
-    // Attempt to initialize the map without user location if needed
-    setTimeout(() => {
-        if(!mapContainer.dataset.userLat) {
-            console.log("Initializing map without user location");
-            initializeMap();
-        }
-    }, 3000); // Wait 3 seconds before trying this fallback
 }

@@ -1,3 +1,4 @@
+
 /* Toast notifications */
 .toast {
   position: fixed;
@@ -780,96 +781,8 @@ main {
 
 .footer {
     flex-shrink: 0;
-    background-color: #1a1a1a; /* Darker background color */
-    color: #f8f9fa;
-    padding: 40px 0 20px;
-    margin-top: 30px;
+    background-color: #f8f9fa;
 }
-
-.footer h5 {
-    color: #fff;
-    font-weight: 600;
-    text-transform: uppercase;
-    margin-bottom: 15px;
-    letter-spacing: 0.5px;
-    font-size: 0.95rem;
-}
-
-/* Remove underlines from all footer links */
-.footer a,
-footer a,
-footer a.text-white,
-footer a.text-primary {
-    color: #f8f9fa;
-    text-decoration: none !important;
-    display: block;
-    margin-bottom: 8px;
-    transition: all 0.3s ease;
-}
-
-.footer a:hover,
-.footer a:focus,
-footer a:hover,
-footer a:focus,
-footer a.text-white:hover,
-footer a.text-primary:hover {
-    color: #FF8C42; /* Orange accent color from the site theme */
-    text-decoration: none !important;
-    transform: translateX(3px);
-}
-
-/* Social media icons styling */
-.footer .social-buttons a,
-footer .social-buttons a {
-    display: inline-block;
-    margin-right: 12px;
-    font-size: 1.2em;
-}
-
-.footer .social-buttons a:hover,
-footer .social-buttons a:hover {
-    color: #1AC8ED; /* Teal accent color from the site theme */
-    transform: translateY(-3px);
-}
-
-.footer .copyright,
-footer .copyright {
-    margin-top: 25px;
-    font-size: 0.9em;
-    color: #aaa;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    padding-top: 20px;
-}
-
-/* Bottom footer links */
-.footer .row.align-items-center a,
-footer .row.align-items-center a {
-    display: inline-block;
-    padding: 0 8px;
-}
-
-/* Responsive adjustments */
-@media (max-width: 767px) {
-    footer h5 {
-        margin-top: 20px;
-        margin-bottom: 10px;
-    }
-
-    footer .col-md-3:first-child h5 {
-        margin-top: 0;
-    }
-    
-    .footer .row.align-items-center,
-    footer .row.align-items-center {
-        flex-direction: column;
-    }
-    
-    .footer .row.align-items-center .col-md-5,
-    footer .row.align-items-center .col-md-5 {
-        margin-top: 15px;
-    }
-}
-
 
 .footer h5 {
     color: var(--text-primary);
@@ -1598,54 +1511,9 @@ body.cookie-consent-visible .floating-buttons-container {
     gap: 0.5rem;
 }
 
-/* Map page specific styles */
-#map {
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    z-index: 1;
-    height: 700px;
-    width: 100%;
-    border-radius: 8px;
-    margin-bottom: 1.5rem;
-}
-
-.map-container-wrapper {
-    margin-bottom: 2rem;
-}
-
-.map-content-area {
-    margin-top: 1rem;
-}
-
-.event-cards-container {
-    padding-right: 0.5rem;
-    height: 700px;
-    overflow-y: auto;
-    scrollbar-width: thin;
-}
-
-.event-cards-container .event-card {
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.event-cards-container .event-card:hover {
-    transform: translateY(-2px);
-}
-
-.event-cards-container .event-card.highlighted {
-    border-left: 4px solid var(--primary-color);
-    background-color: rgba(var(--bs-primary-rgb), 0.05);
-}
-
 @media (max-width: 768px) {
     .event-card .card-img-top {
         height: 160px;
-    }
-    
-    #map {
-        height: 400px !important;
-        margin-bottom: 1.5rem;
-    }
     }
 
     .event-card .btn-group {
@@ -1885,48 +1753,4 @@ body.cookie-consent-visible .floating-buttons-container {
 .dropdown-menu .border-bottom {
     border-bottom: 1px solid #e9ecef;
     margin-bottom: 0.5rem;
-
-/* Improved responsive footer styling */
-@media (max-width: 768px) {
-  footer .row > div {
-    margin-bottom: 20px;
-  }
-
-  footer h5 {
-    margin-bottom: 15px;
-  }
-
-  footer p {
-    margin-bottom: 10px;
-  }
-
-  footer .row.align-items-center {
-    text-align: center;
-  }
-
-  footer .col-md-5.col-lg-4.text-md-end {
-    text-align: center !important;
-    margin-top: 15px;
-  }
-}
-
-/* Enhance footer link hover effects */
-footer a.text-white {
-  transition: color 0.3s ease;
-}
-
-footer a.text-white:hover {
-  color: #add8e6 !important;
-  text-decoration: none;
-}
-
-footer a.text-primary {
-  transition: color 0.3s ease;
-}
-
-footer a.text-primary:hover {
-  color: #add8e6 !important;
-  text-decoration: underline;
-}
-
 }

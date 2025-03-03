@@ -1,7 +1,7 @@
 from flask import render_template, flash, redirect, url_for, request, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user, login_required, login_user, logout_user
-from forms import SignupForm, LoginForm, ProfileForm, EventForm, ResetPasswordRequestForm, ResetPasswordForm, OrganizerProfileForm, VendorProfileForm, VenueProfileForm
+from forms import SignupForm, LoginForm, ProfileForm, EventForm, ResetPasswordRequestForm, ResetPasswordForm
 from models import User, Event, Subscriber
 from db_init import db
 from utils import geocode_address, send_password_reset_email
@@ -15,17 +15,6 @@ logger.setLevel(logging.DEBUG)
 
 
 def init_routes(app):
-    # Add CSP report endpoint
-    @app.route('/csp-report', methods=['POST'])
-    def csp_report():
-        try:
-            report = request.get_json(force=True).get('csp-report', {})
-            app.logger.warning(f"CSP Violation: {report}")
-            return '', 204
-        except Exception as e:
-            app.logger.error(f"Error handling CSP report: {str(e)}")
-            return '', 400
-    
     # Add global error handler for application context errors
     @app.errorhandler(Exception)
     def handle_exception(e):
@@ -75,20 +64,21 @@ def init_routes(app):
     def before_request():
         if current_user.is_authenticated:
             current_time = datetime.utcnow()
-            
-            # Simplified session tracking that avoids encoding issues
             if "last_activity" not in session:
-                session["last_activity"] = current_time.isoformat()
+                session["last_activity"] = current_time
                 return
-                
-            # Only check for timeout if we're not on static resources
-            if not request.path.startswith('/static/'):
+            last_activity = session.get("last_activity")
+            if isinstance(last_activity, str):
                 try:
-                    # Use a simpler approach to time tracking
-                    session["last_activity"] = current_time.isoformat()
-                except Exception as e:
-                    app.logger.error(f"Session error: {str(e)}")
-                    # Don't interrupt the user experience if session tracking fails
+                    last_activity = datetime.fromisoformat(last_activity)
+                except ValueError:
+                    last_activity = current_time
+            if (current_time - last_activity) > timedelta(minutes=30):
+                session.clear()
+                logout_user()
+                flash("Your session has expired. Please log in again.", "info")
+                return redirect(url_for("login"))
+            session["last_activity"] = current_time
 
     @app.route("/")
     def index():
@@ -158,32 +148,30 @@ def init_routes(app):
 
                 # Set default role as subscriber
                 user.is_subscriber = True
-                
-                # Process user intention from the form
-                user_intention = form.user_intention.data
-                
-                # Set user roles based on intention
-                if user_intention == 'find_events':
-                    # Default role is already subscriber
-                    pass
-                elif user_intention == 'create_events':
-                    user.is_event_creator = True
-                elif user_intention == 'represent_organization':
-                    user.is_organizer = True
-                    user.is_event_creator = True  # Organizers can also create events
-                elif user_intention == 'vendor_services':
-                    user.is_vendor = True
-                
-                # Store profile information if provided
-                # Convert the multiselect audience_type to a comma-separated string
-                if form.audience_type.data:
-                    user.audience_type = ','.join(form.audience_type.data)
-                
-                if form.preferred_locations.data:
-                    user.preferred_locations = form.preferred_locations.data
-                    
-                if form.event_interests.data:
-                    user.event_interests = form.event_interests.data
+
+                # Process user intentions (can select multiple)
+                try:
+                    user_intentions = request.form.getlist('user_intention[]')
+                    if not user_intentions:
+                        user_intentions = ['find_events']  # Default
+
+                    if 'create_events' in user_intentions:
+                        user.is_event_creator = True
+                    if 'represent_organization' in user_intentions:
+                        user.is_organizer = True
+                        user.is_event_creator = True  # Organizers can also create events
+                except Exception as e:
+                    logger.warning(f"Error processing user intentions: {str(e)}")
+                    # Fallback to form fields if available
+                    if hasattr(form, 'is_event_creator') and form.is_event_creator.data:
+                        user.is_event_creator = True
+                    if hasattr(form, 'is_organizer') and form.is_organizer.data:
+                        user.is_organizer = True
+                        user.is_event_creator = True  # Organizers can also create events
+                    if hasattr(form, 'is_vendor') and form.is_vendor.data:
+                        user.is_vendor = True
+                        if hasattr(form, 'vendor_type') and form.vendor_type.data:
+                            user.vendor_type = form.vendor_type.data
 
                 db.session.add(user)
                 db.session.commit()
@@ -252,23 +240,20 @@ def init_routes(app):
                 email = form.email.data
                 logger.info(f"Attempting login for: {email}")
 
-                # Direct query to improve reliability
-                user = User.query.filter_by(email=email).first()
+                # Simplified query that avoids problematic columns
+                user = db.session.execute(db.select(User).filter_by(email=email)).scalar_one_or_none()
 
                 if user:
                     logger.info(f"User found: {user.id}")
                     if user.check_password(form.password.data):
                         if form.remember_me.data:
                             session.permanent = True
-                        
-                        # Login the user first
-                        login_user(user, remember=form.remember_me.data)
-                        
-                        # Then set session data with simplified strings
-                        # Use native Python types that will serialize properly
                         session["user_id"] = user.id
                         session["login_time"] = datetime.utcnow().isoformat()
                         session["last_activity"] = datetime.utcnow().isoformat()
+
+                        # Login the user
+                        login_user(user, remember=form.remember_me.data)
 
                         # Update last login time
                         user.last_login = datetime.utcnow()
@@ -323,20 +308,8 @@ def init_routes(app):
             form.location.data = current_user.location
             form.interests.data = current_user.interests
             form.birth_date.data = current_user.birth_date
-            
-            # Handle the new fields
-            if current_user.audience_type:
-                form.audience_type.data = current_user.audience_type.split(',')
-            if current_user.preferred_locations:
-                form.preferred_locations.data = current_user.preferred_locations
-            if current_user.event_interests:
-                form.event_interests.data = current_user.event_interests
-                
         if form.validate_on_submit():
             try:
-                # Convert audience_type from list to comma-separated string
-                audience_type_value = ','.join(form.audience_type.data) if form.audience_type.data else None
-                
                 profile_data = {
                     "username": form.username.data,
                     "first_name": form.first_name.data,
@@ -344,9 +317,6 @@ def init_routes(app):
                     "bio": form.bio.data,
                     "location": form.location.data,
                     "interests": form.interests.data,
-                    "audience_type": audience_type_value,
-                    "preferred_locations": form.preferred_locations.data,
-                    "event_interests": form.event_interests.data,
                     "birth_date": form.birth_date.data,
                 }
 
@@ -419,13 +389,13 @@ def init_routes(app):
     @app.route("/map")
     def map():
         events = Event.query.all()
-        return render_template("map.html", events=events, title="Map")
+        return render_template("map.html", events=events)
 
     @app.route("/event/<int:event_id>")
     def event_detail(event_id):
         event = Event.query.get_or_404(event_id)
         return render_template("event_detail.html", event=event)
-        
+
     @app.errorhandler(404)
     def not_found_error(error):
         return render_template("404.html"), 404
@@ -472,9 +442,7 @@ def init_routes(app):
                         longitude=coordinates[1],
                         category=form.category.data,
                         target_audience=form.target_audience.data,
-                        target_audience_description=form.target_audience_description.data,
                         fun_meter=form.fun_meter.data,
-                        fun_rating_justification=form.fun_rating_justification.data,
                         user_id=current_user.id,
                     )
                     db.session.add(event)
@@ -523,9 +491,7 @@ def init_routes(app):
 
                 # Standard login check
                 try:
-                    # Use a simpler query to avoid column issues
-                    user = User.query.filter(User.email == email).first()
-                    
+                    user = User.query.filter_by(email=email).first()
                     if user and user.check_password(password) and user.email == admin_email:
                         # Ensure admin privileges for the correct admin
                         user.is_admin = True
@@ -541,24 +507,9 @@ def init_routes(app):
                         return redirect(url_for("admin_dashboard"))
                     else:
                         flash("Invalid credentials or insufficient privileges.", "danger")
-                except SQLAlchemyError as e:
-                    db.session.rollback()
-                    logger.error(f"Database error during admin login: {str(e)}", exc_info=True)
-                    flash("Login check failed. Running database maintenance...", "warning")
-                    
-                    # Try to fix the schema on the fly
-                    try:
-                        from update_schema import update_schema
-                        if update_schema():
-                            flash("Database maintenance completed. Please try logging in again.", "info")
-                        else:
-                            flash("Database maintenance failed. Please contact support.", "danger")
-                    except Exception as schema_error:
-                        logger.error(f"Schema update failed: {str(schema_error)}", exc_info=True)
-                        flash("Database maintenance failed. Please contact support.", "danger")
                 except Exception as e:
-                    logger.error(f"Standard login check failed: {str(e)}", exc_info=True)
-                    flash("Login check failed. Please try again later.", "danger")
+                    logger.error(f"Standard login check failed: {str(e)}")
+                    flash("Login check failed. Database may need maintenance.", "danger")
 
             except Exception as e:
                 logger.error(f"Unexpected error in admin login: {str(e)}", exc_info=True)
@@ -832,18 +783,6 @@ def init_routes(app):
     def become_organizer():
         # Redirect user to the organizer profile page to set up their organizer account
         return redirect(url_for("organizer_profile"))
-        
-    @app.route("/become-venue")
-    @login_required
-    def become_venue():
-        # Redirect user to the venue profile page to set up their venue
-        return redirect(url_for("venue_profile"))
-        
-    @app.route("/become-vendor")
-    @login_required
-    def become_vendor():
-        # Redirect user to the vendor profile page to set up their vendor services
-        return redirect(url_for("vendor_profile"))
 
     @app.route("/organizer-profile", methods=["GET", "POST"])
     @login_required
@@ -894,36 +833,13 @@ def init_routes(app):
             form.vendor_type.data = current_user.vendor_type
             form.description.data = current_user.vendor_description
             form.website.data = current_user.organizer_website  # Reuse the organizer_website field
-            
-            # For vendors that are also organizers, pre-populate company name
-            if current_user.is_organizer and current_user.company_name:
-                form.company_name.data = current_user.company_name
-            
-            if form.services:
-                form.services.data = current_user.services
-            if form.pricing:
-                form.pricing.data = current_user.pricing
 
         if form.validate_on_submit():
             try:
-                # Create a combined profile that respects existing roles
                 current_user.is_vendor = True
                 current_user.vendor_type = form.vendor_type.data
                 current_user.vendor_description = form.description.data
-                
-                # Always update the website field, shared across roles
-                current_user.organizer_website = form.website.data
-                
-                # Update company name only if provided and not already set from organizer profile
-                if form.company_name and form.company_name.data:
-                    current_user.company_name = form.company_name.data
-                
-                # Additional vendor-specific fields
-                if hasattr(form, 'services') and form.services.data:
-                    current_user.services = form.services.data
-                if hasattr(form, 'pricing') and form.pricing.data:
-                    current_user.pricing = form.pricing.data
-                
+                current_user.organizer_website = form.website.data  # Reuse the organizer_website field
                 current_user.vendor_profile_updated_at = datetime.utcnow()
 
                 db.session.commit()
@@ -934,12 +850,7 @@ def init_routes(app):
                 logger.error(f"Error updating vendor profile: {str(e)}")
                 flash("There was a problem updating your vendor profile. Please try again.", "danger")
 
-        # Pass additional context about user's other roles
-        multi_role_context = {
-            'is_also_organizer': current_user.is_organizer,
-            'is_also_venue': current_user.is_venue
-        }
-        return render_template("vendor_profile.html", form=form, multi_role=multi_role_context)
+        return render_template("vendor_profile.html", form=form)
 
     @app.route("/organizers")
     def organizers():
@@ -957,98 +868,6 @@ def init_routes(app):
         # Get events by this organizer
         events = Event.query.filter_by(user_id=organizer.id).order_by(Event.start_date.desc()).all()
         return render_template("organizer_detail.html", organizer=organizer, events=events)
-        
-    @app.route("/vendors")
-    def vendors():
-        # Get all users who are vendors
-        vendors = User.query.filter_by(is_vendor=True).all()
-        return render_template("vendors.html", vendors=vendors)
-
-    @app.route("/vendor/<int:user_id>")
-    def vendor_detail(user_id):
-        vendor = User.query.get_or_404(user_id)
-        if not vendor.is_vendor:
-            flash("This user is not registered as an event vendor.", "warning")
-            return redirect(url_for("vendors"))
-
-        return render_template("vendor_detail.html", vendor=vendor)
-        
-    @app.route("/venues")
-    def venues():
-        # For this implementation, we're treating venues as a subset of organizers
-        # who have marked themselves specifically as venues
-        venues = User.query.filter_by(is_organizer=True).filter(User.is_venue==True).all()
-        return render_template("venues.html", venues=venues)
-
-    @app.route("/venue/<int:user_id>")
-    def venue_detail(user_id):
-        venue = User.query.get_or_404(user_id)
-        if not venue.is_venue:
-            flash("This user is not registered as a venue.", "warning")
-            return redirect(url_for("venues"))
-
-        # Get events at this venue
-        events = Event.query.filter_by(venue_id=venue.id).order_by(Event.start_date.desc()).all()
-        return render_template("venue_detail.html", venue=venue, events=events)
-        
-    @app.route("/venue-profile", methods=["GET", "POST"])
-    @login_required
-    def venue_profile():
-        # Import the form
-        form = VenueProfileForm()
-
-        if request.method == "GET":
-            # Pre-populate form with existing data if available
-            form.company_name.data = current_user.company_name
-            form.description.data = current_user.organizer_description
-            form.location.data = current_user.location
-            form.website.data = current_user.organizer_website
-            form.capacity.data = current_user.venue_capacity
-            form.features.data = current_user.venue_features
-            form.advertising_opportunities.data = current_user.advertising_opportunities
-            form.sponsorship_opportunities.data = current_user.sponsorship_opportunities
-
-        if form.validate_on_submit():
-            try:
-                venue_data = {
-                    "company_name": form.company_name.data,
-                    "organizer_description": form.description.data,
-                    "location": form.location.data,
-                    "organizer_website": form.website.data,
-                    "venue_capacity": form.capacity.data,
-                    "venue_features": form.features.data,
-                    "advertising_opportunities": form.advertising_opportunities.data,
-                    "sponsorship_opportunities": form.sponsorship_opportunities.data,
-                }
-
-                # Mark as venue (but only mark as organizer if not already a vendor)
-                current_user.is_venue = True
-                
-                # If user was previously just a vendor (not an organizer), 
-                # this makes them an organizer too. Otherwise, preserve existing organizer status
-                if not current_user.is_organizer:
-                    current_user.is_organizer = True
-                
-                # Update the venue profile fields
-                current_user.update_organizer_profile(venue_data)
-                
-                # Set venue-specific update timestamp
-                current_user.venue_profile_updated_at = datetime.utcnow()
-                
-                db.session.commit()
-                flash("Venue profile updated successfully!", "success")
-                return redirect(url_for("profile"))
-            except Exception as e:
-                db.session.rollback()
-                logger.error(f"Error updating venue profile: {str(e)}")
-                flash("There was a problem updating your venue profile. Please try again.", "danger")
-
-        # Pass additional context about user's other roles
-        multi_role_context = {
-            'is_also_organizer': current_user.is_organizer,
-            'is_also_vendor': current_user.is_vendor
-        }
-        return render_template("venue_profile.html", form=form, multi_role=multi_role_context)
 
     @app.route("/admin/dashboard")
     @login_required
@@ -1058,9 +877,9 @@ def init_routes(app):
             return redirect(url_for("index"))
         tab = request.args.get("tab", "overview")
         status = request.args.get("status", "pending")
-        user_type = request.args.get("user_type", "all")
 
         # Get statistics for overview
+
         stats = {
             "pending_events": Event.query.filter_by(status="pending").count(),
             "total_users": User.query.count(),
@@ -1074,26 +893,15 @@ def init_routes(app):
         }
 
         # Get events for event management
+
         events = Event.query.filter_by(status=status).order_by(Event.start_date).all()
 
-        # Get users for user management with filtering by type
-        user_query = User.query
-        
-        if user_type == 'subscribers':
-            user_query = user_query.filter_by(is_subscriber=True)
-        elif user_type == 'event_creators':
-            user_query = user_query.filter_by(is_event_creator=True)
-        elif user_type == 'organizers':
-            user_query = user_query.filter_by(is_organizer=True)
-        elif user_type == 'vendors':
-            user_query = user_query.filter_by(is_vendor=True)
-        elif user_type == 'venues':
-            user_query = user_query.filter_by(is_venue=True)
-        # 'all' doesn't need a filter
-        
-        users = user_query.order_by(User.created_at.desc()).all()
+        # Get users for user management
+
+        users = User.query.order_by(User.created_at.desc()).all()
 
         # Get analytics data
+
         events_by_category = {
             "labels": ["Sports", "Music", "Arts", "Food", "Other"],
             "datasets": [
@@ -1110,6 +918,7 @@ def init_routes(app):
         }
 
         # User growth data (last 7 days)
+
         user_growth_data = {
             "labels": [
                 (datetime.now() - timedelta(days=x)).strftime("%Y-%m-%d")
@@ -1138,7 +947,6 @@ def init_routes(app):
             events=events,
             users=users,
             status=status,
-            user_type=user_type,
             events_by_category=events_by_category,
             user_growth_data=user_growth_data,
         )

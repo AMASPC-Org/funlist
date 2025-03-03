@@ -1,33 +1,19 @@
-
 {% extends "base.html" %}
 
-{% block title %}Server Error - FunList.ai{% endblock %}
+{% block title %}Server Error{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-md-8 mx-auto">
-            <div class="card shadow-sm">
-                <div class="card-body text-center">
-                    <h1 class="card-title text-danger mb-4"><i class="fas fa-exclamation-triangle"></i> 500 - Internal Server Error</h1>
-                    <p class="card-text lead">Something went wrong on our end.</p>
-                    <p>Our team has been notified and we're working on fixing the issue.</p>
-
-                    {% if error %}
-                    <div class="alert alert-secondary mt-4">
-                        <p class="mb-0"><strong>Error details:</strong> {{ error }}</p>
-                    </div>
-                    {% endif %}
-
-                    <div class="mt-4">
-                        <a href="{{ url_for('index') }}" class="btn btn-primary me-2">
-                            <i class="fas fa-home"></i> Return to Home
-                        </a>
-                        <button onclick="window.location.reload();" class="btn btn-outline-secondary">
-                            <i class="fas fa-sync-alt"></i> Try Again
-                        </button>
-                    </div>
-                </div>
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="text-center mb-0">Server Error</h2>
+            </div>
+            <div class="card-body text-center">
+                <i class="fas fa-exclamation-circle fa-3x text-danger mb-3"></i>
+                <p>An unexpected error has occurred.</p>
+                <p>Our technical team has been notified. Please try again later.</p>
+                <a href="{{ url_for('index') }}" class="btn btn-primary">Go to Homepage</a>
             </div>
         </div>
     </div>

@@ -1,178 +1,63 @@
+
 import logging
 import os
 import signal
-import sys
-import time
-import socket
 import subprocess
-import psutil
+from app import create_app
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[logging.StreamHandler()]
-)
-logger = logging.getLogger(__name__)
-
-def is_port_in_use(port):
-    """Check if a port is in use using socket."""
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        return s.connect_ex(('0.0.0.0', port)) == 0
-
-def find_process_on_port(port):
-    """Find process using a specific port using psutil."""
-    try:
-        for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
-            try:
-                for conn in proc.connections(kind='inet'):
-                    if conn.laddr.port == port:
-                        return proc.pid
-            except (psutil.AccessDenied, psutil.NoSuchProcess):
-                continue
-    except Exception as e:
-        logger.error(f"Error finding process on port {port}: {e}")
-    return None
-
-def terminate_process(pid):
-    """Terminate a process by PID."""
-    if not pid:
-        return False
-
-    try:
-        process = psutil.Process(pid)
-        logger.info(f"Terminating process {pid} ({process.name()})")
-        process.terminate()
-
-        # Wait for termination
-        gone, alive = psutil.wait_procs([process], timeout=3)
-        if process in alive:
-            logger.info(f"Process {pid} did not terminate, sending SIGKILL")
-            process.kill()
-
-        return True
-    except (psutil.NoSuchProcess, psutil.AccessDenied) as e:
-        logger.error(f"Error terminating process {pid}: {e}")
-        return False
-
-def free_port(port):
-    """Free a port by terminating the process using it."""
-    if not is_port_in_use(port):
-        logger.info(f"Port {port} is already free")
-        return True
-
-    pid = find_process_on_port(port)
-    if pid:
-        logger.info(f"Found process {pid} using port {port}")
-        return terminate_process(pid)
-    else:
-        # Try lsof as a backup
+# Log which ports are in use, but don't kill processes
+def check_port_usage(ports):
+    for port in ports:
         try:
-            cmd = f"lsof -i :{port} -t"
-            output = subprocess.check_output(cmd, shell=True, stderr=subprocess.DEVNULL).decode().strip()
-            if output:
-                for pid_str in output.split('\n'):
-                    try:
-                        terminate_process(int(pid_str))
-                    except ValueError:
-                        continue
-                return not is_port_in_use(port)
-        except subprocess.SubprocessError:
-            pass
-
-    # Last resort: pkill
-    try:
-        subprocess.run(['pkill', '-f', f':{port}'], check=False)
-        time.sleep(1)
-        return not is_port_in_use(port)
-    except Exception as e:
-        logger.error(f"Error using pkill: {e}")
-
-    return False
-
-def run_flask_app():
-    """Run the Flask application on the appropriate port."""
-    # Get the preferred port from environment or use default
-    preferred_ports = [3000, 5000, 8080, 8081]
-    port = int(os.environ.get("PORT", preferred_ports[0]))
-
-    # Check each port and try to free it if needed
-    for current_port in preferred_ports:
-        if is_port_in_use(current_port):
-            logger.info(f"Port {current_port} is in use, attempting to free it")
-            if free_port(current_port):
-                logger.info(f"Successfully freed port {current_port}")
-                port = current_port
-                break
-        else:
-            logger.info(f"Port {current_port} is available")
-            port = current_port
-            break
-
-    # Function to ensure database schema is consistent
-    def update_database_schema():
-        try:
-            # Import the database update function
-            from update_schema import update_schema
-            logger.info("Running database schema update...")
-            result = update_schema()
-            if result:
-                logger.info("Database schema updated successfully")
+            # Find processes using the port
+            result = subprocess.run(
+                f"lsof -i :{port} -t", 
+                shell=True, 
+                capture_output=True, 
+                text=True
+            )
+            pids = result.stdout.strip().split('\n')
+            
+            if pids and pids[0]:
+                logging.info(f"Port {port} is in use by PIDs: {', '.join(pids)}")
             else:
-                logger.warning("Database schema update completed with warnings")
+                logging.info(f"Port {port} is available")
         except Exception as e:
-            logger.error(f"Error updating database schema: {str(e)}")
+            logging.error(f"Error checking port {port}: {e}")
 
-    # Create and run the Flask app
-    from app import create_app
-    app = create_app()
+# Check port availability without killing processes
+check_port_usage([8080, 8081, 5000, 80])
 
-    # Update database schema before starting
-    try:
-        # Import the database update function
-        from update_schema import update_schema
-        logger.info("Running database schema update...")
-        result = update_schema()
-        if result:
-            logger.info("Database schema updated successfully")
-        else:
-            logger.warning("Database schema update completed with warnings")
-    except Exception as e:
-        logger.error(f"Error updating database schema: {str(e)}")
-
-    # Register signal handlers for graceful shutdown
-    def signal_handler(sig, frame):
-        logger.info(f"Received signal {sig}, shutting down")
-        sys.exit(0)
-
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
-
-    #Assuming db and render_template are available from app import create_app
-    @app.route("/")
-    def index():
-        # Use a more basic query that only selects specific columns
-        try:
-            # Get only essential columns to avoid errors with missing columns
-            events = db.session.query(
-                Event.id, Event.title, Event.description, Event.start_date, 
-                Event.end_date, Event.category, Event.fun_meter, 
-                Event.city, Event.state
-            ).order_by(Event.start_date.desc()).all()
-        except Exception as e:
-            app.logger.error(f"Error fetching events: {str(e)}")
-            events = []
-        # Check if this is a new registration to show the wizard
-        new_registration = session.pop('new_registration', False)
-        return render_template("index.html", events=events, user=current_user, new_registration=new_registration)
-
-
-    logger.info(f"Starting Flask server on port {port}")
-    app.run(host='0.0.0.0', port=port, debug=True, use_reloader=False, threaded=True)
+logging.info("Starting Flask server...")
+app = create_app()
 
 if __name__ == "__main__":
-    try:
-        run_flask_app()
-    except Exception as e:
-        logger.error(f"Fatal error in main: {e}", exc_info=True)
-        sys.exit(1)
+    # Check if running in production/deployment environment
+    if 'REPL_SLUG' in os.environ and os.environ.get('REPL_ENVIRONMENT') == 'production':
+        # In production deployment, use port 80
+        port = 80
+        print(f"Running in deployment environment. Starting server on port {port}...")
+        app.run(host='0.0.0.0', port=port, debug=False)
+    else:
+        # In development, use PORT from environment or default to 8080
+        port = int(os.environ.get('PORT', 8080))
+        print(f"Starting development server on port {port}...")
+        
+        # Try to start the server, with clearer error handling
+        try:
+            app.run(host='0.0.0.0', port=port, debug=True)
+        except OSError as e:
+            if "Address already in use" in str(e):
+                print(f"ERROR: Port {port} is already in use. Please try:")
+                print(f"  1. Wait a moment for the previous server to shut down")
+                print(f"  2. Or edit .replit to use a different port")
+                
+                # Try one alternate port as a fallback
+                fallback_port = 5000
+                print(f"Attempting fallback on port {fallback_port}...")
+                try:
+                    app.run(host='0.0.0.0', port=fallback_port, debug=True)
+                except:
+                    print(f"Fallback port {fallback_port} also failed.")
+            else:
+                print(f"Error starting server: {e}")

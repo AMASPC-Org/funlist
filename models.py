@@ -30,11 +30,8 @@ class Event(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     category = db.Column(db.String(50), nullable=False)
     target_audience = db.Column(db.String(50), nullable=False)
-    target_audience_description = db.Column(db.Text, nullable=True)
     fun_meter = db.Column(db.Integer, nullable=False)
-    fun_rating_justification = db.Column(db.Text, nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    venue_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     website = db.Column(db.String(200))
     facebook = db.Column(db.String(200))
     instagram = db.Column(db.String(200))
@@ -51,8 +48,7 @@ class Event(db.Model):
     permission_granted = db.Column(db.Boolean, default=False)
 
     # Add relationship to User and SourceWebsite models
-    organizer = db.relationship('User', foreign_keys=[user_id], backref='organized_events')
-    venue = db.relationship('User', foreign_keys=[venue_id], backref='hosted_events')
+    organizer = db.relationship('User', backref='organized_events')
     source_website = db.relationship('SourceWebsite', backref='events')
 
     def __repr__(self):
@@ -90,13 +86,13 @@ class User(UserMixin, db.Model):
     bio = db.Column(db.Text)
     location = db.Column(db.String(100))
     interests = db.Column(db.String(200))
-    audience_type = db.Column(db.String(200), nullable=True)  # Comma-separated values
-    preferred_locations = db.Column(db.String(255), nullable=True)  # Comma-separated values
-    event_interests = db.Column(db.String(255), nullable=True)  # Comma-separated values
     birth_date = db.Column(db.Date)
     profile_updated_at = db.Column(db.DateTime)
 
     # User preferences
+    audience_type = db.Column(db.String(20), nullable=True)
+    preferred_locations = db.Column(db.String(255), nullable=True)
+    event_interests = db.Column(db.String(255), nullable=True)
     is_premium = db.Column(db.Boolean, default=False)
 
 
@@ -113,15 +109,7 @@ class User(UserMixin, db.Model):
     is_vendor = db.Column(db.Boolean, default=False)
     vendor_type = db.Column(db.String(50))
     vendor_description = db.Column(db.Text)
-    services = db.Column(db.Text)
-    pricing = db.Column(db.Text)
     vendor_profile_updated_at = db.Column(db.DateTime)
-
-    # Venue fields
-    is_venue = db.Column(db.Boolean, default=False)
-    venue_capacity = db.Column(db.String(50))
-    venue_features = db.Column(db.Text)
-    venue_profile_updated_at = db.Column(db.DateTime)
 
     def update_organizer_profile(self, organizer_data):
         for key, value in organizer_data.items():

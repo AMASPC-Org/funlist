@@ -92,26 +92,6 @@
                             {% endif %}
                         </div>
                     {% endif %}
-                    
-                    <!-- Show multi-role information -->
-                    {% if organizer.is_venue or organizer.is_vendor %}
-                    <div class="mt-4 pt-3 border-top">
-                        <h5>Additional Roles</h5>
-                        <div class="d-flex flex-column">
-                            {% if organizer.is_venue %}
-                            <a href="{{ url_for('venue_detail', user_id=organizer.id) }}" class="btn btn-outline-secondary btn-sm mb-2">
-                                <i class="fas fa-map-marker-alt me-1"></i> View as Venue
-                            </a>
-                            {% endif %}
-                            
-                            {% if organizer.is_vendor %}
-                            <a href="{{ url_for('vendor_detail', user_id=organizer.id) }}" class="btn btn-outline-secondary btn-sm">
-                                <i class="fas fa-store me-1"></i> View Vendor Services
-                            </a>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endif %}
                 </div>
             </div>
         </div>

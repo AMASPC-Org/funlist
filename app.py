@@ -46,19 +46,12 @@ def create_app():
     }
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    # Improved session configuration
+    # Session configuration
     app.config['SESSION_TYPE'] = 'filesystem'
-    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
-    app.config['SESSION_COOKIE_SECURE'] = False  # Disable for local development
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
+    app.config['SESSION_COOKIE_SECURE'] = True  # Enable for HTTPS
     app.config['SESSION_COOKIE_HTTPONLY'] = True
-    app.config['SESSION_USE_SIGNER'] = False  # Disable signer to avoid bytes/string issues
-    app.config['SESSION_FILE_DIR'] = './flask_session'
-    app.config['SESSION_KEY_PREFIX'] = 'funlist_'
-
-    # Initialize Flask-Session (only once)
-    Session(app)
-
-    # NOTE: We've fixed double initialization of Session
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
     # Add request logging
     @app.before_request
@@ -69,16 +62,15 @@ def create_app():
     @app.after_request
     def after_request(response):
         """Add security headers and log response details after each request."""
-        # Set Content Security Policy header with more permissive options
+        # Set Content Security Policy header
         csp = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https: https://cdn.jsdelivr.net https://unpkg.com https://code.jquery.com https://auth.util.repl.co https://*.replit.dev https://*.repl.co https://cdnjs.cloudflare.com; "
-            "style-src 'self' 'unsafe-inline' https: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://auth.util.repl.co https://*.replit.dev https://*.repl.co; "
+            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
             "img-src 'self' data: https:; "
-            "font-src 'self' data: https: https://cdnjs.cloudflare.com; "
+            "font-src 'self' https://cdnjs.cloudflare.com; "
             "connect-src 'self' https:; "
-            "frame-src 'self' https: https://auth.util.repl.co https://*.replit.dev https://*.repl.co; "
-            "object-src 'none'; "
+            "frame-src 'self' https://auth.util.repl.co https://*.replit.dev https://*.repl.co; "
             "report-uri /csp-report"
         )
         response.headers['Content-Security-Policy'] = csp
@@ -123,10 +115,10 @@ def create_app():
         raise
 
     try:
-        logger.info("Session already initialized above...")
-        # Don't initialize session again
+        logger.info("Initializing Session...")
+        Session(app)
     except Exception as e:
-        logger.error(f"Failed with session: {str(e)}", exc_info=True)
+        logger.error(f"Failed to initialize Session: {str(e)}", exc_info=True)
         raise
 
     try:
@@ -136,10 +128,7 @@ def create_app():
         login_manager.login_view = "login"
         login_manager.login_message = "Please log in to access this page."
         login_manager.login_message_category = "info"
-        login_manager.session_protection = "basic"  # Changed from strong to basic for better compatibility
-        login_manager.refresh_view = "login"  # Set refresh view for session timeouts
-        login_manager.needs_refresh_message = "Please login again to confirm your identity"
-        login_manager.needs_refresh_message_category = "info"
+        login_manager.session_protection = "strong"
     except Exception as e:
         logger.error(f"Failed to initialize login manager: {str(e)}",
                      exc_info=True)
@@ -155,17 +144,7 @@ def create_app():
     @login_manager.user_loader
     def load_user(user_id):
         try:
-            # More robust user loading
-            if user_id is None:
-                return None
-
-            # Try to convert to integer, but handle gracefully if it's not
-            try:
-                user_id_int = int(user_id)
-                return User.query.get(user_id_int)
-            except (ValueError, TypeError):
-                logger.warning(f"Invalid user_id format: {user_id}")
-                return None
+            return db.session.get(User, int(user_id))
         except Exception as e:
             logger.error(f"Error loading user {user_id}: {str(e)}",
                          exc_info=True)
@@ -176,26 +155,9 @@ def create_app():
         from routes import init_routes
         init_routes(app)
         logger.info("Routes initialized successfully")
-    except AssertionError as e:
-        if "View function mapping is overwriting an existing endpoint function" in str(e):
-            logger.error("Route conflict detected. Some routes are defined multiple times.")
-            endpoint = str(e).split(":")[-1].strip()
-            logger.error(f"Conflicting endpoint: {endpoint}")
-            # Don't raise the error, continue with application setup
-            logger.warning("Continuing with application setup despite route conflicts.")
-        else:
-            logger.error(f"Failed to initialize routes: {str(e)}", exc_info=True)
-            raise
     except Exception as e:
         logger.error(f"Failed to initialize routes: {str(e)}", exc_info=True)
         raise
-
-    # Add improved error handler
-    @app.errorhandler(500)
-    def internal_server_error(e):
-        from flask import render_template
-        logger.error(f"500 error: {str(e)}", exc_info=True)
-        return render_template('500.html', error=str(e)), 500
 
     logger.info("Application creation completed successfully")
     return app
