@@ -811,6 +811,18 @@ def init_routes(app):
     def become_organizer():
         # Redirect user to the organizer profile page to set up their organizer account
         return redirect(url_for("organizer_profile"))
+        
+    @app.route("/become-venue")
+    @login_required
+    def become_venue():
+        # Redirect user to the venue profile page to set up their venue
+        return redirect(url_for("venue_profile"))
+        
+    @app.route("/become-vendor")
+    @login_required
+    def become_vendor():
+        # Redirect user to the vendor profile page to set up their vendor services
+        return redirect(url_for("vendor_profile"))
 
     @app.route("/organizer-profile", methods=["GET", "POST"])
     @login_required
@@ -861,13 +873,36 @@ def init_routes(app):
             form.vendor_type.data = current_user.vendor_type
             form.description.data = current_user.vendor_description
             form.website.data = current_user.organizer_website  # Reuse the organizer_website field
+            
+            # For vendors that are also organizers, pre-populate company name
+            if current_user.is_organizer and current_user.company_name:
+                form.company_name.data = current_user.company_name
+            
+            if form.services:
+                form.services.data = current_user.services
+            if form.pricing:
+                form.pricing.data = current_user.pricing
 
         if form.validate_on_submit():
             try:
+                # Create a combined profile that respects existing roles
                 current_user.is_vendor = True
                 current_user.vendor_type = form.vendor_type.data
                 current_user.vendor_description = form.description.data
-                current_user.organizer_website = form.website.data  # Reuse the organizer_website field
+                
+                # Always update the website field, shared across roles
+                current_user.organizer_website = form.website.data
+                
+                # Update company name only if provided and not already set from organizer profile
+                if form.company_name and form.company_name.data:
+                    current_user.company_name = form.company_name.data
+                
+                # Additional vendor-specific fields
+                if hasattr(form, 'services') and form.services.data:
+                    current_user.services = form.services.data
+                if hasattr(form, 'pricing') and form.pricing.data:
+                    current_user.pricing = form.pricing.data
+                
                 current_user.vendor_profile_updated_at = datetime.utcnow()
 
                 db.session.commit()
@@ -878,7 +913,12 @@ def init_routes(app):
                 logger.error(f"Error updating vendor profile: {str(e)}")
                 flash("There was a problem updating your vendor profile. Please try again.", "danger")
 
-        return render_template("vendor_profile.html", form=form)
+        # Pass additional context about user's other roles
+        multi_role_context = {
+            'is_also_organizer': current_user.is_organizer,
+            'is_also_venue': current_user.is_venue
+        }
+        return render_template("vendor_profile.html", form=form, multi_role=multi_role_context)
 
     @app.route("/organizers")
     def organizers():
@@ -960,10 +1000,20 @@ def init_routes(app):
                     "sponsorship_opportunities": form.sponsorship_opportunities.data,
                 }
 
-                # Mark as both organizer and venue
-                current_user.is_organizer = True
+                # Mark as venue (but only mark as organizer if not already a vendor)
                 current_user.is_venue = True
+                
+                # If user was previously just a vendor (not an organizer), 
+                # this makes them an organizer too. Otherwise, preserve existing organizer status
+                if not current_user.is_organizer:
+                    current_user.is_organizer = True
+                
+                # Update the venue profile fields
                 current_user.update_organizer_profile(venue_data)
+                
+                # Set venue-specific update timestamp
+                current_user.venue_profile_updated_at = datetime.utcnow()
+                
                 db.session.commit()
                 flash("Venue profile updated successfully!", "success")
                 return redirect(url_for("profile"))
@@ -972,7 +1022,12 @@ def init_routes(app):
                 logger.error(f"Error updating venue profile: {str(e)}")
                 flash("There was a problem updating your venue profile. Please try again.", "danger")
 
-        return render_template("venue_profile.html", form=form)
+        # Pass additional context about user's other roles
+        multi_role_context = {
+            'is_also_organizer': current_user.is_organizer,
+            'is_also_vendor': current_user.is_vendor
+        }
+        return render_template("venue_profile.html", form=form, multi_role=multi_role_context)
 
     @app.route("/admin/dashboard")
     @login_required

@@ -202,7 +202,6 @@ class OrganizerProfileForm(FlaskForm):
     submit = SubmitField('Save Profile')
 
 class VendorProfileForm(FlaskForm):
-    company_name = StringField('Company Name', validators=[Optional(), Length(max=100)])
     vendor_type = SelectField('Vendor Type', choices=[
         ('Event Planner', 'Event Planner'),
         ('Catering', 'Catering'),
@@ -219,7 +218,7 @@ class VendorProfileForm(FlaskForm):
     website = StringField('Website', validators=[Optional(), URL()])
     services = TextAreaField('Services Offered', validators=[Optional(), Length(max=500)])
     pricing = TextAreaField('Pricing Information', validators=[Optional(), Length(max=300)])
-    submit = SubmitField('Save Profile')
+    submit = SubmitField('Save Vendor Profile')
 
 class VenueProfileForm(FlaskForm):
     company_name = StringField('Venue Name', validators=[DataRequired(), Length(max=100)])
@@ -231,25 +230,6 @@ class VenueProfileForm(FlaskForm):
     advertising_opportunities = TextAreaField('Advertising Opportunities', validators=[Optional(), Length(max=500)])
     sponsorship_opportunities = TextAreaField('Sponsorship Opportunities', validators=[Optional(), Length(max=500)])
     submit = SubmitField('Save Profile')
-
-class VendorProfileForm(FlaskForm):
-    vendor_type = SelectField('Vendor Type', choices=[
-        ('food', 'Food Vendor'),
-        ('alcohol', 'Alcohol Vendor'),
-        ('sound', 'Sound and Audio'),
-        ('print', 'Printing Services'),
-        ('entertainment', 'Entertainer (Magician, Clown, etc.)'),
-        ('face_paint', 'Face Painter'),
-        ('music', 'Live Music Performer'),
-        ('photography', 'Photography/Videography'),
-        ('decor', 'Decoration Services'),
-        ('other', 'Other')
-    ], validators=[DataRequired()])
-    description = TextAreaField('About Your Vendor Services', validators=[Optional(), Length(max=500)])
-    website = StringField('Website', validators=[Optional(), URL()])
-    services = TextAreaField('Services Offered', validators=[Optional(), Length(max=500)])
-    pricing = TextAreaField('Pricing Information', validators=[Optional(), Length(max=300)])
-    submit = SubmitField('Save Vendor Profile')
 
 class ResetPasswordRequestForm(FlaskForm):
     email = StringField('Email', validators=[

@@ -105,6 +105,7 @@
             </a>
             {% endif %}
 
+            <!-- Vendor Role -->
             {% if current_user.is_vendor %}
             <a href="{{ url_for('vendor_profile') }}" class="list-group-item list-group-item-action">
               <div class="d-flex w-100 justify-content-between">
@@ -112,15 +113,44 @@
                 <small><i class="fas fa-store"></i></small>
               </div>
               <p class="mb-1">Update your vendor services</p>
+              {% if current_user.vendor_type %}
+              <small class="text-muted">{{ current_user.vendor_type }}</small>
+              {% endif %}
             </a>
             {% else %}
             <a href="{{ url_for('become_vendor') }}" class="list-group-item list-group-item-action">
               <div class="d-flex w-100 justify-content-between">
-                <h5 class="mb-1">Register as a Vendor</h5>
+                <h5 class="mb-1">Become a Vendor</h5>
                 <small><i class="fas fa-store"></i></small>
               </div>
-              <p class="mb-1">Create a profile for your vendor services</p>
+              <p class="mb-1">Offer your services to event organizers</p>
             </a>
+            {% endif %}
+
+            <!-- Role Summary Card -->
+            {% if current_user.is_organizer or current_user.is_venue or current_user.is_vendor %}
+            <div class="card mt-4 border-info">
+              <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Your Business Identity</h5>
+              </div>
+              <div class="card-body">
+                <p>You currently have the following roles:</p>
+                <ul>
+                  {% if current_user.is_organizer %}
+                  <li><strong>Event Organizer</strong>: You can create and manage events</li>
+                  {% endif %}
+
+                  {% if current_user.is_venue %}
+                  <li><strong>Venue Provider</strong>: Your venue is listed in our directory</li>
+                  {% endif %}
+
+                  {% if current_user.is_vendor %}
+                  <li><strong>Service Vendor</strong>: You offer services to event organizers</li>
+                  {% endif %}
+                </ul>
+                <p class="text-muted">Having multiple roles allows you to manage different aspects of your business in one account.</p>
+              </div>
+            </div>
             {% endif %}
           </div>
 
