@@ -1,6 +1,5 @@
 import os
 import logging
-import os
 from datetime import timedelta
 from flask import Flask, session, request
 from flask_login import LoginManager
