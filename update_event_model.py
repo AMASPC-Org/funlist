@@ -3,7 +3,7 @@ from flask_migrate import Migrate
 from app import create_app
 from db_init import db
 from models import Event
-from sqlalchemy import Column, Text
+from sqlalchemy import Column, Text, inspect
 
 def update_event_model():
     """Update the Event model with new fields for fun rating justification and target audience description"""
@@ -11,11 +11,9 @@ def update_event_model():
 
     with app.app_context():
         try:
-            # Check if the columns already exist first using raw SQL to be more reliable
-            columns = []
-            with db.engine.connect() as conn:
-                result = conn.execute(db.text("PRAGMA table_info(event)"))
-                columns = [row[1] for row in result]
+            # Check if the columns already exist using database-agnostic approach
+            inspector = inspect(db.engine)
+            columns = [column['name'] for column in inspector.get_columns('event')]
             
             # Add the new columns if they don't exist
             with db.engine.connect() as conn:
