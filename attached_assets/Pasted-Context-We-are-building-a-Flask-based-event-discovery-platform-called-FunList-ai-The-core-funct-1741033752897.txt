@@ -1,0 +1,729 @@
+Context:
+
+We are building a Flask-based event discovery platform called FunList.ai. The core functionality includes user registration, event listing, event searching, chapter-based organization, and user profiles. We are working within the Replit environment and using Flask, SQLAlchemy, Flask-Login, Flask-WTF, and Flask-Migrate. The goal is to create a user-friendly and intuitive experience, encouraging user registration and engagement. We have already made several changes to the models.py, base.html, index.html, chapters.html, and chapter.html. We now need to complete the form and route updates, including:
+
+Modifying the signup and profile forms to collect user preferences.
+
+Implementing dynamic routing for chapter pages using slugs.
+
+Adding a basic placeholder for a one-day trial access system.
+
+Creating a modular FAQ section for reuse across multiple pages.
+
+Addressing the reported issues with map display and styling.
+
+Structuring the project directory.
+
+Updating the Membership Page
+
+Updating the Chapter Page
+
+Crucial Instructions:
+
+Address each task below individually. Provide code modifications and explanations for each step.
+
+Do not combine changes unless explicitly instructed. This will help avoid confusion and make debugging easier.
+
+After each task, verify that the application still runs and that no existing functionality is broken.
+
+Provide complete files when asked, not snippets.
+
+I will indicate which task to perform, execute only that task.
+
+Task 1: Project Setup and Dependency Management
+
+Check for requirements.txt: Verify that a requirements.txt file exists in the root directory of your Replit project. If it doesn't exist, create it.
+
+List Dependencies: List the exact names and versions of all required packages in the requirements.txt file. This must include (but is not limited to):
+
+Flask
+
+Flask-SQLAlchemy
+
+Flask-Login
+
+Flask-WTF
+
+Flask-Migrate
+
+Werkzeug
+
+python-slugify
+
+requests (for geocoding)
+
+gunicorn (for deployment)
+
+itsdangerous (for tokens)
+
+email_validator
+
+You can get the exact versions by running pip freeze in a working environment where these packages are installed. If you're unsure, provide a list of the package names without specific versions, and we'll address that later. But try to provide version numbers. Example of a requirements.txt line:
+
+Flask==2.2.2
+Use code with caution.
+Install Packages: Install any missing packages using pip:
+
+pip install -r requirements.txt
+Use code with caution.
+Bash
+Install slugify: Run this:
+
+pip install python-slugify
+Use code with caution.
+Then update the requirements file:
+pip freeze > requirements.txt
+
+Task 2: Fix migrations.py (CRITICAL - Must be Done Before Any Model Changes)
+
+Backup: Before making any changes, download a ZIP file of your entire Replit project. This is your safety net.
+
+Delete Incorrect File: Delete the file named migrations.py (if it exists) in the root of your project. This is incorrect and is causing problems.
+
+Delete Existing migrations Directory (If It Exists): If you already have a directory named migrations, delete it completely. We're starting fresh to ensure a clean setup.
+
+Create migrations Directory: Create a new, empty directory named migrations in your project's root directory (the same level as app.py, forms.py, etc.).
+
+Initialize Flask-Migrate: Open your Replit Shell (not the Console) and run:
+
+flask db init
+Use code with caution.
+Bash
+This command should create the correct migrations directory structure inside the migrations directory you just created. You should see subdirectories like versions, templates, and files like env.py and script.py.mako. If you see an error, stop and report the exact error message. Do not proceed if this fails. If it succeeds, you should see a message like "Creating directory /home/runner/YourReplName/migrations ... done". And you should see subdirectories and files inside the migrations directory.
+
+Run:
+
+flask db migrate -m "Add slug and trial access fields"
+Use code with caution.
+Run flask db upgrade: Only if the migrate command succeeded, run:
+
+flask db upgrade
+Use code with caution.
+Bash
+Task 3: Update models.py (Complete Code Provided)
+
+Replace models.py: Replace your entire models.py file with the following code. This includes all the necessary model changes discussed previously (slug field, trial access fields, search functionality):
+
+(Insert the complete models.py code from my previous response here. I'm not repeating it in this prompt to avoid unnecessary duplication, but it's the exact same code.)
+
+Task 4: Form Updates (Signup and Profile)
+
+Open forms.py:
+
+Import SelectMultipleField: Add the following import at the top of your forms.py:
+
+from wtforms import SelectMultipleField
+Use code with caution.
+Python
+Modify SignupForm: Make sure your SignupForm looks like this:
+
+class SignupForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired(), Length(min=2, max=100)])
+    email = EmailField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
+    user_intention = SelectField('I\'m here to...', choices=[('', 'Select an option...'), ('find_events', 'Find Events'), ('create_events', 'Create Events'), ('represent_organization', 'Represent an Organization'), ('vendor_services', 'Offer Vendor Services')], validators=[DataRequired()])
+    audience_type = SelectMultipleField('Audience Type', choices=[('single', 'Single (18+)'), ('senior', 'Senior'), ('professional', 'Professional'), ('parent', 'Parent'), ('adult', 'Adult'), ('family', 'Family'), ('21+', '21+')], validators=[DataRequired()], default = '')
+    preferred_locations = StringField('Preferred Locations (comma-separated)', validators=[Length(max=255)])
+    event_interests = StringField('Event Interests (comma-separated)', validators=[Length(max=255)])
+    terms_accepted = BooleanField('I accept the Terms and Conditions and Privacy Policy', validators=[DataRequired()])
+    submit = SubmitField('Sign Up')
+Use code with caution.
+Python
+Modify ProfileForm: Make sure your ProfileForm looks like this:
+
+class ProfileForm(FlaskForm):
+    user_id = HiddenField()  # Add a hidden field for user_id
+    username = StringField('Username', validators=[Length(min=4, max=50)])
+    first_name = StringField('First Name', validators=[Length(max=50)])
+    last_name = StringField('Last Name', validators=[Length(max=50)])
+    bio = TextAreaField('Bio', validators=[Length(max=500)])
+    location = StringField('Location', validators=[Length(max=100)])
+    interests = StringField('Interests', validators=[Length(max=200)])
+    birth_date = DateField('Birth Date', format='%Y-%m-%d', validators=[Optional()])
+    user_intention = SelectField('I\'m here to...', choices=[('', 'Select an option...'), ('find_events', 'Find Events'), ('create_events', 'Create Events'), ('represent_organization', 'Represent an Organization'), ('vendor_services', 'Offer Vendor Services')], validators=[DataRequired()])
+    audience_type = SelectMultipleField('Audience Type', choices=[('single', 'Single (18+)'), ('senior', 'Senior'), ('professional', 'Professional'), ('parent', 'Parent'), ('adult', 'Adult'), ('family', 'Family'), ('21+', '21+')], validators=[DataRequired()])
+    preferred_locations = StringField('Preferred Locations (comma-separated)', validators=[Length(max=255)])
+    event_interests = StringField('Event Interests (comma-separated)', validators=[Length(max=255)])
+    submit = SubmitField('Update Profile')
+Use code with caution.
+Python
+If there is not a user_id, add it.
+
+Task 5: Route Updates (Signup and Profile)
+
+Open routes.py:
+
+Locate the /signup route and ensure that handles the logic of taking data from form and putting into the User model, including creating a comma-separated string from the multiple select field, like so:
+
+# Handle audience_type (join the list into a string)
+        user.audience_type = ','.join(form.audience_type.data)
+
+        # Handle preferred_locations and event_interests
+        user.preferred_locations = form.preferred_locations.data
+        user.event_interests = form.event_interests.data
+Use code with caution.
+Python
+Locate the /profile/edit route. Ensure the logic for this route includes setting data in the database from the form, handling the multi-select field, like so:
+
+# Handle audience_type (join the list into a string)
+                current_user.audience_type = ','.join(form.audience_type.data)
+
+                # Handle preferred_locations and event_interests
+                current_user.preferred_locations = form.preferred_locations.data
+                current_user.event_interests = form.event_interests.data
+Use code with caution.
+Python
+Locate the /profile/edit route. Ensure the logic for this route includes retrieving the user data and placing it into the form, for example:
+
+if request.method == "GET":
+    form.username.data = current_user.username
+    form.first_name.data = current_user.first_name
+    form.last_name.data = current_user.last_name
+    form.bio.data = current_user.bio
+    form.location.data = current_user.location
+    form.interests.data = current_user.interests
+    form.birth_date.data = current_user.birth_date
+    # Pre-populate the form fields
+    form.user_intention.data =  'find_events' # Default.
+    if current_user.is_event_creator:
+        form.user_intention.data = 'create_events'
+    if current_user.is_organizer:
+        form.user_intention.data = 'represent_organization'
+    if current_user.is_vendor:
+         form.user_intention.data = 'vendor_services'
+    form.audience_type.data = current_user.audience_type.split(',') if current_user.audience_type else []
+    form.preferred_locations.data = current_user.preferred_locations
+    form.event_interests.data = current_user.event_interests
+Use code with caution.
+Python
+Copy and Paste Ready Code: Here is the complete routes.py.
+
+from flask import render_template, flash, redirect, url_for, request, session, jsonify
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import current_user, login_required, login_user, logout_user
+from forms import SignupForm, LoginForm, ProfileForm, EventForm, ResetPasswordRequestForm, ResetPasswordForm
+from models import User, Event, Subscriber, Chapter, HelpArticle #import chapter and HelpArticle
+from app import app, db  # Import app and db from app.py
+from utils.utils import geocode_address  # Import from utils.utils
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+import logging
+from datetime import datetime, timedelta
+import json
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+
+@app.route("/about")
+def about():
+    return render_template('main/about.html')
+
+@app.route("/subscribe", methods=["POST"])
+def subscribe():
+    try:
+        data = request.get_json()
+        email = data.get("email")
+        if not email:
+            return jsonify({"success": False, "message": "Email is required"}), 400
+        if Subscriber.query.filter_by(email=email).first():
+            return (
+                jsonify({"success": False, "message": "Email already subscribed"}),
+                400,
+            )
+        subscriber = Subscriber(email=email)
+        db.session.add(subscriber)
+        db.session.commit()
+
+        return jsonify({"success": True, "message": "Subscription successful"})
+    except Exception as e:
+        logger.error(f"Subscription error: {str(e)}")
+        db.session.rollback()
+        return jsonify({"success": False, "message": "An error occurred"}), 500
+
+@app.before_request
+def before_request():
+    if current_user.is_authenticated:
+        current_time = datetime.utcnow()
+        if "last_activity" not in session:
+            session["last_activity"] = current_time
+            return
+        last_activity = session.get("last_activity")
+        if isinstance(last_activity, str):
+            try:
+                last_activity = datetime.fromisoformat(last_activity)
+            except ValueError:
+                last_activity = current_time
+        if (current_time - last_activity) > timedelta(minutes=30):
+            session.clear()
+            logout_user()
+            flash("Your session has expired. Please log in again.", "info")
+            return redirect(url_for("login"))
+        session["last_activity"] = current_time
+
+@app.route("/")
+def index():
+    # events = Event.query.order_by(Event.start_date.desc()).all() #no events yet
+    return render_template("main/index.html", user=current_user)  # updated
+
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    if current_user.is_authenticated:
+        return redirect(url_for("index"))
+    form = SignupForm()
+    if form.validate_on_submit():
+        try:
+            user = User()
+            user.email = form.email.data
+            user.set_password(form.password.data)
+            user.account_active = True
+
+            # Handle user_intention
+            intention = form.user_intention.data
+            if intention == 'create_events':
+                user.is_event_creator = True
+            elif intention == 'represent_organization':
+                user.is_organizer = True
+            elif intention == 'vendor_services':
+                user.is_vendor = True
+
+            # Handle audience_type (join the list into a string)
+            user.audience_type = ','.join(form.audience_type.data)
+
+            # Handle preferred_locations and event_interests
+            user.preferred_locations = form.preferred_locations.data
+            user.event_interests = form.event_interests.data
+
+            db.session.add(user)
+            db.session.commit()
+
+            flash("Account created successfully! You can now log in.", "success")
+            return redirect(url_for("login"))
+        except IntegrityError as e:
+            db.session.rollback()
+            logger.error(f"Database integrity error during sign up: {str(e)}")
+            error_msg = str(e).lower()
+
+            if "email" in error_msg and "unique constraint" in error_msg:
+                flash(
+                    "This email address is already registered. Please use a different email or try logging in.",
+                    "danger",
+                )
+                form.email.errors = list(form.email.errors) + [
+                    "Email already registered"
+                ]
+            else:
+                flash(
+                    "There was a problem with your sign up. Please verify your information and try again.",
+                    "danger",
+                )
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            logger.error(f"Database error during sign up: {str(e)}")
+            flash(
+                "We encountered a technical issue. Our team has been notified. Please try again later.",
+                "danger",
+            )
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Unexpected error during sign up: {str(e)}")
+            flash(
+                "An unexpected error occurred. Please try again. If the problem persists, contact support.",
+                "danger",
+            )
+    return render_template("auth/signup.html", form=form)
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for("index"))
+    form = LoginForm()
+    if form.validate_on_submit():
+        try:
+            user = User.query.filter_by(email=form.email.data).first()
+
+            if user and user.check_password(form.password.data):
+                if form.remember_me.data:
+                    session.permanent = True
+                session["user_id"] = user.id
+                session["login_time"] = datetime.utcnow().isoformat()
+                session["last_activity"] = datetime.utcnow().isoformat()
+
+                login_user(user, remember=form.remember_me.data)
+                user.last_login = db.func.now()
+                db.session.commit()
+
+                flash("Logged in successfully!", "success")
+                next_page = request.args.get("next")
+                return redirect(next_page or url_for("index"))
+            else:
+                logger.warning(f"Failed login attempt for email: {form.email.data}")
+                flash("Invalid email or password. Please try again.", "danger")
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            logger.error(f"Database error during login: {str(e)}")
+            flash(
+                "We encountered a technical issue. Please try again later.",
+                "danger",
+            )
+        except Exception as e:
+            logger.error(f"Unexpected error during login: {str(e)}")
+            flash("An unexpected error occurred. Please try again.", "danger")
+    return render_template("auth/login.html", form=form)
+
+@app.route("/logout")
+@login_required
+def logout():
+    session.clear()
+    logout_user()
+    flash("You have been logged out successfully.", "info")
+    return redirect(url_for("index"))
+
+@app.route("/profile", methods=["GET"])
+@login_required
+def profile():
+    return render_template("profile.html", user=current_user)
+
+@app.route("/profile/edit", methods=["GET", "POST"])
+@login_required
+def edit_profile():
+    form = ProfileForm()
+    form.user_id = current_user.id
+
+    if request.method == "GET":
+        form.username.data = current_user.username
+        form.first_name.data = current_user.first_name
+        form.last_name.data = current_user.last_name
+        form.bio.data = current_user.bio
+        form.location.data = current_user.location
+        form.interests.data = current_user.interests
+        form.birth_date.data = current_user.birth_date
+        # Pre-populate the form fields
+        form.user_intention.data =  'find_events' # Default.
+        if current_user.is_event_creator:
+            form.user_intention.data = 'create_events'
+        if current_user.is_organizer:
+            form.user_intention.data = 'represent_organization'
+        if current_user.is_vendor:
+                form.user_intention.data = 'vendor_services'
+        form.audience_type.data = current_user.audience_type.split(',') if current_user.audience_type else []
+        form.preferred_locations.data = current_user.preferred_locations
+        form.event_interests.data = current_user.event_interests
+    if form.validate_on_submit():
+        try:
+            profile_data = {
+                "username": form.username.data,
+                "first_name": form.first_name.data,
+                "last_name": form.last_name.data,
+                "bio": form.bio.data,
+                "location": form.location.data,
+                "interests": form.interests.data,
+                "birth_date": form.birth_date.data,
+            }
+
+            current_user.update_profile(profile_data)
+                # Handle user_intention
+            intention = form.user_intention.data
+            current_user.is_event_creator = (intention == 'create_events')
+            current_user.is_organizer = (intention == 'represent_organization')
+            current_user.is_vendor = (intention == 'vendor_services')
+            # Handle audience_type (join the list into a string)
+            current_user.audience_type = ','.join(form.audience_type.data)
+
+            # Handle preferred_locations and event_interests
+            current_user.preferred_locations = form.preferred_locations.data
+            current_user.event_interests = form.event_interests.data
+            db.session.commit()
+            flash("Profile updated successfully!", "success")
+            return redirect(url_for("profile"))
+        except IntegrityError as e:
+            db.session.rollback()
+            logger.error(
+                f"Database integrity error during profile update: {str(e)}"
+            )
+            flash(
+                "There was a problem updating your profile. Please try again.",
+                "danger",
+            )
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            logger.error(f"Database error during profile update: {str(e)}")
+            flash(
+                "We encountered a technical issue. Please try again later.",
+                "danger",
+            )
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Unexpected error during profile update: {str(e)}")
+            flash("An unexpected error occurred. Please try again.", "danger")
+    return render_template("edit_profile.html", form=form)
+
+@app.route("/events")
+def events():
+    # category = request.args.get("category") #no categories yet
+    # date_range = request.args.get("date_range") #no date ranges yet
+    # specific_date = request.args.get("specific_date") #no specific dates
+    # location = request.args.get("search_location") #no location yet
+    # fun_rating = request.args.get("fun_rating") #no fun ratings yet
+
+    query = Event.query
+
+    # if category:
+    # query = query.filter(Event.category == category)
+    # if location:
+    # query = query.filter(Event.location.ilike(f"%{location}%"))
+    # if fun_rating:
+    # query = query.filter(Event.fun_meter >= int(fun_rating))
+    # today = datetime.now().date() #no today
+    # if date_range:
+    # if date_range == "today":
+    # query = query.filter(db.func.date(Event.start_date) == today)
+    # elif date_range == "tomorrow":
+    # query = query.filter(
+    # db.func.date(Event.start_date) == today + timedelta(days=1)
+    # )
+    # elif date_range == "weekend":
+    # saturday = today + timedelta(days=(5 - today.weekday()))
+    # sunday = saturday + timedelta(days=1)
+    # query = query.filter(
+    # db.func.date(Event.start_date).between(saturday, sunday)
+    # )
+    # elif date_range == "week":
+    # week_end = today + timedelta(days=7)
+    # query = query.filter(
+    # db.func.date(Event.start_date).between(today, week_end)
+    # )
+    # elif date_range == "specific" and specific_date:
+    # query = query.filter(db.func.date(Event.start_date) == specific_date)
+    # events = query.order_by(Event.start_date).all()#no events yet
+    events = []
+    return render_template("events.html", events=events)
+
+
+@app.route("/map")
+def map():
+    # events = Event.query.all() #no events
+    events = []
+    return render_template("main/map.html", events=events)
+
+
+@app.route("/event/<int:event_id>")
+def event_detail(event_id):
+    # event = Event.query.get_or_404(event_id) #no events
+    event = []
+    return render_template("event_detail.html", event=event)
+
+@app.errorhandler(404)
+def not_found_error(error):
+    return render_template("404.html"), 404
+
+@app.route("/submit-event", methods=["GET", "POST"])
+@login_required
+def submit_event():
+    # Check if user has event creation permissions
+    if not (current_user.is_event_creator or current_user.is_organizer or current_user.is_admin):
+        # Allow them to request event creation access
+        current_user.is_event_creator = True
+        db.session.commit()
+        flash("You have been granted event creation permissions.", "success")
+
+    form = EventForm()
+    if request.method == "POST":
+        try:
+            if form.validate_on_submit():
+                is_draft = request.form.get("is_draft", "false") == "true"
+                coordinates = utils.geocode_address(
+                    form.street.data,
+                    form.city.data,
+                    form.state.data,
+                    form.zip_code.data,
+                )
+
+                if not coordinates:
+                    flash(
+                        "Could not geocode address. Please verify the address is correct.",
+                        "danger",
+                    )
+                    return render_template("submit_event.html", form=form)  # no submit event
+                event = Event(
+                    title=form.title.data,
+                    description=form.description.data,
+                    status="draft" if is_draft else "pending",
+                    start_date=form.date.data,
+                    end_date=form.date.data,
+                    street=form.street.data,
+                    city=form.city.data,
+                    state=form.state.data,
+                    zip_code=form.zip_code.data,
+                    latitude=coordinates[0],
+                    longitude=coordinates[1],
+                    category=form.category.data,
+                    target_audience=form.target_audience.data,
+                    fun_meter=form.fun_meter.data,
+                    user_id=current_user.id,
+                )
+                db.session.add(event)
+                db.session.commit()
+                flash("Event created successfully!", "success")
+                return redirect(url_for("events"))
+            else:
+                flash(
+                    "Form submission failed. Please check your inputs.", "danger"
+                )  # Added flash message for form validation errors
+                return render_template("submit_event.html", form=form)
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            logger.exception(
+                f"Database error during event submission: {str(e)}"
+            )  # Improved logging
+            flash("A database error occurred. Please try again later.", "danger")
+            return render_template("submit_event.html", form=form)
+        except Exception as e:
+            db.session.rollback()
+            logger.exception(
+                f"Unexpected error during event submission: {str(e)}"
+            )  # Improved logging
+            flash("An unexpected error occurred. Please try again later.", "danger")
+            return render_template("submit_event.html", form=form)
+    return render_template("submit_event.html", form=form)
+
+
+@app.errorhandler(500)
+def internal_error(error):
+    db.session.rollback()
+    return render_template("500.html"), 500
+
+@app.route("/admin/login", methods=["GET", "POST"])
+def admin_login():
+    if current_user.is_authenticated and current_user.is_admin:
+        return redirect(url_for("admin_dashboard"))
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user and user.check_password(form.password.data) and user.is_admin:
+            login_user(user)
+            return redirect(url_for("admin_dashboard"))
+        flash("Invalid credentials or not an admin user.", "danger")
+    return render_template("admin_login.html", form=form)
+
+@app.route("/admin/events")
+@login_required
+def admin_events():
+    if not current_user.is_admin:
+        flash("Access denied. Admin privileges required.", "danger")
+        return redirect(url_for("index"))
+    events = Event.query.order_by(Event.start_date.desc()).all()
+    return render_template("admin_events.html", events=events)
+
+@app.route("/admin/users")
+@login_required
+def admin_users():
+    if not current_user.is_admin:
+        flash("Access denied. Admin privileges required.", "danger")
+        return redirect(url_for("index"))
+    users = User.query.order_by(User.created_at.desc()).all()
+    return render_template("admin_users.html", users=users)
+
+@app.route("/api/featured-events")
+def featured_events_api():
+    # Feature flag check
+    FEATURED_EVENTS_ENABLED = False
+    if not FEATURED_EVENTS_ENABLED:
+        return jsonify({"success": True, "events": [], "message": "Feature not yet available"}), 200
+
+    try:
+        lat = request.args.get("lat")
+        lng = request.args.get("lng")
+
+        if not lat or not lng:
+            return jsonify({"success": True, "events": [], "message": "No coordinates provided"}), 200
+
+        try:
+            lat = float(lat)
+            lng = float(lng)
+        except (ValueError, TypeError):
+            return jsonify({"success": False, "error": "Invalid coordinates"}), 400
+
+        try:
+            lat = float(lat)
+            lng = float(lng)
+        except (TypeError, ValueError):
+            return jsonify({"success": True, "events": []}), 200
+
+        events = Event.query.filter(
+            Event.latitude.isnot(None),
+            Event.longitude.isnot(None),
+            Event.fun_meter >= 4,
+            Event.status == "approved",
+        ).all()
+
+        featured = []
+        for event in events:
+            try:
+                # Convert to miles (1 degree ≈ 69 miles)
+                distance = (
+                    (float(event.latitude) - float(lat)) ** 2 +
+                    (float(event.longitude) - float(lng)) ** 2
+                ) ** 0.5 * 69
+
+                if distance <= 15:  # 15 miles radius
+                    featured.append({
+                        "id": event.id,
+                        "title": event.title,
+                        "description": event.description[:100] + "..." if len(event.description) > 100 else event.description,
+                        "date": event.start_date.strftime("%Y-%m-%d"),
+                        "fun_meter": event.fun_meter,
+                        "distance": round(distance, 1)
+                    })
+            except (TypeError, ValueError) as e:
+                logger.error(f"Error calculating distance for event {event.id}: {str(e)}")
+                continue
+
+        if not featured:
+            return jsonify({
+                "success": True,
+                "events": []
+            })
+        return jsonify({
+            "success": True,
+            "events": sorted(featured, key=lambda x: (-x["fun_meter"], x["date"]))[:5]
+        })
+    except Exception as e:
+        logger.error(f"Featured events API error: {str(e)}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/advertising")
+def advertising():
+    return render_template("advertising.html")
+
+@app.route("/privacy")
+def privacy():
+    return render_template('main/privacy.html')
+
+@app.route("/terms")
+def terms():
+    return render_template("main/terms.html")
+
+@app.route("/reset-password-request", methods=["GET", "POST"])
+def reset_password_request():
+    if current_user.is_authenticated:
+        return redirect(url_for("index"))
+    form = ResetPasswordRequestForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user:
+            token = user.get_reset_token()
+            # In a real production environment, you'd send an email with a reset link
+            # For development, we'll just redirect to the reset page with the token
+            flash(f'Password reset link has been sent to {form.email.data}. Please check your email.', 'info')
+
+            # For demo purposes, we'll provide a direct link as well
+            reset_url = url_for('reset_password', token=token, _external=True)
+            flash(f'For demo purposes, you can also <a href="{reset_url}">click here</a> to reset your password.', 'info')
+
+            return redirect(url_for('login'))
+        else:
+            # Don't reveal that the user doesn't exist
+            flash('If an account with this email exists, a password reset link has been sent.', 'info')
+            return redirect(url_for('login'))
+    return render
