@@ -92,87 +92,91 @@ def free_port(port):
     return False
 
 def run_flask_app():
-    """Run the Flask application on the appropriate port."""
-    # Get the preferred port from environment or use default
-    preferred_ports = [5000, 3000, 8081, 8080]  # Changed order to prioritize 5000
-    port = int(os.environ.get("PORT", preferred_ports[0]))
-    
-    # Try to find an available port
-    available_port = None
-    for current_port in preferred_ports:
-        if not is_port_in_use(current_port):
-            logger.info(f"Port {current_port} is available")
-            available_port = current_port
-            break
-        else:
-            logger.info(f"Port {current_port} is in use")
-    
-    # If no ports are available, try to free one
-    if available_port is None:
-        for current_port in preferred_ports:
-            logger.info(f"Attempting to free port {current_port}")
-            if free_port(current_port):
-                logger.info(f"Successfully freed port {current_port}")
-                available_port = current_port
-                break
-    
-    # If we still don't have a port, use a fallback
-    if available_port is None:
-        available_port = 5050  # Use an uncommon port as last resort
-        logger.warning(f"Using fallback port {available_port}")
-    
-    port = available_port
-    logger.info(f"Selected port {port} for the application")
-
-    # Update database schema function
-    def update_database_schema():
-        try:
-            # Import the database update function
-            update_schema_module = importlib.import_module('update_schema')
-            logger.info("Running database schema update...")
-            result = update_schema_module.update_schema()
-            if result:
-                logger.info("Database schema updated successfully")
-            else:
-                logger.warning("Database schema update completed with warnings")
-            return True
-        except Exception as e:
-            logger.error(f"Error updating database schema: {str(e)}")
-            return False
-
-    # Create the Flask app
+    """Run the Flask application."""
     try:
-        from app import create_app
-        app = create_app()
-        
-        # Update database schema before starting
-        update_database_schema()
-        
-        # Register signal handlers for graceful shutdown
-        def signal_handler(sig, frame):
-            logger.info(f"Received signal {sig}, shutting down")
-            sys.exit(0)
+        # Check if development or deployment
+        is_development = "REPL_OWNER" in os.environ and "REPL_SLUG" in os.environ
+        if not is_development:
+            # In deployment, use PORT environment variable or default to 8080
+            port = int(os.environ.get('PORT', 8080))
+            print(f"Running in deployment environment. Starting server on port {port}...")
+            app.run(host='0.0.0.0', port=port, debug=False)
+        else:
+            # Try multiple ports in development to find an available one
+            ports_to_try = [3000, 5000, 5050, 8000, 8080]
 
-        signal.signal(signal.SIGINT, signal_handler)
-        signal.signal(signal.SIGTERM, signal_handler)
+            # Use PORT from environment if specified
+            env_port = os.environ.get('PORT')
+            if env_port:
+                try:
+                    port = int(env_port)
+                    ports_to_try.insert(0, port)  # Try specified port first
+                except (ValueError, TypeError):
+                    pass
+
+            # Try each port until one works
+            for port in ports_to_try:
+                try:
+                    # Clear all console output with an escape sequence
+                    print("\033c", flush=True)
+                    print(f"Starting Flask server on port {port}")
+                    print(f"\n🚀 Server running at: https://{os.environ.get('REPL_SLUG')}.{os.environ.get('REPL_OWNER')}.repl.co")
+                    print(f"📝 Local URL: http://0.0.0.0:{port}")
+
+                    app.run(host='0.0.0.0', port=port, debug=True, use_reloader=False, threaded=True)
+                    break  # If server starts successfully, exit the loop
+                except OSError as e:
+                    if "Address already in use" in str(e):
+                        print(f"Port {port} is already in use, trying next port...")
+                    else:
+                        raise
+            else:
+                # This runs if all ports failed
+                print("All ports are in use. Please try again later or specify a different port with the PORT environment variable.")
+                return
     except Exception as e:
         logger.error(f"Error creating Flask app: {str(e)}", exc_info=True)
         sys.exit(1)
 
-    # Route definitions are handled in routes.py through init_routes
-    # Don't define routes here to avoid conflicts
 
-
+def update_database_schema():
     try:
-        # Clear all console output with an escape sequence
-        print("\033c", flush=True)
-        logger.info(f"Starting Flask server on port {port}")
-        print(f"\n🚀 Server running at: https://{os.environ.get('REPL_SLUG')}.{os.environ.get('REPL_OWNER')}.repl.co")
-        print(f"📝 Local URL: http://0.0.0.0:{port}")
-        app.run(host='0.0.0.0', port=port, debug=True, use_reloader=False, threaded=True)
+        # Import the database update function
+        update_schema_module = importlib.import_module('update_schema')
+        logger.info("Running database schema update...")
+        result = update_schema_module.update_schema()
+        if result:
+            logger.info("Database schema updated successfully")
+        else:
+            logger.warning("Database schema update completed with warnings")
+        return True
     except Exception as e:
-        logger.error(f"Failed to start Flask server: {str(e)}", exc_info=True)
-        sys.exit(1)
+        logger.error(f"Error updating database schema: {str(e)}")
+        return False
+
+# Create the Flask app
+try:
+    from app import create_app
+    app = create_app()
+
+    # Update database schema before starting
+    update_database_schema()
+
+    # Register signal handlers for graceful shutdown
+    def signal_handler(sig, frame):
+        logger.info(f"Received signal {sig}, shutting down")
+        sys.exit(0)
+
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+except Exception as e:
+    logger.error(f"Error creating Flask app: {str(e)}", exc_info=True)
+    sys.exit(1)
+
+# Route definitions are handled in routes.py through init_routes
+# Don't define routes here to avoid conflicts
+
+
 
 if __name__ == "__main__":
     try:
