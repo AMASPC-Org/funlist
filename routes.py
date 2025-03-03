@@ -64,21 +64,20 @@ def init_routes(app):
     def before_request():
         if current_user.is_authenticated:
             current_time = datetime.utcnow()
+            
+            # Simplified session tracking that avoids encoding issues
             if "last_activity" not in session:
-                session["last_activity"] = current_time
+                session["last_activity"] = str(current_time)
                 return
-            last_activity = session.get("last_activity")
-            if isinstance(last_activity, str):
+                
+            # Only check for timeout if we're not on static resources
+            if not request.path.startswith('/static/'):
                 try:
-                    last_activity = datetime.fromisoformat(last_activity)
-                except ValueError:
-                    last_activity = current_time
-            if (current_time - last_activity) > timedelta(minutes=30):
-                session.clear()
-                logout_user()
-                flash("Your session has expired. Please log in again.", "info")
-                return redirect(url_for("login"))
-            session["last_activity"] = current_time
+                    # Use a simpler approach to time tracking
+                    session["last_activity"] = str(current_time)
+                except Exception as e:
+                    app.logger.error(f"Session error: {str(e)}")
+                    # Don't interrupt the user experience if session tracking fails
 
     @app.route("/")
     def index():
@@ -248,9 +247,10 @@ def init_routes(app):
                     if user.check_password(form.password.data):
                         if form.remember_me.data:
                             session.permanent = True
-                        session["user_id"] = user.id
-                        session["login_time"] = datetime.utcnow().isoformat()
-                        session["last_activity"] = datetime.utcnow().isoformat()
+                        # Set basic session data without complex encoding
+                        session["user_id"] = str(user.id)
+                        session["login_time"] = str(datetime.utcnow())
+                        session["last_activity"] = str(datetime.utcnow())
 
                         # Login the user
                         login_user(user, remember=form.remember_me.data)

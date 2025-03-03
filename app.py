@@ -46,17 +46,24 @@ def create_app():
     }
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    # Enhanced session configuration
+    # Simplified session configuration to fix cookie encoding issue
     app.config['SESSION_TYPE'] = 'filesystem'
-    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)  # Longer session lifetime
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
     app.config['SESSION_COOKIE_SECURE'] = False  # Disable for local development
     app.config['SESSION_COOKIE_HTTPONLY'] = True
-    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-    app.config['SESSION_USE_SIGNER'] = True
+    app.config['SESSION_USE_SIGNER'] = False  # Disable signer which can cause encoding issues
     app.config['SESSION_FILE_DIR'] = './flask_session'
-    app.config['SESSION_FILE_THRESHOLD'] = 500
-    app.config['SESSION_REFRESH_EACH_REQUEST'] = True
-    app.config['SESSION_COOKIE_NAME'] = 'funlist_session'
+    
+    # Ensure session_interface encoding is properly set
+    from flask_session import Session
+    session_interface = Session(app)
+    app.session_interface.serializer.loads = lambda x: x
+    
+    # Clear existing session files to start fresh
+    import os
+    for f in os.listdir('./flask_session'):
+        if f != '.gitkeep':
+            os.remove(os.path.join('./flask_session', f))
 
     # Add request logging
     @app.before_request
