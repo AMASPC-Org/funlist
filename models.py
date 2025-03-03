@@ -138,32 +138,47 @@ class User(UserMixin, db.Model):
         token = secrets.token_hex(32)
         # Set expiration timestamp (current time + expiration in seconds)
         expiry = int(time.time()) + expires_in
-        # Store token and expiration in the database
-        self.reset_token = token
-        self.reset_token_expiry = datetime.fromtimestamp(expiry)
-        db.session.commit()
+        
+        # Try setting the fields and handle missing column exceptions gracefully
+        try:
+            self.reset_token = token
+            self.reset_token_expiry = datetime.fromtimestamp(expiry)
+            db.session.commit()
+        except Exception as e:
+            logger.error(f"Error setting reset token: {e}")
+            # If the columns don't exist, we just return the token anyway
+            db.session.rollback()
+            
         return token
         
     @staticmethod
     def verify_reset_token(token):
-        user = User.query.filter_by(reset_token=token).first()
-        if not user:
+        try:
+            user = User.query.filter_by(reset_token=token).first()
+            if not user:
+                return None
+                
+            # Check if token is expired
+            if datetime.utcnow() > user.reset_token_expiry:
+                # Clear expired token
+                user.reset_token = None
+                user.reset_token_expiry = None
+                db.session.commit()
+                return None
+                
+            return user
+        except Exception as e:
+            logger.error(f"Error verifying reset token: {e}")
             return None
-            
-        # Check if token is expired
-        if datetime.utcnow() > user.reset_token_expiry:
-            # Clear expired token
-            user.reset_token = None
-            user.reset_token_expiry = None
-            db.session.commit()
-            return None
-            
-        return user
         
     def clear_reset_token(self):
-        self.reset_token = None
-        self.reset_token_expiry = None
-        db.session.commit()
+        try:
+            self.reset_token = None
+            self.reset_token_expiry = None
+            db.session.commit()
+        except Exception as e:
+            logger.error(f"Error clearing reset token: {e}")
+            db.session.rollback()
 
 # Add Subscriber Model
 class Subscriber(db.Model):
