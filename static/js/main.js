@@ -1,8 +1,10 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log("DOM fully loaded");
+    setupErrorHandling();
     setupEventHandlers();
     setupTippy();
     setupModals();
+    setupFloatingButtons();
 
     // Log when buttons are found in DOM
     const feedbackBtn = document.getElementById('feedbackButton');
@@ -16,6 +18,26 @@ function setupErrorHandling() {
     window.addEventListener('error', function(event) {
         console.log('JavaScript error caught:', event.error);
     });
+}
+
+function setupFloatingButtons() {
+    // Setup feedback button
+    const feedbackBtn = document.getElementById('feedbackButton');
+    if (feedbackBtn) {
+        feedbackBtn.addEventListener('click', function() {
+            const feedbackModal = new bootstrap.Modal(document.getElementById('feedbackModal'));
+            feedbackModal.show();
+        });
+    }
+
+    // Setup subscribe button
+    const subscribeBtn = document.getElementById('subscribeButton');
+    if (subscribeBtn) {
+        subscribeBtn.addEventListener('click', function() {
+            const subscribeModal = new bootstrap.Modal(document.getElementById('subscribeModal'));
+            subscribeModal.show();
+        });
+    }
 }
 
 // Initialize sponsors carousel
@@ -114,7 +136,47 @@ function handleDateRangeChange(event) {
 
 // Setup modals
 function setupModals() {
-    // Setup subscription form
+    // Setup feedback form
+    const feedbackForm = document.getElementById('feedbackForm');
+    if (feedbackForm) {
+        feedbackForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const feedbackType = document.getElementById('feedbackType').value;
+            const message = document.getElementById('feedbackMessage').value;
+            const email = document.getElementById('feedbackEmail').value;
+
+            // Submit feedback
+            fetch('/submit-feedback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    type: feedbackType,
+                    message: message,
+                    email: email
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Thank you for your feedback!');
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('feedbackModal'));
+                    if (modal) modal.hide();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        });
+    }
+    
+    // Setup subscription forms
     const subscribeForms = document.querySelectorAll('#floatingSubscribeForm, #emailSignupForm');
     subscribeForms.forEach(form => {
         if (form) {
