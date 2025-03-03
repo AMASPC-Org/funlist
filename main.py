@@ -45,16 +45,16 @@ if __name__ == "__main__":
         print(f"Running in deployment environment. Starting server on port {port}...")
         app.run(host='0.0.0.0', port=port, debug=False)
     else:
-        # In development, use default port 8080 or fallback to alternatives
-        ports_to_try = [8080, 8081, 8082]
-        
-        for port in ports_to_try:
-            try:
-                print(f"Attempting to start server on port {port}...")
-                app.run(host='0.0.0.0', port=port, debug=True)
-                break  # If successful, exit the loop
-            except OSError as e:
-                if "Address already in use" in str(e):
+        # In development, use a single port (8080) with better error handling
+        port = int(os.environ.get('PORT', 8080))
+        try:
+            print(f"Starting development server on port {port}...")
+            app.run(host='0.0.0.0', port=port, debug=True)
+        except OSError as e:
+            if "Address already in use" in str(e):
+                print(f"Port {port} is already in use. Please free up the port and try again.")
+            else:
+                print(f"Error starting server: {e}")
                     print(f"Port {port} is already in use, trying next port...")
                 else:
                     raise
