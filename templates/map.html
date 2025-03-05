@@ -1,9 +1,10 @@
+
 {% extends "base.html" %}
 
 {% block title %}Map | FunList.ai{% endblock %}
 
 {% block content %}
-<div class="container mt-3">
+<div class="container-fluid mt-3">
   <h1 class="text-center mb-3">Event Map</h1>
 
   <div class="filter-bar mb-3">
@@ -41,35 +42,57 @@
         </div>
     </div>
 
-  <div class="row">
-        <div class="col-md-7">
-            <div id="map" style="height: 600px;"></div>  <!-- Added inline style for height -->
+  <div class="row map-content-row">
+        <div class="col-lg-7">
+            <div id="map" class="map-container"></div>
         </div>
-        <div class="col-md-5">
-            <div class="event-cards-container" style="overflow-y: auto; height: 600px;"> <!-- Added overflow and height -->
-                {% for event in events %}
-                    {% if loop.index == 3 %}
-                    <div class="card mb-3 sponsored-card">
-                        <div class="card-body">
-                            <div class="text-muted small mb-2">Advertisement</div>
-                            <div class="sponsored-content">
-                                <p>Sponsored Content - Advertisement space available</p>
+        <div class="col-lg-5">
+            <div class="event-cards-container">
+                {% if events %}
+                    {% for event in events %}
+                        {% if loop.index == 3 %}
+                        <div class="card mb-3 sponsored-card">
+                            <div class="card-body">
+                                <div class="text-muted small mb-2">Advertisement</div>
+                                <div class="sponsored-content">
+                                    <p>Sponsored Content - Advertisement space available</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    {% endif %}
-                    <div class="card mb-3 event-card" data-event-id="{{ event.id }}">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ event.title }}</h5>
-                            <p class="card-text">{{ event.description|truncate(100) }}</p>
-                            <p class="card-text">
-                                <small class="text-muted">{{ event.start_date.strftime('%B %d, %Y') }}{% if event.start_time %} at {{ event.start_time.strftime('%I:%M %p') }}{% endif %}</small>
-                            </p>
-                            <p class="card-text"><small class="text-muted">{{ event.location }}</small></p>
-                            <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-primary">View Details</a>
+                        {% endif %}
+                        <div class="card mb-3 event-card" data-event-id="{{ event.id }}">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ event.title }}</h5>
+                                <p class="card-text">{{ event.description|truncate(100) }}</p>
+                                <p class="card-text">
+                                    <small class="text-muted">
+                                        <i class="far fa-calendar me-2"></i>{{ event.start_date.strftime('%B %d, %Y') }}
+                                        {% if event.start_time %} at {{ event.start_time.strftime('%I:%M %p') }}{% endif %}
+                                    </small>
+                                </p>
+                                <p class="card-text">
+                                    <small class="text-muted">
+                                        <i class="fas fa-map-marker-alt me-2"></i>{{ event.location }}
+                                    </small>
+                                </p>
+                                <div class="fun-rating mb-2">
+                                    <span class="text-muted me-2">Fun Rating:</span>
+                                    <span class="stars">{{ "⭐" * event.fun_meter }}</span>
+                                </div>
+                                <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-primary btn-sm">View Details</a>
+                            </div>
                         </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="alert alert-info">
+                        No events found. Try adjusting your filters or adding new events.
                     </div>
-                {% endfor %}
+                {% endif %}
+                {% if error_message %}
+                    <div class="alert alert-warning">
+                        {{ error_message }}
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -117,6 +140,22 @@ document.addEventListener('DOMContentLoaded', function() {
             map.invalidateSize();
         }, 500);
     }
+
+    // Add click event to event cards to highlight corresponding marker
+    document.querySelectorAll('.event-card').forEach(function(card) {
+        card.addEventListener('click', function() {
+            var eventId = this.getAttribute('data-event-id');
+            // Highlight the corresponding marker (can be implemented in map.js)
+            if (typeof FunlistMap.highlightMarker === 'function') {
+                FunlistMap.highlightMarker(map, eventId);
+            }
+            // Highlight the card
+            document.querySelectorAll('.event-card').forEach(function(c) {
+                c.classList.remove('highlighted');
+            });
+            this.classList.add('highlighted');
+        });
+    });
 });
 </script>
 {% endblock %}

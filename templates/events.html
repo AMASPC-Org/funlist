@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 
 {% block head %}
@@ -17,10 +18,10 @@
     <div class="filter-bar mb-4">
         <div class="row g-3">
             <div class="col-md">
-                <input type="text" class="form-control" placeholder="Enter location to search...">
+                <input type="text" class="form-control" id="locationSearch" placeholder="Enter location to search...">
             </div>
             <div class="col-md">
-                <select class="form-select">
+                <select class="form-select" id="categoryFilter">
                     <option selected>All Categories</option>
                     <option>Sports</option>
                     <option>Music</option>
@@ -30,7 +31,7 @@
                 </select>
             </div>
             <div class="col-md">
-                <select class="form-select">
+                <select class="form-select" id="dateFilter">
                     <option selected>Any Date</option>
                     <option>Today</option>
                     <option>Tomorrow</option>
@@ -39,7 +40,7 @@
                 </select>
             </div>
             <div class="col-md">
-                <select class="form-select">
+                <select class="form-select" id="funFilter">
                     <option selected>All Fun Ratings</option>
                     <option>⭐⭐⭐⭐⭐ (5)</option>
                     <option>⭐⭐⭐⭐ (4+)</option>
@@ -50,71 +51,131 @@
     </div>
 
 <div class="row row-cols-1 row-cols-md-3 g-4">
-    {% for event in events %}
-    <div class="col">
-        <div class="card event-card h-100">
-            {% if event.image_url %}
-            <img src="{{ event.image_url }}" class="card-img-top" alt="{{ event.title }}">
-            {% else %}
-            <div class="card-img-top default-event-img"></div>
-            {% endif %}
-            <div class="card-body">
-                <h5 class="card-title">{{ event.title }}</h5>
-                <p class="card-text text-muted mb-2">
-                    <i class="far fa-calendar me-2"></i>{{ event.start_date.strftime('%B %d, %Y') }}
-                    {% if event.start_time %} at {{ event.start_time.strftime('%I:%M %p') }}{% endif %}
-                </p>
-                <p class="card-text text-muted mb-3">
-                    <i class="fas fa-map-marker-alt me-2"></i>{{ event.city }}, {{ event.state }}
-                </p>
-                <p class="card-text">{{ event.description|truncate(120) }}</p>
-                <div class="fun-rating mb-3">
-                    <span class="text-muted me-2">Fun Rating:</span>
-                    <span class="stars">{{ "⭐" * event.fun_meter }}</span>
-                </div>
-            </div>
-            <div class="card-footer bg-transparent border-top-0">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div class="btn-group">
-                        {% if event.ticket_url %}
-                        <a href="{{ event.ticket_url }}" class="btn btn-primary btn-sm" target="_blank">
-                            <i class="fas fa-ticket-alt me-1"></i>Get Tickets
-                        </a>
+    {% if events %}
+        {% for event in events %}
+        <div class="col">
+            <div class="card event-card h-100">
+                {% if event.image_url %}
+                <img src="{{ event.image_url }}" class="card-img-top" alt="{{ event.title }}">
+                {% else %}
+                <div class="card-img-top default-event-img"></div>
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ event.title }}</h5>
+                    <p class="card-text text-muted mb-2">
+                        <i class="far fa-calendar me-2"></i>{{ event.start_date.strftime('%B %d, %Y') }}
+                        {% if event.start_time %} at {{ event.start_time.strftime('%I:%M %p') }}{% endif %}
+                    </p>
+                    <p class="card-text text-muted mb-3">
+                        <i class="fas fa-map-marker-alt me-2"></i>
+                        {% if event.city and event.state %}
+                            {{ event.city }}, {{ event.state }}
+                        {% else %}
+                            {{ event.location }}
                         {% endif %}
-                        <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-outline-primary btn-sm">
-                            Details
-                        </a>
+                    </p>
+                    <p class="card-text">{{ event.description|truncate(120) }}</p>
+                    <div class="fun-rating mb-3">
+                        <span class="text-muted me-2">Fun Rating:</span>
+                        <span class="stars">{{ "⭐" * event.fun_meter }}</span>
                     </div>
-                    <div class="social-links">
-                        {% if event.website %}
-                        <a href="{{ event.website }}" class="text-muted me-2" target="_blank" title="Website">
-                            <i class="fas fa-globe"></i>
-                        </a>
-                        {% endif %}
-                        {% if event.facebook %}
-                        <a href="{{ event.facebook }}" class="text-muted me-2" target="_blank" title="Facebook">
-                            <i class="fab fa-facebook"></i>
-                        </a>
-                        {% endif %}
-                        {% if event.instagram %}
-                        <a href="{{ event.instagram }}" class="text-muted me-2" target="_blank" title="Instagram">
-                            <i class="fab fa-instagram"></i>
-                        </a>
-                        {% endif %}
-                        {% if event.twitter %}
-                        <a href="{{ event.twitter }}" class="text-muted" target="_blank" title="Twitter">
-                            <i class="fab fa-twitter"></i>
-                        </a>
-                        {% endif %}
+                </div>
+                <div class="card-footer bg-transparent border-top-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="btn-group">
+                            {% if event.website %}
+                            <a href="{{ event.website }}" class="btn btn-primary btn-sm" target="_blank">
+                                <i class="fas fa-ticket-alt me-1"></i>Get Tickets
+                            </a>
+                            {% endif %}
+                            <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-outline-primary btn-sm">
+                                Details
+                            </a>
+                        </div>
+                        <div class="social-links">
+                            {% if event.website %}
+                            <a href="{{ event.website }}" class="text-muted me-2" target="_blank" title="Website">
+                                <i class="fas fa-globe"></i>
+                            </a>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    {% endfor %}
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="alert alert-info">No events found. Try adjusting your search criteria.</div>
+        </div>
+    {% endif %}
+    
+    {% if error_message %}
+        <div class="col-12">
+            <div class="alert alert-warning">{{ error_message }}</div>
+        </div>
+    {% endif %}
 </div>
+{% endblock %}
 
-{% if not events %}
-<p class="text-center mt-4">No events found. Try adjusting your search criteria.</p>
-{% endif %}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("Events page loaded");
+    
+    // Set up filter functionality
+    const locationSearch = document.getElementById('locationSearch');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const dateFilter = document.getElementById('dateFilter');
+    const funFilter = document.getElementById('funFilter');
+    
+    // Apply filters when values change
+    if (locationSearch) {
+        locationSearch.addEventListener('input', applyFilters);
+    }
+    if (categoryFilter) {
+        categoryFilter.addEventListener('change', applyFilters);
+    }
+    if (dateFilter) {
+        dateFilter.addEventListener('change', applyFilters);
+    }
+    if (funFilter) {
+        funFilter.addEventListener('change', applyFilters);
+    }
+    
+    function applyFilters() {
+        // Create URL with filter parameters
+        let url = new URL(window.location.href);
+        
+        if (locationSearch && locationSearch.value) {
+            url.searchParams.set('search_location', locationSearch.value);
+        } else {
+            url.searchParams.delete('search_location');
+        }
+        
+        if (categoryFilter && categoryFilter.value !== 'All Categories') {
+            url.searchParams.set('category', categoryFilter.value);
+        } else {
+            url.searchParams.delete('category');
+        }
+        
+        if (dateFilter && dateFilter.value !== 'Any Date') {
+            const dateValue = dateFilter.value.toLowerCase().replace(' ', '_');
+            url.searchParams.set('date_range', dateValue);
+        } else {
+            url.searchParams.delete('date_range');
+        }
+        
+        if (funFilter && funFilter.value !== 'All Fun Ratings') {
+            const funValue = funFilter.value.match(/\d+/)[0];
+            url.searchParams.set('fun_rating', funValue);
+        } else {
+            url.searchParams.delete('fun_rating');
+        }
+        
+        // Navigate to filtered URL
+        window.location.href = url.toString();
+    }
+});
+</script>
 {% endblock %}

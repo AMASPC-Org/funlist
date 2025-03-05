@@ -1762,13 +1762,27 @@ body.cookie-consent-visible .floating-buttons-container {
 
 /* Map specific styling */
 #map {
-    height: 600px;
+    height: 700px;
     width: 100%;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
     position: relative;
     z-index: 1; /* Lower z-index for map container */
+}
+
+.map-container {
+    height: 700px;
+    width: 100%;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.map-content-row {
+    margin-bottom: 30px;
 }
 
 /* Fix z-index issues with map container */
@@ -1952,11 +1966,14 @@ footer {
     transition: all 0.3s ease;
     border-left: 3px solid transparent;
     margin-bottom: 15px;
+    border-radius: 8px;
+    background-color: white;
 }
 .event-card:hover {
     background-color: #f8f9fa;
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
 }
 .event-card.highlighted {
     background-color: #e9ecef;
@@ -1986,9 +2003,13 @@ footer {
     height: 700px;
     overflow-y: auto;
     padding-right: 10px;
+    padding-left: 10px;
     /* Improve scrollbar appearance */
     scrollbar-width: thin;
     scrollbar-color: #ccc #f5f5f5;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    background-color: #f9f9f9;
 }
 .event-cards-container::-webkit-scrollbar {
     width: 8px;

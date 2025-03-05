@@ -65,9 +65,7 @@ class Event(db.Model):
     longitude = Column(Float)
     website = Column(String(255))
     created_at = Column(DateTime, default=datetime.utcnow)
-    # updated_at column removed as it doesn't exist in the database
     user_id = Column(Integer, ForeignKey('users.id'))
-    price = Column(String(100))
     category = Column(String(100))
     target_audience = Column(String(255))
     tags = Column(String(255))  # Comma-separated tags
