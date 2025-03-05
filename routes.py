@@ -82,10 +82,14 @@ def init_routes(app):
 
     @app.route("/")
     def index():
-        events = Event.query.order_by(Event.start_date.desc()).all()
-        # Check if this is a new registration to show the wizard
-        new_registration = session.pop('new_registration', False)
-        return render_template("index.html", events=events, user=current_user, new_registration=new_registration)
+        try:
+            events = Event.query.order_by(Event.start_date.desc()).all()
+            # Check if this is a new registration to show the wizard
+            new_registration = session.pop('new_registration', False)
+            return render_template("index.html", events=events, user=current_user, new_registration=new_registration)
+        except Exception as e:
+            app.logger.error(f"Error in index route: {str(e)}")
+            return render_template("index.html", events=[], user=current_user, new_registration=False)
 
     @app.route("/save-preferences", methods=["POST"])
     @login_required
