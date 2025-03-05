@@ -352,48 +352,56 @@ def init_routes(app):
 
     @app.route("/events")
     def events():
-        category = request.args.get("category")
-        date_range = request.args.get("date_range")
-        specific_date = request.args.get("specific_date")
-        location = request.args.get("search_location")
-        fun_rating = request.args.get("fun_rating")
+        try:
+            category = request.args.get("category")
+            date_range = request.args.get("date_range")
+            specific_date = request.args.get("specific_date")
+            location = request.args.get("search_location")
+            fun_rating = request.args.get("fun_rating")
 
-        query = Event.query
+            query = Event.query
 
-        if category:
-            query = query.filter(Event.category == category)
-        if location:
-            query = query.filter(Event.location.ilike(f"%{location}%"))
-        if fun_rating:
-            query = query.filter(Event.fun_meter >= int(fun_rating))
-        today = datetime.now().date()
-        if date_range:
-            if date_range == "today":
-                query = query.filter(db.func.date(Event.start_date) == today)
-            elif date_range == "tomorrow":
-                query = query.filter(
-                    db.func.date(Event.start_date) == today + timedelta(days=1)
-                )
-            elif date_range == "weekend":
-                saturday = today + timedelta(days=(5 - today.weekday()))
-                sunday = saturday + timedelta(days=1)
-                query = query.filter(
-                    db.func.date(Event.start_date).between(saturday, sunday)
-                )
-            elif date_range == "week":
-                week_end = today + timedelta(days=7)
-                query = query.filter(
-                    db.func.date(Event.start_date).between(today, week_end)
-                )
-            elif date_range == "specific" and specific_date:
-                query = query.filter(db.func.date(Event.start_date) == specific_date)
-        events = query.order_by(Event.start_date).all()
-        return render_template("events.html", events=events)
+            if category:
+                query = query.filter(Event.category == category)
+            if location:
+                query = query.filter(Event.location.ilike(f"%{location}%"))
+            if fun_rating:
+                query = query.filter(Event.fun_meter >= int(fun_rating))
+            today = datetime.now().date()
+            if date_range:
+                if date_range == "today":
+                    query = query.filter(db.func.date(Event.start_date) == today)
+                elif date_range == "tomorrow":
+                    query = query.filter(
+                        db.func.date(Event.start_date) == today + timedelta(days=1)
+                    )
+                elif date_range == "weekend":
+                    saturday = today + timedelta(days=(5 - today.weekday()))
+                    sunday = saturday + timedelta(days=1)
+                    query = query.filter(
+                        db.func.date(Event.start_date).between(saturday, sunday)
+                    )
+                elif date_range == "week":
+                    week_end = today + timedelta(days=7)
+                    query = query.filter(
+                        db.func.date(Event.start_date).between(today, week_end)
+                    )
+                elif date_range == "specific" and specific_date:
+                    query = query.filter(db.func.date(Event.start_date) == specific_date)
+            events = query.order_by(Event.start_date).all()
+            return render_template("events.html", events=events)
+        except Exception as e:
+            app.logger.error(f"Error in events route: {str(e)}")
+            return render_template("events.html", events=[], error_message="Could not load events. Please try again later.")
 
     @app.route("/map")
     def map():
-        events = Event.query.all()
-        return render_template("map.html", events=events)
+        try:
+            events = Event.query.all()
+            return render_template("map.html", events=events)
+        except Exception as e:
+            app.logger.error(f"Error in map route: {str(e)}")
+            return render_template("map.html", events=[], error_message="Could not load events for the map. Please try again later.")
 
     @app.route("/event/<int:event_id>")
     def event_detail(event_id):
