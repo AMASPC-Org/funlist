@@ -58,13 +58,11 @@ class Event(db.Model):
     end_date = Column(DateTime)
     location = Column(String(255))
     street = Column(String(255))
-    # address column removed as it doesn't exist in the database
     city = Column(String(100))
     state = Column(String(100))
     zip_code = Column(String(20))
     latitude = Column(Float)
     longitude = Column(Float)
-    # image_url field removed as it doesn't exist in the database
     website = Column(String(255))
     contact_email = Column(String(120))
     contact_phone = Column(String(20))
