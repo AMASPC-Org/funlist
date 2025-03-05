@@ -44,14 +44,15 @@
 
   <div class="row map-content-row">
         <div class="col-lg-7">
-            <div id="map" class="map-container"></div>
+            <div id="map" class="map-container shadow"></div>
         </div>
         <div class="col-lg-5">
             <div class="event-cards-container">
+                <h4 class="mb-3">Events Near You</h4>
                 {% if events %}
                     {% for event in events %}
                         {% if loop.index == 3 %}
-                        <div class="card mb-3 sponsored-card">
+                        <div class="card mb-3 sponsored-card border-primary-subtle">
                             <div class="card-body">
                                 <div class="text-muted small mb-2">Advertisement</div>
                                 <div class="sponsored-content">
