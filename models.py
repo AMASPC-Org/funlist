@@ -58,7 +58,7 @@ class Event(db.Model):
     end_date = Column(DateTime)
     location = Column(String(255))
     street = Column(String(255))
-    address = Column(String(255))
+    # address column removed as it doesn't exist in the database
     city = Column(String(100))
     state = Column(String(100))
     zip_code = Column(String(20))

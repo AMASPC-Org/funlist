@@ -539,7 +539,7 @@ def init_routes(app):
             event.title = request.form.get('title')
             event.description = request.form.get('description')
             event.location = request.form.get('location')
-            event.address = request.form.get('address')
+            # address field removed
             event.city = request.form.get('city')
             event.state = request.form.get('state')
             event.zip_code = request.form.get('zip_code')
