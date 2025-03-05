@@ -103,7 +103,19 @@ def run_flask_app():
             app.run(host='0.0.0.0', port=port, debug=False)
         else:
             # Try multiple ports in development to find an available one
-            ports_to_try = [3000, 5000, 5050, 8000, 8080]
+            ports_to_try = [3000, 5000, 5050, 8000, 8080, 8888, 9000]
+
+            # Force kill any process using the default port 8080
+            try:
+                default_port = 8080
+                print(f"Ensuring port {default_port} is available...")
+                if is_port_in_use(default_port):
+                    free_port(default_port)
+                    print(f"Port {default_port} has been freed")
+                    # Add a short delay to ensure port is released
+                    time.sleep(1)
+            except Exception as e:
+                logger.warning(f"Could not free port {default_port}: {e}")
 
             # Use PORT from environment if specified
             env_port = os.environ.get('PORT')
