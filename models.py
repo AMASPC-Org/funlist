@@ -64,7 +64,6 @@ class Event(db.Model):
     latitude = Column(Float)
     longitude = Column(Float)
     website = Column(String(255))
-    is_approved = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     user_id = Column(Integer, ForeignKey('users.id'))
