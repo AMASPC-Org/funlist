@@ -1115,7 +1115,7 @@ main {
     }
 
     .footer {
-    background-color: #f8f9fa;
+    background-color: #f89fa;
     padding: 3rem 0;
 }
 
@@ -1801,13 +1801,15 @@ body.cookie-consent-visible .floating-buttons-container {
 
 .event-card {
     transition: all 0.2s ease;
-    border-left: 4px solid transparent;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .event-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    border-left: 4px solid #4285F4;
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
 }
 
 .event-card.highlighted {
@@ -2029,14 +2031,10 @@ footer {
 
 /* Event cards container */
 .event-cards-container {
-    height: calc(100vh - 200px);
+    max-height: calc(100vh - 150px);
     overflow-y: auto;
-    padding: 10px;
-    scrollbar-width: thin;
-    scrollbar-color: #ccc #f5f5f5;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    border-radius: 8px;
-    background-color: #f9f9f9;
+    padding-right: 5px;
+    margin-bottom: 20px;
 }
 
 @media (max-width: 768px) {
@@ -2044,11 +2042,11 @@ footer {
         height: calc(100vh - 350px);
         margin-bottom: 60px;
     }
-    
+
     .event-card {
         margin-bottom: 10px;
     }
-    
+
     .footer {
         padding-bottom: 70px;
     }
@@ -2116,4 +2114,14 @@ footer {
 .pre-hero-banner,
 .organizer-banner {
   display: none;
+}
+
+/* Hide footer on map page */
+.map-content-row {
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.map-page footer {
+    display: none;
 }
