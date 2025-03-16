@@ -19,7 +19,6 @@ class User(db.Model, UserMixin):
     last_name = Column(String(120))
     account_active = Column(Boolean, default=True)
     is_admin = Column(Boolean, default=False)
-    profile_image = Column(String(500))
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     bio = Column(Text)
