@@ -6,6 +6,12 @@ window.FunlistMap = (function() {
   let mapInstance = null;
   const defaultLocation = [47.0379, -122.9007]; // Default to Olympia, WA
   const defaultZoom = 11;
+  let markersList = [];
+  let markers = L.layerGroup();
+  let userMarker = null;
+  
+  // Store event ID to marker mapping
+  let eventMarkers = {};
 
   // Initialize map on the specified element
   function initMap(elementId) {
@@ -37,6 +43,12 @@ window.FunlistMap = (function() {
         attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         maxZoom: 19
       }).addTo(mapInstance);
+      
+      // Add the markers layer group to the map
+      markers = L.layerGroup().addTo(mapInstance);
+      
+      // Set up map event listeners
+      setupMapEventListeners(mapInstance);
 
       // Return the map instance
       return mapInstance;
@@ -45,9 +57,117 @@ window.FunlistMap = (function() {
       return null;
     }
   }
+  
+  // Set up event listeners for the map
+  function setupMapEventListeners(map) {
+    if (!map) return;
+    
+    // When map is moved (panned or zoomed), update visible events
+    map.on('moveend', function() {
+      updateVisibleEvents(map);
+    });
+    
+    // When map is initially loaded, update visible events
+    map.on('load', function() {
+      updateVisibleEvents(map);
+    });
+  }
+  
+  // Update the list of visible events based on map bounds
+  function updateVisibleEvents(map) {
+    if (!map) return;
+    
+    const bounds = map.getBounds();
+    const visibleEventIds = [];
+    
+    // Check which markers are in the current view
+    markersList.forEach(function(marker) {
+      if (marker && marker.eventId && bounds.contains(marker.getLatLng())) {
+        visibleEventIds.push(marker.eventId);
+      }
+    });
+    
+    // Update the visible events container with only visible events
+    updateEventsList(visibleEventIds);
+    
+    // Update the counter
+    const countElement = document.getElementById('event-count');
+    if (countElement) {
+      countElement.textContent = visibleEventIds.length + ' Events';
+    }
+    
+    // Show/hide the "no events" message
+    const noEventsMessage = document.getElementById('no-events-message');
+    if (noEventsMessage) {
+      noEventsMessage.style.display = visibleEventIds.length > 0 ? 'none' : 'block';
+    }
+  }
+  
+  // Update the events list based on visible event IDs
+  function updateEventsList(visibleEventIds) {
+    // Get all events from the hidden container
+    const allEventsContainer = document.getElementById('all-events-container');
+    const visibleEventsContainer = document.getElementById('visible-events-container');
+    
+    if (!allEventsContainer || !visibleEventsContainer) return;
+    
+    // Clear the current visible events
+    while (visibleEventsContainer.firstChild) {
+      if (visibleEventsContainer.firstChild.id !== 'no-events-message') {
+        visibleEventsContainer.removeChild(visibleEventsContainer.firstChild);
+      } else {
+        break; // Keep the no-events-message
+      }
+    }
+    
+    // If no visible events, show the no events message
+    if (visibleEventIds.length === 0) {
+      return;
+    }
+    
+    // Get all event cards from the hidden container
+    const eventCards = allEventsContainer.querySelectorAll('.event-card');
+    
+    // Clone and add only the visible events to the visible container
+    eventCards.forEach(function(card) {
+      const eventId = card.getAttribute('data-event-id');
+      if (visibleEventIds.includes(eventId)) {
+        const cardClone = card.cloneNode(true);
+        
+        // Add click event listener to highlight corresponding marker
+        cardClone.addEventListener('click', function(e) {
+          if (e.target.tagName !== 'A') { // Don't trigger for links inside the card
+            highlightMarker(mapInstance, eventId);
+          }
+        });
+        
+        visibleEventsContainer.appendChild(cardClone);
+      }
+    });
+    
+    // Insert advertisement after the 3rd card if we have enough events
+    if (visibleEventIds.length >= 3) {
+      const adCard = document.createElement('div');
+      adCard.className = 'card mb-3 sponsored-card border-primary-subtle';
+      adCard.innerHTML = `
+        <div class="card-body">
+          <div class="text-muted small mb-2">Advertisement</div>
+          <div class="sponsored-content">
+            <p>Sponsored Content - Advertisement space available</p>
+          </div>
+        </div>
+      `;
+      
+      // Insert after the 3rd event card
+      const thirdCard = visibleEventsContainer.children[2];
+      if (thirdCard) {
+        visibleEventsContainer.insertBefore(adCard, thirdCard.nextSibling);
+      }
+    }
+  }
 
   // Add a marker to the map
-  function addMarker(map, lat, lng, popupContent) {
+  function addMarker(map, lat, lng, popupContent, eventId) {
     if (!map) {
       console.error("Map instance is null or undefined");
       return null;
@@ -59,13 +179,165 @@ window.FunlistMap = (function() {
       if (popupContent) {
         marker.bindPopup(popupContent);
       }
+      
+      // Store the event ID with the marker for reference
+      if (eventId) {
+        marker.eventId = eventId;
+        eventMarkers[eventId] = marker;
+      }
 
-      marker.addTo(map);
+      marker.addTo(markers);
+      markersList.push(marker);
+      
+      // Add click handler to highlight corresponding event in the list
+      marker.on('click', function() {
+        if (eventId) {
+          highlightEventCard(eventId);
+        }
+      });
+      
       return marker;
     } catch (error) {
       console.error("Error adding marker:", error);
       return null;
     }
+  }
+  
+  // Highlight an event marker on the map
+  function highlightMarker(map, eventId) {
+    if (!map || !eventId) return;
+    
+    const marker = eventMarkers[eventId];
+    if (marker) {
+      // Center the map on this marker
+      map.panTo(marker.getLatLng());
+      
+      // Open the popup
+      marker.openPopup();
+      
+      // Highlight the marker (you could add a visual effect here)
+      // For example, bounce animation or different icon
+    }
+  }
+  
+  // Highlight an event card in the list
+  function highlightEventCard(eventId) {
+    if (!eventId) return;
+    
+    // Remove highlight from all cards
+    document.querySelectorAll('.event-card').forEach(function(card) {
+      card.classList.remove('highlighted');
+    });
+    
+    // Add highlight to matched card
+    const visibleCard = document.querySelector(`#visible-events-container .event-card[data-event-id="${eventId}"]`);
+    if (visibleCard) {
+      visibleCard.classList.add('highlighted');
+      
+      // Scroll the card into view
+      visibleCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }
+  
+  // Clear all markers from the map
+  function clearMarkers() {
+    markers.clearLayers();
+    markersList = [];
+    eventMarkers = {};
+  }
+  
+  // Filter markers based on criteria
+  function filterMarkers(categoryFilter, dateFilter, funRatingFilter) {
+    // Apply filters to markers based on given criteria
+    if (!mapInstance) return;
+    
+    // Clear existing markers
+    markers.clearLayers();
+    markersList = [];
+    eventMarkers = {};
+    
+    // Get all event cards from the hidden container
+    const eventCards = document.querySelectorAll('#all-events-container .event-card');
+    
+    // Add markers that match the filter criteria
+    eventCards.forEach(function(card) {
+      // Get data from the event card
+      const eventId = card.getAttribute('data-event-id');
+      const lat = parseFloat(card.getAttribute('data-lat'));
+      const lng = parseFloat(card.getAttribute('data-lng'));
+      const category = card.getAttribute('data-category');
+      const date = card.getAttribute('data-date');
+      const funRating = parseInt(card.getAttribute('data-fun-rating'));
+      
+      // Apply filters
+      let passesFilter = true;
+      
+      // Category filter
+      if (categoryFilter && categoryFilter !== 'All Categories') {
+        if (category.toLowerCase() !== categoryFilter.toLowerCase()) {
+          passesFilter = false;
+        }
+      }
+      
+      // Fun rating filter
+      if (funRatingFilter && funRatingFilter !== 'All Fun Ratings') {
+        const minRating = parseInt(funRatingFilter);
+        if (funRating < minRating) {
+          passesFilter = false;
+        }
+      }
+      
+      // Date filter (simplified)
+      if (dateFilter && dateFilter !== 'Any Date') {
+        const eventDate = new Date(date);
+        const today = new Date();
+        
+        if (dateFilter === 'Today') {
+          if (eventDate.toDateString() !== today.toDateString()) {
+            passesFilter = false;
+          }
+        } else if (dateFilter === 'Tomorrow') {
+          const tomorrow = new Date(today);
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          if (eventDate.toDateString() !== tomorrow.toDateString()) {
+            passesFilter = false;
+          }
+        } else if (dateFilter === 'This Weekend') {
+          // Get next Saturday and Sunday
+          const dayOfWeek = today.getDay();
+          const saturday = new Date(today);
+          saturday.setDate(today.getDate() + (6 - dayOfWeek) % 7);
+          const sunday = new Date(saturday);
+          sunday.setDate(saturday.getDate() + 1);
+          
+          if (!(eventDate >= saturday && eventDate <= sunday)) {
+            passesFilter = false;
+          }
+        }
+      }
+      
+      // Add marker if it passes all filters
+      if (passesFilter && !isNaN(lat) && !isNaN(lng)) {
+        // Get the title and description for the popup
+        const title = card.querySelector('.card-title').textContent;
+        const description = card.querySelector('.card-text').textContent;
+        
+        // Create popup content
+        const popupContent = `
+          <div class="event-popup">
+            <h5>${title}</h5>
+            <p>${description}</p>
+            <a href="/event/${eventId}" class="btn btn-sm btn-primary">View Details</a>
+          </div>
+        `;
+        
+        // Add marker
+        addMarker(mapInstance, lat, lng, popupContent, eventId);
+      }
+    });
+    
+    // Update the events list based on the current map view
+    updateVisibleEvents(mapInstance);
   }
 
   // Get user's location and center map
@@ -86,7 +358,11 @@ window.FunlistMap = (function() {
           map.setView([userLat, userLng], defaultZoom);
 
           // Add a special marker for user location
-          const userMarker = L.marker([userLat, userLng], {
+          if (userMarker) {
+            map.removeLayer(userMarker);
+          }
+          
+          userMarker = L.marker([userLat, userLng], {
             icon: L.divIcon({
               className: 'user-location-marker',
               html: '<i class="fas fa-user-circle"></i><span class="pulse"></span>',
@@ -96,6 +372,9 @@ window.FunlistMap = (function() {
           }).addTo(map);
 
           userMarker.bindPopup("You are here").openPopup();
+          
+          // After setting user location, update visible events
+          updateVisibleEvents(map);
 
           if (callback) callback(true, {lat: userLat, lng: userLng});
         },
@@ -104,6 +383,9 @@ window.FunlistMap = (function() {
 
           // Fall back to default location
           map.setView(defaultLocation, defaultZoom);
+          
+          // After setting default location, update visible events
+          updateVisibleEvents(map);
 
           if (callback) callback(false, {lat: defaultLocation[0], lng: defaultLocation[1]});
         },
@@ -116,6 +398,9 @@ window.FunlistMap = (function() {
     } else {
       console.error("Geolocation is not supported by this browser");
       map.setView(defaultLocation, defaultZoom);
+      
+      // After setting default location, update visible events
+      updateVisibleEvents(map);
 
       if (callback) callback(false, {lat: defaultLocation[0], lng: defaultLocation[1]});
     }
@@ -125,6 +410,10 @@ window.FunlistMap = (function() {
   return {
     init: initMap,
     addMarker: addMarker,
-    getUserLocation: getUserLocation
+    getUserLocation: getUserLocation,
+    highlightMarker: highlightMarker,
+    clearMarkers: clearMarkers,
+    filterMarkers: filterMarkers,
+    updateVisibleEvents: updateVisibleEvents
   };
 })();

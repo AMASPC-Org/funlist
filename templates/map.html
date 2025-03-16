@@ -7,61 +7,80 @@
 <div class="container-fluid mt-3">
   <h1 class="text-center mb-3">Event Map</h1>
 
+  <!-- Horizontal Filter Bar at the top -->
   <div class="filter-bar mb-3">
-        <div class="row g-2">
-            <div class="col-md">
-                <input type="text" class="form-control" id="locationSearch" placeholder="Search location...">
-            </div>
-            <div class="col-md">
-                <select class="form-select" id="categoryFilter">
-                    <option selected>All Categories</option>
-                    <option>Sports</option>
-                    <option>Music</option>
-                    <option>Arts</option>
-                    <option>Food</option>
-                    <option>Other</option>
-                </select>
-            </div>
-            <div class="col-md">
-                <select class="form-select" id="dateFilter">
-                    <option selected>Any Date</option>
-                    <option>Today</option>
-                    <option>Tomorrow</option>
-                    <option>This Weekend</option>
-                    <option>Next Week</option>
-                </select>
-            </div>
-            <div class="col-md">
-                <select class="form-select" id="funFilter">
-                    <option selected>All Fun Ratings</option>
-                    <option value="5">⭐⭐⭐⭐⭐ (5)</option>
-                    <option value="4">⭐⭐⭐⭐ (4+)</option>
-                    <option value="3">⭐⭐⭐ (3+)</option>
-                </select>
-            </div>
+    <div class="row g-2 justify-content-center">
+        <div class="col-md-3">
+            <input type="text" class="form-control" id="locationSearch" placeholder="Search location...">
+        </div>
+        <div class="col-md-2">
+            <select class="form-select" id="categoryFilter">
+                <option selected>All Categories</option>
+                <option>Sports</option>
+                <option>Music</option>
+                <option>Arts</option>
+                <option>Food</option>
+                <option>Other</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select class="form-select" id="dateFilter">
+                <option selected>Any Date</option>
+                <option>Today</option>
+                <option>Tomorrow</option>
+                <option>This Weekend</option>
+                <option>Next Week</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select class="form-select" id="funFilter">
+                <option selected>All Fun Ratings</option>
+                <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+                <option value="4">⭐⭐⭐⭐ (4+)</option>
+                <option value="3">⭐⭐⭐ (3+)</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button id="applyFilters" class="btn btn-primary w-100">Apply Filters</button>
         </div>
     </div>
+  </div>
 
   <div class="row map-content-row">
-        <div class="col-lg-7">
-            <div id="map" class="map-container shadow"></div>
-        </div>
-        <div class="col-lg-5">
-            <div class="event-cards-container">
-                <h4 class="mb-3">Events Near You</h4>
+    <!-- Map on left side -->
+    <div class="col-lg-8">
+        <div id="map" class="map-container shadow"></div>
+    </div>
+    
+    <!-- Event list on right side -->
+    <div class="col-lg-4">
+        <div class="event-cards-container">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4>Map Events</h4>
+                <div>
+                    <span class="badge bg-primary" id="event-count">{{ events|length }} Events</span>
+                </div>
+            </div>
+            
+            <div id="visible-events-container">
+                <!-- Events will be dynamically populated here based on map visibility -->
+                <div class="text-center text-muted py-4" id="no-events-message" style="display: none;">
+                    <i class="fas fa-map-marker-alt fa-3x mb-3"></i>
+                    <p>No events currently visible on map.<br>Try adjusting your filters or zoom level.</p>
+                </div>
+            </div>
+            
+            <!-- All events (initially hidden, used as data source) -->
+            <div id="all-events-container" style="display: none;">
                 {% if events %}
                     {% for event in events %}
-                        {% if loop.index == 3 %}
-                        <div class="card mb-3 sponsored-card border-primary-subtle">
-                            <div class="card-body">
-                                <div class="text-muted small mb-2">Advertisement</div>
-                                <div class="sponsored-content">
-                                    <p>Sponsored Content - Advertisement space available</p>
-                                </div>
-                            </div>
-                        </div>
-                        {% endif %}
-                        <div class="card mb-3 event-card" data-event-id="{{ event.id }}">
+                        <div class="card mb-3 event-card" 
+                             data-event-id="{{ event.id }}"
+                             data-lat="{{ event.latitude }}"
+                             data-lng="{{ event.longitude }}"
+                             data-category="{{ event.category }}"
+                             data-date="{{ event.start_date.strftime('%Y-%m-%d') }}"
+                             data-fun-rating="{{ event.fun_meter }}">
                             <div class="card-body">
                                 <h5 class="card-title">{{ event.title }}</h5>
                                 <p class="card-text">{{ event.description|truncate(100) }}</p>
@@ -83,20 +102,36 @@
                                 <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-primary btn-sm">View Details</a>
                             </div>
                         </div>
+                        
+                        {% if loop.index == 3 %}
+                        <!-- Advertisement after the 3rd event card -->
+                        <div class="card mb-3 sponsored-card border-primary-subtle">
+                            <div class="card-body">
+                                <div class="text-muted small mb-2">Advertisement</div>
+                                <div class="sponsored-content">
+                                    <p>Sponsored Content - Advertisement space available</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
                     {% endfor %}
-                {% else %}
-                    <div class="alert alert-info">
-                        No events found. Try adjusting your filters or adding new events.
-                    </div>
-                {% endif %}
-                {% if error_message %}
-                    <div class="alert alert-warning">
-                        {{ error_message }}
-                    </div>
                 {% endif %}
             </div>
+            
+            {% if error_message %}
+                <div class="alert alert-warning">
+                    {{ error_message }}
+                </div>
+            {% endif %}
+            
+            {% if not events %}
+                <div class="alert alert-info">
+                    No events found. Try adjusting your filters or adding new events.
+                </div>
+            {% endif %}
         </div>
     </div>
+  </div>
 </div>
 {% endblock %}
 
@@ -113,21 +148,33 @@ document.addEventListener('DOMContentLoaded', function() {
     var map = FunlistMap.init('map');
     
     if (map) {
-        // Add markers for events
+        // Clear any existing markers
+        FunlistMap.clearMarkers();
+        
+        // Debug: Count of events
+        console.log("Total events available: {{ events|length }}");
+        
+        // Add markers for events with event IDs
+        var markerCount = 0;
         {% for event in events %}
             {% if event.latitude and event.longitude %}
-                FunlistMap.addMarker(map, {{ event.latitude }}, {{ event.longitude }},
-                `<div class="event-popup">
-                    <h5>{{ event.title }}</h5>
-                    <p>{{ event.description|truncate(100) }}</p>
-                    <a href="/event/{{event.id}}" class="btn btn-sm btn-primary">View Details</a>
-                </div>`);
+                markerCount++;
+                FunlistMap.addMarker(map, 
+                    {{ event.latitude }}, 
+                    {{ event.longitude }},
+                    `<div class="event-popup">
+                        <h5>{{ event.title }}</h5>
+                        <p>{{ event.description|truncate(100) }}</p>
+                        <a href="/event/{{event.id}}" class="btn btn-sm btn-primary">View Details</a>
+                    </div>`,
+                    "{{ event.id }}" // Pass event ID to connect markers and events
+                );
             {% endif %}
         {% endfor %}
         
-        console.log("Added {{ events|length }} event markers to map");
+        console.log("Added " + markerCount + " event markers to map");
         
-        // Get user location and center map
+        // Get user location and center map (this will also trigger visible events update)
         FunlistMap.getUserLocation(map, function(success, location) {
             if (success) {
                 console.log("Map centered on user location");
@@ -136,27 +183,139 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Make sure the map renders correctly
+        // Make sure the map renders correctly and updates visible events
         setTimeout(function() {
             map.invalidateSize();
+            FunlistMap.updateVisibleEvents(map);
         }, 500);
+        
+        // Set up filter controls
+        setupFilterControls(map);
     }
-
-    // Add click event to event cards to highlight corresponding marker
-    document.querySelectorAll('.event-card').forEach(function(card) {
-        card.addEventListener('click', function() {
-            var eventId = this.getAttribute('data-event-id');
-            // Highlight the corresponding marker (can be implemented in map.js)
-            if (typeof FunlistMap.highlightMarker === 'function') {
-                FunlistMap.highlightMarker(map, eventId);
-            }
-            // Highlight the card
-            document.querySelectorAll('.event-card').forEach(function(c) {
-                c.classList.remove('highlighted');
+    
+    // Set up filter controls functionality
+    function setupFilterControls(map) {
+        const applyFiltersBtn = document.getElementById('applyFilters');
+        
+        if (applyFiltersBtn) {
+            applyFiltersBtn.addEventListener('click', function() {
+                const categoryFilter = document.getElementById('categoryFilter').value;
+                const dateFilter = document.getElementById('dateFilter').value;
+                const funFilter = document.getElementById('funFilter').value;
+                
+                // Apply filters to visible events
+                applyFilters(categoryFilter, dateFilter, funFilter);
             });
-            this.classList.add('highlighted');
+        }
+        
+        // Individual filter changes
+        document.getElementById('categoryFilter')?.addEventListener('change', function() {
+            if (this.value === 'All Categories') {
+                // Reset category filter
+                document.querySelectorAll('.event-card').forEach(card => {
+                    card.dataset.filterCategory = 'visible';
+                });
+            }
         });
-    });
+        
+        document.getElementById('locationSearch')?.addEventListener('input', debounce(function() {
+            // Could implement geocoding search here
+            console.log("Location search:", this.value);
+        }, 500));
+    }
+    
+    // Apply filters to the events and map
+    function applyFilters(category, date, funRating) {
+        console.log("Applying filters:", category, date, funRating);
+        
+        // Use the enhanced filterMarkers function from map.js
+        FunlistMap.filterMarkers(category, date, funRating);
+        
+        // Update the Filter button to show it's been applied
+        const applyBtn = document.getElementById('applyFilters');
+        if (applyBtn) {
+            const originalText = applyBtn.textContent;
+            applyBtn.textContent = 'Filters Applied ✓';
+            applyBtn.classList.add('btn-success');
+            applyBtn.classList.remove('btn-primary');
+            
+            // Reset the button after a delay
+            setTimeout(() => {
+                applyBtn.textContent = originalText;
+                applyBtn.classList.add('btn-primary');
+                applyBtn.classList.remove('btn-success');
+            }, 2000);
+        }
+    }
+    
+    // Utility function to limit how often a function runs
+    function debounce(func, wait) {
+        let timeout;
+        return function() {
+            const context = this, args = arguments;
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(context, args), wait);
+        };
+    }
 });
 </script>
+
+<style>
+/* Add styles for highlighted event cards */
+.event-card.highlighted {
+    border-left: 4px solid #0d6efd;
+    box-shadow: 0 0 10px rgba(13, 110, 253, 0.3);
+    transition: all 0.3s ease;
+}
+
+/* User location marker */
+.user-location-marker {
+    color: #0d6efd;
+    font-size: 24px;
+    position: relative;
+}
+
+.user-location-marker .pulse {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    left: 0;
+    top: 0;
+    border-radius: 50%;
+    background: rgba(13, 110, 253, 0.3);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.5);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}
+
+/* Improve map container height for better visibility */
+.map-container {
+    height: 600px;
+    border-radius: 8px;
+}
+
+/* Make the events container scrollable for overflow */
+.event-cards-container {
+    max-height: 600px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* Ensure filter bar is responsive and visually separated */
+.filter-bar {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+</style>
 {% endblock %}

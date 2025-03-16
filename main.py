@@ -102,12 +102,12 @@ def run_flask_app():
             print(f"Running in deployment environment. Starting server on port {port}...")
             app.run(host='0.0.0.0', port=port, debug=False)
         else:
-            # Try multiple ports in development to find an available one
-            ports_to_try = [3000, 5000, 5050, 8000, 8080, 8888, 9000]
+            # Always use port 5000 in Replit workflows
+            ports_to_try = [5000]
 
-            # Force kill any process using the default port 8080
+            # Force kill any process using the port 5000
             try:
-                default_port = 8080
+                default_port = 5000
                 print(f"Ensuring port {default_port} is available...")
                 if is_port_in_use(default_port):
                     free_port(default_port)

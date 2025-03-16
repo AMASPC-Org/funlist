@@ -397,7 +397,15 @@ def init_routes(app):
     @app.route("/map")
     def map():
         try:
-            events = Event.query.all()
+            # Get only approved events that have lat/long coordinates
+            events = Event.query.filter(
+                Event.status == 'approved',
+                Event.latitude.isnot(None),
+                Event.longitude.isnot(None)
+            ).all()
+            
+            # Log the number of events found for debugging
+            app.logger.info(f"Map page loaded with {len(events)} events")
             return render_template("map.html", events=events)
         except Exception as e:
             app.logger.error(f"Error in map route: {str(e)}")
