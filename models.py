@@ -17,7 +17,7 @@ class User(db.Model, UserMixin):
     password_hash = Column(String(256), nullable=False)
     first_name = Column(String(120))
     last_name = Column(String(120))
-    is_active = Column(Boolean, default=True)
+    account_active = Column(Boolean, default=True)
     is_admin = Column(Boolean, default=False)
     profile_image = Column(String(500))
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -30,6 +30,9 @@ class User(db.Model, UserMixin):
     marketing_opt_in = Column(Boolean, default=False)
     user_preferences = Column(Text)  # Stored as JSON
     last_login = Column(DateTime)
+
+    def is_active(self):
+        return self.account_active
     
     # Define relationships
     events = relationship("Event", back_populates="user", cascade="all, delete-orphan")
