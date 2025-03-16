@@ -530,6 +530,30 @@ window.FunlistMap = (function() {
     }
   }
 
+  //Added function to handle location search and center on Olympia if needed.
+  function handleLocationSearch(map, searchParams) {
+    const geocoder = new google.maps.Geocoder();
+    // Center map on Olympia coordinates when searching for Olympia
+    if (searchParams.has('location')) {
+        const location = searchParams.get('location');
+        if (location.toLowerCase().includes('olympia')) {
+            // Olympia's coordinates
+            const olympiaCenter = new google.maps.LatLng(47.0379, -122.9007);
+            map.setCenter(olympiaCenter);
+            map.setZoom(13);
+        } else {
+            geocoder.geocode({ address: location }, (results, status) => {
+                if (status === 'OK') {
+                    const position = results[0].geometry.location;
+                    map.setCenter(position);
+                    map.setZoom(13);
+                }
+            });
+        }
+    }
+  }
+
+
   // Public API
   return {
     init: initMap,
@@ -540,6 +564,7 @@ window.FunlistMap = (function() {
     highlightMarker: highlightMarker,
     filterMarkers: filterMarkers,
     initializeLocationSearch: initializeLocationSearch, // Expose location search
+    handleLocationSearch: handleLocationSearch, //Expose the new location handling function
     // For compatibility with old Leaflet implementation
     invalidateSize: function() {
       if (mapInstance) {
