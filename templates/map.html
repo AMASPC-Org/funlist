@@ -3,6 +3,11 @@
 
 {% block title %}Map | FunList.ai{% endblock %}
 
+{% block head %}
+<!-- Load Google Maps JavaScript API with API key from environment -->
+<script src="https://maps.googleapis.com/maps/api/js?key={{ config.get('GOOGLE_MAPS_API_KEY') }}&libraries=places"></script>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid mt-3">
   <h1 class="text-center mb-3">Event Map</h1>
@@ -142,7 +147,7 @@
 <!-- Initialize the map after page loads -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    console.log("Map page loaded, initializing map...");
+    console.log("Map page loaded, initializing map with Google Maps...");
     
     // Initialize the map
     var map = FunlistMap.init('map');
@@ -185,7 +190,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Make sure the map renders correctly and updates visible events
         setTimeout(function() {
-            map.invalidateSize();
+            // Trigger resize for Google Maps
+            google.maps.event.trigger(map, 'resize');
             FunlistMap.updateVisibleEvents(map);
         }, 500);
         

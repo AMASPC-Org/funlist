@@ -1,14 +1,14 @@
-// Map handling module for FunList.ai using Google Maps
+// Map handling module for FunList.ai
 window.FunlistMap = (function() {
   'use strict';
 
   // Private variables
   let mapInstance = null;
-  const defaultLocation = {lat: 47.0379, lng: -122.9007}; // Default to Olympia, WA
+  const defaultLocation = [47.0379, -122.9007]; // Default to Olympia, WA
   const defaultZoom = 11;
   let markersList = [];
+  let markers = L.layerGroup();
   let userMarker = null;
-  let infoWindow = null;
   
   // Store event ID to marker mapping
   let eventMarkers = {};
@@ -17,9 +17,9 @@ window.FunlistMap = (function() {
   function initMap(elementId) {
     console.log("Initializing map in element:", elementId);
 
-    // Check if Google Maps API is loaded
-    if (typeof google === 'undefined' || typeof google.maps === 'undefined') {
-      console.error("Google Maps API not loaded yet. Cannot initialize map.");
+    // Check if Leaflet is loaded
+    if (typeof L === 'undefined') {
+      console.error("Leaflet library not loaded yet. Cannot initialize map.");
       return null;
     }
 
@@ -31,22 +31,103 @@ window.FunlistMap = (function() {
     }
 
     try {
-      // Create the map instance with Google Maps
-      mapInstance = new google.maps.Map(mapElement, {
+      // Create the map instance
+      mapInstance = L.map(elementId, {
         center: defaultLocation,
         zoom: defaultZoom,
-        mapTypeControl: true,
-        mapTypeControlOptions: {
-          style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
-          position: google.maps.ControlPosition.TOP_RIGHT
-        },
-        fullscreenControl: true,
-        streetViewControl: true,
         zoomControl: true
       });
+
+      // Try multiple tile providers to ensure one works
+      try {
+        console.log("Attempting to add tile layers to map");
+        
+        // Create an array of tile layer options in order of preference
+        const tileLayerOptions = [
+          // First option: OpenStreetMap
+          {
+            url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            options: {
+              attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+              maxZoom: 19,
+              crossOrigin: true,
+              subdomains: ['a', 'b', 'c']
+            },
+            name: 'OpenStreetMap'
+          },
+          // Second option: CartoDB Light
+          {
+            url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+            options: {
+              attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+              subdomains: 'abcd',
+              maxZoom: 20,
+              crossOrigin: true
+            },
+            name: 'CartoDB'
+          },
+          // Third option: Stamen Terrain
+          {
+            url: 'https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}.png',
+            options: {
+              attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+              maxZoom: 18,
+              crossOrigin: true,
+              subdomains: ['a', 'b', 'c']
+            },
+            name: 'Stamen Terrain'
+          }
+        ];
+        
+        // Track if any tile layer has been successfully added
+        let tileLayerAdded = false;
+        let currentTileIndex = 0;
+        
+        // Function to try the next tile provider
+        function tryNextTileProvider() {
+          if (currentTileIndex >= tileLayerOptions.length) {
+            console.error('All tile providers failed, map may not display correctly');
+            return;
+          }
+          
+          // Get current tile option
+          const tileOption = tileLayerOptions[currentTileIndex];
+          console.log(`Trying tile provider ${currentTileIndex + 1}/${tileLayerOptions.length}: ${tileOption.name}`);
+          
+          // Create and add the tile layer
+          const tileLayer = L.tileLayer(tileOption.url, tileOption.options);
+          
+          // Setup success handler
+          tileLayer.on('load', function() {
+            console.log(`Tile provider ${tileOption.name} loaded successfully`);
+            tileLayerAdded = true;
+          });
+          
+          // Setup error handler
+          tileLayer.on('tileerror', function(error) {
+            console.warn(`Tile provider ${tileOption.name} error:`, error);
+            
+            // Only try next provider if this one hasn't succeeded yet
+            if (!tileLayerAdded) {
+              mapInstance.removeLayer(tileLayer);
+              currentTileIndex++;
+              tryNextTileProvider();
+            }
+          });
+          
+          // Add to map
+          tileLayer.addTo(mapInstance);
+        }
+        
+        // Start with the first tile provider
+        tryNextTileProvider();
+        
+      } catch (e) {
+        console.error('Error adding tile layer:', e);
+      }
       
-      // Create a single InfoWindow instance to reuse for all markers
-      infoWindow = new google.maps.InfoWindow();
+      // Add the markers layer group to the map
+      markers = L.layerGroup().addTo(mapInstance);
       
       // Set up map event listeners
       setupMapEventListeners(mapInstance);
@@ -63,13 +144,13 @@ window.FunlistMap = (function() {
   function setupMapEventListeners(map) {
     if (!map) return;
     
-    // When map is idle (after panning/zooming), update visible events
-    google.maps.event.addListener(map, 'idle', function() {
+    // When map is moved (panned or zoomed), update visible events
+    map.on('moveend', function() {
       updateVisibleEvents(map);
     });
     
     // When map is initially loaded, update visible events
-    google.maps.event.addListenerOnce(map, 'tilesloaded', function() {
+    map.on('load', function() {
       updateVisibleEvents(map);
     });
   }
@@ -81,11 +162,9 @@ window.FunlistMap = (function() {
     const bounds = map.getBounds();
     const visibleEventIds = [];
     
-    if (!bounds) return; // Map might not be fully initialized
-    
     // Check which markers are in the current view
     markersList.forEach(function(marker) {
-      if (marker && marker.eventId && bounds.contains(marker.getPosition())) {
+      if (marker && marker.eventId && bounds.contains(marker.getLatLng())) {
         visibleEventIds.push(marker.eventId);
       }
     });
@@ -177,31 +256,27 @@ window.FunlistMap = (function() {
     }
 
     try {
-      const marker = new google.maps.Marker({
-        position: {lat: parseFloat(lat), lng: parseFloat(lng)},
-        map: map,
-        animation: google.maps.Animation.DROP
-      });
+      const marker = L.marker([lat, lng]);
 
+      if (popupContent) {
+        marker.bindPopup(popupContent);
+      }
+      
       // Store the event ID with the marker for reference
       if (eventId) {
         marker.eventId = eventId;
         eventMarkers[eventId] = marker;
       }
 
-      // Add click handler for info window
-      if (popupContent) {
-        marker.addListener('click', function() {
-          infoWindow.setContent(popupContent);
-          infoWindow.open(map, marker);
-          
-          if (eventId) {
-            highlightEventCard(eventId);
-          }
-        });
-      }
-      
+      marker.addTo(markers);
       markersList.push(marker);
+      
+      // Add click handler to highlight corresponding event in the list
+      marker.on('click', function() {
+        if (eventId) {
+          highlightEventCard(eventId);
+        }
+      });
       
       return marker;
     } catch (error) {
@@ -217,37 +292,13 @@ window.FunlistMap = (function() {
     const marker = eventMarkers[eventId];
     if (marker) {
       // Center the map on this marker
-      map.panTo(marker.getPosition());
+      map.panTo(marker.getLatLng());
       
-      // Open the info window
-      if (infoWindow) {
-        const popupContent = document.querySelector(`#all-events-container .event-card[data-event-id="${eventId}"]`);
-        if (popupContent) {
-          const title = popupContent.querySelector('.card-title').textContent;
-          const description = popupContent.querySelector('.card-text').textContent;
-          
-          const contentString = `
-            <div class="event-popup">
-              <h5>${title}</h5>
-              <p>${description}</p>
-              <a href="/event/${eventId}" class="btn btn-sm btn-primary">View Details</a>
-            </div>
-          `;
-          
-          infoWindow.setContent(contentString);
-          infoWindow.open(map, marker);
-        }
-      }
+      // Open the popup
+      marker.openPopup();
       
-      // Add bounce animation
-      if (marker.getAnimation() !== null) {
-        marker.setAnimation(null);
-      } else {
-        marker.setAnimation(google.maps.Animation.BOUNCE);
-        setTimeout(function() {
-          marker.setAnimation(null);
-        }, 1500);
-      }
+      // Highlight the marker (you could add a visual effect here)
+      // For example, bounce animation or different icon
     }
   }
   
@@ -272,16 +323,9 @@ window.FunlistMap = (function() {
   
   // Clear all markers from the map
   function clearMarkers() {
-    markersList.forEach(function(marker) {
-      marker.setMap(null);
-    });
+    markers.clearLayers();
     markersList = [];
     eventMarkers = {};
-    
-    if (userMarker) {
-      userMarker.setMap(null);
-      userMarker = null;
-    }
   }
   
   // Filter markers based on criteria
@@ -290,7 +334,9 @@ window.FunlistMap = (function() {
     if (!mapInstance) return;
     
     // Clear existing markers
-    clearMarkers();
+    markers.clearLayers();
+    markersList = [];
+    eventMarkers = {};
     
     // Get all event cards from the hidden container
     const eventCards = document.querySelectorAll('#all-events-container .event-card');
@@ -388,7 +434,12 @@ window.FunlistMap = (function() {
     setTimeout(function() {
       console.log("Forcing map resize");
       try {
-        google.maps.event.trigger(map, 'resize');
+        if (map && typeof map.invalidateSize === 'function') {
+          console.log("Found Leaflet map instance, invalidating size");
+          map.invalidateSize(true);
+        } else {
+          console.warn("Map not fully initialized yet or invalidateSize not available");
+        }
       } catch (e) {
         console.error("Error resizing map:", e);
       }
@@ -407,13 +458,11 @@ window.FunlistMap = (function() {
         console.error("Error dispatching location event:", e);
       }
       
-      // Set map center with error handling
+      // Set map view with error handling
       try {
-        map.setCenter({lat: lat, lng: lng});
-        map.setZoom(defaultZoom);
-        console.log("Map centered on user location");
+        map.setView([lat, lng], defaultZoom);
       } catch (e) {
-        console.error("Error setting map center:", e);
+        console.error("Error setting map view:", e);
       }
     };
 
@@ -423,48 +472,49 @@ window.FunlistMap = (function() {
           const userLat = position.coords.latitude;
           const userLng = position.coords.longitude;
 
-          console.log("User location obtained:", userLat, userLng);
-
-          // Remove existing user marker if present
+          // Add a special marker for user location
           if (userMarker) {
-            userMarker.setMap(null);
+            try {
+              map.removeLayer(userMarker);
+            } catch(e) {
+              console.warn("Could not remove existing user marker:", e);
+            }
           }
 
           try {
-            // Create a user location marker with a distinctive icon
-            userMarker = new google.maps.Marker({
-              position: {lat: userLat, lng: userLng},
-              map: map,
-              title: "Your Location",
-              icon: {
-                path: google.maps.SymbolPath.CIRCLE,
-                scale: 10,
-                fillColor: "#4285F4",
-                fillOpacity: 0.7,
-                strokeColor: "#FFFFFF",
-                strokeWeight: 2
-              },
-              zIndex: 1000 // Ensure it's above other markers
+            // Custom HTML/CSS marker for user location with pulsing effect
+            const userIcon = L.divIcon({
+              className: 'user-location-marker',
+              html: '<div class="pulse"></div><i class="fas fa-circle"></i>',
+              iconSize: [24, 24],
+              iconAnchor: [12, 12]
             });
             
-            // Add a user location info window
-            const userInfoWindow = new google.maps.InfoWindow({
-              content: "<div><strong>You are here</strong></div>"
-            });
+            userMarker = L.marker([userLat, userLng], {
+              icon: userIcon,
+              zIndexOffset: 1000 // Ensure it's above other markers
+            }).addTo(map);
             
-            userMarker.addListener('click', function() {
-              userInfoWindow.open(map, userMarker);
+            // Add a tooltip
+            userMarker.bindTooltip("You are here", {
+              permanent: false,
+              direction: 'top',
+              offset: [0, -10]
             });
           } catch (e) {
             console.error("Error adding user location marker:", e);
           }
 
           // Center map on user location
-          map.setCenter({lat: userLat, lng: userLng});
-          map.setZoom(defaultZoom);
-          
-          // Log user's coordinates for debugging
-          console.log("User location found:", userLat, userLng);
+          try {
+            map.setView([userLat, userLng], defaultZoom);
+            console.log("Map centered on user location");
+            
+            // Log user's coordinates for debugging
+            console.log("User location found:", userLat, userLng);
+          } catch (e) {
+            console.error("Error centering map on user location:", e);
+          }
 
           if (callback) callback(true, { lat: userLat, lng: userLng });
           
@@ -478,7 +528,7 @@ window.FunlistMap = (function() {
           if (callback) callback(false, null);
           
           // Dispatch the location ready event with the default location
-          dispatchLocation(false, defaultLocation.lat, defaultLocation.lng);
+          dispatchLocation(false, defaultLocation[0], defaultLocation[1]);
         },
         {
           enableHighAccuracy: true,
@@ -491,7 +541,7 @@ window.FunlistMap = (function() {
       if (callback) callback(false, null);
       
       // Dispatch the location ready event with the default location
-      dispatchLocation(false, defaultLocation.lat, defaultLocation.lng);
+      dispatchLocation(false, defaultLocation[0], defaultLocation[1]);
     }
   }
 
@@ -503,12 +553,6 @@ window.FunlistMap = (function() {
     getUserLocation: getUserLocation,
     updateVisibleEvents: updateVisibleEvents,
     highlightMarker: highlightMarker,
-    filterMarkers: filterMarkers,
-    // For compatibility with old Leaflet implementation
-    invalidateSize: function() {
-      if (mapInstance) {
-        google.maps.event.trigger(mapInstance, 'resize');
-      }
-    }
+    filterMarkers: filterMarkers
   };
 })();

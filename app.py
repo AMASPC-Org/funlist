@@ -34,6 +34,9 @@ def create_app():
     app.config["SERVER_NAME"] = None  # Allow all hostnames
     app.config["APPLICATION_ROOT"] = "/"
     app.config["PREFERRED_URL_SCHEME"] = "https"  # Added for Replit HTTPS
+    
+    # Add Google Maps API key to app config to make it available in templates
+    app.config["GOOGLE_MAPS_API_KEY"] = os.environ.get("GOOGLE_MAPS_API_KEY", "")
 
     # Database configuration
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
@@ -70,12 +73,12 @@ def create_app():
         # Set Content Security Policy header
         csp = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://auth.util.repl.co https://*.replit.dev https://*.repl.co; "
-            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
-            "img-src 'self' data: https: https://*.tile.openstreetmap.org https://*.a.ssl.fastly.net https://*.tile.osm.org https://*.basemaps.cartocdn.com; "
-            "font-src 'self' https://cdnjs.cloudflare.com; "
-            "connect-src 'self' https: https://*.tile.openstreetmap.org https://*.a.ssl.fastly.net https://*.tile.osm.org https://*.basemaps.cartocdn.com; "
-            "frame-src 'self' https://auth.util.repl.co https://*.replit.dev https://*.repl.co"
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://auth.util.repl.co https://*.replit.dev https://*.repl.co https://*.googleapis.com https://*.gstatic.com https://maps.google.com; "
+            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://*.googleapis.com; "
+            "img-src 'self' data: https: https://*.googleapis.com https://*.gstatic.com https://*.google.com https://*.ggpht.com; "
+            "font-src 'self' https://cdnjs.cloudflare.com https://*.gstatic.com; "
+            "connect-src 'self' https: https://*.googleapis.com https://*.google.com; "
+            "frame-src 'self' https://auth.util.repl.co https://*.replit.dev https://*.repl.co https://*.google.com"
             # Remove report-uri to prevent CSP violation reports causing CSRF issues
         )
         response.headers['Content-Security-Policy'] = csp

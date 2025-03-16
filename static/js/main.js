@@ -547,20 +547,7 @@ function getUserLocation() {
 
           console.log("User location found:", userLat, userLng);
 
-          // If on map page, center the map - check if map exists first
-          if (typeof map !== 'undefined' && map) {
-            try {
-              console.log("Forcing map resize");
-              if (map && typeof map.invalidateSize === 'function') {
-                setTimeout(function() {
-                  map.invalidateSize();
-                }, 100);
-              }
-              map.setView([userLat, userLng], 11);
-            } catch (e) {
-              console.error("Error setting map view:", e);
-            }
-          }
+          // Map centering is now handled by the FunlistMap module in map.js
 
           // Load featured events if on homepage
           if (window.location.pathname === '/' || window.location.pathname === '') {
@@ -586,19 +573,7 @@ function getUserLocation() {
             detail: { lat: defaultLat, lng: defaultLng, isDefault: true }
           }));
 
-          // If on map page, center the map on default location
-          if (typeof map !== 'undefined' && map) {
-            try {
-              if (map && typeof map.invalidateSize === 'function') {
-                setTimeout(function() {
-                  map.invalidateSize();
-                }, 100);
-              }
-              map.setView([defaultLat, defaultLng], 11);
-            } catch (e) {
-              console.error("Error setting default map view:", e);
-            }
-          }
+          // Map centering is now handled by the FunlistMap module in map.js
 
           // Still load featured events with default coordinates
           if (window.location.pathname === '/' || window.location.pathname === '') {
@@ -633,25 +608,22 @@ function getUserLocation() {
   }
 }
 
-// If on map page, initialize the map
-if (document.getElementById('map-container')) {
-    console.log("Map page loaded, initializing map...");
-    try {
-        initializeMap();
-    } catch (e) {
-        console.error("Error initializing map:", e);
-    }
-}
+// Map initialization is now handled in map.js with Google Maps API
 
 function resizeMap() {
     setTimeout(function() {
-        if (map && typeof map.invalidateSize === 'function') {
-            console.log("Forcing map resize");
-            try {
-                map.invalidateSize();
-            } catch (e) {
-                console.error("Error resizing map:", e);
+        console.log("Forcing map resize");
+        try {
+            // For Google Maps, we trigger a resize event
+            if (typeof google !== 'undefined' && google.maps && typeof google.maps.event !== 'undefined') {
+                // Find any map instances in the page
+                const mapElement = document.getElementById('map');
+                if (mapElement && mapElement._map) {
+                    google.maps.event.trigger(mapElement._map, 'resize');
+                }
             }
+        } catch (e) {
+            console.error("Error resizing map:", e);
         }
     }, 100);
 }
