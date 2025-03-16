@@ -22,7 +22,7 @@ def force_admin_login():
     app = create_app()
     with app.app_context():
         try:
-            admin_email = 'ryan@americanmarketingalliance.com'
+            admin_email = 'ryan@funlist.ai'
             admin_password = '120M2025*v7'
             
             # Generate password hash
@@ -87,7 +87,7 @@ if __name__ == "__main__":
     success = force_admin_login()
     if success:
         print("Admin account created/updated successfully.")
-        print("Email: ryan@americanmarketingalliance.com")
+        print("Email: ryan@funlist.ai")
         print("Password: 120M2025*v7")
     else:
         print("Failed to create/update admin account.")

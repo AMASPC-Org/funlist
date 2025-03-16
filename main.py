@@ -94,60 +94,36 @@ def free_port(port):
 def run_flask_app():
     """Run the Flask application."""
     try:
-        # Check if development or deployment
-        is_development = "REPL_OWNER" in os.environ and "REPL_SLUG" in os.environ
-        if not is_development:
-            # In deployment, use PORT environment variable or default to 8080
-            port = int(os.environ.get('PORT', 8080))
-            print(f"Running in deployment environment. Starting server on port {port}...")
-            app.run(host='0.0.0.0', port=port, debug=False)
-        else:
-            # Always use port 5000 in Replit workflows
-            ports_to_try = [5000]
-
-            # Force kill any process using the port 5000
-            try:
-                default_port = 5000
-                print(f"Ensuring port {default_port} is available...")
-                if is_port_in_use(default_port):
-                    free_port(default_port)
-                    print(f"Port {default_port} has been freed")
-                    # Add a short delay to ensure port is released
-                    time.sleep(1)
-            except Exception as e:
-                logger.warning(f"Could not free port {default_port}: {e}")
-
-            # Use PORT from environment if specified
-            env_port = os.environ.get('PORT')
-            if env_port:
-                try:
-                    port = int(env_port)
-                    ports_to_try.insert(0, port)  # Try specified port first
-                except (ValueError, TypeError):
-                    pass
-
-            # Try each port until one works
-            for port in ports_to_try:
-                try:
-                    # Clear all console output with an escape sequence
-                    print("\033c", flush=True)
-                    print(f"Starting Flask server on port {port}")
-                    print(f"\n🚀 Server running at: https://{os.environ.get('REPL_SLUG')}.{os.environ.get('REPL_OWNER')}.repl.co")
-                    print(f"📝 Local URL: http://0.0.0.0:{port}")
-
-                    app.run(host='0.0.0.0', port=port, debug=True, use_reloader=False, threaded=True)
-                    break  # If server starts successfully, exit the loop
-                except OSError as e:
-                    if "Address already in use" in str(e):
-                        print(f"Port {port} is already in use, trying next port...")
-                    else:
-                        raise
-            else:
-                # This runs if all ports failed
-                print("All ports are in use. Please try again later or specify a different port with the PORT environment variable.")
-                return
+        # Always use PORT=8080 for Replit workflows
+        default_port = 8080
+        print(f"Ensuring port {default_port} is available...")
+        
+        # Force kill any process using port 8080
+        if is_port_in_use(default_port):
+            free_port(default_port)
+            print(f"Port {default_port} has been freed")
+            # Add a short delay to ensure port is released
+            time.sleep(1)
+        
+        # Clear all console output with an escape sequence
+        print("\033c", flush=True)
+        print(f"Starting Flask server on port {default_port}")
+        print(f"\n🚀 Server running at: http://0.0.0.0:{default_port}")
+        if "REPL_SLUG" in os.environ and "REPL_OWNER" in os.environ:
+            print(f"🌐 Public URL: https://{os.environ.get('REPL_SLUG')}.{os.environ.get('REPL_OWNER')}.repl.co")
+        
+        # Always bind to 0.0.0.0 to ensure the server is accessible externally
+        # Set debug=True for development, but disable auto-reloader
+        app.run(
+            host='0.0.0.0',
+            port=default_port,
+            debug=True,
+            use_reloader=False,
+            threaded=True
+        )
+        
     except Exception as e:
-        logger.error(f"Error creating Flask app: {str(e)}", exc_info=True)
+        logger.error(f"Error running Flask app: {str(e)}", exc_info=True)
         sys.exit(1)
 
 

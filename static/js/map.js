@@ -40,29 +40,88 @@ window.FunlistMap = (function() {
 
       // Try multiple tile providers to ensure one works
       try {
-        // First option: OpenStreetMap (using different URL format)
-        const osmTiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-          maxZoom: 19,
-          crossOrigin: true
-        });
+        console.log("Attempting to add tile layers to map");
         
-        // Second option: Stamen Terrain tiles as fallback
-        const terrainTiles = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}.png', {
-          attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-          maxZoom: 18,
-          crossOrigin: true
-        });
+        // Create an array of tile layer options in order of preference
+        const tileLayerOptions = [
+          // First option: OpenStreetMap
+          {
+            url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            options: {
+              attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+              maxZoom: 19,
+              crossOrigin: true,
+              subdomains: ['a', 'b', 'c']
+            },
+            name: 'OpenStreetMap'
+          },
+          // Second option: CartoDB Light
+          {
+            url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+            options: {
+              attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+              subdomains: 'abcd',
+              maxZoom: 20,
+              crossOrigin: true
+            },
+            name: 'CartoDB'
+          },
+          // Third option: Stamen Terrain
+          {
+            url: 'https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}.png',
+            options: {
+              attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+              maxZoom: 18,
+              crossOrigin: true,
+              subdomains: ['a', 'b', 'c']
+            },
+            name: 'Stamen Terrain'
+          }
+        ];
         
-        // Add primary tiles to map
-        osmTiles.addTo(mapInstance);
+        // Track if any tile layer has been successfully added
+        let tileLayerAdded = false;
+        let currentTileIndex = 0;
         
-        // Handle tile load errors
-        osmTiles.on('tileerror', function(error) {
-          console.warn('Primary tile error, switching to backup tiles');
-          mapInstance.removeLayer(osmTiles);
-          terrainTiles.addTo(mapInstance);
-        });
+        // Function to try the next tile provider
+        function tryNextTileProvider() {
+          if (currentTileIndex >= tileLayerOptions.length) {
+            console.error('All tile providers failed, map may not display correctly');
+            return;
+          }
+          
+          // Get current tile option
+          const tileOption = tileLayerOptions[currentTileIndex];
+          console.log(`Trying tile provider ${currentTileIndex + 1}/${tileLayerOptions.length}: ${tileOption.name}`);
+          
+          // Create and add the tile layer
+          const tileLayer = L.tileLayer(tileOption.url, tileOption.options);
+          
+          // Setup success handler
+          tileLayer.on('load', function() {
+            console.log(`Tile provider ${tileOption.name} loaded successfully`);
+            tileLayerAdded = true;
+          });
+          
+          // Setup error handler
+          tileLayer.on('tileerror', function(error) {
+            console.warn(`Tile provider ${tileOption.name} error:`, error);
+            
+            // Only try next provider if this one hasn't succeeded yet
+            if (!tileLayerAdded) {
+              mapInstance.removeLayer(tileLayer);
+              currentTileIndex++;
+              tryNextTileProvider();
+            }
+          });
+          
+          // Add to map
+          tileLayer.addTo(mapInstance);
+        }
+        
+        // Start with the first tile provider
+        tryNextTileProvider();
+        
       } catch (e) {
         console.error('Error adding tile layer:', e);
       }
