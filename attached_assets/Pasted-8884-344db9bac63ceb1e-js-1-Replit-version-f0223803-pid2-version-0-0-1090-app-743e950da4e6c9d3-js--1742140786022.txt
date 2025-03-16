@@ -1,0 +1,478 @@
+8884-344db9bac63ceb1e.js:1 Replit version f0223803, pid2 version 0.0.1090
+_app-743e950da4e6c9d3.js:16 
+      /////////////////////
+   ///////////////////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////        Curious and driven?
+  ///////////////@@@@@@@///////        Work with us!
+  ///////////////@@@@@@@///////
+  ///////////////@@@@@@@///////        https://join.replit.com/hack.with.us
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@#//////////////
+   ///////////////////////////
+      /////////////////////
+      
+_app-743e950da4e6c9d3.js:16 [LaunchDarkly] LaunchDarkly client initialized
+
+                
+          
+          
+          
+         Chrome is moving towards a new experience that allows users to choose to browse without third-party cookies.
+_app-743e950da4e6c9d3.js:16 [TikTok Pixel] - Invalid pixel ID
+Issue: The pixel ID is invalid. This could prevent your pixel from receiving data.
+Suggestion: Please go to Events Manager and find the correct pixel ID.
+(anonymous) @ _app-743e950da4e6c9d3.js:16
+(anonymous) @ main.MTVjODQ0NGI5MA.js:2
+value @ main.MTVjODQ0NGI5MA.js:2
+value @ main.MTVjODQ0NGI5MA.js:2
+(anonymous) @ main.MTVjODQ0NGI5MA.js:2
+Promise.then
+value @ main.MTVjODQ0NGI5MA.js:2
+(anonymous) @ main.MTVjODQ0NGI5MA.js:2
+value @ main.MTVjODQ0NGI5MA.js:2
+ua @ main.MTVjODQ0NGI5MA.js:2
+(anonymous) @ main.MTVjODQ0NGI5MA.js:2
+fa @ main.MTVjODQ0NGI5MA.js:2
+(anonymous) @ main.MTVjODQ0NGI5MA.js:2
+(anonymous) @ main.MTVjODQ0NGI5MA.js:2
+(anonymous) @ main.MTVjODQ0NGI5MA.js:2
+_app-743e950da4e6c9d3.js:16 Adding extension: Google Cloud Auth {extensionArgs: {…}, local: false, logLevel: 'info'}
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+framework-5a48502280d879d0.js:1 Unrecognized feature: 'ambient-light-sensor'.
+_ @ framework-5a48502280d879d0.js:1
+(anonymous) @ framework-5a48502280d879d0.js:1
+uD @ framework-5a48502280d879d0.js:1
+uI @ framework-5a48502280d879d0.js:1
+(anonymous) @ framework-5a48502280d879d0.js:1
+uM @ framework-5a48502280d879d0.js:1
+uS @ framework-5a48502280d879d0.js:1
+C @ framework-5a48502280d879d0.js:1
+z @ framework-5a48502280d879d0.js:1
+framework-5a48502280d879d0.js:1 Unrecognized feature: 'battery'.
+_ @ framework-5a48502280d879d0.js:1
+(anonymous) @ framework-5a48502280d879d0.js:1
+uD @ framework-5a48502280d879d0.js:1
+uI @ framework-5a48502280d879d0.js:1
+(anonymous) @ framework-5a48502280d879d0.js:1
+uM @ framework-5a48502280d879d0.js:1
+uS @ framework-5a48502280d879d0.js:1
+C @ framework-5a48502280d879d0.js:1
+z @ framework-5a48502280d879d0.js:1
+framework-5a48502280d879d0.js:1 Unrecognized feature: 'execution-while-not-rendered'.
+_ @ framework-5a48502280d879d0.js:1
+(anonymous) @ framework-5a48502280d879d0.js:1
+uD @ framework-5a48502280d879d0.js:1
+uI @ framework-5a48502280d879d0.js:1
+(anonymous) @ framework-5a48502280d879d0.js:1
+uM @ framework-5a48502280d879d0.js:1
+uS @ framework-5a48502280d879d0.js:1
+C @ framework-5a48502280d879d0.js:1
+z @ framework-5a48502280d879d0.js:1
+framework-5a48502280d879d0.js:1 Unrecognized feature: 'execution-while-out-of-viewport'.
+_ @ framework-5a48502280d879d0.js:1
+(anonymous) @ framework-5a48502280d879d0.js:1
+uD @ framework-5a48502280d879d0.js:1
+uI @ framework-5a48502280d879d0.js:1
+(anonymous) @ framework-5a48502280d879d0.js:1
+uM @ framework-5a48502280d879d0.js:1
+uS @ framework-5a48502280d879d0.js:1
+C @ framework-5a48502280d879d0.js:1
+z @ framework-5a48502280d879d0.js:1
+framework-5a48502280d879d0.js:1 Unrecognized feature: 'layout-animations'.
+_ @ framework-5a48502280d879d0.js:1
+(anonymous) @ framework-5a48502280d879d0.js:1
+uD @ framework-5a48502280d879d0.js:1
+uI @ framework-5a48502280d879d0.js:1
+(anonymous) @ framework-5a48502280d879d0.js:1
+uM @ framework-5a48502280d879d0.js:1
+uS @ framework-5a48502280d879d0.js:1
+C @ framework-5a48502280d879d0.js:1
+z @ framework-5a48502280d879d0.js:1
+framework-5a48502280d879d0.js:1 Unrecognized feature: 'legacy-image-formats'.
+_ @ framework-5a48502280d879d0.js:1
+(anonymous) @ framework-5a48502280d879d0.js:1
+uD @ framework-5a48502280d879d0.js:1
+uI @ framework-5a48502280d879d0.js:1
+(anonymous) @ framework-5a48502280d879d0.js:1
+uM @ framework-5a48502280d879d0.js:1
+uS @ framework-5a48502280d879d0.js:1
+C @ framework-5a48502280d879d0.js:1
+z @ framework-5a48502280d879d0.js:1
+framework-5a48502280d879d0.js:1 Unrecognized feature: 'navigation-override'.
+_ @ framework-5a48502280d879d0.js:1
+(anonymous) @ framework-5a48502280d879d0.js:1
+uD @ framework-5a48502280d879d0.js:1
+uI @ framework-5a48502280d879d0.js:1
+(anonymous) @ framework-5a48502280d879d0.js:1
+uM @ framework-5a48502280d879d0.js:1
+uS @ framework-5a48502280d879d0.js:1
+C @ framework-5a48502280d879d0.js:1
+z @ framework-5a48502280d879d0.js:1
+framework-5a48502280d879d0.js:1 Unrecognized feature: 'oversized-images'.
+_ @ framework-5a48502280d879d0.js:1
+(anonymous) @ framework-5a48502280d879d0.js:1
+uD @ framework-5a48502280d879d0.js:1
+uI @ framework-5a48502280d879d0.js:1
+(anonymous) @ framework-5a48502280d879d0.js:1
+uM @ framework-5a48502280d879d0.js:1
+uS @ framework-5a48502280d879d0.js:1
+C @ framework-5a48502280d879d0.js:1
+z @ framework-5a48502280d879d0.js:1
+framework-5a48502280d879d0.js:1 Unrecognized feature: 'publickey-credentials'.
+_ @ framework-5a48502280d879d0.js:1
+(anonymous) @ framework-5a48502280d879d0.js:1
+uD @ framework-5a48502280d879d0.js:1
+uI @ framework-5a48502280d879d0.js:1
+(anonymous) @ framework-5a48502280d879d0.js:1
+uM @ framework-5a48502280d879d0.js:1
+uS @ framework-5a48502280d879d0.js:1
+C @ framework-5a48502280d879d0.js:1
+z @ framework-5a48502280d879d0.js:1
+framework-5a48502280d879d0.js:1 Unrecognized feature: 'speaker-selection'.
+_ @ framework-5a48502280d879d0.js:1
+(anonymous) @ framework-5a48502280d879d0.js:1
+uD @ framework-5a48502280d879d0.js:1
+uI @ framework-5a48502280d879d0.js:1
+(anonymous) @ framework-5a48502280d879d0.js:1
+uM @ framework-5a48502280d879d0.js:1
+uS @ framework-5a48502280d879d0.js:1
+C @ framework-5a48502280d879d0.js:1
+z @ framework-5a48502280d879d0.js:1
+framework-5a48502280d879d0.js:1 Unrecognized feature: 'unoptimized-images'.
+_ @ framework-5a48502280d879d0.js:1
+(anonymous) @ framework-5a48502280d879d0.js:1
+uD @ framework-5a48502280d879d0.js:1
+uI @ framework-5a48502280d879d0.js:1
+(anonymous) @ framework-5a48502280d879d0.js:1
+uM @ framework-5a48502280d879d0.js:1
+uS @ framework-5a48502280d879d0.js:1
+C @ framework-5a48502280d879d0.js:1
+z @ framework-5a48502280d879d0.js:1
+framework-5a48502280d879d0.js:1 Unrecognized feature: 'unsized-media'.
+_ @ framework-5a48502280d879d0.js:1
+(anonymous) @ framework-5a48502280d879d0.js:1
+uD @ framework-5a48502280d879d0.js:1
+uI @ framework-5a48502280d879d0.js:1
+(anonymous) @ framework-5a48502280d879d0.js:1
+uM @ framework-5a48502280d879d0.js:1
+uS @ framework-5a48502280d879d0.js:1
+C @ framework-5a48502280d879d0.js:1
+z @ framework-5a48502280d879d0.js:1
+framework-5a48502280d879d0.js:1 Unrecognized feature: 'pointer-lock'.
+_ @ framework-5a48502280d879d0.js:1
+(anonymous) @ framework-5a48502280d879d0.js:1
+uD @ framework-5a48502280d879d0.js:1
+uI @ framework-5a48502280d879d0.js:1
+(anonymous) @ framework-5a48502280d879d0.js:1
+uM @ framework-5a48502280d879d0.js:1
+uS @ framework-5a48502280d879d0.js:1
+C @ framework-5a48502280d879d0.js:1
+z @ framework-5a48502280d879d0.js:1
+framework-5a48502280d879d0.js:1 Allow attribute will take precedence over 'allowfullscreen'.
+_ @ framework-5a48502280d879d0.js:1
+(anonymous) @ framework-5a48502280d879d0.js:1
+uD @ framework-5a48502280d879d0.js:1
+uI @ framework-5a48502280d879d0.js:1
+(anonymous) @ framework-5a48502280d879d0.js:1
+uM @ framework-5a48502280d879d0.js:1
+uS @ framework-5a48502280d879d0.js:1
+C @ framework-5a48502280d879d0.js:1
+z @ framework-5a48502280d879d0.js:1
+framework-5a48502280d879d0.js:1 Allow attribute will take precedence over 'allowpaymentrequest'.
+_ @ framework-5a48502280d879d0.js:1
+(anonymous) @ framework-5a48502280d879d0.js:1
+uD @ framework-5a48502280d879d0.js:1
+uI @ framework-5a48502280d879d0.js:1
+(anonymous) @ framework-5a48502280d879d0.js:1
+uM @ framework-5a48502280d879d0.js:1
+uS @ framework-5a48502280d879d0.js:1
+C @ framework-5a48502280d879d0.js:1
+z @ framework-5a48502280d879d0.js:1
+workspace_iframe.html:32 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+workspace_iframe.html:32 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+workspace_iframe.html:32 Unrecognized feature: 'ambient-light-sensor'.
+workspace_iframe.html:32 Unrecognized feature: 'ambient-light-sensor'.
+workspace_iframe.html:32 Unrecognized feature: 'battery'.
+workspace_iframe.html:32 Unrecognized feature: 'battery'.
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-not-rendered'.
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-not-rendered'.
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-out-of-viewport'.
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-out-of-viewport'.
+workspace_iframe.html:32 Unrecognized feature: 'layout-animations'.
+workspace_iframe.html:32 Unrecognized feature: 'layout-animations'.
+workspace_iframe.html:32 Unrecognized feature: 'legacy-image-formats'.
+workspace_iframe.html:32 Unrecognized feature: 'legacy-image-formats'.
+workspace_iframe.html:32 Unrecognized feature: 'navigation-override'.
+workspace_iframe.html:32 Unrecognized feature: 'navigation-override'.
+workspace_iframe.html:32 Unrecognized feature: 'oversized-images'.
+workspace_iframe.html:32 Unrecognized feature: 'oversized-images'.
+workspace_iframe.html:32 Unrecognized feature: 'publickey-credentials'.
+workspace_iframe.html:32 Unrecognized feature: 'publickey-credentials'.
+workspace_iframe.html:32 Unrecognized feature: 'speaker-selection'.
+workspace_iframe.html:32 Unrecognized feature: 'speaker-selection'.
+workspace_iframe.html:32 Unrecognized feature: 'unoptimized-images'.
+workspace_iframe.html:32 Unrecognized feature: 'unoptimized-images'.
+workspace_iframe.html:32 Unrecognized feature: 'unsized-media'.
+workspace_iframe.html:32 Unrecognized feature: 'unsized-media'.
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowfullscreen'.
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowfullscreen'.
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowpaymentrequest'.
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowpaymentrequest'.
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+8a972437-9194-4313-b8b0-ba387bed7e74-00-w0mn3min1puj.spock.replit.dev/:9 The source list for the Content Security Policy directive 'img-src' contains an invalid source: 'https://stamen-tiles-*.a.ssl.fastly.net'. It will be ignored.
+8a972437-9194-4313-b8b0-ba387bed7e74-00-w0mn3min1puj.spock.replit.dev/:9 The source list for the Content Security Policy directive 'img-src' contains an invalid source: 'https://stamen-tiles-*.a.ssl.fastly.net'. It will be ignored.
+8a972437-9194-4313-b8b0-ba387bed7e74-00-w0mn3min1puj.spock.replit.dev/:9 The source list for the Content Security Policy directive 'connect-src' contains an invalid source: 'https://stamen-tiles-*.a.ssl.fastly.net'. It will be ignored.
+8a972437-9194-4313-b8b0-ba387bed7e74-00-w0mn3min1puj.spock.replit.dev/:9 The source list for the Content Security Policy directive 'connect-src' contains an invalid source: 'https://stamen-tiles-*.a.ssl.fastly.net'. It will be ignored.
+8a972437-9194-4313-b8b0-ba387bed7e74-00-w0mn3min1puj.spock.replit.dev/:66 Uncaught SyntaxError: Unexpected token ')' (at 8a972437-9194-4313-b8b0-ba387bed7e74-00-w0mn3min1puj.spock.replit.dev/:66:10)
+8a972437-9194-4313-b8b0-ba387bed7e74-00-w0mn3min1puj.spock.replit.dev/:535 Refused to load the stylesheet 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.css' because it violates the following Content Security Policy directive: "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://*.googleapis.com". Note that 'style-src-elem' was not explicitly set, so 'style-src' is used as a fallback.
+
+8a972437-9194-4313-b8b0-ba387bed7e74-00-w0mn3min1puj.spock.replit.dev/:535 Refused to load the stylesheet 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.css' because it violates the following Content Security Policy directive: "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://*.googleapis.com". Note that 'style-src-elem' was not explicitly set, so 'style-src' is used as a fallback.
+
+eruda.js:2 Global error handler caught: Script error.
+Mt.forEach.n.<computed> @ VM47 eruda.js:2
+window.onerror @ VM75:4
+eruda.js:2 Cross-origin script error detected. Check for cross-origin issues.
+eruda.js:2 DOM fully loaded
+eruda.js:2 Found feedback form, setting up submit handler
+eruda.js:2 Found subscribe form: emailSignupForm, setting up submit handler
+eruda.js:2 Found subscribe form: floatingSubscribeForm, setting up submit handler
+eruda.js:2 Found feedback button, setting up click handler
+eruda.js:2 Found subscribe button, setting up click handler
+eruda.js:2 DOM loaded, calling setupLocationServices
+eruda.js:2 Setting up location services
+eruda.js:2 Map container not found, skipping location services
+eruda.js:2 DOM loaded, calling getUserLocation
+eruda.js:2 Map container found, requesting user location
+eruda.js:2 User location obtained: 46.9640681 -122.9349557
+eruda.js:2 User location found: 46.9640681 -122.9349557
+eruda.js:2 Error loading featured events: ReferenceError: loadFeaturedEvents is not defined
+    at navigator.geolocation.getCurrentPosition.enableHighAccuracy (main.js:555:15)
+Mt.forEach.n.<computed> @ VM47 eruda.js:2
+navigator.geolocation.getCurrentPosition.enableHighAccuracy @ VM77 main.js:557
+eruda.js:2 Cookie consent found, applying preferences
+eruda.js:2 Valid cookie consent found
+eruda.js:2 Analytics tracking enabled
+eruda.js:2 Advertising cookies enabled
+WARNING: Too many active WebGL contexts. Oldest context will be lost.
+WARNING: Too many active WebGL contexts. Oldest context will be lost.
+WARNING: Too many active WebGL contexts. Oldest context will be lost.
+WARNING: Too many active WebGL contexts. Oldest context will be lost.
+WARNING: Too many active WebGL contexts. Oldest context will be lost.
+WARNING: Too many active WebGL contexts. Oldest context will be lost.
+_app-743e950da4e6c9d3.js:16 webglcontextlost event received
+_app-743e950da4e6c9d3.js:16 webglcontextlost event received
+_app-743e950da4e6c9d3.js:16 webglcontextlost event received
+_app-743e950da4e6c9d3.js:16 webglcontextrestored event received
+(anonymous) @ _app-743e950da4e6c9d3.js:16
+(anonymous) @ 734.368e5b4a592e71bb.js:15
+n @ _app-743e950da4e6c9d3.js:16
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+WebGL: INVALID_OPERATION: delete: object does not belong to this context
+_app-743e950da4e6c9d3.js:16 webglcontextrestored event received
+(anonymous) @ _app-743e950da4e6c9d3.js:16
+(anonymous) @ 734.368e5b4a592e71bb.js:15
+n @ _app-743e950da4e6c9d3.js:16
+_app-743e950da4e6c9d3.js:16 webglcontextrestored event received
+(anonymous) @ _app-743e950da4e6c9d3.js:16
+(anonymous) @ 734.368e5b4a592e71bb.js:15
+n @ _app-743e950da4e6c9d3.js:16
+workspace_iframe.html:32 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+workspace_iframe.html:32 Unrecognized feature: 'ambient-light-sensor'.
+workspace_iframe.html:32 Unrecognized feature: 'battery'.
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-not-rendered'.
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-out-of-viewport'.
+workspace_iframe.html:32 Unrecognized feature: 'layout-animations'.
+workspace_iframe.html:32 Unrecognized feature: 'legacy-image-formats'.
+workspace_iframe.html:32 Unrecognized feature: 'navigation-override'.
+workspace_iframe.html:32 Unrecognized feature: 'oversized-images'.
+workspace_iframe.html:32 Unrecognized feature: 'publickey-credentials'.
+workspace_iframe.html:32 Unrecognized feature: 'speaker-selection'.
+workspace_iframe.html:32 Unrecognized feature: 'unoptimized-images'.
+workspace_iframe.html:32 Unrecognized feature: 'unsized-media'.
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowfullscreen'.
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowpaymentrequest'.
+workspace_iframe.html:32 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+8a972437-9194-4313-b8b0-ba387bed7e74-00-w0mn3min1puj.spock.replit.dev/:9 The source list for the Content Security Policy directive 'img-src' contains an invalid source: 'https://stamen-tiles-*.a.ssl.fastly.net'. It will be ignored.
+8a972437-9194-4313-b8b0-ba387bed7e74-00-w0mn3min1puj.spock.replit.dev/:9 The source list for the Content Security Policy directive 'connect-src' contains an invalid source: 'https://stamen-tiles-*.a.ssl.fastly.net'. It will be ignored.
+(index):66 Uncaught SyntaxError: Unexpected token ')' (at (index):66:10)
+8a972437-9194-4313-b8b0-ba387bed7e74-00-w0mn3min1puj.spock.replit.dev/:9 The source list for the Content Security Policy directive 'img-src' contains an invalid source: 'https://stamen-tiles-*.a.ssl.fastly.net'. It will be ignored.
+8a972437-9194-4313-b8b0-ba387bed7e74-00-w0mn3min1puj.spock.replit.dev/:9 The source list for the Content Security Policy directive 'connect-src' contains an invalid source: 'https://stamen-tiles-*.a.ssl.fastly.net'. It will be ignored.
+(index):66 Uncaught SyntaxError: Unexpected token ')' (at (index):66:10)
+8a972437-9194-4313-b8b0-ba387bed7e74-00-w0mn3min1puj.spock.replit.dev/:535 Refused to load the stylesheet 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.css' because it violates the following Content Security Policy directive: "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://*.googleapis.com". Note that 'style-src-elem' was not explicitly set, so 'style-src' is used as a fallback.
+
+8a972437-9194-4313-b8b0-ba387bed7e74-00-w0mn3min1puj.spock.replit.dev/:535 Refused to load the stylesheet 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.css' because it violates the following Content Security Policy directive: "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://*.googleapis.com". Note that 'style-src-elem' was not explicitly set, so 'style-src' is used as a fallback.
+
+Console.js:61 Global error handler caught: Script error.
+Mt.forEach.n.<computed> @ Console.js:61
+window.onerror @ (index):494
+Console.js:61 Cross-origin script error detected. Check for cross-origin issues.
+Console.js:61 DOM fully loaded
+Console.js:61 Found feedback form, setting up submit handler
+Console.js:61 Found subscribe form: emailSignupForm, setting up submit handler
+Console.js:61 Found subscribe form: floatingSubscribeForm, setting up submit handler
+Console.js:61 Found feedback button, setting up click handler
+Console.js:61 Found subscribe button, setting up click handler
+Console.js:61 DOM loaded, calling setupLocationServices
+Console.js:61 Setting up location services
+Console.js:61 Map container not found, skipping location services
+Console.js:61 DOM loaded, calling getUserLocation
+Console.js:61 Map container found, requesting user location
+Console.js:61 Global error handler caught: Script error.
+Mt.forEach.n.<computed> @ Console.js:61
+window.onerror @ (index):494
+Console.js:61 Cross-origin script error detected. Check for cross-origin issues.
+Console.js:61 DOM fully loaded
+Console.js:61 Found feedback form, setting up submit handler
+Console.js:61 Found subscribe form: emailSignupForm, setting up submit handler
+Console.js:61 Found subscribe form: floatingSubscribeForm, setting up submit handler
+Console.js:61 Found feedback button, setting up click handler
+Console.js:61 Found subscribe button, setting up click handler
+Console.js:61 DOM loaded, calling setupLocationServices
+Console.js:61 Setting up location services
+Console.js:61 Map container not found, skipping location services
+Console.js:61 DOM loaded, calling getUserLocation
+Console.js:61 Map container found, requesting user location
+Console.js:61 User location obtained: 46.9640681 -122.9349557
+Console.js:61 User location found: 46.9640681 -122.9349557
+Console.js:61 Error loading featured events: ReferenceError: loadFeaturedEvents is not defined
+    at navigator.geolocation.getCurrentPosition.enableHighAccuracy (main.js:555:15)
+Mt.forEach.n.<computed> @ Console.js:61
+navigator.geolocation.getCurrentPosition.enableHighAccuracy @ main.js:557
+Console.js:61 User location obtained: 46.9640681 -122.9349557
+Console.js:61 User location found: 46.9640681 -122.9349557
+Console.js:61 Error loading featured events: ReferenceError: loadFeaturedEvents is not defined
+    at navigator.geolocation.getCurrentPosition.enableHighAccuracy (main.js:555:15)
+Mt.forEach.n.<computed> @ Console.js:61
+navigator.geolocation.getCurrentPosition.enableHighAccuracy @ main.js:557
+Console.js:61 Cookie consent found, applying preferences
+Console.js:61 Valid cookie consent found
+Console.js:61 Analytics tracking enabled
+Console.js:61 Advertising cookies enabled
+Console.js:61 Cookie consent found, applying preferences
+Console.js:61 Valid cookie consent found
+Console.js:61 Analytics tracking enabled
+Console.js:61 Advertising cookies enabled
