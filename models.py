@@ -1,3 +1,4 @@
+
 from datetime import datetime
 from flask_login import UserMixin
 from db_init import db
@@ -9,7 +10,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
-
+    
     id = Column(Integer, primary_key=True)
     username = Column(String(120), unique=True)
     email = Column(String(120), unique=True, nullable=False)
@@ -18,14 +19,23 @@ class User(db.Model, UserMixin):
     last_name = Column(String(120))
     account_active = Column(Boolean, default=True)
     is_admin = Column(Boolean, default=False)
+    is_subscriber = Column(Boolean, default=True)
+    is_event_creator = Column(Boolean, default=False)
+    is_organizer = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
+    last_login = Column(DateTime)
+    company_name = Column(String(100))
+    organizer_description = Column(Text)
+    organizer_website = Column(String(200))
+    advertising_opportunities = Column(Text)
+    sponsorship_opportunities = Column(Text)
+    organizer_profile_updated_at = Column(DateTime)
     bio = Column(Text)
     location = Column(String(200))
     phone = Column(String(20))
     newsletter_opt_in = Column(Boolean, default=True)
     marketing_opt_in = Column(Boolean, default=False)
     user_preferences = Column(Text)  # Stored as JSON
-    last_login = Column(DateTime)
 
     def is_active(self):
         return self.account_active
