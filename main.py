@@ -94,8 +94,8 @@ def free_port(port):
 def run_flask_app():
     """Run the Flask application."""
     try:
-        # Always use PORT=8080 for Replit workflows
-        default_port = 8080
+        # Use PORT=80 for deployment or default to 8080 for local development
+        default_port = int(os.environ.get('PORT', 80))
         print(f"Ensuring port {default_port} is available...")
         
         # Force kill any process using port 8080
