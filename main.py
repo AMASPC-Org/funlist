@@ -117,7 +117,7 @@ def run_flask_app():
         app.run(
             host='0.0.0.0',
             port=default_port,
-            debug=True,
+            debug=False,
             use_reloader=False,
             threaded=True
         )
