@@ -19,30 +19,37 @@ def send_password_reset_email(user, token):
     # For now, we'll just return True to indicate success
     return True
 
-def geocode_address(street, city, state, zip_code):
-    """Convert address to latitude and longitude using Nominatim"""
+def geocode_address(street=None, city=None, state=None, zip_code=None, location_query=None):
+    """Get coordinates from address or location query using Google Maps Geocoding API."""
     try:
-        address = f"{street}, {city}, {state} {zip_code}"
-        base_url = "https://nominatim.openstreetmap.org/search"
-        params = {
-            "q": address,
-            "format": "json",
-            "limit": 1
-        }
-        headers = {
-            "User-Agent": "FunList/1.0"
-        }
+        if location_query:
+            address = location_query
+        else:
+            address_parts = []
+            if street: address_parts.append(street)
+            if city: address_parts.append(city)
+            if state: address_parts.append(state)
+            if zip_code: address_parts.append(zip_code)
+            address = ", ".join(filter(None, address_parts))
 
-        response = requests.get(base_url, params=params, headers=headers)
-        response.raise_for_status()
+        if not address:
+            return None
 
-        results = response.json()
-        if results:
-            return float(results[0]["lat"]), float(results[0]["lon"])
+        url = f"https://maps.googleapis.com/maps/api/geocode/json?address={address}&key={current_app.config['GOOGLE_MAPS_API_KEY']}"
+        response = requests.get(url)
+        data = response.json()
+
+        if data['status'] == 'OK':
+            location = data['results'][0]['geometry']['location']
+            bounds = data['results'][0].get('geometry', {}).get('viewport')
+            return {
+                'lat': location['lat'],
+                'lng': location['lng'],
+                'bounds': bounds if bounds else None
+            }
         return None
-
     except Exception as e:
-        logger.error(f"Geocoding error: {str(e)}")
+        current_app.logger.error(f"Geocoding error: {str(e)}")
         return None
 
 def get_weekly_top_events(limit=10):
