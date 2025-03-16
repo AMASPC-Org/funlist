@@ -20,7 +20,6 @@ class User(db.Model, UserMixin):
     account_active = Column(Boolean, default=True)
     is_admin = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     bio = Column(Text)
     location = Column(String(200))
     website = Column(String(200))
