@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setupFloatingButtons();
     setupCookieConsent();
     setupFilters();
-    setupListEventLink(); //Added this line
+    setupEventButtons(); 
 
     // Initialize any carousels or sliders
     initializeCarousels();
@@ -634,55 +634,13 @@ document.addEventListener('DOMContentLoaded', function() {
     getUserLocation();
 });
 
-// Handle List Event link permissions
-function setupListEventLink() {
-    const listEventLink = document.getElementById('list-event-link');
-    if (listEventLink) {
-        listEventLink.addEventListener('click', function(e) {
-            // Get user role data attributes from body
-            const isOrganizer = document.body.dataset.userIsOrganizer === 'true';
-            const isEventCreator = document.body.dataset.userIsEventCreator === 'true';
-
-            // If user doesn't have the required roles
-            if (!isOrganizer && !isEventCreator) {
-                e.preventDefault();
-
-                // Create modal for role check
-                const modalHTML = `
-                <div class="modal fade" id="roleCheckModal" tabindex="-1" aria-labelledby="roleCheckModalLabel" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="roleCheckModalLabel">Event Creator Access Required</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <p>You need to be registered as an Event Organizer or Event Creator to list events.</p>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                <a href="/signup?as=organizer" class="btn btn-primary">Register as Organizer</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
-
-                // Add modal to document
-                const modalContainer = document.createElement('div');
-                modalContainer.innerHTML = modalHTML;
-                document.body.appendChild(modalContainer);
-
-                // Show the modal
-                const roleCheckModal = new bootstrap.Modal(document.getElementById('roleCheckModal'));
-                roleCheckModal.show();
-
-                // Cleanup modal when hidden
-                document.getElementById('roleCheckModal').addEventListener('hidden.bs.modal', function() {
-                    document.body.removeChild(modalContainer);
-                });
-            }
-        });
-    }
+// This is handled directly in the navbar.html template now
+function setupEventButtons() {
+    // Handle any event-related buttons that might be on the page
+    // The main add-event-link in the navbar now has its own handler
+    console.log("Setting up event buttons");
+    
+    // You could add handlers for other event buttons here if needed
 }
 
 // Show cookie consent if not already accepted

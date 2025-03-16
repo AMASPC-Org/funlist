@@ -1,3 +1,4 @@
+
 <!-- Main Navigation Bar -->
 <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
   <div class="container">
@@ -20,36 +21,26 @@
           <!-- User type indicator -->
           {% if current_user.is_event_creator or current_user.is_organizer or current_user.is_vendor %}
           <li>
-            <div class="px-3 py-2 text-muted small border-bottom">
-              <strong>Account Type:</strong> 
-              {% if current_user.is_organizer and current_user.company_name and 'venue' in current_user.company_name.lower() %}
-                Venue
-              {% elif current_user.is_organizer %}
-                Organization
-              {% elif current_user.is_vendor %}
-                Vendor
-              {% elif current_user.is_event_creator %}
-                Event Manager
-              {% else %}
-                Attendee
-              {% endif %}
-            </div>
+            <span class="dropdown-item-text text-muted small">
+              {% if current_user.is_event_creator %}Event Creator{% endif %}
+              {% if current_user.is_organizer %}{% if current_user.is_event_creator %} | {% endif %}Organizer{% endif %}
+              {% if current_user.is_vendor %}{% if current_user.is_event_creator or current_user.is_organizer %} | {% endif %}Vendor{% endif %}
+            </span>
           </li>
+          <li><hr class="dropdown-divider"></li>
           {% endif %}
           <li><a class="dropdown-item" href="{{ url_for('edit_profile') }}">Edit Profile</a></li>
           <li><a class="dropdown-item" href="{{ url_for('events') }}?filter=my_events">My Events</a></li>
           <li><a class="dropdown-item" href="{{ url_for('events') }}?filter=saved">Saved Events</a></li>
-          <li><a class="dropdown-item" id="list-event-link" href="{{ url_for('submit_event') }}">Add Event</a></li>
+          <li><a class="dropdown-item" id="add-event-link" href="{{ url_for('submit_event') }}">Add Event</a></li>
           {% if current_user.email == 'ryan@funlist.ai' %}
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="{{ url_for('admin_dashboard') }}">Admin Dashboard</a></li>
-            <li><a class="dropdown-item" href="{{ url_for('admin_events') }}">Event Management</a></li>
-            <li><a class="dropdown-item" href="{{ url_for('admin_users') }}">User Management</a></li>
             <li><a class="dropdown-item" href="{{ url_for('admin_analytics') }}">Analytics</a></li>
           {% endif %}
           <li><hr class="dropdown-divider"></li>
           <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
-          <li><a class="dropdown-item" href="#" id="listEventLink">List Event</a></li> </ul>
+        </ul>
       </div>
     </div>
     {% endif %}
@@ -78,7 +69,7 @@
           <a class="nav-link" href="{{ url_for('organizer_profile') }}">Organizer Profile</a>
         </li>
         {% endif %}
-        </ul>
+      </ul>
 
       <!-- Search or Login/Signup based on auth state -->
       <div class="d-flex align-items-center">
@@ -92,16 +83,53 @@
 </nav>
 
 <script>
-  document.getElementById('listEventLink').addEventListener('click', function(event) {
-    event.preventDefault();
-    if (!{{ current_user.is_organizer or current_user.is_event_creator }}) {
-      // Show modal here.  Replace with your modal implementation.
-      alert('You must be a registered organizer or event creator to list an event. Please register or login.');
-      // Redirect to registration page. Replace with your registration page URL
-      window.location.href = "{{ url_for('signup') }}";
-    } else {
-      // Redirect to event creation page. Replace with your event creation page URL.
-      window.location.href = "{{ url_for('submit_event') }}";
-    }
-  });
+document.addEventListener('DOMContentLoaded', function() {
+  const addEventLink = document.getElementById('add-event-link');
+  if (addEventLink) {
+    addEventLink.addEventListener('click', function(event) {
+      // Get user role data attributes from body
+      const isOrganizer = document.body.dataset.userIsOrganizer === 'true';
+      const isEventCreator = document.body.dataset.userIsEventCreator === 'true';
+
+      // If user doesn't have the required roles
+      if (!isOrganizer && !isEventCreator) {
+        event.preventDefault();
+
+        // Create modal for role check
+        const modalHTML = `
+        <div class="modal fade" id="roleCheckModal" tabindex="-1" aria-labelledby="roleCheckModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="roleCheckModalLabel">Event Creator Access Required</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>You need to be registered as an Event Organizer or Event Creator to add events.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <a href="/signup?as=organizer" class="btn btn-primary">Register as Organizer</a>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+
+        // Add modal to document
+        const modalContainer = document.createElement('div');
+        modalContainer.innerHTML = modalHTML;
+        document.body.appendChild(modalContainer);
+
+        // Show the modal
+        const roleCheckModal = new bootstrap.Modal(document.getElementById('roleCheckModal'));
+        roleCheckModal.show();
+
+        // Cleanup modal when hidden
+        document.getElementById('roleCheckModal').addEventListener('hidden.bs.modal', function() {
+          document.body.removeChild(modalContainer);
+        });
+      }
+    });
+  }
+});
 </script>
