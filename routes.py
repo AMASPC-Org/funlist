@@ -248,38 +248,28 @@ def init_routes(app):
         form = LoginForm()
         if form.validate_on_submit():
             try:
-                # Use a simpler query to avoid column issues
                 email = form.email.data
                 logger.info(f"Attempting login for: {email}")
 
-                # Simplified query that avoids problematic columns
-                user = db.session.execute(db.select(User).filter_by(email=email)).scalar_one_or_none()
+                user = User.query.filter_by(email=email).first()
 
-                if user:
-                    logger.info(f"User found: {user.id}")
-                    if user.check_password(form.password.data):
-                        if form.remember_me.data:
-                            session.permanent = True
-                        session["user_id"] = user.id
-                        session["login_time"] = datetime.utcnow().isoformat()
-                        session["last_activity"] = datetime.utcnow().isoformat()
+                if user and user.check_password(form.password.data):
+                    if form.remember_me.data:
+                        session.permanent = True
+                    session["user_id"] = user.id
+                    session["login_time"] = datetime.utcnow().isoformat()
+                    session["last_activity"] = datetime.utcnow().isoformat()
 
-                        # Login the user
-                        login_user(user, remember=form.remember_me.data)
+                    login_user(user, remember=form.remember_me.data)
+                    user.last_login = datetime.utcnow()
+                    db.session.commit()
 
-                        # Update last login time
-                        user.last_login = datetime.utcnow()
-                        db.session.commit()
-
-                        logger.info(f"Login successful for user: {user.id}")
-                        flash("Logged in successfully!", "success")
-                        next_page = request.args.get("next")
-                        return redirect(next_page or url_for("index"))
-                    else:
-                        logger.warning(f"Failed login attempt - wrong password for email: {email}")
-                        flash("Invalid email or password. Please try again.", "danger")
+                    logger.info(f"Login successful for user: {user.id}")
+                    flash("Logged in successfully!", "success")
+                    next_page = request.args.get("next")
+                    return redirect(next_page or url_for("index"))
                 else:
-                    logger.warning(f"Failed login attempt - user not found for email: {email}")
+                    logger.warning(f"Failed login attempt for email: {email}")
                     flash("Invalid email or password. Please try again.", "danger")
             except SQLAlchemyError as e:
                 db.session.rollback()
