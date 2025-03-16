@@ -48,7 +48,7 @@
           {% endif %}
           <li><hr class="dropdown-divider"></li>
           <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
-        </ul>
+          <li><a class="dropdown-item" href="#" id="listEventLink">List Event</a></li> </ul>
       </div>
     </div>
     {% endif %}
@@ -89,3 +89,18 @@
     </div>
   </div>
 </nav>
+
+<script>
+  document.getElementById('listEventLink').addEventListener('click', function(event) {
+    event.preventDefault();
+    if (!{{ current_user.is_organizer or current_user.is_event_creator }}) {
+      // Show modal here.  Replace with your modal implementation.
+      alert('You must be a registered organizer or event creator to list an event. Please register or login.');
+      // Redirect to registration page. Replace with your registration page URL
+      window.location.href = "{{ url_for('signup') }}";
+    } else {
+      // Redirect to event creation page. Replace with your event creation page URL.
+      window.location.href = "{{ url_for('submit_event') }}";
+    }
+  });
+</script>

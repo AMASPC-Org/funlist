@@ -632,3 +632,20 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log("DOM loaded, calling getUserLocation");
     getUserLocation();
 });
+// List Event link handler
+document.addEventListener('DOMContentLoaded', function() {
+    const listEventLink = document.getElementById('listEventLink');
+    if (listEventLink) {
+        listEventLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            // Check if user is logged in and has appropriate role
+            if (document.body.dataset.userIsOrganizer === 'true' || 
+                document.body.dataset.userIsEventCreator === 'true') {
+                window.location.href = '/submit-event';
+            } else {
+                const roleCheckModal = new bootstrap.Modal(document.getElementById('roleCheckModal'));
+                roleCheckModal.show();
+            }
+        });
+    }
+});

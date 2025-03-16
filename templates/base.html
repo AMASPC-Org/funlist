@@ -17,7 +17,9 @@
 <!-- Custom CSS with cache-busting -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}?v={{ range(1, 10000) | random }}">
 </head>
-<body {% if new_registration %}data-new-registration="true"{% endif %}>
+<body {% if new_registration %}data-new-registration="true"{% endif %}
+      data-user-is-organizer="{{ 'true' if current_user.is_authenticated and current_user.is_organizer else 'false' }}"
+      data-user-is-event-creator="{{ 'true' if current_user.is_authenticated and current_user.is_event_creator else 'false' }}">
   {% include 'partials/navbar.html' %}
 
 <main role="main" class="mt-2">

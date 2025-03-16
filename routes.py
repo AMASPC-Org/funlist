@@ -22,7 +22,7 @@ def init_routes(app):
         report = request.get_json() or request.get_data() or {}
         app.logger.warning(f"CSP violation: {report}")
         return '', 204  # No content response
-    
+
     # Add global error handler for application context errors
     @app.errorhandler(Exception)
     def handle_exception(e):
@@ -144,6 +144,12 @@ def init_routes(app):
         if current_user.is_authenticated:
             return redirect(url_for("index"))
         form = SignupForm()
+
+        # Pre-select organizer option if specified in URL
+        if request.args.get('as') == 'organizer':
+            form.is_organizer.data = True
+            form.is_event_creator.data = True
+
         if form.validate_on_submit():
             try:
                 # Check if user already exists
@@ -229,7 +235,7 @@ def init_routes(app):
                 db.session.rollback()
                 logger.error(f"Database error during sign up: {str(e)}")
                 flash(
-                    "We encountered a technical issue. Our team has been notified. Please try again later.",
+                    "We encountered a technical issue. Please try again later.",
                     "danger",
                 )
             except Exception as e:
@@ -401,7 +407,7 @@ def init_routes(app):
                 Event.latitude.isnot(None),
                 Event.longitude.isnot(None)
             ).all()
-            
+
             # Log the number of events found for debugging
             app.logger.info(f"Map page loaded with {len(events)} events")
             return render_template("map.html", events=events)
