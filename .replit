@@ -38,7 +38,7 @@ localPort = 8081
 externalPort = 8081
 
 [workflows]
-runButton = "Project"
+runButton = "Flask Server (80)"
 
 [[workflows.workflow]]
 name = "Run"
@@ -71,3 +71,12 @@ task = "packager.installForAll"
 task = "shell.exec"
 args = "python main.py"
 waitForPort = 8080
+
+[[workflows.workflow]]
+name = "Flask Server (80)"
+author = 36270944
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python -c \"from app import create_app; app = create_app(); app.run(host='0.0.0.0', port=80)\""
