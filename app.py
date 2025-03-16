@@ -72,11 +72,11 @@ def create_app():
             "default-src 'self'; "
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://auth.util.repl.co https://*.replit.dev https://*.repl.co; "
             "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
-            "img-src 'self' data: https:; "
+            "img-src 'self' data: https: https://*.tile.openstreetmap.org https://*.a.ssl.fastly.net https://*.tile.osm.org https://*.basemaps.cartocdn.com; "
             "font-src 'self' https://cdnjs.cloudflare.com; "
-            "connect-src 'self' https:; "
-            "frame-src 'self' https://auth.util.repl.co https://*.replit.dev https://*.repl.co; "
-            "report-uri /csp-report"
+            "connect-src 'self' https: https://*.tile.openstreetmap.org https://*.a.ssl.fastly.net https://*.tile.osm.org https://*.basemaps.cartocdn.com; "
+            "frame-src 'self' https://auth.util.repl.co https://*.replit.dev https://*.repl.co"
+            # Remove report-uri to prevent CSP violation reports causing CSRF issues
         )
         response.headers['Content-Security-Policy'] = csp
 
@@ -110,8 +110,10 @@ def create_app():
         # Exempt API routes from CSRF protection
         @csrf.exempt
         def csrf_exempt_api():
-            # Exempt all routes that are API routes
+            # Exempt all routes that are API routes or CSP report endpoint
             if request.path.startswith('/admin/event/') and request.method == 'POST':
+                return True
+            if request.path == '/csp-report' and request.method == 'POST':
                 return True
             return False
     except Exception as e:

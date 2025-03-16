@@ -15,6 +15,14 @@ logger.setLevel(logging.DEBUG)
 
 
 def init_routes(app):
+    # Add CSP report endpoint (exempt from CSRF protection)
+    @app.route('/csp-report', methods=['POST'])
+    def csp_report():
+        """Endpoint for CSP violation reports."""
+        report = request.get_json() or request.get_data() or {}
+        app.logger.warning(f"CSP violation: {report}")
+        return '', 204  # No content response
+    
     # Add global error handler for application context errors
     @app.errorhandler(Exception)
     def handle_exception(e):

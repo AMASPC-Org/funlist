@@ -38,11 +38,34 @@ window.FunlistMap = (function() {
         zoomControl: true
       });
 
-      // Add tile layer (OpenStreetMap)
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 19
-      }).addTo(mapInstance);
+      // Try multiple tile providers to ensure one works
+      try {
+        // First option: OpenStreetMap (using different URL format)
+        const osmTiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          maxZoom: 19,
+          crossOrigin: true
+        });
+        
+        // Second option: Stamen Terrain tiles as fallback
+        const terrainTiles = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}.png', {
+          attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          maxZoom: 18,
+          crossOrigin: true
+        });
+        
+        // Add primary tiles to map
+        osmTiles.addTo(mapInstance);
+        
+        // Handle tile load errors
+        osmTiles.on('tileerror', function(error) {
+          console.warn('Primary tile error, switching to backup tiles');
+          mapInstance.removeLayer(osmTiles);
+          terrainTiles.addTo(mapInstance);
+        });
+      } catch (e) {
+        console.error('Error adding tile layer:', e);
+      }
       
       // Add the markers layer group to the map
       markers = L.layerGroup().addTo(mapInstance);
@@ -347,6 +370,42 @@ window.FunlistMap = (function() {
       if (callback) callback(false, null);
       return;
     }
+    
+    // Force a resize of the map to ensure proper rendering
+    setTimeout(function() {
+      console.log("Forcing map resize");
+      try {
+        if (map && typeof map.invalidateSize === 'function') {
+          console.log("Found Leaflet map instance, invalidating size");
+          map.invalidateSize(true);
+        } else {
+          console.warn("Map not fully initialized yet or invalidateSize not available");
+        }
+      } catch (e) {
+        console.error("Error resizing map:", e);
+      }
+    }, 500);
+
+    // Event handler for when user location is found
+    const dispatchLocation = (success, lat, lng) => {
+      // Create and dispatch a custom event
+      try {
+        const event = new CustomEvent('user-location-ready', { 
+          detail: { success, lat, lng } 
+        });
+        document.dispatchEvent(event);
+        console.log("Dispatched user-location-ready event");
+      } catch (e) {
+        console.error("Error dispatching location event:", e);
+      }
+      
+      // Set map view with error handling
+      try {
+        map.setView([lat, lng], defaultZoom);
+      } catch (e) {
+        console.error("Error setting map view:", e);
+      }
+    };
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -354,27 +413,35 @@ window.FunlistMap = (function() {
           const userLat = position.coords.latitude;
           const userLng = position.coords.longitude;
 
-          // Center map on user location
-          map.setView([userLat, userLng], defaultZoom);
-
           // Add a special marker for user location
           if (userMarker) {
-            map.removeLayer(userMarker);
+            try {
+              map.removeLayer(userMarker);
+            } catch(e) {
+              console.warn("Could not remove existing user marker:", e);
+            }
           }
           
-          userMarker = L.marker([userLat, userLng], {
-            icon: L.divIcon({
-              className: 'user-location-marker',
-              html: '<i class="fas fa-user-circle"></i><span class="pulse"></span>',
-              iconSize: [30, 30],
-              iconAnchor: [15, 15]
-            })
-          }).addTo(map);
+          try {
+            userMarker = L.marker([userLat, userLng], {
+              icon: L.divIcon({
+                className: 'user-location-marker',
+                html: '<i class="fas fa-user-circle"></i><span class="pulse"></span>',
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+              })
+            }).addTo(map);
 
-          userMarker.bindPopup("You are here").openPopup();
+            userMarker.bindPopup("You are here").openPopup();
+          } catch(e) {
+            console.warn("Error adding user location marker:", e);
+          }
+          
+          // Dispatch location and update map
+          dispatchLocation(true, userLat, userLng);
           
           // After setting user location, update visible events
-          updateVisibleEvents(map);
+          setTimeout(() => updateVisibleEvents(map), 300);
 
           if (callback) callback(true, {lat: userLat, lng: userLng});
         },
@@ -382,10 +449,10 @@ window.FunlistMap = (function() {
           console.error("Geolocation error:", error.code, error.message);
 
           // Fall back to default location
-          map.setView(defaultLocation, defaultZoom);
+          dispatchLocation(false, defaultLocation[0], defaultLocation[1]);
           
           // After setting default location, update visible events
-          updateVisibleEvents(map);
+          setTimeout(() => updateVisibleEvents(map), 300);
 
           if (callback) callback(false, {lat: defaultLocation[0], lng: defaultLocation[1]});
         },
@@ -397,10 +464,12 @@ window.FunlistMap = (function() {
       );
     } else {
       console.error("Geolocation is not supported by this browser");
-      map.setView(defaultLocation, defaultZoom);
+      
+      // Fall back to default location
+      dispatchLocation(false, defaultLocation[0], defaultLocation[1]);
       
       // After setting default location, update visible events
-      updateVisibleEvents(map);
+      setTimeout(() => updateVisibleEvents(map), 300);
 
       if (callback) callback(false, {lat: defaultLocation[0], lng: defaultLocation[1]});
     }
