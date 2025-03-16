@@ -565,6 +565,13 @@ window.FunlistMap = (function() {
     filterMarkers: filterMarkers,
     initializeLocationSearch: initializeLocationSearch, // Expose location search
     handleLocationSearch: handleLocationSearch, //Expose the new location handling function
+    centerOnUserLocation: function(lat, lng) {
+      if (mapInstance) {
+        const position = new google.maps.LatLng(lat, lng);
+        mapInstance.setCenter(position);
+        mapInstance.setZoom(12); // Slightly zoomed out to show more context
+      }
+    },
     // For compatibility with old Leaflet implementation
     invalidateSize: function() {
       if (mapInstance) {
