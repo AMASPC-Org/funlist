@@ -1,0 +1,307 @@
+8884-344db9bac63ceb1e.js:1 Replit version f0223803, pid2 version 0.0.1090
+_app-743e950da4e6c9d3.js:16 
+      /////////////////////
+   ///////////////////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////        Curious and driven?
+  ///////////////@@@@@@@///////        Work with us!
+  ///////////////@@@@@@@///////
+  ///////////////@@@@@@@///////        https://join.replit.com/hack.with.us
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@#//////////////
+   ///////////////////////////
+      /////////////////////
+      
+_app-743e950da4e6c9d3.js:16 [LaunchDarkly] LaunchDarkly client initialized
+_app-743e950da4e6c9d3.js:16 [TikTok Pixel] - Invalid pixel ID
+Issue: The pixel ID is invalid. This could prevent your pixel from receiving data.
+Suggestion: Please go to Events Manager and find the correct pixel ID.
+(anonymous) @ _app-743e950da4e6c9d3.js:16
+_app-743e950da4e6c9d3.js:16 Adding extension: Google Cloud Auth Object
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+framework-5a48502280d879d0.js:1 Unrecognized feature: 'ambient-light-sensor'.
+_ @ framework-5a48502280d879d0.js:1
+framework-5a48502280d879d0.js:1 Unrecognized feature: 'battery'.
+_ @ framework-5a48502280d879d0.js:1
+framework-5a48502280d879d0.js:1 Unrecognized feature: 'execution-while-not-rendered'.
+_ @ framework-5a48502280d879d0.js:1
+framework-5a48502280d879d0.js:1 Unrecognized feature: 'execution-while-out-of-viewport'.
+_ @ framework-5a48502280d879d0.js:1
+framework-5a48502280d879d0.js:1 Unrecognized feature: 'layout-animations'.
+_ @ framework-5a48502280d879d0.js:1
+framework-5a48502280d879d0.js:1 Unrecognized feature: 'legacy-image-formats'.
+_ @ framework-5a48502280d879d0.js:1
+framework-5a48502280d879d0.js:1 Unrecognized feature: 'navigation-override'.
+_ @ framework-5a48502280d879d0.js:1
+framework-5a48502280d879d0.js:1 Unrecognized feature: 'oversized-images'.
+_ @ framework-5a48502280d879d0.js:1
+framework-5a48502280d879d0.js:1 Unrecognized feature: 'publickey-credentials'.
+_ @ framework-5a48502280d879d0.js:1
+framework-5a48502280d879d0.js:1 Unrecognized feature: 'speaker-selection'.
+_ @ framework-5a48502280d879d0.js:1
+framework-5a48502280d879d0.js:1 Unrecognized feature: 'unoptimized-images'.
+_ @ framework-5a48502280d879d0.js:1
+framework-5a48502280d879d0.js:1 Unrecognized feature: 'unsized-media'.
+_ @ framework-5a48502280d879d0.js:1
+framework-5a48502280d879d0.js:1 Unrecognized feature: 'pointer-lock'.
+_ @ framework-5a48502280d879d0.js:1
+framework-5a48502280d879d0.js:1 Allow attribute will take precedence over 'allowfullscreen'.
+_ @ framework-5a48502280d879d0.js:1
+framework-5a48502280d879d0.js:1 Allow attribute will take precedence over 'allowpaymentrequest'.
+_ @ framework-5a48502280d879d0.js:1
+workspace_iframe.html:32 Unrecognized feature: 'ambient-light-sensor'.
+workspace_iframe.html:32 Unrecognized feature: 'ambient-light-sensor'.
+workspace_iframe.html:32 Unrecognized feature: 'battery'.
+workspace_iframe.html:32 Unrecognized feature: 'battery'.
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-not-rendered'.
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-not-rendered'.
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-out-of-viewport'.
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-out-of-viewport'.
+workspace_iframe.html:32 Unrecognized feature: 'layout-animations'.
+workspace_iframe.html:32 Unrecognized feature: 'layout-animations'.
+workspace_iframe.html:32 Unrecognized feature: 'legacy-image-formats'.
+workspace_iframe.html:32 Unrecognized feature: 'legacy-image-formats'.
+workspace_iframe.html:32 Unrecognized feature: 'navigation-override'.
+workspace_iframe.html:32 Unrecognized feature: 'navigation-override'.
+workspace_iframe.html:32 Unrecognized feature: 'oversized-images'.
+workspace_iframe.html:32 Unrecognized feature: 'oversized-images'.
+workspace_iframe.html:32 Unrecognized feature: 'publickey-credentials'.
+workspace_iframe.html:32 Unrecognized feature: 'publickey-credentials'.
+workspace_iframe.html:32 Unrecognized feature: 'speaker-selection'.
+workspace_iframe.html:32 Unrecognized feature: 'speaker-selection'.
+workspace_iframe.html:32 Unrecognized feature: 'unoptimized-images'.
+workspace_iframe.html:32 Unrecognized feature: 'unoptimized-images'.
+workspace_iframe.html:32 Unrecognized feature: 'unsized-media'.
+workspace_iframe.html:32 Unrecognized feature: 'unsized-media'.
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowfullscreen'.
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowfullscreen'.
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowpaymentrequest'.
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowpaymentrequest'.
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+Refused to load the font '<URL>' because it violates the following Content Security Policy directive: "font-src 'self' <URL> <URL>".
+
+The source list for the Content Security Policy directive 'img-src' contains an invalid source: '<URL>'. It will be ignored.
+The source list for the Content Security Policy directive 'img-src' contains an invalid source: '<URL>'. It will be ignored.
+The source list for the Content Security Policy directive 'img-src' contains an invalid source: '<URL>'. It will be ignored.
+The source list for the Content Security Policy directive 'img-src' contains an invalid source: '<URL>'. It will be ignored.
+The source list for the Content Security Policy directive 'img-src' contains an invalid source: '<URL>'. It will be ignored.
+The source list for the Content Security Policy directive 'img-src' contains an invalid source: '<URL>'. It will be ignored.
+The source list for the Content Security Policy directive 'img-src' contains an invalid source: '<URL>'. It will be ignored.
+The source list for the Content Security Policy directive 'img-src' contains an invalid source: '<URL>'. It will be ignored.
+The source list for the Content Security Policy directive 'connect-src' contains an invalid source: '<URL>'. It will be ignored.
+The source list for the Content Security Policy directive 'connect-src' contains an invalid source: '<URL>'. It will be ignored.
+The source list for the Content Security Policy directive 'connect-src' contains an invalid source: '<URL>'. It will be ignored.
+The source list for the Content Security Policy directive 'connect-src' contains an invalid source: '<URL>'. It will be ignored.
+The source list for the Content Security Policy directive 'connect-src' contains an invalid source: '<URL>'. It will be ignored.
+The source list for the Content Security Policy directive 'connect-src' contains an invalid source: '<URL>'. It will be ignored.
+The source list for the Content Security Policy directive 'connect-src' contains an invalid source: '<URL>'. It will be ignored.
+The source list for the Content Security Policy directive 'connect-src' contains an invalid source: '<URL>'. It will be ignored.
+Refused to load the stylesheet '<URL>' because it violates the following Content Security Policy directive: "style-src 'self' 'unsafe-inline' <URL> <URL> <URL>". Note that 'style-src-elem' was not explicitly set, so 'style-src' is used as a fallback.
+
+Refused to load the stylesheet '<URL>' because it violates the following Content Security Policy directive: "style-src 'self' 'unsafe-inline' <URL> <URL> <URL>". Note that 'style-src-elem' was not explicitly set, so 'style-src' is used as a fallback.
+
+Refused to load the stylesheet '<URL>' because it violates the following Content Security Policy directive: "style-src 'self' 'unsafe-inline' <URL> <URL> <URL>". Note that 'style-src-elem' was not explicitly set, so 'style-src' is used as a fallback.
+
+Refused to load the stylesheet '<URL>' because it violates the following Content Security Policy directive: "style-src 'self' 'unsafe-inline' <URL> <URL> <URL>". Note that 'style-src-elem' was not explicitly set, so 'style-src' is used as a fallback.
+
+Refused to load the stylesheet '<URL>' because it violates the following Content Security Policy directive: "style-src 'self' 'unsafe-inline' <URL> <URL> <URL>". Note that 'style-src-elem' was not explicitly set, so 'style-src' is used as a fallback.
+
+Refused to load the stylesheet '<URL>' because it violates the following Content Security Policy directive: "style-src 'self' 'unsafe-inline' <URL> <URL> <URL>". Note that 'style-src-elem' was not explicitly set, so 'style-src' is used as a fallback.
+
+ Global error handler caught: Script error.
+Mt.forEach.n.<computed> @ eruda.js:2
+ Cross-origin script error detected. Check for cross-origin issues.
+ DOM fully loaded
+ Found feedback form, setting up submit handler
+ Found subscribe form: emailSignupForm, setting up submit handler
+ Found subscribe form: floatingSubscribeForm, setting up submit handler
+ Found feedback button, setting up click handler
+ Found subscribe button, setting up click handler
+ DOM loaded, calling setupLocationServices
+ Setting up location services
+ Map container not found, skipping location services
+ DOM loaded, calling getUserLocation
+ Map container found, requesting user location
+Console.js:61 Global error handler caught: Script error.
+Mt.forEach.n.<computed> @ Console.js:61
+Console.js:61 Cross-origin script error detected. Check for cross-origin issues.
+Console.js:61 DOM fully loaded
+Console.js:61 Found feedback form, setting up submit handler
+Console.js:61 Found subscribe form: emailSignupForm, setting up submit handler
+Console.js:61 Found subscribe form: floatingSubscribeForm, setting up submit handler
+Console.js:61 Found feedback button, setting up click handler
+Console.js:61 Found subscribe button, setting up click handler
+Console.js:61 DOM loaded, calling setupLocationServices
+Console.js:61 Setting up location services
+Console.js:61 Map container not found, skipping location services
+Console.js:61 DOM loaded, calling getUserLocation
+Console.js:61 Map container found, requesting user location
+ User location obtained: 46.9640681 -122.9349557
+ User location found: 46.9640681 -122.9349557
+ Error loading featured events: ReferenceError: loadFeaturedEvents is not defined
+    at navigator.geolocation.getCurrentPosition.enableHighAccuracy (main.js:555:15)
+Mt.forEach.n.<computed> @ eruda.js:2
+Console.js:61 User location obtained: 46.9640681 -122.9349557
+Console.js:61 User location found: 46.9640681 -122.9349557
+Console.js:61 Error loading featured events: ReferenceError: loadFeaturedEvents is not defined
+Mt.forEach.n.<computed> @ Console.js:61
+ Cookie consent found, applying preferences
+ Valid cookie consent found
+ Analytics tracking enabled
+ Advertising cookies enabled
+Console.js:61 Cookie consent found, applying preferences
+Console.js:61 Valid cookie consent found
+Console.js:61 Analytics tracking enabled
+Console.js:61 Advertising cookies enabled
+Console.js:61 DOM fully loaded
+Console.js:61 Found feedback form, setting up submit handler
+Console.js:61 Found subscribe form: floatingSubscribeForm, setting up submit handler
+Console.js:61 Found feedback button, setting up click handler
+Console.js:61 Found subscribe button, setting up click handler
+Console.js:61 DOM loaded, calling setupLocationServices
+Console.js:61 Setting up location services
+Console.js:61 Map container not found, skipping location services
+Console.js:61 DOM loaded, calling getUserLocation
+Console.js:61 Map container found, requesting user location
+Console.js:61 User location obtained: 46.9640681 -122.9349557
+Console.js:61 User location found: 46.9640681 -122.9349557
+Console.js:61 Cookie consent found, applying preferences
+Console.js:61 Valid cookie consent found
+Console.js:61 Analytics tracking enabled
+Console.js:61 Advertising cookies enabled
+Console.js:61 DOM fully loaded
+Console.js:61 Found feedback form, setting up submit handler
+Console.js:61 Found subscribe form: floatingSubscribeForm, setting up submit handler
+Console.js:61 Found feedback button, setting up click handler
+Console.js:61 Found subscribe button, setting up click handler
+Console.js:61 DOM loaded, calling setupLocationServices
+Console.js:61 Setting up location services
+Console.js:61 Map container not found, skipping location services
+Console.js:61 DOM loaded, calling getUserLocation
+Console.js:61 Map container found, requesting user location
+Console.js:61 User location obtained: 46.9640681 -122.9349557
+Console.js:61 User location found: 46.9640681 -122.9349557
+Console.js:61 Cookie consent found, applying preferences
+Console.js:61 Valid cookie consent found
+Console.js:61 Analytics tracking enabled
+Console.js:61 Advertising cookies enabled
+
+                
+          
+          
+          
+         Chrome is moving towards a new experience that allows users to choose to browse without third-party cookies.
+
+                
+          
+          
+          
+         Chrome is moving towards a new experience that allows users to choose to browse without third-party cookies.
+stallwart.build.js:1 stallwart: failed ping 1
