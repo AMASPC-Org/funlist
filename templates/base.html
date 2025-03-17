@@ -58,7 +58,7 @@
                 <h5>COMPANY</h5>
                 <ul class="list-unstyled">
                     <li><a href="{{ url_for('about') }}">About Us</a></li>
-                    <li><a href="{{ url_for('about') }}">Help Center</a></li>
+                    <li><a href="{{ url_for('help_center') }}">Help Center</a></li>
                     <li><a href="{{ url_for('advertising') }}">Advertise with Us</a></li>
                 </ul>
             </div>
@@ -86,7 +86,7 @@
           <div class="col-md-3">
               <h5>LEGAL</h5>
               <ul class="list-unstyled">
-                  <li><a href="#">Terms & Conditions</a></li>
+                  <li><a href="{{ url_for('terms') }}">Terms & Conditions</a></li>
                   <li><a href="{{ url_for('privacy') }}" class="footer-link btn-footer">Privacy Policy</a></li>
               </ul>
           </div>

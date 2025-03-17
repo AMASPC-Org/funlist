@@ -441,14 +441,18 @@ function setupLocationServices() {
         console.log('Map container not found, skipping location services');
         return;
     }
+
     console.log('Setting up location services');
 
     try {
-        if (typeof google === 'undefined') {
-            console.warn('Google Maps not loaded');
+        // Wait for Google Maps to load
+        if (typeof google === 'undefined' || !google.maps) {
+            console.warn('Google Maps not loaded, retrying in 1 second');
+            setTimeout(setupLocationServices, 1000);
             return;
         }
 
+        // Get user location
         navigator.geolocation.getCurrentPosition(
             position => {
                 const { latitude, longitude } = position.coords;
@@ -458,6 +462,9 @@ function setupLocationServices() {
                 const map = new google.maps.Map(mapContainer, {
                     zoom: 13,
                     center: location,
+                    mapTypeControl: true,
+                    streetViewControl: true,
+                    fullscreenControl: true
                 });
 
                 new google.maps.Marker({
@@ -465,9 +472,25 @@ function setupLocationServices() {
                     map: map,
                     title: 'Your Location'
                 });
+
+                // Dispatch event for other components
+                window.dispatchEvent(new CustomEvent('user-location-ready', {
+                    detail: { latitude, longitude, map }
+                }));
             },
             error => {
                 console.error('Error getting user location:', error);
+                // Center on default location if user location fails
+                const defaultLocation = { lat: 47.0379, lng: -122.9007 }; // Olympia, WA
+                const map = new google.maps.Map(mapContainer, {
+                    zoom: 12,
+                    center: defaultLocation
+                });
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 0
             }
         );
     } catch (error) {
@@ -590,88 +613,6 @@ function saveUserPreferences(data) {
     });
 }
 
-// Get user location for map centering
-function getUserLocation() {
-  try {
-    console.log("Map container found, requesting user location");
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        function(position) {
-          userLat = position.coords.latitude;
-          userLng = position.coords.longitude;
-
-          console.log("User location obtained:", userLat, userLng);
-
-          // Dispatch a custom event that the location is ready
-          document.dispatchEvent(new CustomEvent('user-location-ready', {
-            detail: { lat: userLat, lng: userLng }
-          }));
-
-          console.log("User location found:", userLat, userLng);
-
-          // Map centering is now handled by the FunlistMap module in map.js
-
-          // Load featured events if on homepage
-          if (window.location.pathname === '/' || window.location.pathname === '') {
-            try {
-              loadFeaturedEvents(userLat, userLng);
-            } catch (e) {
-              console.error("Error loading featured events:", e);
-            }
-          }
-        },
-        function(error) {
-          console.error("Geolocation error:", error.code, error.message);
-          // Use default coordinates (e.g., center of target area) when geolocation fails
-          let defaultLat = 47.0379; // Example: Olympia, WA coordinates
-          let defaultLng = -122.9007;
-
-          // Set global variables for use elsewhere
-          userLat = defaultLat;
-          userLng = defaultLng;
-
-          // Dispatch event with default coordinates
-          document.dispatchEvent(new CustomEvent('user-location-ready', {
-            detail: { lat: defaultLat, lng: defaultLng, isDefault: true }
-          }));
-
-          // Map centering is now handled by the FunlistMap module in map.js
-
-          // Still load featured events with default coordinates
-          if (window.location.pathname === '/' || window.location.pathname === '') {
-            try {
-              loadFeaturedEvents(defaultLat, defaultLng);
-            } catch (e) {
-              console.error("Error loading featured events with default coordinates:", e);
-            }
-          }
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 5000,
-          maximumAge: 0
-        }
-      );
-    } else {
-      console.error("Geolocation is not supported by this browser");
-      // Handle case where geolocation is not supported
-      let defaultLat = 47.0379;
-      let defaultLng = -122.9007;
-      userLat = defaultLat;
-      userLng = defaultLng;
-
-      // Dispatch event with default coordinates and flag that geolocation is not supported
-      document.dispatchEvent(new CustomEvent('user-location-ready', {
-        detail: { lat: defaultLat, lng: defaultLng, isDefault: true, notSupported: true }
-      }));
-    }
-  } catch (e) {
-    console.error("Error in getUserLocation:", e);
-  }
-}
-
-// Map initialization is now handled in map.js with Google Maps API
 
 function resizeMap() {
     setTimeout(function() {
@@ -691,10 +632,6 @@ function resizeMap() {
     }, 100);
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    console.log("DOM loaded, calling getUserLocation");
-    getUserLocation();
-});
 
 // This is handled directly in the navbar.html template now
 function setupEventButtons() {
