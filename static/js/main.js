@@ -764,13 +764,17 @@ async function loadFeaturedEvents(lat, lng) {
         }
 
         const response = await fetch(`/api/featured-events?lat=${lat}&lng=${lng}`);
+        const data = await response.json();
+        
         if (!response.ok) {
             throw new Error(`Failed to fetch featured events: ${response.status}`);
         }
 
-        const data = await response.json();
-        if (data.success) {
-            displayFeaturedEvents(data.events);
+        if (!data || !data.events) {
+            throw new Error('Invalid response format');
+        }
+
+        displayFeaturedEvents(data.events);
         } else {
             console.warn('Featured events response indicated failure:', data.message);
         }
