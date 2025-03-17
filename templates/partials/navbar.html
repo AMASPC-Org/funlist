@@ -56,11 +56,9 @@
         <li class="nav-item">
           <a class="nav-link" href="{{ url_for('map') }}">Map</a>
         </li>
-        {% if current_user.is_authenticated and (current_user.is_event_creator or current_user.is_organizer or current_user.is_vendor) %}
         <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('submit_event') }}">Add Event</a>
+          <a class="nav-link" id="main-nav-add-event" href="{{ url_for('submit_event') }}">Add Event</a>
         </li>
-        {% endif %}
         {% if current_user.is_authenticated and current_user.is_vendor %}
         <li class="nav-item">
           <a class="nav-link" href="{{ url_for('vendor_profile') }}">Vendor Profile</a>
@@ -86,19 +84,19 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  const addEventLink = document.getElementById('add-event-link');
-  if (addEventLink) {
-    addEventLink.addEventListener('click', function(event) {
-      // Get user role data attributes from body
-      const isOrganizer = document.body.dataset.userIsOrganizer === 'true';
-      const isEventCreator = document.body.dataset.userIsEventCreator === 'true';
+  // Function to check user roles and show modal if needed
+  function checkRoleAndShowModal(event) {
+    // Get user role data attributes from body
+    const isOrganizer = document.body.dataset.userIsOrganizer === 'true';
+    const isEventCreator = document.body.dataset.userIsEventCreator === 'true';
+    const isVendor = document.body.dataset.userIsVendor === 'true';
 
-      // If user doesn't have the required roles
-      if (!isOrganizer && !isEventCreator) {
-        event.preventDefault();
+    // If user doesn't have the required roles
+    if (!isOrganizer && !isEventCreator && !isVendor) {
+      event.preventDefault();
 
-        // Create modal for role check
-        const modalHTML = `
+      // Create modal for role check
+      const modalHTML = `
         <div class="modal fade" id="roleCheckModal" tabindex="-1" aria-labelledby="roleCheckModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -131,7 +129,22 @@ document.addEventListener('DOMContentLoaded', function() {
           document.body.removeChild(modalContainer);
         });
       }
-    });
-  }
+    }
+    
+    // Add event listeners to all Add Event links
+    const addEventLink = document.getElementById('add-event-link');
+    if (addEventLink) {
+      addEventLink.addEventListener('click', checkRoleAndShowModal);
+    }
+    
+    const mainNavAddEvent = document.getElementById('main-nav-add-event');
+    if (mainNavAddEvent) {
+      mainNavAddEvent.addEventListener('click', checkRoleAndShowModal);
+    }
+    
+    const mobileAddEvent = document.querySelector('.add-event-mobile');
+    if (mobileAddEvent) {
+      mobileAddEvent.addEventListener('click', checkRoleAndShowModal);
+    }
 });
 </script>
