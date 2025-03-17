@@ -732,17 +732,48 @@ function displayFeaturedEvents(events) {
     //Implementation to display featured events on the page. This function was not defined in the original code.
 }
 
+function displayFeaturedEvents(events) {
+    const container = document.getElementById('featured-events');
+    if (!container) return;
+    
+    if (!events || events.length === 0) {
+        container.innerHTML = '<p class="text-muted">No featured events in your area</p>';
+        return;
+    }
+    
+    const eventsList = events.map(event => `
+        <div class="featured-event card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">${event.title}</h5>
+                <p class="card-text">${event.description}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">${event.date}</small>
+                    <span class="badge bg-primary">Fun Rating: ${event.fun_meter}</span>
+                </div>
+            </div>
+        </div>
+    `).join('');
+    
+    container.innerHTML = eventsList;
+}
+
 async function loadFeaturedEvents(lat, lng) {
-    //Implementation for loading featured events. This function was not defined in the original code.
     try {
         const response = await fetch(`/api/featured-events?lat=${lat}&lng=${lng}`);
         if (!response.ok) {
-          throw new Error(`Failed to fetch featured events: ${response.status} ${response.statusText}`);
+            throw new Error(`Failed to fetch featured events: ${response.status} ${response.statusText}`);
         }
         const data = await response.json();
-        displayFeaturedEvents(data.events);
-      } catch (error) {
-        console.error('Error loading featured events:', error);
-        // Handle the error appropriately, e.g., display a message to the user.
-      }
+        if (data.success) {
+            displayFeaturedEvents(data.events);
+        } else {
+            console.warn('Featured events response indicated failure:', data.message);
+        }
+    } catch (error) {
+        console.warn('Error loading featured events:', error);
+        const container = document.getElementById('featured-events');
+        if (container) {
+            container.innerHTML = '<p class="text-muted">Unable to load featured events</p>';
+        }
+    }
 }

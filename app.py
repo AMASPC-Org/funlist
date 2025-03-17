@@ -72,13 +72,14 @@ def create_app():
         """Add security headers and log response details after each request."""
         # Set Content Security Policy header
         csp = (
-            "default-src 'self' https:; "
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https: data:; "
-            "style-src 'self' 'unsafe-inline' https:; "
-            "img-src 'self' data: https: blob:; "
-            "font-src 'self' https:; "
-            "connect-src 'self' https: wss:; "
-            "frame-src 'self' https:; "
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://*.googleapis.com; "
+            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://*.googleapis.com; "
+            "img-src 'self' data: https://*.googleapis.com https://*.gstatic.com https://*.google.com; "
+            "font-src 'self' https://cdn.jsdelivr.net https://*.gstatic.com; "
+            "connect-src 'self' https://*.googleapis.com https://*.google.com; "
+            "frame-src 'self' https://*.google.com; "
+            "worker-src 'self' blob:; "
         )
         response.headers['Content-Security-Policy'] = csp
 
