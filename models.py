@@ -1,16 +1,15 @@
-
 from datetime import datetime
 from flask_login import UserMixin
 from db_init import db
 from werkzeug.security import generate_password_hash, check_password_hash
 import json
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Float, Text, ForeignKey, Table
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref # Added missing import
 from sqlalchemy.ext.hybrid import hybrid_property
 
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
-    
+
     id = Column(Integer, primary_key=True)
     username = Column(String(120), unique=True, nullable=True)
     email = Column(String(120), unique=True, nullable=False)
@@ -19,7 +18,7 @@ class User(db.Model, UserMixin):
     last_name = Column(String(120), nullable=True)
     account_active = Column(Boolean, default=True)
     is_admin = Column(Boolean, default=False)
-    is_event_creator = Column(Boolean, default=False)
+    _is_event_creator = Column('is_event_creator', Boolean, default=False) # Renamed column
     is_organizer = Column(Boolean, default=False)
     is_vendor = Column(Boolean, default=False)
     vendor_type = Column(String(50), nullable=True)
@@ -44,7 +43,7 @@ class User(db.Model, UserMixin):
 
     def is_active(self):
         return self.account_active
-        
+
     @property
     def is_event_creator(self):
         return self.is_admin or self._is_event_creator
@@ -90,7 +89,7 @@ class Event(db.Model):
     is_recurring = Column(Boolean, default=False)
     recurring_pattern = Column(String(50), nullable=True)  # daily, weekly, monthly, etc.
     recurring_end_date = Column(DateTime, nullable=True)
-    
+
     # Relationships
     parent_event = relationship("Event", remote_side=[id], backref=backref("sub_events"))
     latitude = Column(Float)
