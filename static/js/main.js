@@ -25,13 +25,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log("DOM fully loaded");
-    
+
     // Global error boundary
     window.addEventListener('error', function(event) {
         console.warn('Error caught by boundary:', event.error);
         return false;
     });
-    
+
     // Initialize core features with error handling
     try {
         setupErrorHandling();
@@ -406,25 +406,28 @@ async function fetchFeaturedEvents(userLat, userLng) {
 }
 
 function displayFeaturedEvents(events) {
-    const container = document.querySelector('.featured-events');
+    const container = document.getElementById('featured-events');
     if (!container) return;
-    
-    if (!events.length) {
-        container.innerHTML = '<p class="text-muted">No featured events available in your area.</p>';
+
+    if (!events || events.length === 0) {
+        container.innerHTML = '<p class="text-muted">No featured events in your area</p>';
         return;
     }
 
-    const eventsHTML = events.map(event => `
-        <div class="featured-event card">
+    const eventsList = events.map(event => `
+        <div class="featured-event card mb-3">
             <div class="card-body">
                 <h5 class="card-title">${event.title}</h5>
                 <p class="card-text">${event.description}</p>
-                <a href="/event/${event.id}" class="btn btn-primary">Learn More</a>
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">${event.date}</small>
+                    <span class="badge bg-primary">Fun Rating: ${event.fun_meter}</span>
+                </div>
             </div>
         </div>
     `).join('');
-    
-    container.innerHTML = eventsHTML;
+
+    container.innerHTML = eventsList;
 }
 
 
@@ -729,18 +732,14 @@ function checkCookieConsent() {
 }
 
 function displayFeaturedEvents(events) {
-    //Implementation to display featured events on the page. This function was not defined in the original code.
-}
-
-function displayFeaturedEvents(events) {
     const container = document.getElementById('featured-events');
     if (!container) return;
-    
+
     if (!events || events.length === 0) {
         container.innerHTML = '<p class="text-muted">No featured events in your area</p>';
         return;
     }
-    
+
     const eventsList = events.map(event => `
         <div class="featured-event card mb-3">
             <div class="card-body">
@@ -753,16 +752,22 @@ function displayFeaturedEvents(events) {
             </div>
         </div>
     `).join('');
-    
+
     container.innerHTML = eventsList;
 }
 
 async function loadFeaturedEvents(lat, lng) {
     try {
+        if (!lat || !lng) {
+            console.warn('Missing coordinates for featured events');
+            return;
+        }
+
         const response = await fetch(`/api/featured-events?lat=${lat}&lng=${lng}`);
         if (!response.ok) {
-            throw new Error(`Failed to fetch featured events: ${response.status} ${response.statusText}`);
+            throw new Error(`Failed to fetch featured events: ${response.status}`);
         }
+
         const data = await response.json();
         if (data.success) {
             displayFeaturedEvents(data.events);
