@@ -432,12 +432,9 @@ def init_routes(app):
     @app.route("/submit-event", methods=["GET", "POST"])
     @login_required
     def submit_event():
-        # Check if user has event creation permissions
-        if not (current_user.is_event_creator or current_user.is_organizer or current_user.is_admin):
-            # Allow them to request event creation access
-            current_user.is_event_creator = True
-            db.session.commit()
-            flash("You have been granted event creation permissions.", "success")
+        # Verify user has proper permissions
+        if not current_user.is_event_creator:
+            return render_template("event_creator_required.html")
 
         form = EventForm()
         if request.method == "POST":
