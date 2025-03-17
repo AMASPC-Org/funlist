@@ -36,15 +36,18 @@ document.addEventListener('DOMContentLoaded', function() {
     try {
         setupErrorHandling();
         setupEventHandlers();
-    setupTippy();
-    setupModals();
-    setupFloatingButtons();
-    setupCookieConsent();
-    setupFilters();
-    setupEventButtons(); 
+        setupTippy();
+        setupModals();
+        setupFloatingButtons();
+        setupCookieConsent();
+        setupFilters();
+        setupEventButtons(); 
 
-    // Initialize any carousels or sliders
-    initializeCarousels();
+        // Initialize any carousels or sliders
+        initializeCarousels();
+    } catch (error) {
+        console.error("Error initializing core features:", error);
+    }
 });
 
 // Global error handling
@@ -431,6 +434,7 @@ function displayFeaturedEvents(events) {
 }
 
 
+// Function to set up location services
 function setupLocationServices() {
     const mapContainer = document.getElementById('map');
     if (!mapContainer) {
@@ -449,7 +453,7 @@ function setupLocationServices() {
             position => {
                 const { latitude, longitude } = position.coords;
                 console.log('User location found:', latitude, longitude);
-                
+
                 const location = { lat: latitude, lng: longitude };
                 const map = new google.maps.Map(mapContainer, {
                     zoom: 13,
@@ -469,7 +473,6 @@ function setupLocationServices() {
     } catch (error) {
         console.error('Error in setupLocationServices:', error);
     }
-}
 }
 
 // Call setupLocationServices when DOM is ready
