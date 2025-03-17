@@ -445,25 +445,27 @@ function setupLocationServices() {
             return;
         }
 
-        getUserLocation().then((coords) => {
-            if (coords) {
-                const { latitude, longitude } = coords;
+        navigator.geolocation.getCurrentPosition(
+            position => {
+                const { latitude, longitude } = position.coords;
                 console.log('User location found:', latitude, longitude);
-                // Initialize map with user location
+                
                 const map = L.map('map').setView([latitude, longitude], 13);
-
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '© OpenStreetMap contributors'
                 }).addTo(map);
 
-                // Add marker for user location
                 L.marker([latitude, longitude]).addTo(map)
                     .bindPopup('Your Location')
                     .openPopup();
+            },
+            error => {
+                console.error('Error getting user location:', error);
             }
-        }).catch(error => {
-            console.error('Error getting user location:', error);
-        });
+        );
+    } catch (error) {
+        console.error('Error in setupLocationServices:', error);
+    }
     } catch (error) {
         console.error('Error setting up location services:', error);
     }
