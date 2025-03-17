@@ -73,7 +73,7 @@ if __name__ == "__main__":
         'ryan.r.rutledge@gmail.com',
         '120M2025*v7',
         is_subscriber=True,
-        is_event_creator=False,
+        is_event_creator=True,
         is_organizer=False,
         is_admin=False
     )
