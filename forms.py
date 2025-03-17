@@ -125,7 +125,7 @@ class ProfileForm(FlaskForm):
                 raise ValidationError('This username is already taken. Please choose another one.')
 
 class EventForm(FlaskForm):
-    title = StringField('Title', validators=[DataRequired()])
+    title = StringField('Title', validators=[DataRequired(), Length(max=150, message="Title must be less than 150 characters")])
     description = TextAreaField('Description', validators=[DataRequired()])
     start_date = DateField('Start Date', validators=[DataRequired()])
     end_date = DateField('End Date', validators=[DataRequired()])
