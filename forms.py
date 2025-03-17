@@ -226,17 +226,6 @@ class EventForm(FlaskForm):
     twitter = StringField('Twitter')
     ticket_url = StringField('Purchase Tickets URL', validators=[Optional(), URL()])
     terms_accepted = BooleanField('I accept the Terms and Conditions', validators=[DataRequired()])
-    prohibited_advertisers = SelectMultipleField('Prohibited Advertisers',
-        choices=[
-            ('alcohol_tobacco', 'Alcohol and Tobacco Products'),
-            ('cannabis', 'Marijuana and Cannabis Dispensaries'),
-            ('gambling', 'Gambling and Betting Services'),
-            ('adult', 'Adult Entertainment and Products'),
-            ('junk_food', 'Junk Food and Sugary Beverages'),
-            ('energy_drinks', 'Energy Drinks'),
-            ('political_religious', 'Political and Religious Organizations')
-        ],
-        coerce=str)
     submit = SubmitField('Create Event')
 
 class OrganizerProfileForm(FlaskForm):
