@@ -8,7 +8,7 @@ from wtforms.validators import (
     DataRequired, Email, Length, EqualTo, ValidationError, 
     Regexp, Optional, URL, NumberRange
 )
-from models import User
+from models import User, ProhibitedAdvertiserCategory
 
 class SignupForm(FlaskForm):
     email = StringField('Email', validators=[

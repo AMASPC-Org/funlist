@@ -2,7 +2,7 @@ from flask import render_template, flash, redirect, url_for, request, session, j
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user, login_required, login_user, logout_user
 from forms import SignupForm, LoginForm, ProfileForm, EventForm, ResetPasswordRequestForm, ResetPasswordForm
-from models import User, Event, Subscriber
+from models import User, Event, Subscriber, ProhibitedAdvertiserCategory
 from db_init import db
 from utils import geocode_address, send_password_reset_email
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
