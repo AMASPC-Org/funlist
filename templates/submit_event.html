@@ -160,14 +160,7 @@
         {{ form.ticket_url.label(class="form-label") }}
         {{ form.ticket_url(class="form-control") }}
     </div>
-    <div class="mb-3">
-        {{ form.prohibited_advertisers.label(class="form-label") }}
-        <div class="form-text mb-2">
-            Select categories of advertisers that should not be allowed to advertise on this event.
-            <a href="{{ url_for('advertiser_exclusion_info') }}" target="_blank">Learn More</a>
-        </div>
-        {{ form.prohibited_advertisers(class="form-select", multiple=true, size=7) }}
-    </div>
+    
     <div class="mb-4">
         <div class="form-check">
             {{ form.terms_accepted(class="form-check-input") }}
