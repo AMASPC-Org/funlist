@@ -4,7 +4,7 @@ modules = ["python-3.11"]
 channel = "stable-24_05"
 
 [deployment]
-run = ["sh", "-c", "python -c &quot;from app import create_app; app = create_app(); app.run(host='0.0.0.0', port=80)&quot;"]
+run = ["sh", "-c", "python main.py"]
 
 [env]
 PORT = "3000"
