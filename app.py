@@ -69,6 +69,17 @@ def create_app():
 
     @app.after_request
     def add_header(response):
+        csp = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.jsdelivr.net https://*.googleapis.com; "
+            "style-src 'self' 'unsafe-inline' https://*.jsdelivr.net https://*.googleapis.com https://*.fontawesome.com; "
+            "img-src 'self' data: blob: https://*.googleapis.com https://*.gstatic.com https://*.google.com; "
+            "font-src 'self' data: https://*.jsdelivr.net https://*.gstatic.com https://*.fontawesome.com https://*.bootstrapcdn.com; "
+            "connect-src 'self' https://*.googleapis.com https://*.google.com; "
+            "frame-src 'self' https://*.google.com; "
+            "worker-src 'self' blob:; "
+        )
+        response.headers['Content-Security-Policy'] = csp
         response.headers['X-Frame-Options'] = 'SAMEORIGIN'
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['Access-Control-Allow-Origin'] = '*'

@@ -765,7 +765,7 @@ async function loadFeaturedEvents(lat, lng) {
 
         const response = await fetch(`/api/featured-events?lat=${lat}&lng=${lng}`);
         const data = await response.json();
-        
+
         if (!response.ok) {
             throw new Error(`Failed to fetch featured events: ${response.status}`);
         }
@@ -775,13 +775,6 @@ async function loadFeaturedEvents(lat, lng) {
         }
 
         displayFeaturedEvents(data.events);
-    } catch (error) {
-        console.warn('Error loading featured events:', error);
-        const container = document.getElementById('featured-events');
-        if (container) {
-            container.innerHTML = '<p class="text-muted">Unable to load featured events</p>';
-        }
-    }
     } catch (error) {
         console.warn('Error loading featured events:', error);
         const container = document.getElementById('featured-events');
