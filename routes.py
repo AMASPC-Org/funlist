@@ -164,9 +164,6 @@ def init_routes(app):
                 user.set_password(form.password.data)
                 user.account_active = True
 
-                # Set default role as subscriber
-                user.is_subscriber = True
-
                 # Process user intentions (can select multiple)
                 try:
                     user_intentions = request.form.getlist('user_intention[]')
