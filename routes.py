@@ -188,6 +188,14 @@ def init_routes(app):
                         if hasattr(form, 'vendor_type') and form.vendor_type.data:
                             user.vendor_type = form.vendor_type.data
 
+                # Store event focus selections in user preferences
+                if hasattr(form, 'event_focus') and request.form.getlist('event_focus'):
+                    event_focus = request.form.getlist('event_focus')
+                    preferences = user.get_preferences()
+                    preferences['event_focus'] = event_focus
+                    user.set_preferences(preferences)
+
+
                 db.session.add(user)
                 db.session.commit()
 
@@ -780,7 +788,7 @@ def init_routes(app):
             event = Event.query.get_or_404(event_id)
 
             if action == "approve":
-                event.status = "approved"
+                event.status= "approved"
                 message = f"Event '{event.title}' has been approved"
             elif action == "reject":
                 event.status = "rejected"

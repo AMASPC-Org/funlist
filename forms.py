@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, DateField, TimeField, SelectField, FloatField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, DateField, TimeField, SelectField, FloatField, SelectMultipleField
 from wtforms.validators import DataRequired, Email, Length, EqualTo, ValidationError, Regexp, Optional, NumberRange, URL
 from models import User
 
@@ -35,10 +35,9 @@ class SignupForm(FlaskForm):
         ('decor', 'Decoration Services'),
         ('other', 'Other')
     ], validators=[Optional()])
-    audience_type = SelectField(
-        "Audience Type", 
+    event_focus = SelectMultipleField(
+        "Tell Us About Yourself", 
         choices=[
-            ('', 'Select audience type...'),
             ('single', 'Single (18+)'),
             ('senior', 'Senior'),
             ('professional', 'Professional'),
@@ -47,7 +46,8 @@ class SignupForm(FlaskForm):
             ('family', 'Family'),
             ('21+', '21+')
         ],
-        validators=[Optional()]
+        validators=[Optional()],
+        description="Select all that apply to help us recommend events for you"
     )
     preferred_locations = StringField(
         "Preferred Locations",
@@ -91,10 +91,9 @@ class ProfileForm(FlaskForm):
     bio = TextAreaField('Bio', validators=[Optional(), Length(max=500)])
     location = StringField('Location', validators=[Optional(), Length(max=100)])
     interests = StringField('Interests', validators=[Optional(), Length(max=255)])
-    audience_type = SelectField(
-        "Audience Type", 
+    event_focus = SelectMultipleField(
+        "Tell Us About Yourself", 
         choices=[
-            ('', 'Select audience type...'),
             ('single', 'Single (18+)'),
             ('senior', 'Senior'),
             ('professional', 'Professional'),
@@ -103,7 +102,8 @@ class ProfileForm(FlaskForm):
             ('family', 'Family'),
             ('21+', '21+')
         ],
-        validators=[Optional()]
+        validators=[Optional()],
+        description="Select all that apply to help us recommend events for you"
     )
     preferred_locations = StringField(
         "Preferred Locations",
