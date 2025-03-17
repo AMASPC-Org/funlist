@@ -376,18 +376,46 @@ function setupFormValidation() {
 }
 
 async function fetchFeaturedEvents(userLat, userLng) {
-    // Improved featured events error handling
     try {
-        const response = await fetch('/api/featured-events');
-        if (!response.ok) throw new Error('Failed to fetch featured events');
+        const response = await fetch(`/api/featured-events?lat=${userLat}&lng=${userLng}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const events = await response.json();
-        displayFeaturedEvents(events);
+        if (events && Array.isArray(events)) {
+            displayFeaturedEvents(events);
+        } else {
+            throw new Error('Invalid events data format');
+        }
     } catch (error) {
-        console.warn("Featured events unavailable:", error.message);
-        // Hide or show fallback content
+        console.warn("Featured events error:", error.message);
         const featuredSection = document.querySelector('.featured-events');
-        if (featuredSection) featuredSection.style.display = 'none';
+        if (featuredSection) {
+            featuredSection.innerHTML = '<p class="text-muted">Featured events are currently unavailable. Please try again later.</p>';
+        }
     }
+}
+
+function displayFeaturedEvents(events) {
+    const container = document.querySelector('.featured-events');
+    if (!container) return;
+    
+    if (!events.length) {
+        container.innerHTML = '<p class="text-muted">No featured events available in your area.</p>';
+        return;
+    }
+
+    const eventsHTML = events.map(event => `
+        <div class="featured-event card">
+            <div class="card-body">
+                <h5 class="card-title">${event.title}</h5>
+                <p class="card-text">${event.description}</p>
+                <a href="/event/${event.id}" class="btn btn-primary">Learn More</a>
+            </div>
+        </div>
+    `).join('');
+    
+    container.innerHTML = eventsHTML;
 }
 
 
