@@ -1,3 +1,27 @@
+
+// Event Creator Onboarding Logic
+document.addEventListener('DOMContentLoaded', function() {
+    const creatorRole = document.getElementById('creatorRole');
+    if (creatorRole) {
+        creatorRole.addEventListener('change', function() {
+            const venueDetails = document.getElementById('venueDetails');
+            const organizerDetails = document.getElementById('organizerDetails');
+            
+            if (this.value === 'venue_manager' || this.value === 'both') {
+                venueDetails.style.display = 'block';
+            } else {
+                venueDetails.style.display = 'none';
+            }
+            
+            if (this.value === 'event_organizer' || this.value === 'both') {
+                organizerDetails.style.display = 'block';
+            } else {
+                organizerDetails.style.display = 'none';
+            }
+        });
+    }
+});
+
 // Main JavaScript for FunList.ai
 
 document.addEventListener('DOMContentLoaded', function() {

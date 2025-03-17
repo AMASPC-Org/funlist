@@ -12,19 +12,44 @@
           <p>This will help us personalize your experience on FunList.ai.</p>
           
           {% if user.is_event_creator %}
-          <div class="mb-3">
-            <label class="form-label">What kind of events do you typically create?</label>
-            <select class="form-select" id="creatorEventType">
-              <option value="">Choose...</option>
-              <option value="concerts">Concerts & Music</option>
-              <option value="festivals">Festivals</option>
-              <option value="sports">Sports & Recreation</option>
-              <option value="food">Food & Drink</option>
-              <option value="arts">Arts & Culture</option>
-              <option value="community">Community & Networking</option>
-              <option value="education">Education & Workshops</option>
-              <option value="other">Other</option>
-            </select>
+          <div class="creator-onboarding">
+            <div class="mb-3">
+              <label class="form-label">What best describes your role?</label>
+              <select class="form-select" id="creatorRole">
+                <option value="">Choose...</option>
+                <option value="event_organizer">Event Organizer</option>
+                <option value="venue_manager">Venue Manager</option>
+                <option value="both">Both Organizer & Venue Manager</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">What kind of events do you typically create?</label>
+              <select class="form-select" id="creatorEventType" multiple>
+                <option value="concerts">Concerts & Music</option>
+                <option value="festivals">Festivals</option>
+                <option value="sports">Sports & Recreation</option>
+                <option value="food">Food & Drink</option>
+                <option value="arts">Arts & Culture</option>
+                <option value="community">Community & Networking</option>
+                <option value="education">Education & Workshops</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div id="venueDetails" class="mb-3" style="display:none;">
+              <label class="form-label">Venue Information</label>
+              <input type="text" class="form-control mb-2" id="venueName" placeholder="Venue Name">
+              <input type="text" class="form-control mb-2" id="venueAddress" placeholder="Venue Address">
+              <input type="text" class="form-control" id="venueCapacity" placeholder="Venue Capacity">
+            </div>
+
+            <div id="organizerDetails" class="mb-3" style="display:none;">
+              <label class="form-label">Organization Information</label>
+              <input type="text" class="form-control mb-2" id="orgName" placeholder="Organization Name">
+              <input type="text" class="form-control" id="orgWebsite" placeholder="Organization Website">
+            </div>
           </div>
           {% endif %}
           
