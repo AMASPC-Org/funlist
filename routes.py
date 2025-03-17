@@ -188,12 +188,23 @@ def init_routes(app):
                         if hasattr(form, 'vendor_type') and form.vendor_type.data:
                             user.vendor_type = form.vendor_type.data
 
-                # Store event focus selections in user preferences
+                # Store user preferences from registration
+                profile_data = {}
                 if hasattr(form, 'event_focus') and request.form.getlist('event_focus'):
                     event_focus = request.form.getlist('event_focus')
                     preferences = user.get_preferences()
                     preferences['event_focus'] = event_focus
                     user.set_preferences(preferences)
+
+                if hasattr(form, 'preferred_locations') and form.preferred_locations.data:
+                    profile_data['location'] = form.preferred_locations.data
+
+                if hasattr(form, 'event_interests') and form.event_interests.data:
+                    profile_data['interests'] = form.event_interests.data
+
+                if profile_data:
+                    for key, value in profile_data.items():
+                        setattr(user, key, value)
 
 
                 db.session.add(user)
