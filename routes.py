@@ -497,7 +497,15 @@ def init_routes(app):
                         end_date=form.date.data,
                         street=form.street.data,
                         city=form.city.data,
-                        state=form.state.data)
+                        state=form.state.data,
+                        zip_code=form.zip_code.data,
+                        latitude=coordinates[0],
+                        longitude=coordinates[1],
+                        category=form.category.data,
+                        target_audience=form.target_audience.data,
+                        fun_meter=form.fun_meter.data,
+                        user_id=current_user.id
+                    )
 
                     # Handle prohibited advertisers
                     if form.prohibited_advertisers.data:
@@ -505,9 +513,6 @@ def init_routes(app):
                             category = ProhibitedAdvertiserCategory.query.get(category_id)
                             if category:
                                 event.prohibited_advertisers.append(category)
-                        zip_code=form.zip_code.data,
-                        latitude=coordinates[0],
-                        longitude=coordinates[1],
                         category=form.category.data,
                         target_audience=form.target_audience.data,
                         fun_meter=form.fun_meter.data,
