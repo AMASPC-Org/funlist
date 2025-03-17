@@ -1,0 +1,120 @@
+### **Database, Schema, and Backend Implementation for Prohibited Advertisers Feature**
+
+Now that the **Prohibited Advertisers Selection** is part of the submission process, we need to ensure the database, schema, and API routes handle it effectively. Below is the technical breakdown for **how this affects the backend system**.
+
+---
+
+## **1. Database Schema Updates**
+We need to **modify the database schema** to store the **exclusion preferences** when a business submits an event, sponsorship, or ad opportunity.
+
+### **✅ Suggested Schema Changes**
+**Table: `events` (or `ad_opportunities`)**
+| Column Name             | Data Type        | Description |
+|-------------------------|-----------------|-------------|
+| `id`                    | `UUID` (PK)      | Unique identifier for the event/sponsorship/ad. |
+| `business_id`           | `UUID` (FK)`     | Foreign key linking to the submitting business. |
+| `title`                 | `VARCHAR(255)`   | Title of the event or ad opportunity. |
+| `description`           | `TEXT`           | Details about the event or opportunity. |
+| `excluded_categories`   | `JSONB` or `TEXT` | List of advertiser types **not allowed** for this event (e.g., `["alcohol", "gambling"]`). |
+| `created_at`            | `TIMESTAMP`      | Auto-generated timestamp. |
+| `updated_at`            | `TIMESTAMP`      | Last modified timestamp. |
+
+---
+
+## **2. API Routes & Logic**
+We need to update API endpoints that **handle event/ad submissions and advertiser checks**.
+
+### **✅ Updated API Endpoints**
+#### **📌 Route: `POST /events` (Submit an Event)**
+**Request:**
+```json
+{
+  "business_id": "123e4567-e89b-12d3-a456-426614174000",
+  "title": "Community Festival",
+  "description": "A fun event for families.",
+  "excluded_categories": ["alcohol", "gambling"]
+}
+```
+**Backend Logic:**
+- Validate the `excluded_categories` field to ensure it only contains **allowed exclusion types**.
+- Store exclusions in the database (`events.excluded_categories`).
+- Return a success response.
+
+---
+
+#### **📌 Route: `GET /events/:id/eligible_advertisers` (Check Eligible Advertisers)**
+When an advertiser attempts to buy an ad placement, we must **filter out businesses from the excluded categories**.
+
+**Logic:**
+1. **Fetch event details**, including `excluded_categories`.
+2. **Query advertisers** who are **not in** the excluded categories.
+3. **Return only eligible advertisers**.
+
+**Example Response:**
+```json
+{
+  "event_id": "123e4567-e89b-12d3-a456-426614174000",
+  "eligible_advertisers": [
+    { "id": "789e4567-e89b-12d3-a456-426614174000", "name": "Local Bakery", "industry": "food" },
+    { "id": "456e4567-e89b-12d3-a456-426614174000", "name": "Tech Sponsor", "industry": "technology" }
+  ]
+}
+```
+
+---
+
+## **3. Middleware & Business Logic Updates**
+To enforce **advertiser exclusion** when a business tries to purchase ad space, we need a **middleware function** in the **ad purchase process**.
+
+### **✅ Middleware for Ad Purchase (`middleware/check_prohibited_advertisers.js`)**
+```javascript
+async function checkProhibitedAdvertisers(req, res, next) {
+    const { event_id, advertiser_id } = req.body;
+
+    // Fetch event details
+    const event = await db.query('SELECT excluded_categories FROM events WHERE id = $1', [event_id]);
+
+    // Fetch advertiser's industry
+    const advertiser = await db.query('SELECT industry FROM advertisers WHERE id = $1', [advertiser_id]);
+
+    // Check if advertiser's industry is in the excluded list
+    if (event.excluded_categories.includes(advertiser.industry)) {
+        return res.status(403).json({ message: "This advertiser is not allowed for this event." });
+    }
+
+    next();
+}
+```
+
+---
+
+## **4. Admin Panel & CMS Integration**
+To allow **non-technical users** to manage prohibited categories:
+- **CMS should have a settings page** where admins can add/remove exclusion categories.
+- **Database table for exclusion categories (`prohibited_categories`)** should be dynamically manageable.
+
+---
+
+## **5. Testing Plan**
+- **Unit Tests**
+  - Verify that excluded categories are **correctly stored and retrieved**.
+  - Ensure that **advertisers from prohibited categories are blocked**.
+- **Integration Tests**
+  - Ensure that the **event submission API correctly saves exclusion data**.
+  - Test the **ad purchase route** to ensure businesses from prohibited categories **cannot buy ads**.
+- **UI/UX Testing**
+  - Ensure that the **dropdown selection works properly** and **persists the chosen values**.
+  - Validate that the **Learn More link** navigates to the correct explanation page.
+
+---
+
+## **6. Deployment & Next Steps**
+1. **Update database schema** (`events.excluded_categories` column).
+2. **Implement API changes** (event submission & advertiser eligibility checks).
+3. **Deploy middleware** to **enforce exclusions at ad purchase**.
+4. **Add admin panel controls** for category management.
+5. **Thoroughly test & deploy.**
+
+---
+
+This ensures that the **Prohibited Advertisers feature is fully functional, scalable, and optimized for UI/UX.** 🚀
