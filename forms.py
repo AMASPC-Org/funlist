@@ -1,6 +1,9 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, DateField, TimeField, SelectField, FloatField, SelectMultipleField
-from wtforms.validators import DataRequired, Email, Length, EqualTo, ValidationError, Regexp, Optional, NumberRange, URL
+from wtforms.validators import (
+    DataRequired, Email, Length, EqualTo, ValidationError, 
+    Regexp, Optional, URL, NumberRange
+)
 from models import User
 
 class SignupForm(FlaskForm):
@@ -132,7 +135,7 @@ class EventForm(FlaskForm):
     start_time = TimeField('Start Time', validators=[Optional()])
     end_time = TimeField('End Time', validators=[Optional()])
     all_day = BooleanField('All Day Event')
-    
+
     # Recurring event fields
     is_recurring = BooleanField('Recurring Event')
     recurring_pattern = SelectField('Repeat', choices=[
@@ -142,7 +145,7 @@ class EventForm(FlaskForm):
         ('custom', 'Custom')
     ], validators=[Optional()])
     recurring_end_date = DateField('Repeat Until', validators=[Optional()])
-    
+
     # Sub-event fields
     is_sub_event = BooleanField('This is a sub-event')
     parent_event = SelectField('Parent Event', choices=[], validators=[Optional()])
