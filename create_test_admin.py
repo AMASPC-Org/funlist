@@ -3,12 +3,17 @@ from flask import Flask
 from db_init import db
 from models import User
 import logging
+import os
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def create_test_admin():
     app = Flask(__name__)
+    
+    # Ensure the instance directory exists
+    os.makedirs('instance', exist_ok=True)
+    
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///instance/funlist.db"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     db.init_app(app)
@@ -46,6 +51,7 @@ def create_test_admin():
         except Exception as e:
             db.session.rollback()
             logger.error(f"Error creating test users: {str(e)}")
+            print(f"Error: {str(e)}")
             return False
 
 if __name__ == "__main__":

@@ -3,12 +3,17 @@ from flask import Flask
 from db_init import db
 from models import User, Event, Subscriber
 import logging
+import os
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def reset_database():
     app = Flask(__name__)
+    
+    # Ensure the instance directory exists
+    os.makedirs('instance', exist_ok=True)
+    
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///instance/funlist.db"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     db.init_app(app)
