@@ -495,6 +495,9 @@ def init_routes(app):
                         status="draft" if is_draft else "pending",
                         start_date=form.date.data,
                         end_date=form.date.data,
+                        street=form.street.data,
+                        city=form.city.data,
+                        state=form.state.data)
 
                     # Handle prohibited advertisers
                     if form.prohibited_advertisers.data:
@@ -502,9 +505,6 @@ def init_routes(app):
                             category = ProhibitedAdvertiserCategory.query.get(category_id)
                             if category:
                                 event.prohibited_advertisers.append(category)
-                        street=form.street.data,
-                        city=form.city.data,
-                        state=form.state.data,
                         zip_code=form.zip_code.data,
                         latitude=coordinates[0],
                         longitude=coordinates[1],

@@ -117,6 +117,14 @@ class Event(db.Model):
     def is_past(self):
         return self.end_date < datetime.utcnow() if self.end_date else self.start_date < datetime.utcnow()
 
+    def is_advertiser_prohibited(self, advertiser_category_id):
+        """Check if an advertiser category is prohibited for this event"""
+        return any(cat.id == advertiser_category_id for cat in self.prohibited_advertisers)
+
+    def get_prohibited_category_ids(self):
+        """Get list of prohibited category IDs"""
+        return [cat.id for cat in self.prohibited_advertisers]
+
 class ProhibitedAdvertiserCategory(db.Model):
     __tablename__ = 'prohibited_advertiser_categories'
     id = Column(Integer, primary_key=True)
