@@ -1,3 +1,4 @@
+
 import logging
 from sqlalchemy import inspect, text
 from db_init import db
@@ -22,13 +23,26 @@ def update_schema():
                     logger.info("Adding parent_event_id column to events table...")
                     conn.execute(text('ALTER TABLE events ADD COLUMN IF NOT EXISTS parent_event_id INTEGER REFERENCES events(id)'))
                     conn.commit()
-                    logger.info("Added parent_event_id column")
 
                 if 'fun_meter' not in columns:
                     logger.info("Adding fun_meter column to events table...")
                     conn.execute(text('ALTER TABLE events ADD COLUMN IF NOT EXISTS fun_meter INTEGER DEFAULT 3'))
                     conn.commit()
-                    logger.info("Added fun_meter column")
+
+                if 'is_recurring' not in columns:
+                    logger.info("Adding is_recurring column to events table...")
+                    conn.execute(text('ALTER TABLE events ADD COLUMN IF NOT EXISTS is_recurring BOOLEAN DEFAULT FALSE'))
+                    conn.commit()
+
+                if 'recurring_pattern' not in columns:
+                    logger.info("Adding recurring_pattern column to events table...")
+                    conn.execute(text('ALTER TABLE events ADD COLUMN IF NOT EXISTS recurring_pattern VARCHAR(50)'))
+                    conn.commit()
+
+                if 'recurring_end_date' not in columns:
+                    logger.info("Adding recurring_end_date column to events table...")
+                    conn.execute(text('ALTER TABLE events ADD COLUMN IF NOT EXISTS recurring_end_date TIMESTAMP'))
+                    conn.commit()
 
             logger.info("Schema update completed successfully")
             return True
