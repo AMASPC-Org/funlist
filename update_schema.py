@@ -10,8 +10,11 @@ logger = logging.getLogger(__name__)
 def update_schema():
     """Update database schema to match current models"""
     app = create_app()
-
     with app.app_context():
+        # Add parent_event_id column if it doesn't exist
+        db.session.execute('ALTER TABLE events ADD COLUMN IF NOT EXISTS parent_event_id INTEGER REFERENCES events(id)')
+        db.session.commit()
+
         inspector = inspect(db.engine)
 
         # Check Event table
