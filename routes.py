@@ -711,6 +711,10 @@ def init_routes(app):
     def terms():
         return render_template("terms.html")
 
+    @app.route("/help")
+    def help_center():
+        return render_template("help_center.html")
+
     @app.route("/reset-password-request", methods=["GET", "POST"])
     def reset_password_request():
         if current_user.is_authenticated:
