@@ -68,23 +68,12 @@ def create_app():
         logger.debug(f"Request headers: {dict(request.headers)}")
 
     @app.after_request
-    def after_request(response):
-        """Add security headers and log response details after each request."""
-        # Set Content Security Policy header
-        csp = (
-            "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://*.googleapis.com; "
-            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://*.googleapis.com; "
-            "img-src 'self' data: https://*.googleapis.com https://*.gstatic.com https://*.google.com; "
-            "font-src 'self' https://cdn.jsdelivr.net https://*.gstatic.com; "
-            "connect-src 'self' https://*.googleapis.com https://*.google.com; "
-            "frame-src 'self' https://*.google.com; "
-            "worker-src 'self' blob:; "
-        )
-        response.headers['Content-Security-Policy'] = csp
-
-        # Log response details
-        app.logger.info(f'Response status: {response.status}')
+    def add_header(response):
+        response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
         return response
 
     try:

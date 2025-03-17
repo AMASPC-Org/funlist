@@ -775,9 +775,13 @@ async function loadFeaturedEvents(lat, lng) {
         }
 
         displayFeaturedEvents(data.events);
-        } else {
-            console.warn('Featured events response indicated failure:', data.message);
+    } catch (error) {
+        console.warn('Error loading featured events:', error);
+        const container = document.getElementById('featured-events');
+        if (container) {
+            container.innerHTML = '<p class="text-muted">Unable to load featured events</p>';
         }
+    }
     } catch (error) {
         console.warn('Error loading featured events:', error);
         const container = document.getElementById('featured-events');

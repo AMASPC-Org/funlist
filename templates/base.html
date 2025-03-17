@@ -16,6 +16,9 @@
 
 <!-- Custom CSS with cache-busting -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}?v={{ range(1, 10000) | random }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 </head>
 <body {% if current_user.is_authenticated %}
     data-user-id="{{ current_user.id }}"
