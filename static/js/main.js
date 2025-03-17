@@ -440,8 +440,8 @@ function setupLocationServices() {
     console.log('Setting up location services');
 
     try {
-        if (typeof L === 'undefined') {
-            console.warn('Leaflet library not loaded');
+        if (typeof google === 'undefined') {
+            console.warn('Google Maps not loaded');
             return;
         }
 
@@ -450,14 +450,17 @@ function setupLocationServices() {
                 const { latitude, longitude } = position.coords;
                 console.log('User location found:', latitude, longitude);
                 
-                const map = L.map('map').setView([latitude, longitude], 13);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '© OpenStreetMap contributors'
-                }).addTo(map);
+                const location = { lat: latitude, lng: longitude };
+                const map = new google.maps.Map(mapContainer, {
+                    zoom: 13,
+                    center: location,
+                });
 
-                L.marker([latitude, longitude]).addTo(map)
-                    .bindPopup('Your Location')
-                    .openPopup();
+                new google.maps.Marker({
+                    position: location,
+                    map: map,
+                    title: 'Your Location'
+                });
             },
             error => {
                 console.error('Error getting user location:', error);
@@ -466,9 +469,7 @@ function setupLocationServices() {
     } catch (error) {
         console.error('Error in setupLocationServices:', error);
     }
-    } catch (error) {
-        console.error('Error setting up location services:', error);
-    }
+}
 }
 
 // Call setupLocationServices when DOM is ready
