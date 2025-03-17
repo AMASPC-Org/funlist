@@ -139,9 +139,12 @@ class EventForm(FlaskForm):
 
     def __init__(self, *args, **kwargs):
         super(EventForm, self).__init__(*args, **kwargs)
-        self.prohibited_advertisers.choices = [
-            (cat.id, cat.name) for cat in ProhibitedAdvertiserCategory.query.all()
-        ]
+        try:
+            self.prohibited_advertisers.choices = [
+                (cat.id, cat.name) for cat in ProhibitedAdvertiserCategory.query.all()
+            ]
+        except:
+            self.prohibited_advertisers.choices = []
     title = StringField('Title', validators=[DataRequired(), Length(max=150, message="Title must be less than 150 characters")])
     description = TextAreaField('Description', validators=[DataRequired()])
     start_date = DateField('Start Date', validators=[DataRequired()])
