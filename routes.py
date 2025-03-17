@@ -448,11 +448,11 @@ def init_routes(app):
             return render_template("event_creator_required.html")
 
         form = EventForm()
-        
+
         # Populate parent event choices
         user_events = Event.query.filter_by(user_id=current_user.id, parent_event_id=None).all()
         form.parent_event.choices = [(str(e.id), e.title) for e in user_events]
-        
+
         if request.method == "POST":
             if form.validate_on_submit():
                 event = Event()
@@ -461,14 +461,14 @@ def init_routes(app):
                 event.start_date = form.start_date.data
                 event.end_date = form.end_date.data
                 event.all_day = form.all_day.data
-                
+
                 if not event.all_day:
                     event.start_time = form.start_time.data.strftime('%H:%M:%S') if form.start_time.data else None
                     event.end_time = form.end_time.data.strftime('%H:%M:%S') if form.end_time.data else None
-                
+
                 if form.is_sub_event.data and form.parent_event.data:
                     event.parent_event_id = int(form.parent_event.data)
-                
+
                 if form.is_recurring.data:
                     event.is_recurring = True
                     event.recurring_pattern = form.recurring_pattern.data
@@ -1038,3 +1038,6 @@ def init_routes(app):
         db.session.commit()
         flash("User account activated.", "success")
         return redirect(url_for("admin_dashboard", tab="users"))
+    @app.route('/advertiser-exclusion-info')
+    def advertiser_exclusion_info():
+        return render_template('advertiser_exclusion_info.html')

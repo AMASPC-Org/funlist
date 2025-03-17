@@ -124,7 +124,14 @@
         {{ form.ticket_url.label(class="form-label") }}
         {{ form.ticket_url(class="form-control") }}
     </div>
-
+    <div class="mb-3">
+        {{ form.prohibited_advertisers.label(class="form-label") }}
+        <div class="form-text mb-2">
+            Select categories of advertisers that should not be allowed to advertise on this event.
+            <a href="{{ url_for('advertiser_exclusion_info') }}" target="_blank">Learn More</a>
+        </div>
+        {{ form.prohibited_advertisers(class="form-select", multiple=true, size=7) }}
+    </div>
     <div class="mb-4">
         <div class="form-check">
             {{ form.terms_accepted(class="form-check-input") }}
@@ -227,7 +234,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function updateCharCount(input, counterId, maxLength) {
     const count = input.value.length;
     document.getElementById(counterId).textContent = count;
-    
+
     // Add visual feedback
     const small = input.nextElementSibling;
     if (count > maxLength * 0.9) {
@@ -250,7 +257,7 @@ document.addEventListener('DOMContentLoaded', function() {
     previewBtn.addEventListener('click', function() {
         const formData = new FormData(form);
         const previewContent = document.getElementById('previewContent');
-        
+
         // Create preview HTML
         const preview = `
             <div class="event-preview">
@@ -266,7 +273,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             </div>
         `;
-        
+
         previewContent.innerHTML = preview;
         new bootstrap.Modal(document.getElementById('previewModal')).show();
     });
@@ -278,7 +285,7 @@ document.addEventListener('DOMContentLoaded', function() {
     saveAsDraftBtn.addEventListener('click', async function() {
         const formData = new FormData(form);
         formData.append('is_draft', 'true');
-        
+
         try {
             const response = await fetch('/submit-event', {
                 method: 'POST',

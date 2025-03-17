@@ -102,10 +102,13 @@ class Event(db.Model):
     tags = Column(String(255))  # Comma-separated tags
     attendance_count = Column(Integer, default=0)
     views_count = Column(Integer, default=0)
-    featured = Column(Boolean, default=False)
+    is_featured = Column(Boolean, default=False)
     fun_rating = Column(Integer, default=3)  # Scale of 1-5
     fun_meter = Column(Integer, default=3)  # Alias for fun_rating
     status = Column(String(50), default="pending")  # draft, pending, approved, rejected
+    prohibited_advertisers = relationship('ProhibitedAdvertiserCategory',
+                                          secondary='event_prohibited_advertisers',
+                                          backref=backref('events', lazy='dynamic'))
 
     # Define relationships
     user = relationship("User", back_populates="events")
@@ -113,6 +116,16 @@ class Event(db.Model):
     @hybrid_property
     def is_past(self):
         return self.end_date < datetime.utcnow() if self.end_date else self.start_date < datetime.utcnow()
+
+class ProhibitedAdvertiserCategory(db.Model):
+    __tablename__ = 'prohibited_advertiser_categories'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), unique=True, nullable=False)
+
+event_prohibited_advertisers = db.Table('event_prohibited_advertisers',
+    db.Column('event_id', db.Integer, db.ForeignKey('events.id'), primary_key=True),
+    db.Column('category_id', db.Integer, db.ForeignKey('prohibited_advertiser_categories.id'), primary_key=True)
+)
 
 class Subscriber(db.Model):
     __tablename__ = 'subscribers'
