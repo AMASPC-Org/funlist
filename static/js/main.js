@@ -432,64 +432,40 @@ function displayFeaturedEvents(events) {
 
 
 function setupLocationServices() {
-    console.log("Setting up location services");
     const mapContainer = document.getElementById('map');
     if (!mapContainer) {
-        console.log("Map container not found, skipping location services");
+        console.log('Map container not found, skipping location services');
         return;
     }
+    console.log('Setting up location services');
 
-    console.log("Map container found, requesting user location");
-    // If browser supports geolocation, get user's location
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            position => {
-                const userLat = position.coords.latitude;
-                const userLng = position.coords.longitude;
-                console.log("User location obtained:", userLat, userLng);
+    try {
+        if (typeof L === 'undefined') {
+            console.warn('Leaflet library not loaded');
+            return;
+        }
 
-                // Store coordinates in data attributes for the map to use
-                mapContainer.dataset.userLat = userLat;
-                mapContainer.dataset.userLng = userLng;
+        getUserLocation().then((coords) => {
+            if (coords) {
+                const { latitude, longitude } = coords;
+                console.log('User location found:', latitude, longitude);
+                // Initialize map with user location
+                const map = L.map('map').setView([latitude, longitude], 13);
 
-                // Trigger custom event for map to initialize with these coordinates
-                const event = new CustomEvent('user-location-ready', {
-                    detail: { lat: userLat, lng: userLng }
-                });
-                mapContainer.dispatchEvent(event);
-                console.log("Dispatched user-location-ready event");
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
 
-                // Fetch featured events based on location
-                if (window.fetchFeaturedEvents) {
-                    console.log("Fetching featured events");
-                    fetchFeaturedEvents(userLat, userLng);
-                }
-            },
-            error => {
-                console.warn('Error getting user location:', error.message);
-                // Fallback to default location or prompt user
+                // Add marker for user location
+                L.marker([latitude, longitude]).addTo(map)
+                    .bindPopup('Your Location')
+                    .openPopup();
             }
-        );
-    } else {
-        console.warn("Geolocation not supported by this browser");
-    }
-
-    // Ensure any map instance is properly sized (for tabs, hidden elements, etc.)
-    if (window.Leaflet || window.L) {
-        setTimeout(() => {
-            console.log("Forcing map resize");
-            const mapInstance = document.querySelector('.leaflet-container');
-            if (mapInstance && mapInstance._leaflet_id) {
-                console.log("Found Leaflet map instance, invalidating size");
-                if (mapInstance._leaflet && typeof mapInstance._leaflet.invalidateSize === 'function') {
-                    setTimeout(function() {
-                        mapInstance._leaflet.invalidateSize();
-                    }, 200);
-                } else {
-                    console.warn("Map not fully initialized yet or invalidateSize not available");
-                }
-            }
-        }, 500);
+        }).catch(error => {
+            console.error('Error getting user location:', error);
+        });
+    } catch (error) {
+        console.error('Error setting up location services:', error);
     }
 }
 
