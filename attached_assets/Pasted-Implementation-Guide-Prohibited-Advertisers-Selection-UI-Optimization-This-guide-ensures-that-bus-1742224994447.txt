@@ -1,0 +1,57 @@
+Implementation Guide: Prohibited Advertisers Selection & UI Optimization
+This guide ensures that businesses submitting events, sponsorships, or advertising opportunities can exclude specific types of advertisers from participating. The system should be designed for ease of use and optimal UI/UX.
+
+1. Feature Overview: Prohibited Advertisers Selection
+Businesses submitting an event, sponsorship, or ad opportunity should have a clear option to exclude specific types of advertisers.
+This selection prevents prohibited businesses from purchasing or participating in the submitted opportunity.
+2. Selection Interface for Excluded Advertisers
+✅ High-Level Categories for Exclusion
+When submitting an opportunity, businesses should see a multi-select dropdown or checklist with these exclusion options:
+
+Alcohol and Tobacco Products
+Marijuana and Cannabis Dispensaries
+Gambling and Betting Services
+Adult Entertainment and Products
+Junk Food and Sugary Beverages
+Energy Drinks
+Political and Religious Organizations
+✅ UI/UX Considerations
+Multi-Select Dropdown or Checklist
+Allows businesses to select one or multiple categories to exclude.
+Should match the current form design used for event submission.
+Consistent Styling
+Matches existing UI components (e.g., form fields, dropdowns).
+Uses icons where appropriate for visual clarity.
+3. Rationale Page Instead of Tooltips
+Instead of cluttering the UI with tooltips, provide a "Learn More" link next to the exclusion selection field.
+
+✅ How It Works
+A "Learn More" link directs users to a dedicated informational page explaining why certain categories are available for exclusion.
+This page should be accessible from all relevant submission forms.
+The page can include:
+Clear descriptions of each category.
+Examples of why businesses might exclude certain advertisers.
+Policy guidance to ensure users make informed choices.
+4. Technical Requirements
+Frontend Integration
+
+Ensure selection works within the existing event submission workflow.
+Multi-select dropdown or checkbox group for category exclusion.
+Styling consistency with existing UI elements.
+Mobile-friendly implementation (easy to tap/select on touchscreens).
+Backend Integration
+
+Ensure excluded advertiser selections are stored in the database.
+When advertisers attempt to purchase an ad placement, the system should prevent matches with excluded categories.
+If using an admin panel for management, ensure admin users can update the exclusion categories when needed.
+5. Testing & Deployment
+✅ Key Testing Points
+Selection functionality: Ensure businesses can select and deselect prohibited advertisers correctly.
+Exclusion enforcement: Ensure advertisers from excluded categories cannot purchase the opportunity.
+UI/UX validation: Confirm that the form remains intuitive, clean, and optimized.
+Responsive design: Verify seamless experience across desktop and mobile.
+6. Next Steps
+Develop & integrate the exclusion selection system in the submission form.
+Create the dedicated rationale page with detailed information.
+Conduct UI/UX testing to ensure a smooth user experience.
+Deploy after final review and approval.
