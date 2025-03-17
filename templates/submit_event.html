@@ -1,9 +1,10 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1 class="mb-4">Submit a New Event</h1>
+<div class="container py-4">
+    <h1 class="mb-4">Submit a New Event</h1>
 
-<form id="eventForm" method="POST" action="{{ url_for('submit_event') }}">
+    <form id="eventForm" method="POST" action="{{ url_for('submit_event') }}" class="mx-3">
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
@@ -149,6 +150,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" data-bs-dismiss="modal">I Understand</button>
             </div>
+        </div>
         </div>
     </div>
 </div>
