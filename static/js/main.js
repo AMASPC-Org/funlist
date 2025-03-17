@@ -1,4 +1,3 @@
-
 // Event Creator Onboarding Logic
 document.addEventListener('DOMContentLoaded', function() {
     const creatorRole = document.getElementById('creatorRole');
@@ -6,13 +5,13 @@ document.addEventListener('DOMContentLoaded', function() {
         creatorRole.addEventListener('change', function() {
             const venueDetails = document.getElementById('venueDetails');
             const organizerDetails = document.getElementById('organizerDetails');
-            
+
             if (this.value === 'venue_manager' || this.value === 'both') {
                 venueDetails.style.display = 'block';
             } else {
                 venueDetails.style.display = 'none';
             }
-            
+
             if (this.value === 'event_organizer' || this.value === 'both') {
                 organizerDetails.style.display = 'block';
             } else {
@@ -218,8 +217,9 @@ function setupFloatingButtons() {
 function setupCookieConsent() {
     // Check if cookie is already set
     const cookieConsent = getCookie('cookie_consent');
+    const consentFromLocalStorage = checkCookieConsentExpiration();
 
-    if (!cookieConsent) {
+    if (!cookieConsent && !consentFromLocalStorage) {
         const cookieBanner = document.getElementById('cookieConsent');
         if (cookieBanner) {
             cookieBanner.classList.add('show');
@@ -374,6 +374,22 @@ function setupFormValidation() {
         }, false);
     });
 }
+
+async function fetchFeaturedEvents(userLat, userLng) {
+    // Improved featured events error handling
+    try {
+        const response = await fetch('/api/featured-events');
+        if (!response.ok) throw new Error('Failed to fetch featured events');
+        const events = await response.json();
+        displayFeaturedEvents(events);
+    } catch (error) {
+        console.warn("Featured events unavailable:", error.message);
+        // Hide or show fallback content
+        const featuredSection = document.querySelector('.featured-events');
+        if (featuredSection) featuredSection.style.display = 'none';
+    }
+}
+
 
 function setupLocationServices() {
     console.log("Setting up location services");
@@ -663,7 +679,7 @@ function setupEventButtons() {
     // Handle any event-related buttons that might be on the page
     // The main add-event-link in the navbar now has its own handler
     console.log("Setting up event buttons");
-    
+
     // You could add handlers for other event buttons here if needed
 }
 
@@ -673,4 +689,23 @@ checkCookieConsent();
 
 function checkCookieConsent() {
     //Check if cookie consent is set, if not show the banner.  This function was not defined in the original code.
+}
+
+function displayFeaturedEvents(events) {
+    //Implementation to display featured events on the page. This function was not defined in the original code.
+}
+
+async function loadFeaturedEvents(lat, lng) {
+    //Implementation for loading featured events. This function was not defined in the original code.
+    try {
+        const response = await fetch(`/api/featured-events?lat=${lat}&lng=${lng}`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch featured events: ${response.status} ${response.statusText}`);
+        }
+        const data = await response.json();
+        displayFeaturedEvents(data.events);
+      } catch (error) {
+        console.error('Error loading featured events:', error);
+        // Handle the error appropriately, e.g., display a message to the user.
+      }
 }
