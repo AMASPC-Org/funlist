@@ -152,8 +152,16 @@ class EventForm(FlaskForm):
         ('weekly', 'Weekly'),
         ('monthly', 'Monthly'),
         ('quarterly', 'Quarterly'),
-        ('annually', 'Annually')
+        ('annually', 'Annually'),
+        ('custom', 'Custom')
     ])
+    recurrence_interval = IntegerField('Repeat Every', validators=[Optional(), NumberRange(min=1)], default=1)
+    recurrence_unit = SelectField('Recurrence Unit', choices=[
+        ('days', 'Days'),
+        ('weeks', 'Weeks'),
+        ('months', 'Months')
+    ], validators=[Optional()])
+    occurrence_count = IntegerField('Number of Occurrences', validators=[Optional(), NumberRange(min=1)], default=10)
     recurrence_end_date = DateField('Recurrence End Date')
     street = StringField('Street Address', validators=[DataRequired()])
     city = StringField('City', validators=[DataRequired()])

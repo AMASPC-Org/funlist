@@ -49,16 +49,47 @@
     </div>
     <div class="mb-3">
         {{ form.is_recurring.label(class="form-label") }}
-        {{ form.is_recurring(class="form-check-input ms-2") }}
+        {{ form.is_recurring(class="form-check-input ms-2", id="is_recurring") }}
     </div>
-    <div class="recurrence-fields" style="display: none;">
+    <div id="recurrenceFields" class="recurrence-fields" style="display: none;">
         <div class="mb-3">
             {{ form.recurrence_type.label(class="form-label") }}
-            {{ form.recurrence_type(class="form-select") }}
+            {{ form.recurrence_type(class="form-select", id="recurrence_type") }}
+        </div>
+        <div id="customRecurrenceFields" style="display: none;">
+            <div class="mb-3">
+                <label class="form-label">Repeat every</label>
+                <div class="input-group">
+                    <input type="number" class="form-control" id="recurrence_interval" min="1" value="1">
+                    <select class="form-select" id="recurrence_unit">
+                        <option value="days">Days</option>
+                        <option value="weeks">Weeks</option>
+                        <option value="months">Months</option>
+                    </select>
+                </div>
+            </div>
         </div>
         <div class="mb-3">
-            {{ form.recurrence_end_date.label(class="form-label") }}
-            {{ form.recurrence_end_date(class="form-control", type="date") }}
+            <label class="form-label">End recurrence</label>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="recurrence_end_type" id="never_end" value="never" checked>
+                <label class="form-check-label" for="never_end">Never</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="recurrence_end_type" id="end_after" value="after">
+                <label class="form-check-label" for="end_after">After</label>
+                <div class="input-group mt-2" style="width: 200px;">
+                    <input type="number" class="form-control" id="occurrence_count" value="10" min="1" disabled>
+                    <span class="input-group-text">occurrences</span>
+                </div>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="recurrence_end_type" id="end_on_date" value="on_date">
+                <label class="form-check-label" for="end_on_date">On date</label>
+                <div class="mt-2">
+                    {{ form.recurrence_end_date(class="form-control", type="date", id="recurrence_end_date", disabled=true) }}
+                </div>
+            </div>
         </div>
     </div>
     <div class="mb-3">
@@ -158,6 +189,41 @@
 </div>
 
 <script>
+// Recurring event handling
+document.addEventListener('DOMContentLoaded', function() {
+    const isRecurringCheckbox = document.getElementById('is_recurring');
+    const recurrenceFields = document.getElementById('recurrenceFields');
+    const recurrenceType = document.getElementById('recurrence_type');
+    const customRecurrenceFields = document.getElementById('customRecurrenceFields');
+    const endAfterRadio = document.getElementById('end_after');
+    const endOnDateRadio = document.getElementById('end_on_date');
+    const occurrenceCount = document.getElementById('occurrence_count');
+    const recurrenceEndDate = document.getElementById('recurrence_end_date');
+
+    isRecurringCheckbox.addEventListener('change', function() {
+        recurrenceFields.style.display = this.checked ? 'block' : 'none';
+    });
+
+    recurrenceType.addEventListener('change', function() {
+        customRecurrenceFields.style.display = this.value === 'custom' ? 'block' : 'none';
+    });
+
+    endAfterRadio.addEventListener('change', function() {
+        occurrenceCount.disabled = !this.checked;
+        recurrenceEndDate.disabled = true;
+    });
+
+    endOnDateRadio.addEventListener('change', function() {
+        recurrenceEndDate.disabled = !this.checked;
+        occurrenceCount.disabled = true;
+    });
+
+    document.getElementById('never_end').addEventListener('change', function() {
+        occurrenceCount.disabled = true;
+        recurrenceEndDate.disabled = true;
+    });
+});
+
 function updateCharCount(input, counterId, maxLength) {
     const count = input.value.length;
     document.getElementById(counterId).textContent = count;
