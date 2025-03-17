@@ -187,10 +187,14 @@ class EventForm(FlaskForm):
         ('other', 'Other')
     ], validators=[DataRequired()])
     target_audience = SelectField('Target Audience', choices=[
-        ('all', 'All Ages'),
+        ('21plus', '21+'),
         ('adults', 'Adults'),
+        ('families', 'Families'),
         ('kids', 'Kids'),
-        ('seniors', 'Seniors')
+        ('parents', 'Parents'),
+        ('professionals', 'Professionals'),
+        ('seniors', 'Seniors'),
+        ('singles', 'Singles')
     ], validators=[DataRequired()])
     website = StringField('Website', validators=[Optional(), URL()])
     facebook = StringField('Facebook')
