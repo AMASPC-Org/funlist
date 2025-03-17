@@ -1,9 +1,10 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, DateField, TimeField, SelectField, FloatField, SelectMultipleField
-from wtforms.validators import (
-    DataRequired, Email, Length, EqualTo, ValidationError, 
-    Regexp, Optional, URL, NumberRange
+from wtforms import (
+    StringField, PasswordField, SubmitField, BooleanField, TextAreaField,
+    DateField, TimeField, SelectField, FloatField, SelectMultipleField,
+    IntegerField
 )
+from wtforms.validators import DataRequired, Email, Length, EqualTo, ValidationError, Regexp, Optional, URL, NumberRange
 from models import User
 
 class SignupForm(FlaskForm):
