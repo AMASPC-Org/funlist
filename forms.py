@@ -167,10 +167,23 @@ class EventForm(FlaskForm):
         ('5', '⭐⭐⭐⭐⭐')
     ], validators=[DataRequired()])
     category = SelectField('Category', choices=[
-        ('music', 'Music'), 
-        ('sports', 'Sports'),
-        ('arts', 'Arts'),
+        ('music', 'Music & Concerts'),
+        ('theatre', 'Theatre & Performing Arts'),
+        ('sports', 'Sports & Recreation'),
+        ('arts', 'Arts & Culture'),
         ('food', 'Food & Drink'),
+        ('festivals', 'Festivals & Fairs'),
+        ('community', 'Community & Neighborhood'),
+        ('education', 'Education & Learning'),
+        ('family', 'Family & Kids'),
+        ('nightlife', 'Nightlife & Entertainment'),
+        ('business', 'Business & Networking'),
+        ('tech', 'Technology & Innovation'),
+        ('health', 'Health & Wellness'),
+        ('outdoor', 'Outdoor & Adventure'),
+        ('charity', 'Charity & Causes'),
+        ('markets', 'Markets & Shopping'),
+        ('holiday', 'Holiday & Seasonal'),
         ('other', 'Other')
     ], validators=[DataRequired()])
     target_audience = SelectField('Target Audience', choices=[
