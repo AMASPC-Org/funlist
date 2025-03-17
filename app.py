@@ -34,7 +34,7 @@ def create_app():
     app.config["SERVER_NAME"] = None  # Allow all hostnames
     app.config["APPLICATION_ROOT"] = "/"
     app.config["PREFERRED_URL_SCHEME"] = "https"  # Added for Replit HTTPS
-    
+
     # Add Google Maps API key to app config to make it available in templates
     app.config["GOOGLE_MAPS_API_KEY"] = os.environ.get("GOOGLE_MAPS_API_KEY", "")
 
@@ -72,14 +72,13 @@ def create_app():
         """Add security headers and log response details after each request."""
         # Set Content Security Policy header
         csp = (
-            "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://auth.util.repl.co https://*.replit.dev https://*.repl.co https://*.googleapis.com https://*.gstatic.com https://maps.google.com; "
-            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://*.googleapis.com; "
-            "img-src 'self' data: https: https://*.googleapis.com https://*.gstatic.com https://*.google.com https://*.ggpht.com; "
-            "font-src 'self' https://cdnjs.cloudflare.com https://*.gstatic.com; "
-            "connect-src 'self' https: https://*.googleapis.com https://*.google.com; "
-            "frame-src 'self' https://auth.util.repl.co https://*.replit.dev https://*.repl.co https://*.google.com"
-            # Remove report-uri to prevent CSP violation reports causing CSRF issues
+            "default-src 'self' https:; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https: data:; "
+            "style-src 'self' 'unsafe-inline' https:; "
+            "img-src 'self' data: https: blob:; "
+            "font-src 'self' https:; "
+            "connect-src 'self' https: wss:; "
+            "frame-src 'self' https:; "
         )
         response.headers['Content-Security-Policy'] = csp
 

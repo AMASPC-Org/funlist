@@ -633,8 +633,8 @@ def init_routes(app):
 
     @app.route("/api/featured-events")
     def featured_events_api():
-        # Feature flag check
-        FEATURED_EVENTS_ENABLED = False
+        # Feature is now enabled
+        FEATURED_EVENTS_ENABLED = True
         if not FEATURED_EVENTS_ENABLED:
             return jsonify({"success": True, "events": [], "message": "Feature not yet available"}), 200
 

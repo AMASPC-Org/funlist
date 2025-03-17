@@ -25,8 +25,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log("DOM fully loaded");
-    setupErrorHandling();
-    setupEventHandlers();
+    
+    // Global error boundary
+    window.addEventListener('error', function(event) {
+        console.warn('Error caught by boundary:', event.error);
+        return false;
+    });
+    
+    // Initialize core features with error handling
+    try {
+        setupErrorHandling();
+        setupEventHandlers();
     setupTippy();
     setupModals();
     setupFloatingButtons();
