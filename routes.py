@@ -444,7 +444,7 @@ def init_routes(app):
     @login_required
     def submit_event():
         # Verify user has proper permissions
-        if not current_user.is_event_creator:
+        if not (current_user.is_event_creator or current_user.is_admin):
             return render_template("event_creator_required.html")
 
         form = EventForm()

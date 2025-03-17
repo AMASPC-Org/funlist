@@ -44,6 +44,14 @@ class User(db.Model, UserMixin):
 
     def is_active(self):
         return self.account_active
+        
+    @property
+    def is_event_creator(self):
+        return self.is_admin or self._is_event_creator
+
+    @is_event_creator.setter
+    def is_event_creator(self, value):
+        self._is_event_creator = value
 
     # Define relationships
     events = relationship("Event", back_populates="user", cascade="all, delete-orphan")
