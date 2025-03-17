@@ -73,6 +73,7 @@ class Event(db.Model):
     __tablename__ = 'events'
 
     id = Column(Integer, primary_key=True)
+    prohibited_advertisers = Column(String(500), nullable=True)  # Stored as comma-separated values
     title = Column(String(255), nullable=False)
     description = Column(Text)
     start_date = Column(DateTime, nullable=False)

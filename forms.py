@@ -132,6 +132,15 @@ class ProfileForm(FlaskForm):
                 raise ValidationError('This username is already taken. Please choose another one.')
 
 class EventForm(FlaskForm):
+    prohibited_advertisers = SelectMultipleField('Prohibited Advertisers', choices=[
+        ('alcohol', 'Alcohol and Tobacco Products'),
+        ('cannabis', 'Marijuana and Cannabis Dispensaries'),
+        ('gambling', 'Gambling and Betting Services'),
+        ('adult', 'Adult Entertainment and Products'),
+        ('junk_food', 'Junk Food and Sugary Beverages'),
+        ('energy_drinks', 'Energy Drinks'),
+        ('political', 'Political and Religious Organizations')
+    ], validators=[Optional()])
     title = StringField('Title', validators=[DataRequired(), Length(max=150, message="Title must be less than 150 characters")])
     description = TextAreaField('Description', validators=[DataRequired()])
     start_date = DateField('Start Date', validators=[DataRequired()])

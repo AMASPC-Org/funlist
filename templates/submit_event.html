@@ -120,6 +120,42 @@
         {{ form.fun_meter.label(class="form-label") }}
         {{ form.fun_meter(class="form-control", type="number", min="1", max="5") }}
     </div>
+    
+    <div class="mb-3">
+        {{ form.prohibited_advertisers.label(class="form-label") }}
+        <div class="form-text mb-2">Select categories of advertisers that should not be allowed to participate in this event</div>
+        {{ form.prohibited_advertisers(class="form-select", multiple="multiple", size="7") }}
+        <div class="mt-2">
+            <a href="#" data-bs-toggle="modal" data-bs-target="#prohibitedInfoModal">Learn More</a> about advertiser categories
+        </div>
+    </div>
+    
+    <!-- Prohibited Advertisers Info Modal -->
+    <div class="modal fade" id="prohibitedInfoModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">About Prohibited Advertisers</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>You can exclude certain types of advertisers from participating in your event:</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">Alcohol and Tobacco - Bars, liquor stores, tobacco shops</li>
+                        <li class="list-group-item">Cannabis - Dispensaries and related products</li>
+                        <li class="list-group-item">Gambling - Casinos, betting services, lottery</li>
+                        <li class="list-group-item">Adult Entertainment - Adult venues and products</li>
+                        <li class="list-group-item">Junk Food - Fast food, sugary snacks and drinks</li>
+                        <li class="list-group-item">Energy Drinks - High-caffeine beverages</li>
+                        <li class="list-group-item">Political/Religious - Political campaigns, religious organizations</li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Got it</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="mb-3">
         {{ form.ticket_url.label(class="form-label") }}
         {{ form.ticket_url(class="form-control") }}
