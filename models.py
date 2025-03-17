@@ -78,11 +78,21 @@ class Event(db.Model):
     description = Column(Text)
     start_date = Column(DateTime, nullable=False)
     end_date = Column(DateTime)
+    all_day = Column(Boolean, default=False)
+    start_time = Column(String(8), nullable=True)  # Format: HH:MM:SS
+    end_time = Column(String(8), nullable=True)    # Format: HH:MM:SS
     location = Column(String(255))
     street = Column(String(255))
     city = Column(String(100))
     state = Column(String(100))
     zip_code = Column(String(20))
+    parent_event_id = Column(Integer, ForeignKey('events.id'), nullable=True)
+    is_recurring = Column(Boolean, default=False)
+    recurring_pattern = Column(String(50), nullable=True)  # daily, weekly, monthly, etc.
+    recurring_end_date = Column(DateTime, nullable=True)
+    
+    # Relationships
+    parent_event = relationship("Event", remote_side=[id], backref=backref("sub_events"))
     latitude = Column(Float)
     longitude = Column(Float)
     website = Column(String(255))

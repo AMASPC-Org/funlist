@@ -129,10 +129,23 @@ class EventForm(FlaskForm):
     description = TextAreaField('Description', validators=[DataRequired()])
     start_date = DateField('Start Date', validators=[DataRequired()])
     end_date = DateField('End Date', validators=[DataRequired()])
-    start_time = TimeField('Start Time')
-    end_time = TimeField('End Time')
+    start_time = TimeField('Start Time', validators=[Optional()])
+    end_time = TimeField('End Time', validators=[Optional()])
     all_day = BooleanField('All Day Event')
-    recurring = BooleanField('Recurring Event')
+    
+    # Recurring event fields
+    is_recurring = BooleanField('Recurring Event')
+    recurring_pattern = SelectField('Repeat', choices=[
+        ('daily', 'Daily'),
+        ('weekly', 'Weekly'),
+        ('monthly', 'Monthly'),
+        ('custom', 'Custom')
+    ], validators=[Optional()])
+    recurring_end_date = DateField('Repeat Until', validators=[Optional()])
+    
+    # Sub-event fields
+    is_sub_event = BooleanField('This is a sub-event')
+    parent_event = SelectField('Parent Event', choices=[], validators=[Optional()])
     recurrence_type = SelectField('Recurrence Pattern', choices=[
         ('none', 'One-time Event'),
         ('daily', 'Daily'),
