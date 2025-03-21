@@ -610,14 +610,16 @@ main {
 }
 
 .navbar .nav-link {
-    color: var(--text-primary) !important;
+    color: #333 !important;
     font-weight: 600;
     text-decoration: none;
-    padding: 5px;
+    padding: 8px 12px;
+    border-radius: 4px;
 }
 
 .navbar .nav-link:hover {
     color: var(--primary-color) !important;
+    background-color: rgba(0, 0, 0, 0.05);
 }
 
 .nav-icon {
@@ -2113,9 +2115,28 @@ footer {
 
 /* Header and navigation styling */
 .navbar {
-  background-color: var(--primary-color);
+  background-color: var(--light-color);
   padding: 15px 0;
   margin-bottom: 0;
+}
+
+/* Make navbar links visible */
+.navbar .nav-link {
+  color: #333 !important;
+  font-weight: 600;
+  padding: 8px 12px;
+  margin: 0 5px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.navbar .nav-link:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.navbar-nav {
+  display: flex;
+  align-items: center;
 }
 
 /* Hero section spacing */
