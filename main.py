@@ -33,8 +33,8 @@ def find_available_port(start_port=3000, max_attempts=5):
 def run_flask_app():
     """Run the Flask application."""
     try:
-        # Try to find an available port
-        port = find_available_port(3000)
+        # Use fixed port 3000 for deployments
+        port = int(os.environ.get("PORT", 3000))
         print(f"\033c", flush=True)  # Clear console
         print(f"Starting Flask server on port {port}")
         print(f"\n🚀 Server running at: http://0.0.0.0:{port}")
