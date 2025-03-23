@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 
 {% block title %}Map - FunList.ai{% endblock %}
@@ -9,8 +10,10 @@
     #map {
         height: 600px;
         width: 100%;
-        margin-top: 15px;
         border-radius: 8px;
+        z-index: 1;
+        border: 1px solid #ddd;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 
     .filter-bar {
@@ -35,6 +38,35 @@
         border-radius: 4px;
         padding: 8px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    /* Event cards container */
+    .event-cards-container {
+        max-height: 600px;
+        overflow-y: auto;
+        padding-right: 5px;
+    }
+    
+    /* Event card styles */
+    .event-card {
+        transition: all 0.3s ease;
+        border-left: 3px solid transparent;
+        margin-bottom: 15px;
+        border-radius: 8px;
+        background-color: white;
+    }
+    
+    .event-card:hover {
+        background-color: #f8f9fa;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+    }
+    
+    .event-card.highlighted {
+        background-color: #e9ecef;
+        border-left-color: var(--primary-color);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 </style>
 {% endblock %}
@@ -82,10 +114,53 @@
     </div>
   </div>
 
-  <!-- Single row with map taking full width -->
+  <!-- Map on left, events list on right -->
   <div class="row">
-    <div class="col-12">
-      <div id="map" class="map-container shadow"></div>
+    <!-- Map on left side -->
+    <div class="col-lg-8">
+        <div id="map" class="map-container shadow"></div>
+    </div>
+    
+    <!-- Event list on right side -->
+    <div class="col-lg-4">
+        <div class="event-cards-container">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4>Map Events</h4>
+                <div>
+                    <span class="badge bg-primary" id="event-count">0 Events</span>
+                </div>
+            </div>
+            
+            <div id="visible-events-container">
+                <!-- Events will be dynamically populated here based on map visibility -->
+                <div class="text-center text-muted py-4" id="no-events-message">
+                    <i class="fas fa-map-marker-alt fa-3x mb-3"></i>
+                    <p>No events currently visible on map.<br>Try adjusting your filters or zoom level.</p>
+                </div>
+            </div>
+            
+            <!-- All events (initially hidden, used as data source) -->
+            <div id="all-events-container" style="display: none;">
+                {% for event in events %}
+                    <div class="card mb-3 event-card" 
+                         data-event-id="{{ event.id }}"
+                         data-lat="{{ event.latitude }}"
+                         data-lng="{{ event.longitude }}"
+                         data-category="{{ event.category }}"
+                         data-date="{{ event.start_date }}"
+                         data-fun-rating="{{ event.fun_rating }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ event.title }}</h5>
+                            <p class="card-text small">{{ event.description|truncate(100) }}</p>
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">{{ event.start_date }}</small>
+                                <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
     </div>
   </div>
 </div>
@@ -116,7 +191,32 @@
           MapModule.applyFilters(category, date, funRating);
         }
       });
+      
+      // Update visible events when map changes
+      if (MapModule.updateVisibleEvents) {
+        google.maps.event.addListener(MapModule.getMap(), 'idle', function() {
+          MapModule.updateVisibleEvents();
+        });
+      }
     }
+    
+    // Handle event card clicks to highlight and center map on event
+    document.querySelectorAll('.event-card').forEach(card => {
+      card.addEventListener('click', function() {
+        const lat = parseFloat(this.dataset.lat);
+        const lng = parseFloat(this.dataset.lng);
+        const eventId = this.dataset.eventId;
+        
+        // Highlight the clicked card
+        document.querySelectorAll('.event-card').forEach(c => c.classList.remove('highlighted'));
+        this.classList.add('highlighted');
+        
+        // Center map on event and show info window if available
+        if (MapModule.centerOnEvent) {
+          MapModule.centerOnEvent(lat, lng, eventId);
+        }
+      });
+    });
   });
 </script>
 {% endblock %}
