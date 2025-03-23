@@ -1,0 +1,211 @@
+Instructions for Adjusting Advertisement Placement in @templates/map.html
+Objective
+On the @templates/map.html page, the events area currently displays a list of events with two advertisement cards placed consecutively. We need to modify this so that advertisement cards are inserted after the 3rd, 7th, 12th, 18th, 25th events, and continue with a pattern where the gap between advertisements increases by 1 each time:
+After the 3rd event (index 2 in 0-based indexing).
+
+After the 7th event (3 + 4 = 7).
+
+After the 12th event (7 + 5 = 12).
+
+After the 18th event (12 + 6 = 18).
+
+After the 25th event (18 + 7 = 25).
+
+After the 33rd event (25 + 8 = 33), and so on.
+Current State (Based on Screenshot)
+The page has a map on the left and an events list on the right.
+
+The events list includes event cards (e.g., "Thurston County Fair") with details like date, location, and rating.
+
+There are currently two consecutive "Advertisement" cards in the events list, each with the text "Sponsored Content - Advertisement space available."
+
+The layout suggests a vertical scrollable list of events with advertisements mixed in.
+Steps to Implement the Change
+Locate the Events List Rendering Logic
+Open the @templates/map.html file in your code editor.
+
+Identify the section of the template responsible for rendering the events list. This is likely a loop that iterates over a list of events (e.g., a for loop in a templating language like Jinja2, assuming this is a Flask or Django app).
+
+The loop might look something like this (example in Jinja2):
+html
+{% for event in events %}
+  <div class="event-card">
+    <h3>{{ event.title }}</h3>
+    <p>{{ event.description }}</p>
+    <p>{{ event.date }}</p>
+    <p>{{ event.location }}</p>
+    <p>Fun Rating: {{ event.rating }}</p>
+    <button>View Details</button>
+  </div>
+{% endfor %}
+Below this loop, there might be a static section for the advertisements, or they might be conditionally inserted within the loop.
+Identify the Advertisement Card HTML
+Find the HTML for the advertisement card. Based on the screenshot, it looks like:
+html
+<div class="advertisement-card">
+  <p>Advertisement</p>
+  <p>Sponsored Content - Advertisement space available</p>
+</div>
+Note the class or structure used for the advertisement card so we can reuse it.
+Modify the Logic to Insert Advertisements Dynamically
+We need to insert an advertisement card after the 3rd, 7th, 12th, 18th, 25th, 33rd, etc., events.
+
+The pattern of event indices (1-based) where ads are placed is: 3, 7, 12, 18, 25, 33, ...
+
+In 0-based indexing (common in programming), this becomes: 2, 6, 11, 17, 24, 32, ...
+
+The gaps between these indices are: 4 (6-2), 5 (11-6), 6 (17-11), 7 (24-17), 8 (32-24), and so on.
+
+To implement this, we can calculate the indices where ads should be placed using a mathematical approach. The indices follow a pattern that can be derived from the formula for triangular numbers, adjusted for our starting point.
+Let’s derive the pattern:
+The (n)-th advertisement (where (n) starts at 1) appears after the event at index (1-based): 3+4+5+…+(n+2)3 + 4 + 5 + \ldots + (n+2)3 + 4 + 5 + \ldots + (n+2)
+.
+
+This is equivalent to the sum of numbers from 4 to n+2n+2n+2
+, plus the initial offset of 3.
+
+The sum of numbers from 4 to (k) is given by the formula for the sum of an arithmetic sequence: Sum=(first+last)⋅count2\text{Sum} = \frac{(first + last) \cdot \text{count}}{2}\text{Sum} = \frac{(first + last) \cdot \text{count}}{2}
+, where first=4first = 4first = 4
+, last=klast = klast = k
+, and count=k−4+1\text{count} = k - 4 + 1\text{count} = k - 4 + 1
+.
+
+However, a simpler approach is to precompute the indices where ads should appear and check if the current index matches one of those.
+A more practical way to implement this in a template is to calculate the indices dynamically within the loop. We can use a counter to track the number of events and determine when to insert an ad by keeping track of the next target index.
+Update the loop to include a counter and conditionally insert the advertisement card. Here’s how you can modify the template (assuming Jinja2):
+html
+{% set ad_indices = [2] %} <!-- Start with the first ad after the 3rd event (index 2 in 0-based) -->
+{% set next_gap = 4 %} <!-- Initial gap after the first ad -->
+{% set next_ad_index = 2 %} <!-- Track the next index where an ad should be placed -->
+
+{% for event in events %}
+  <!-- Render the event card -->
+  <div class="event-card">
+    <h3>{{ event.title }}</h3>
+    <p>{{ event.description }}</p>
+    <p>{{ event.date }}</p>
+    <p>{{ event.location }}</p>
+    <p>Fun Rating: {{ event.rating }}</p>
+    <button>View Details</button>
+  </div>
+
+  <!-- Insert advertisement if the current index matches the next ad index -->
+  {% if loop.index0 == next_ad_index %}
+    <div class="advertisement-card">
+      <p>Advertisement</p>
+      <p>Sponsored Content - Advertisement space available</p>
+    </div>
+
+    <!-- Update the next ad index by adding the current gap, then increment the gap -->
+    {% set next_ad_index = next_ad_index + next_gap %}
+    {% set next_gap = next_gap + 1 %}
+    {% set ad_indices = ad_indices + [next_ad_index] %}
+  {% endif %}
+{% endfor %}
+
+Explanation of the Logic:
+We initialize ad_indices with the first ad index (2, for the 3rd event in 0-based indexing).
+
+next_gap starts at 4 (the gap between the 3rd and 7th events).
+
+next_ad_index tracks the index where the next ad should be placed.
+
+Inside the loop, we check if the current index (loop.index0) matches next_ad_index. If it does, we render an ad.
+
+After rendering an ad, we update next_ad_index by adding the current next_gap, then increment next_gap by 1 to increase the gap for the next ad.
+
+We also append the new next_ad_index to ad_indices for debugging or future reference (optional).
+This will produce ads at indices 2, 6, 11, 17, 24, 32, etc., which correspond to after the 3rd, 7th, 12th, 18th, 25th, 33rd events, respectively.
+
+Remove the Existing Consecutive Advertisements
+If the two consecutive advertisement cards are hardcoded outside the loop (e.g., at the bottom of the events list), remove them. They might look like:
+html
+<div class="advertisement-card">
+  <p>Advertisement</p>
+  <p>Sponsored Content - Advertisement space available</p>
+</div>
+<div class="advertisement-card">
+  <p>Advertisement</p>
+  <p>Sponsored Content - Advertisement space available</p>
+</div>
+Since we’re now dynamically inserting ads within the loop, these static placements are no longer needed.
+Handle Edge Cases
+If the number of events is less than 3, no advertisement will be shown (which is fine based on the requirement).
+
+Ensure the advertisement card’s styling matches the event cards for a consistent look. You may need to adjust CSS if the advertisement card’s design (e.g., background color, border) doesn’t align with the event cards.
+Test the Implementation
+Load the page with a list of events (at least 33 to verify the pattern).
+
+Check that advertisements appear after the 3rd, 7th, 12th, 18th, 25th, and 33rd events.
+
+Scroll through the list to ensure the pattern continues (e.g., after the 42nd event, which would be 33 + 9 = 42).
+
+Verify that the two consecutive advertisements are no longer present.
+Optional: Make the Advertisement Dynamic
+If the advertisement content is meant to be dynamic (e.g., pulling from a database or rotating ads), you might need to modify the backend to pass a list of advertisements to the template and cycle through them. For now, the static "Sponsored Content - Advertisement space available" is fine, but let me know if you need to implement dynamic ads.
+Example of the Final Template Code
+Here’s what the relevant section of @templates/map.html might look like after the changes:
+html
+<div class="events-list">
+  {% set ad_indices = [2] %}
+  {% set next_gap = 4 %}
+  {% set next_ad_index = 2 %}
+
+  {% for event in events %}
+    <!-- Event Card -->
+    <div class="event-card">
+      <h3>{{ event.title }}</h3>
+      <p>{{ event.description }}</p>
+      <p>{{ event.date }}</p>
+      <p>{{ event.location }}</p>
+      <p>Fun Rating: {{ event.rating }}</p>
+      <button>View Details</button>
+    </div>
+
+    <!-- Advertisement Card -->
+    {% if loop.index0 == next_ad_index %}
+      <div class="advertisement-card">
+        <p>Advertisement</p>
+        <p>Sponsored Content - Advertisement space available</p>
+      </div>
+
+      <!-- Update the next ad index and gap -->
+      {% set next_ad_index = next_ad_index + next_gap %}
+      {% set next_gap = next_gap + 1 %}
+      {% set ad_indices = ad_indices + [next_ad_index] %}
+    {% endif %}
+  {% endfor %}
+</div>
+
+Additional Notes
+If the template uses a different templating language (e.g., Django’s template engine, Handlebars, etc.), adjust the syntax accordingly. The logic remains the same.
+
+If the events list is rendered client-side (e.g., using JavaScript with a framework like React or Vue), you’ll need to modify the rendering logic in the JavaScript code instead. Here’s a quick example of how you might implement this in JavaScript:
+javascript
+const events = [/* array of events */];
+let nextAdIndex = 2;
+let nextGap = 4;
+const elements = [];
+
+events.forEach((event, index) => {
+  // Add event card
+  elements.push(renderEventCard(event));
+
+  // Add ad if the current index matches the next ad index
+  if (index === nextAdIndex) {
+    elements.push(renderAdCard());
+    nextAdIndex += nextGap;
+    nextGap += 1;
+  }
+});
+
+// Render elements to the DOM
+document.getElementById('events-list').innerHTML = elements.join('');
+Ensure the CSS for .advertisement-card matches the design in the screenshot (light background, dashed border, etc.).
+Next Steps
+Commit the changes to your version control system (e.g., Git).
+
+Deploy the updated code to a staging environment for testing.
+
+If you encounter any issues (e.g., styling mismatches, incorrect ad placement), let me know, and we can debug together.
+
