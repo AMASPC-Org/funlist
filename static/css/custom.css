@@ -1874,7 +1874,6 @@ body.cookie-consent-visible .floating-buttons-container {
 }
 
 .sponsored-card {
-    background-color: #f8f9fa;
     border-left: 4px solid #ffc107;
 }
 
@@ -2170,4 +2169,22 @@ footer {
 
 .map-page footer {
     display: none;
+}
+
+.navbar-nav .nav-link {
+    color: var(--text-color);
+    font-size: 1rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    display: block !important;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    z-index: 1100;
+}
+
+.dropdown-menu.show {
+    display: block !important;
 }
