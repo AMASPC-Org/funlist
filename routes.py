@@ -544,6 +544,7 @@ def init_routes(app):
         return render_template("500.html"), 500
 
     @app.route("/admin/login", methods=["GET", "POST"])
+    @app.route("/admin_login", methods=["GET", "POST"])  # Add alternative URL route
     def admin_login():
         if current_user.is_authenticated and current_user.email == 'ryan@funlist.ai':
             return redirect(url_for("admin_dashboard"))
