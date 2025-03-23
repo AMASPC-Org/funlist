@@ -399,8 +399,16 @@
 
 .navbar-brand {
     color: var(--primary-color);
-    font-weight: 600;
+    font-weight: 700;
     z-index: 1030;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.navbar-brand span {
+    display: inline-block;
 }
 
 /* Ensure brand stays centered on all screens */
