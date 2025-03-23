@@ -9,10 +9,13 @@ run = ["sh", "-c", "python main.py"]
 [env]
 PORT = "3000"
 
-# Main port for deployment
 [[ports]]
 localPort = 3000
 externalPort = 80
+
+[[ports]]
+localPort = 8080
+externalPort = 8080
 
 [workflows]
 runButton = "Flask Server (3000)"
