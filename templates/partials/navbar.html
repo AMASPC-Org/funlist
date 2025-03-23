@@ -7,7 +7,9 @@
     </button>
 
     <!-- Logo/Brand -->
-    <a class="navbar-brand position-absolute start-50 translate-middle-x" href="{{ url_for('index') }}">FunList.ai</a>
+    <a class="navbar-brand position-absolute start-50 translate-middle-x" href="{{ url_for('index') }}">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="FunList.ai" height="50">
+    </a>
 
     <!-- User Menu (Desktop & Mobile) -->
     {% if current_user.is_authenticated %}
@@ -127,18 +129,18 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       }
     }
-    
+
     // Add event listeners to all Add Event links
     const addEventLink = document.getElementById('add-event-link');
     if (addEventLink) {
       addEventLink.addEventListener('click', checkRoleAndShowModal);
     }
-    
+
     const mainNavAddEvent = document.getElementById('main-nav-add-event');
     if (mainNavAddEvent) {
       mainNavAddEvent.addEventListener('click', checkRoleAndShowModal);
     }
-    
+
     const mobileAddEvent = document.querySelector('.add-event-mobile');
     if (mobileAddEvent) {
       mobileAddEvent.addEventListener('click', checkRoleAndShowModal);
