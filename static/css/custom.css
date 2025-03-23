@@ -381,6 +381,8 @@
     right: 0;
     z-index: 1030;
     margin-bottom: 0;
+    display: block !important;
+    visibility: visible !important;
 }
 
 .alert {
@@ -400,7 +402,7 @@
 .navbar-brand {
     color: var(--primary-color);
     font-weight: 700;
-    z-index: 1030;
+    z-index: 1031;
     text-align: center;
     display: flex;
     align-items: center;
@@ -409,6 +411,8 @@
 
 .navbar-brand span {
     display: inline-block;
+    font-size: 1.5rem;
+    color: var(--primary-color);
 }
 
 /* Ensure brand stays centered on all screens */
