@@ -218,12 +218,6 @@ def create_app():
             }
         ]
 
-    # Add the /map route
-    @app.route('/map')
-    def map():
-        events = get_events()
-        return render_template('map.html', events=events, google_maps_api_key=app.config["GOOGLE_MAPS_API_KEY"])
-
     # Add route to accept cookies
     @app.route('/accept-cookies', methods=['POST'])
     def accept_cookies():
