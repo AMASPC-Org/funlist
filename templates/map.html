@@ -1,11 +1,43 @@
-
 {% extends "base.html" %}
 
 {% block title %}Map - FunList.ai{% endblock %}
 
 {% block head %}
-<!-- Google Maps API -->
-<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places" defer></script>
+<!-- Google Maps API with callback -->
+<script>
+    function initMapCallback() {
+        if (typeof FunlistMap !== 'undefined') {
+            FunlistMap.init('map');
+
+            // Setup location search
+            if (FunlistMap.initializeLocationSearch) {
+                FunlistMap.initializeLocationSearch('locationSearch');
+            }
+
+            // Setup filter buttons
+            document.getElementById('applyFilters').addEventListener('click', function() {
+                const category = document.getElementById('categoryFilter').value;
+                const date = document.getElementById('dateFilter').value;
+                const funRating = document.getElementById('funFilter').value;
+
+                if (FunlistMap.filterMarkers) {
+                    FunlistMap.filterMarkers(category, date, funRating);
+                }
+            });
+
+            // Update visible events when map changes
+            if (FunlistMap.updateVisibleEvents) {
+                google.maps.event.addListener(FunlistMap.init('map'), 'idle', function() {
+                    FunlistMap.updateVisibleEvents(FunlistMap.init('map'));
+                });
+            }
+        } else {
+            console.error('FunlistMap not loaded');
+        }
+    }
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places&callback=initMapCallback" async></script>
+
 <style>
     #map {
         height: 600px;
@@ -40,14 +72,12 @@
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     
-    /* Event cards container */
     .event-cards-container {
         max-height: 600px;
         overflow-y: auto;
         padding-right: 5px;
     }
     
-    /* Event card styles */
     .event-card {
         transition: all 0.3s ease;
         border-left: 3px solid transparent;
@@ -68,6 +98,18 @@
         border-left-color: var(--primary-color);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
+
+    .advertisement-card {
+        background-color: #fff3cd;
+        border: 1px dashed #007bff;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+    .advertisement-card .ad-label {
+        font-size: 0.9em;
+        color: #6c757d;
+        margin-bottom: 5px;
+    }
 </style>
 {% endblock %}
 
@@ -75,7 +117,6 @@
 <div class="container-fluid mt-3">
   <h1 class="text-center mb-3">Map Events</h1>
 
-  <!-- Horizontal Filter Bar at the top -->
   <div class="filter-bar mb-3">
     <div class="row g-2 justify-content-center">
         <div class="col-md-3">
@@ -114,14 +155,11 @@
     </div>
   </div>
 
-  <!-- Map on left, events list on right -->
   <div class="row">
-    <!-- Map on left side -->
     <div class="col-lg-8">
         <div id="map" class="map-container shadow"></div>
     </div>
     
-    <!-- Event list on right side -->
     <div class="col-lg-4">
         <div class="event-cards-container">
             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -132,14 +170,12 @@
             </div>
             
             <div id="visible-events-container">
-                <!-- Events will be dynamically populated here based on map visibility -->
                 <div class="text-center text-muted py-4" id="no-events-message">
                     <i class="fas fa-map-marker-alt fa-3x mb-3"></i>
                     <p>No events currently visible on map.<br>Try adjusting your filters or zoom level.</p>
                 </div>
             </div>
             
-            <!-- All events (initially hidden, used as data source) -->
             <div id="all-events-container" style="display: none;">
                 {% set next_ad_index = 2 %}
                 {% set next_gap = 4 %}
@@ -163,7 +199,6 @@
                     </div>
                     
                     {% if loop.index0 == next_ad_index %}
-                    <!-- Advertisement after event {{ loop.index }} -->
                     <div class="card mb-3 advertisement-card" data-ad-position="{{ loop.index }}">
                         <div class="card-body text-center">
                             <p class="ad-label">Advertisement</p>
@@ -183,56 +218,24 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- Load map.js script which uses Google Maps -->
 <script src="{{ url_for('static', filename='js/map.js') }}"></script>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // Initialize map after the page loads
-    if (typeof google !== 'undefined' && typeof MapModule !== 'undefined') {
-      MapModule.init('map');
-
-      // Setup location search
-      if (MapModule.initializeLocationSearch) {
-        MapModule.initializeLocationSearch('locationSearch');
-      }
-
-      // Setup filter buttons
-      document.getElementById('applyFilters').addEventListener('click', function() {
-        const category = document.getElementById('categoryFilter').value;
-        const date = document.getElementById('dateFilter').value;
-        const funRating = document.getElementById('funFilter').value;
-
-        if (MapModule.applyFilters) {
-          MapModule.applyFilters(category, date, funRating);
-        }
-      });
-      
-      // Update visible events when map changes
-      if (MapModule.updateVisibleEvents) {
-        google.maps.event.addListener(MapModule.getMap(), 'idle', function() {
-          MapModule.updateVisibleEvents();
-        });
-      }
-    }
-    
-    // Handle event card clicks to highlight and center map on event
+document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.event-card').forEach(card => {
-      card.addEventListener('click', function() {
-        const lat = parseFloat(this.dataset.lat);
-        const lng = parseFloat(this.dataset.lng);
-        const eventId = this.dataset.eventId;
-        
-        // Highlight the clicked card
-        document.querySelectorAll('.event-card').forEach(c => c.classList.remove('highlighted'));
-        this.classList.add('highlighted');
-        
-        // Center map on event and show info window if available
-        if (MapModule.centerOnEvent) {
-          MapModule.centerOnEvent(lat, lng, eventId);
-        }
-      });
+        card.addEventListener('click', function() {
+            const lat = parseFloat(this.dataset.lat);
+            const lng = parseFloat(this.dataset.lng);
+            const eventId = this.dataset.eventId;
+
+            document.querySelectorAll('.event-card').forEach(c => c.classList.remove('highlighted'));
+            this.classList.add('highlighted');
+
+            if (FunlistMap.highlightMarker) {
+                FunlistMap.highlightMarker(FunlistMap.init('map'), eventId);
+            }
+        });
     });
-  });
+});
 </script>
 {% endblock %}
