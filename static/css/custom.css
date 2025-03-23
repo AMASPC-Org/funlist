@@ -997,6 +997,23 @@ main {
 
 .view-switcher .btn {
     min-width: 150px;
+
+/* Advertisement card styling */
+.advertisement-card {
+    border: 1px dashed #ccc;
+    background-color: #fffdf5;
+    margin-bottom: 15px;
+    border-radius: 8px;
+}
+
+.ad-label {
+    font-size: 0.8rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.5rem;
+}
+
     text-align: center;
 }
 

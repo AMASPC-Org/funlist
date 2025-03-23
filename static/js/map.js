@@ -111,8 +111,6 @@ window.FunlistMap = (function() {
 
   // Update the list of visible events based on map bounds
   function updateVisibleEvents(map) {
-    if (!map) return;
-
     const bounds = map.getBounds();
     const visibleEventIds = [];
 

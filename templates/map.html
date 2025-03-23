@@ -141,6 +141,9 @@
             
             <!-- All events (initially hidden, used as data source) -->
             <div id="all-events-container" style="display: none;">
+                {% set next_ad_index = 2 %}
+                {% set next_gap = 4 %}
+                
                 {% for event in events %}
                     <div class="card mb-3 event-card" 
                          data-event-id="{{ event.id }}"
@@ -158,6 +161,19 @@
                             </div>
                         </div>
                     </div>
+                    
+                    {% if loop.index0 == next_ad_index %}
+                    <!-- Advertisement after event {{ loop.index }} -->
+                    <div class="card mb-3 advertisement-card" data-ad-position="{{ loop.index }}">
+                        <div class="card-body text-center">
+                            <p class="ad-label">Advertisement</p>
+                            <p>Sponsored Content - Advertisement space available</p>
+                        </div>
+                    </div>
+                    
+                    {% set next_ad_index = next_ad_index + next_gap %}
+                    {% set next_gap = next_gap + 1 %}
+                    {% endif %}
                 {% endfor %}
             </div>
         </div>
