@@ -84,55 +84,56 @@
 <footer class="footer mt-5 py-4 bg-light">
     <div class="container">
         <div class="row">
-            <div class="col-md-3 col-sm-6">
-                <h5>COMPANY</h5>
-                <ul class="list-unstyled">
-                    <li><a href="{{ url_for('about') }}">About Us</a></li>
-                    <li><a href="{{ url_for('help_center') }}">Help Center</a></li>
-                    <li><a href="{{ url_for('advertising') }}">Advertise with Us</a></li>
+            <div class="col-md-2 col-sm-6 mb-4">
+                <h5 class="mb-3">COMPANY</h5>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><a href="{{ url_for('about') }}">About Us</a></li>
+                    <li class="mb-2"><a href="{{ url_for('help_center') }}">Help Center</a></li>
+                    <li class="mb-2"><a href="{{ url_for('advertising') }}">Advertise with Us</a></li>
                 </ul>
             </div>
-            <div class="col-md-3 col-sm-6">
-                <h5>CONNECT</h5>
-                <ul class="list-unstyled">
-                    <li><a href="tel:3602008768"><i class="fas fa-phone"></i> (360) 200-8768</a></li>
-                    <li><a href="mailto:contact@funlist.ai"><i class="fas fa-envelope"></i> contact@funlist.ai</a></li>
-                    <li>Olympia, WA</li>
+            <div class="col-md-2 col-sm-6 mb-4">
+                <h5 class="mb-3">CONNECT</h5>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><a href="tel:3602008768"><i class="fas fa-phone"></i> (360) 200-8768</a></li>
+                    <li class="mb-2"><a href="mailto:contact@funlist.ai"><i class="fas fa-envelope"></i> contact@funlist.ai</a></li>
+                    <li class="mb-2">Olympia, WA</li>
                 </ul>
-                <div class="social-buttons">
+                <div class="social-buttons mt-2">
                     <a href="https://www.facebook.com/funlistai" target="_blank" class="btn-social"><i class="fab fa-facebook-f"></i></a>
                     <a href="https://www.instagram.com/funlistai" target="_blank" class="btn-social"><i class="fab fa-instagram"></i></a>
                     <a href="https://www.tiktok.com/@funlistai" target="_blank" class="btn-social"><i class="fab fa-tiktok"></i></a>
                 </div>
             </div>
-            <div class="col-md-2 col-sm-6">
-                <h5>ACCOUNT</h5>
-                <ul class="list-unstyled">
-                    <li><a href="{{ url_for('login') }}">Sign In</a></li>
-                    <li><a href="{{ url_for('signup') }}">Sign Up</a></li>
-                    <li><a href="{{ url_for('submit_event') }}">Add Event</a></li>
+            <div class="col-md-2 col-sm-6 mb-4">
+                <h5 class="mb-3">ACCOUNT</h5>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><a href="{{ url_for('login') }}">Sign In</a></li>
+                    <li class="mb-2"><a href="{{ url_for('signup') }}">Sign Up</a></li>
+                    <li class="mb-2"><a href="{{ url_for('submit_event') }}">Add Event</a></li>
                 </ul>
             </div>
-            <div class="col-md-2 col-sm-6">
-                <h5>LEGAL & HELP</h5>
-                <ul class="list-unstyled">
-                    <li><a href="{{ url_for('terms') }}">Terms & Conditions</a></li>
-                    <li><a href="{{ url_for('privacy') }}" class="footer-link">Privacy Policy</a></li>
-                    <li><a href="{{ url_for('help_center') }}" class="footer-link">Help Center</a></li>
+            <div class="col-md-2 col-sm-6 mb-4">
+                <h5 class="mb-3">LEGAL & HELP</h5>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><a href="{{ url_for('terms') }}">Terms & Conditions</a></li>
+                    <li class="mb-2"><a href="{{ url_for('privacy') }}" class="footer-link">Privacy Policy</a></li>
+                    <li class="mb-2"><a href="{{ url_for('help_center') }}" class="footer-link">Help Center</a></li>
                 </ul>
             </div>
-            <div class="col-md-2 col-sm-6">
-                <h5>NETWORK</h5>
-                <ul class="list-unstyled">
-                    <li><a href="https://business-calendar.replit.app/" target="_blank">BusinessCalendar.ai</a></li>
-                    <li><a href="https://date-calendar.replit.app/" target="_blank">DateCalendar.ai</a></li>
-                    <li><a href="https://find-live-music.replit.app/" target="_blank">FindLiveMusic.ai</a></li>
-                    <li><a href="https://pop-happy-hour-amaspc.replit.app/" target="_blank">PopHappyHour.com</a></li>
-                    <li><a href="https://taco-night.replit.app/" target="_blank">TacoNight.ai</a></li>
+            <div class="col-md-4 col-sm-6 mb-4">
+                <h5 class="mb-3">NETWORK</h5>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><a href="https://business-calendar.replit.app/" target="_blank">BusinessCalendar.ai</a></li>
+                    <li class="mb-2"><a href="https://date-calendar.replit.app/" target="_blank">DateCalendar.ai</a></li>
+                    <li class="mb-2"><a href="https://find-live-music.replit.app/" target="_blank">FindLiveMusic.ai</a></li>
+                    <li class="mb-2"><a href="https://pop-happy-hour-amaspc.replit.app/" target="_blank">PopHappyHour.com</a></li>
+                    <li class="mb-2"><a href="https://taco-night.replit.app/" target="_blank">TacoNight.ai</a></li>
                 </ul>
             </div>
         </div>
-        <div class="row mt-3">
+        <hr class="my-3">
+        <div class="row">
             <div class="col text-center">
                 <p class="mb-0">© 2025 FunList.ai. All rights reserved | Brought to you by 
                 <a href="https://americanmarketingalliance.com" target="_blank">American Marketing Alliance SPC</a></p>

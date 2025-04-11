@@ -1189,19 +1189,24 @@ main {
 
     .footer {
     background-color: #f8f9fa;
-    padding: 3rem 0;
+    padding: 2.5rem 0 1.5rem;
 }
 
 .footer h5 {
     font-size: 0.875rem;
     font-weight: 600;
-    margin-bottom: 1.25rem;
     text-transform: uppercase;
     color: #333;
+    margin-bottom: 1rem;
+    letter-spacing: 0.5px;
+}
+
+.footer ul {
+    margin-bottom: 0;
 }
 
 .footer ul li {
-    margin-bottom: 0.75rem;
+    line-height: 1.6;
 }
 
 .footer ul li a {
@@ -1209,15 +1214,22 @@ main {
     text-decoration: none;
     font-size: 0.875rem;
     transition: color 0.2s;
+    display: inline-block;
 }
 
 .footer ul li a:hover {
-    color: #333;
+    color: var(--primary-color);
     text-decoration: none;
 }
 
-.footer h5.network-title {
-    color: #0d6efd;
+.footer hr {
+    background-color: rgba(0,0,0,0.1);
+    margin: 1.5rem 0;
+}
+
+.footer .social-buttons {
+    display: flex;
+    gap: 10px;
 }
 
 /* Style for the NETWORK section to match parent company style */
