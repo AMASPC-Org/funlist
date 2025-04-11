@@ -1188,7 +1188,7 @@ main {
     }
 
     .footer {
-    background-color: #f89fa;
+    background-color: #f8f9fa;
     padding: 3rem 0;
 }
 
@@ -1214,6 +1214,15 @@ main {
 .footer ul li a:hover {
     color: #333;
     text-decoration: none;
+}
+
+.footer h5.network-title {
+    color: #0d6efd;
+}
+
+/* Style for the NETWORK section to match parent company style */
+.footer .col-md-2:last-child h5 {
+    color: #0d6efd;
 }
 
 .footer .fas {
