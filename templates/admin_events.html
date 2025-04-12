@@ -63,6 +63,9 @@
                                 <button type="button" onclick="window.editEvent({{ event.id }})" class="btn btn-sm btn-outline-secondary" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </button>
+                                <button type="button" onclick="window.toggleFeature({{ event.id }}, {% if event.featured %}false{% else %}true{% endif %})" class="btn btn-sm btn-outline-{% if event.featured %}warning{% else %}info{% endif %}" title="{% if event.featured %}Unfeature{% else %}Feature{% endif %}">
+                                    <i class="fas fa-{% if event.featured %}star-half{% else %}star{% endif %}"></i>
+                                </button>
                                 <button type="button" onclick="window.deleteEvent({{ event.id }})" class="btn btn-sm btn-outline-danger" title="Delete">
                                     <i class="fas fa-trash"></i>
                                 </button>

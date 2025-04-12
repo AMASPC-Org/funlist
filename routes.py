@@ -850,6 +850,29 @@ def init_routes(app):
             db.session.rollback()
             logger.error(f"Error in admin_event_action: {str(e)}")
             return jsonify({"success": False, "message": f"Error: {str(e)}"}), 500
+            
+    @app.route("/admin/event/<int:event_id>/toggle-feature", methods=["POST"])
+    @login_required
+    def toggle_event_feature(event_id):
+        if current_user.email != 'ryan@funlist.ai':
+            return jsonify({"success": False, "message": "Unauthorized. Only administrators can perform this action."}), 403
+            
+        try:
+            data = request.get_json()
+            featured = data.get('featured', False)
+            
+            event = Event.query.get_or_404(event_id)
+            event.featured = featured
+            
+            action = "featured" if featured else "unfeatured"
+            message = f"Event '{event.title}' has been {action}"
+            
+            db.session.commit()
+            return jsonify({"success": True, "message": message})
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error in toggle_event_feature: {str(e)}")
+            return jsonify({"success": False, "message": f"Error: {str(e)}"}), 500
 
     @app.route("/become-organizer")
     @login_required

@@ -119,6 +119,13 @@
                                         {% endif %}
                                         <a href="{{ url_for('event_detail', event_id=event.id) }}" 
                                            class="btn btn-sm btn-primary">View</a>
+                                        {% if event.featured %}
+                                        <button onclick="window.toggleFeature({{ event.id }}, false)" 
+                                           class="btn btn-sm btn-warning">Unfeature</button>
+                                        {% else %}
+                                        <button onclick="window.toggleFeature({{ event.id }}, true)" 
+                                           class="btn btn-sm btn-info">Feature</button>
+                                        {% endif %}
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -239,6 +246,36 @@ if (typeof window.rejectEvent !== 'function') {
                 headers: {
                     'Content-Type': 'application/json'
                 }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        }
+    };
+}
+
+if (typeof window.toggleFeature !== 'function') {
+    window.toggleFeature = function(eventId, featured) {
+        const action = featured ? 'feature' : 'unfeature';
+        if (confirm(`Are you sure you want to ${action} this event?`)) {
+            fetch(`/admin/event/${eventId}/toggle-feature`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    featured: featured
+                })
             })
             .then(response => response.json())
             .then(data => {

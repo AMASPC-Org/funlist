@@ -108,6 +108,34 @@ window.editEvent = function(eventId) {
   window.location.href = `/admin/events/${eventId}/edit`;
 };
 
+window.toggleFeature = function(eventId, featured) {
+  const action = featured ? 'feature' : 'unfeature';
+  if (confirm(`Are you sure you want to ${action} this event?`)) {
+    fetch(`/admin/event/${eventId}/toggle-feature`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        featured: featured
+      })
+    })
+    .then(handleResponse)
+    .then(data => {
+      if (data.success) {
+        showToast(data.message, 'success');
+        setTimeout(() => { window.location.reload(); }, 1000);
+      } else {
+        showToast('Error: ' + data.message, 'danger');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      showToast('Error: ' + error.message, 'danger');
+    });
+  }
+};
+
 // Add event listeners when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
   console.log('Admin events page initialized');
