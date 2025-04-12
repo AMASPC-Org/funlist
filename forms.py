@@ -2,7 +2,7 @@ from flask_wtf import FlaskForm
 from wtforms.fields import (
     StringField, PasswordField, SubmitField, BooleanField, TextAreaField,
     DateField, TimeField, SelectField, FloatField, SelectMultipleField,
-    IntegerField
+    IntegerField, RadioField
 )
 from wtforms.validators import (
     DataRequired, Email, Length, EqualTo, ValidationError, 
