@@ -52,7 +52,7 @@
     </style>
 </head>
 <body {% if current_user.is_authenticated %}
-    data-user-id="{{ current_user.id }}"
+    data-user-id="{{ current_user.id if current_user.is_authenticated else 0 }}"
     data-user-is-organizer="{{ current_user.is_organizer|lower }}"
     data-user-is-event-creator="{{ current_user.is_event_creator|lower }}"
     data-user-is-vendor="{{ current_user.is_vendor|lower }}"

@@ -515,27 +515,31 @@ def init_routes(app):
         if not (current_user.is_event_creator or current_user.is_admin):
             return render_template("event_creator_required.html")
 
+        # Create a new form instance
         form = EventForm()
-
-        # Handle parent event choices without database errors
+        
+        # Make sure we have a clean session
+        db.session.remove()
+        
+        # Set default choices for parent events
+        form.parent_event.choices = [('0', 'No parent events available')]
+        
+        # Refresh the current user to ensure we're working with a properly attached instance
         try:
-            # Reset any previous transaction issues
-            db.session.rollback()
-            db.session.close()
-            db.session = db.create_scoped_session()
+            # Make sure we have a fresh user object to work with
+            user = User.query.get(current_user.id)
             
-            # Set default choices in case of error
-            form.parent_event.choices = [('0', 'No parent events available')]
-            
-            # Try to get the user's events safely
+            # Try to safely get the user's events for parent event selection
             try:
-                user_events = Event.query.filter_by(user_id=current_user.id, parent_event_id=None).all()
+                user_events = Event.query.filter_by(user_id=user.id, parent_event_id=None).all()
                 if user_events:
                     form.parent_event.choices = [(str(e.id), e.title) for e in user_events]
             except Exception as inner_e:
                 logger.error(f"Error querying parent events: {str(inner_e)}")
+                # Continue execution even if this fails
         except Exception as e:
-            logger.error(f"Error setting up parent events: {str(e)}")
+            logger.error(f"Error refreshing user session: {str(e)}")
+            # Don't fail the whole page if we can't get parent events
         
         # Check if venue_id is in request args (coming from venue detail page)
         venue_id = request.args.get('venue_id')
@@ -543,6 +547,8 @@ def init_routes(app):
             try:
                 form.venue_id.data = int(venue_id)
             except (ValueError, TypeError):
+                logger.warning(f"Invalid venue_id in request: {venue_id}")
+                # Continue with default venue selection
                 pass
 
         if form.validate_on_submit():
