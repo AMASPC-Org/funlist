@@ -1,0 +1,35 @@
+Subject: Replace Email with User Icon in Navbar Dropdown Trigger
+Request:
+Please update the main navigation bar for authenticated users. Currently, the user's email address is displayed as the trigger for the user account dropdown menu. We need to replace this email text with a standard user icon (using the existing Feather Icons library) while retaining the dropdown functionality.
+Tasks:
+Locate Navbar Template: Find the template file containing the main navigation bar structure, specifically the section displayed only when current_user.is_authenticated. This is likely templates/partials/navbar.html or possibly within base.html.
+Identify Dropdown Trigger: Within that authenticated section, locate the <a> tag (or potentially a <button>) that acts as the dropdown trigger. It will likely have the class dropdown-toggle and the attribute data-bs-toggle="dropdown". It currently displays the user's email or name using Jinja (e.g., {{ current_user.email }} or {{ current_user.name }}).
+Modify Dropdown Trigger:
+Remove Text: Delete the Jinja expression ({{ current_user.email }} or {{ current_user.name }}) that displays the text.
+Insert Icon: Inside the same <a> tag, insert the Feather Icon for a user. Add appropriate classes for styling if needed.
+Target HTML Structure Example:
+<!-- Example Structure (Inside the auth-buttons div or similar) -->
+ <div class="dropdown">
+    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User Menu"> <!-- Added aria-label -->
+        <i data-feather="user" class="me-1 align-middle"></i> <!-- Feather user icon added, text removed -->
+         <!-- Optional: Add screen-reader only text if needed -->
+         <!-- <span class="visually-hidden">User Menu</span> -->
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end">
+        <!-- Dropdown items like "My Profile", "Logout", etc. remain here -->
+        <li><a class="dropdown-item" href="{{ url_for('edit_profile') }}">My Profile</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+     </ul>
+</div>
+```    *   **Accessibility:** Add an `aria-label="User Menu"` (or similar descriptive text) to the `<a>` tag for screen reader accessibility, as shown in the example.
+Use code with caution.
+Html
+CSS Adjustments (If Needed): Check if any minor adjustments are needed in static/css/custom.css to ensure the icon aligns properly vertically within the navbar. If necessary, add styles targeting the icon within the .auth-buttons .dropdown-toggle context.
+Provide Complete Code: Return the complete, fully edited code for the modified navbar template file (navbar.html or base.html) and custom.css (if any changes were made).
+Context:
+Displaying the user's email in the navbar is not standard practice and takes up too much space.
+We want to replace it with a universally understood user icon.
+The dropdown menu functionality triggered by the click must be preserved.
+The project already uses Feather Icons.
+Please implement these changes following UI/UX best practices.
