@@ -115,14 +115,14 @@ class ProfileForm(FlaskForm):
         description="Enter interests separated by commas (e.g., sports,music,outdoors)",
         validators=[Optional(), Length(max=255)]
     )
-    
+
     # Social Media Links
     facebook_url = StringField('Facebook URL', validators=[Optional(), URL()])
     instagram_url = StringField('Instagram URL', validators=[Optional(), URL()])
     twitter_url = StringField('Twitter URL', validators=[Optional(), URL()])
     linkedin_url = StringField('LinkedIn URL', validators=[Optional(), URL()])
     tiktok_url = StringField('TikTok URL', validators=[Optional(), URL()])
-    
+
     # Organizer Information
     company_name = StringField('Organization/Company Name', validators=[Optional(), Length(max=100)])
     organizer_description = TextAreaField('About Your Organization', validators=[Optional(), Length(max=500)])
@@ -133,7 +133,7 @@ class ProfileForm(FlaskForm):
     business_zip = StringField('ZIP Code', validators=[Optional(), Length(max=20)])
     business_phone = StringField('Business Phone', validators=[Optional(), Length(max=20)])
     business_email = StringField('Business Email', validators=[Optional(), Email(), Length(max=120)])
-    
+
     submit = SubmitField('Update Profile')
 
     def validate_username(self, username):
@@ -174,19 +174,33 @@ class EventForm(FlaskForm):
     venue_id = SelectField('Select Venue', coerce=int, validators=[Optional()])
     use_new_venue = BooleanField('Add a New Venue', default=False)
 
+    # New venue fields
+    venue_name = StringField('Venue Name', validators=[Optional()])
+    venue_street = StringField('Street Address', validators=[Optional()])
+    venue_city = StringField('City', validators=[Optional()])
+    venue_state = StringField('State', validators=[Optional()])
+    venue_zip = StringField('ZIP Code', validators=[Optional()])
+    venue_type_id = SelectField('Venue Type', coerce=int, validators=[Optional()])
+
     def __init__(self, *args, **kwargs):
         super(EventForm, self).__init__(*args, **kwargs)
         try:
             self.prohibited_advertisers.choices = [
                 (cat.id, cat.name) for cat in ProhibitedAdvertiserCategory.query.all()
             ]
-            from models import Venue
+            from models import Venue, VenueType
             self.venue_id.choices = [(0, 'Select a venue...')] + [
                 (venue.id, venue.name) for venue in Venue.query.order_by(Venue.name).all()
+            ]
+
+            # Add venue type choices
+            self.venue_type_id.choices = [(0, 'Select a venue type...')] + [
+                (vt.id, vt.name) for vt in VenueType.query.order_by(VenueType.name).all()
             ]
         except:
             self.prohibited_advertisers.choices = []
             self.venue_id.choices = [(0, 'Select a venue...')]
+            self.venue_type_id.choices = [(0, 'Select a venue type...')]
     title = StringField('Title', validators=[DataRequired(), Length(max=250, message="Title must be less than 250 characters")])
     description = TextAreaField('Description', validators=[DataRequired(), Length(max=1500, message="Description must be less than 1500 characters")])
     start_date = DateField('Start Date', validators=[DataRequired()])
@@ -346,26 +360,3 @@ class ContactForm(FlaskForm):
         Length(min=10, max=2000, message="Message must be between 10 and 2000 characters")
     ])
     submit = SubmitField('Send Message')
-class VenueForm(FlaskForm):
-    name = StringField('Venue Name', validators=[DataRequired()])
-    street = StringField('Street Address')
-    city = StringField('City')
-    state = StringField('State/Province')
-    zip_code = StringField('ZIP/Postal Code')
-    country = StringField('Country', default='United States')
-    phone = StringField('Venue Phone')
-    email = StringField('Venue Email', validators=[Optional(), Email()])
-    website = StringField('Venue Website', validators=[Optional(), URL()])
-    venue_type_id = SelectField('Venue Type', coerce=int)
-    contact_name = StringField('Contact Person Name')
-    contact_phone = StringField('Contact Person Phone')
-    contact_email = StringField('Contact Person Email', validators=[Optional(), Email()])
-    submit = SubmitField('Save Venue')
-    
-    def __init__(self, *args, **kwargs):
-        super(VenueForm, self).__init__(*args, **kwargs)
-        from models import VenueType
-        from db_init import db
-        # Load venue types from database
-        self.venue_type_id.choices = [(vt.id, vt.name) for vt in 
-                                      db.session.query(VenueType).order_by(VenueType.name).all()]

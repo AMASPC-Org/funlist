@@ -1,7 +1,7 @@
 from flask import render_template, flash, redirect, url_for, request, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user, login_required, login_user, logout_user
-from forms import SignupForm, LoginForm, ProfileForm, EventForm, ResetPasswordRequestForm, ResetPasswordForm, ContactForm
+from forms import SignupForm, LoginForm, ProfileForm, EventForm, ResetPasswordRequestForm, ResetPasswordForm, ContactForm, VenueForm
 from models import User, Event, Subscriber, ProhibitedAdvertiserCategory
 from db_init import db
 from utils import geocode_address, send_password_reset_email
@@ -520,6 +520,14 @@ def init_routes(app):
         # Populate parent event choices
         user_events = Event.query.filter_by(user_id=current_user.id, parent_event_id=None).all()
         form.parent_event.choices = [(str(e.id), e.title) for e in user_events]
+        
+        # Check if venue_id is in request args (coming from venue detail page)
+        venue_id = request.args.get('venue_id')
+        if venue_id and request.method == 'GET':
+            try:
+                form.venue_id.data = int(venue_id)
+            except (ValueError, TypeError):
+                pass
 
         if request.method == "POST":
             if form.validate_on_submit():
@@ -541,6 +549,25 @@ def init_routes(app):
                     event.is_recurring = True
                     event.recurring_pattern = form.recurring_pattern.data
                     event.recurring_end_date = form.recurring_end_date.data
+                    
+                # Handle venue selection or creation
+                if form.use_new_venue.data and form.venue_name.data:
+                    # Create a new venue
+                    new_venue = Venue(
+                        name=form.venue_name.data,
+                        street=form.venue_street.data,
+                        city=form.venue_city.data,
+                        state=form.venue_state.data,
+                        zip_code=form.venue_zip.data,
+                        venue_type_id=form.venue_type_id.data if form.venue_type_id.data != 0 else None,
+                        user_id=current_user.id
+                    )
+                    db.session.add(new_venue)
+                    db.session.flush()  # Get the ID without committing
+                    event.venue_id = new_venue.id
+                elif form.venue_id.data and form.venue_id.data != 0:
+                    # Use selected venue
+                    event.venue_id = form.venue_id.data
             try:
                 if form.validate_on_submit():
                     is_draft = request.form.get("is_draft", "false") == "true"

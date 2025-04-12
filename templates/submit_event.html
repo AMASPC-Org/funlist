@@ -92,22 +92,105 @@
             </div>
         </div>
     </div>
-    <div class="mb-3">
-        {{ form.street.label(class="form-label") }}
-        {{ form.street(class="form-control") }}
+
+    <!-- Venue Information Card -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Venue Information</h5>
+        </div>
+        <div class="card-body">
+            <div class="form-check mb-3">
+                {{ form.use_new_venue(class="form-check-input", id="use_new_venue") }}
+                <label class="form-check-label" for="use_new_venue">
+                    I want to add a new venue
+                </label>
+            </div>
+
+            <!-- Existing venue selection -->
+            <div id="existing-venue-section">
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        {{ render_field(form.venue_id, class="form-select") }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- New venue fields -->
+            <div id="new-venue-section" style="display:none;">
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        {{ render_field(form.venue_name, class="form-control") }}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        {{ render_field(form.venue_type_id, class="form-select") }}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        {{ render_field(form.venue_street, class="form-control") }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        {{ render_field(form.venue_city, class="form-control") }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ render_field(form.venue_state, class="form-control") }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ render_field(form.venue_zip, class="form-control") }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Event location (if different from venue) -->
+            <div class="mt-4">
+                <h6>Event Location (if different from venue address)</h6>
+                <div class="row">
+                    <div class="col-md-12">
+                        {{ render_field(form.street, class="form-control") }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        {{ render_field(form.city, class="form-control") }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ render_field(form.state, class="form-control") }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ render_field(form.zip_code, class="form-control") }}
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="mb-3">
-        {{ form.city.label(class="form-label") }}
-        {{ form.city(class="form-control") }}
-    </div>
-    <div class="mb-3">
-        {{ form.state.label(class="form-label") }}
-        {{ form.state(class="form-control") }}
-    </div>
-    <div class="mb-3">
-        {{ form.zip_code.label(class="form-label") }}
-        {{ form.zip_code(class="form-control") }}
-    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const useNewVenueCheckbox = document.getElementById('use_new_venue');
+        const existingVenueSection = document.getElementById('existing-venue-section');
+        const newVenueSection = document.getElementById('new-venue-section');
+
+        function toggleVenueSections() {
+            if (useNewVenueCheckbox.checked) {
+                existingVenueSection.style.display = 'none';
+                newVenueSection.style.display = 'block';
+            } else {
+                existingVenueSection.style.display = 'block';
+                newVenueSection.style.display = 'none';
+            }
+        }
+
+        // Initial toggle
+        toggleVenueSections();
+
+        // Add event listener for changes
+        useNewVenueCheckbox.addEventListener('change', toggleVenueSections);
+    });
+    </script>
     <div class="mb-3">
         {{ form.category.label(class="form-label") }}
         {{ form.category(class="form-select") }}
