@@ -93,104 +93,108 @@
         </div>
     </div>
 
-    <!-- Venue Information Card -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h5 class="mb-0">Venue Information</h5>
-        </div>
-        <div class="card-body">
-            <div class="form-check mb-3">
-                {{ form.use_new_venue(class="form-check-input", id="use_new_venue") }}
-                <label class="form-check-label" for="use_new_venue">
-                    I want to add a new venue
-                </label>
-            </div>
+    <!-- Venue Selection -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Venue Information</h5>
 
-            <!-- Existing venue selection -->
-            <div id="existing-venue-section">
-                <div class="row mb-3">
-                    <div class="col-md-12">
-                        {{ render_field(form.venue_id, class="form-select") }}
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="venue_selection_type" id="venue_selection_existing" value="existing" {% if form.venue_selection_type.data == 'existing' %}checked{% endif %} onchange="toggleVenueSelection()">
+                                <label class="form-check-label" for="venue_selection_existing">
+                                    Select an existing venue
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="venue_selection_type" id="venue_selection_new" value="new" {% if form.venue_selection_type.data == 'new' %}checked{% endif %} onchange="toggleVenueSelection()">
+                                <label class="form-check-label" for="venue_selection_new">
+                                    Add a new venue
+                                </label>
+                            </div>
+                        </div>
+
+                        <div id="existing-venue-section" {% if form.venue_selection_type.data == 'new' %}style="display: none;"{% endif %}>
+                            <div class="mb-3">
+                                <label for="venue_id" class="form-label">{{ form.venue_id.label }}</label>
+                                {{ form.venue_id(class="form-select") }}
+                                {% if form.venue_id.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.venue_id.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <div class="mt-2">
+                                    <a href="{{ url_for('add_venue') }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                        Add a venue to the database
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="new-venue-section" {% if form.venue_selection_type.data != 'new' %}style="display: none;"{% endif %}>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    {{ render_field(form.venue_name, class="form-control") }}
+                                </div>
+                                <div class="col-md-12">
+                                    {{ render_field(form.venue_street, class="form-control") }}
+                                </div>
+                                <div class="col-md-4">
+                                    {{ render_field(form.venue_city, class="form-control") }}
+                                </div>
+                                <div class="col-md-4">
+                                    {{ render_field(form.venue_state, class="form-control") }}
+                                </div>
+                                <div class="col-md-4">
+                                    {{ render_field(form.venue_zip, class="form-control") }}
+                                </div>
+                                <div class="col-md-12">
+                                    {{ render_field(form.venue_type_id, class="form-select") }}
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="form-check mt-3">
+                                        {{ form.use_new_venue(class="form-check-input") }}
+                                        {{ form.use_new_venue.label(class="form-check-label") }}
+                                        <small class="form-text text-muted d-block">
+                                            Check this to save this venue to the database for future events
+                                        </small>
+                                    </div>
+                                    <div class="form-check mt-2">
+                                        {{ form.is_venue_owner(class="form-check-input") }}
+                                        {{ form.is_venue_owner.label(class="form-check-label") }}
+                                        <small class="form-text text-muted d-block">
+                                            Check this if you are the owner, manager, or an authorized representative of this venue
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- New venue fields -->
-            <div id="new-venue-section" style="display:none;">
-                <div class="row mb-3">
-                    <div class="col-md-12">
-                        {{ render_field(form.venue_name, class="form-control") }}
+                <!-- Location Details (only if not using venue) -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Additional Location Details</h5>
+                        <p class="text-muted">If your event is not at a specific venue or needs additional location information.</p>
+                        <div class="row">
+                            <div class="col-md-12">
+                                {{ render_field(form.street, class="form-control") }}
+                            </div>
+                            <div class="col-md-4">
+                                {{ render_field(form.city, class="form-control") }}
+                            </div>
+                            <div class="col-md-4">
+                                {{ render_field(form.state, class="form-control") }}
+                            </div>
+                            <div class="col-md-4">
+                                {{ render_field(form.zip_code, class="form-control") }}
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="row mb-3">
-                    <div class="col-md-12">
-                        {{ render_field(form.venue_type_id, class="form-select") }}
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-md-12">
-                        {{ render_field(form.venue_street, class="form-control") }}
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-4">
-                        {{ render_field(form.venue_city, class="form-control") }}
-                    </div>
-                    <div class="col-md-4">
-                        {{ render_field(form.venue_state, class="form-control") }}
-                    </div>
-                    <div class="col-md-4">
-                        {{ render_field(form.venue_zip, class="form-control") }}
-                    </div>
-                </div>
-            </div>
 
-            <!-- Event location (if different from venue) -->
-            <div class="mt-4">
-                <h6>Event Location (if different from venue address)</h6>
-                <div class="row">
-                    <div class="col-md-12">
-                        {{ render_field(form.street, class="form-control") }}
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-4">
-                        {{ render_field(form.city, class="form-control") }}
-                    </div>
-                    <div class="col-md-4">
-                        {{ render_field(form.state, class="form-control") }}
-                    </div>
-                    <div class="col-md-4">
-                        {{ render_field(form.zip_code, class="form-control") }}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const useNewVenueCheckbox = document.getElementById('use_new_venue');
-        const existingVenueSection = document.getElementById('existing-venue-section');
-        const newVenueSection = document.getElementById('new-venue-section');
-
-        function toggleVenueSections() {
-            if (useNewVenueCheckbox.checked) {
-                existingVenueSection.style.display = 'none';
-                newVenueSection.style.display = 'block';
-            } else {
-                existingVenueSection.style.display = 'block';
-                newVenueSection.style.display = 'none';
-            }
-        }
-
-        // Initial toggle
-        toggleVenueSections();
-
-        // Add event listener for changes
-        useNewVenueCheckbox.addEventListener('change', toggleVenueSections);
-    });
-    </script>
     <div class="mb-3">
         {{ form.category.label(class="form-label") }}
         {{ form.category(class="form-select") }}
@@ -440,5 +444,54 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle recurring event fields visibility
+    const isRecurringCheckbox = document.getElementById('is_recurring');
+    const recurringFields = document.getElementById('recurring-fields');
+
+    if (isRecurringCheckbox && recurringFields) {
+        isRecurringCheckbox.addEventListener('change', function() {
+            recurringFields.style.display = this.checked ? 'block' : 'none';
+        });
+
+        // Initial state
+        recurringFields.style.display = isRecurringCheckbox.checked ? 'block' : 'none';
+    }
+
+    // Handle sub-event fields visibility
+    const isSubEventCheckbox = document.getElementById('is_sub_event');
+    const subEventFields = document.getElementById('sub-event-fields');
+
+    if (isSubEventCheckbox && subEventFields) {
+        isSubEventCheckbox.addEventListener('change', function() {
+            subEventFields.style.display = this.checked ? 'block' : 'none';
+        });
+
+        // Initial state
+        subEventFields.style.display = isSubEventCheckbox.checked ? 'block' : 'none';
+    }
+
+    // Initialize venue selection toggle
+    toggleVenueSelection();
+});
+
+function toggleVenueSelection() {
+    const existingVenueRadio = document.getElementById('venue_selection_existing');
+    const existingVenueSection = document.getElementById('existing-venue-section');
+    const newVenueSection = document.getElementById('new-venue-section');
+
+    if (existingVenueRadio.checked) {
+        existingVenueSection.style.display = 'block';
+        newVenueSection.style.display = 'none';
+    } else {
+        existingVenueSection.style.display = 'none';
+        newVenueSection.style.display = 'block';
+    }
+}
+</script>
+{% endblock %}
 </script>
 {% endblock %}

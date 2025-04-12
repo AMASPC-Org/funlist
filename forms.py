@@ -143,151 +143,128 @@ class ProfileForm(FlaskForm):
                 raise ValidationError('This username is already taken. Please choose another one.')
 
 class VenueForm(FlaskForm):
-    name = StringField('Venue Name', validators=[DataRequired(), Length(max=200)])
-    street = StringField('Street Address', validators=[DataRequired(), Length(max=255)])
-    city = StringField('City', validators=[DataRequired(), Length(max=100)])
-    state = StringField('State', validators=[DataRequired(), Length(max=100)])
-    zip_code = StringField('ZIP Code', validators=[DataRequired(), Length(max=20)])
-    country = StringField('Country', validators=[DataRequired(), Length(max=100)], default="United States")
-    phone = StringField('Venue Phone', validators=[Optional(), Length(max=20)])
-    email = StringField('Venue Email', validators=[Optional(), Email(), Length(max=120)])
-    website = StringField('Venue Website', validators=[Optional(), URL(), Length(max=255)])
-    venue_type_id = SelectField('Venue Type', coerce=int, validators=[DataRequired()])
-    contact_name = StringField('Contact Person Name', validators=[Optional(), Length(max=200)])
-    contact_phone = StringField('Contact Person Phone', validators=[Optional(), Length(max=20)])
-    contact_email = StringField('Contact Person Email', validators=[Optional(), Email(), Length(max=120)])
+    name = StringField('Venue Name', validators=[DataRequired()])
+    street = StringField('Street Address')
+    city = StringField('City')
+    state = StringField('State')
+    zip_code = StringField('ZIP Code')
+    country = StringField('Country', default='United States')
+    phone = StringField('Phone Number', validators=[Optional()])
+    email = StringField('Email', validators=[Optional(), Email()])
+    website = StringField('Website URL', validators=[Optional(), URL()])
+    venue_type_id = SelectField('Venue Type', coerce=int, validators=[Optional()])
+    contact_name = StringField('Contact Person Name')
+    contact_phone = StringField('Contact Phone')
+    contact_email = StringField('Contact Email', validators=[Optional(), Email()])
+    description = TextAreaField('Description')
+    is_owner_manager = BooleanField('I am an owner, manager, or authorized representative of this venue')
     submit = SubmitField('Save Venue')
 
     def __init__(self, *args, **kwargs):
         super(VenueForm, self).__init__(*args, **kwargs)
         try:
             from models import VenueType
-            self.venue_type_id.choices = [(t.id, t.name) for t in VenueType.query.order_by(VenueType.name).all()]
+            self.venue_type_id.choices = [(0, 'Select Venue Type')] + [
+                (vt.id, vt.name) for vt in VenueType.query.order_by(VenueType.name).all()
+            ]
         except:
             self.venue_type_id.choices = []
 
 class EventForm(FlaskForm):
-    prohibited_advertisers = SelectMultipleField('Prohibited Advertisers',
-        validators=[Optional()],
-        coerce=int
-    )
-    venue_id = SelectField('Select Venue', coerce=int, validators=[Optional()])
-    use_new_venue = BooleanField('Add a New Venue', default=False)
-
-    # New venue fields
-    venue_name = StringField('Venue Name', validators=[Optional()])
-    venue_street = StringField('Street Address', validators=[Optional()])
-    venue_city = StringField('City', validators=[Optional()])
-    venue_state = StringField('State', validators=[Optional()])
-    venue_zip = StringField('ZIP Code', validators=[Optional()])
-    venue_type_id = SelectField('Venue Type', coerce=int, validators=[Optional()])
-
-    def __init__(self, *args, **kwargs):
-        super(EventForm, self).__init__(*args, **kwargs)
-        try:
-            self.prohibited_advertisers.choices = [
-                (cat.id, cat.name) for cat in ProhibitedAdvertiserCategory.query.all()
-            ]
-            from models import Venue, VenueType
-            self.venue_id.choices = [(0, 'Select a venue...')] + [
-                (venue.id, venue.name) for venue in Venue.query.order_by(Venue.name).all()
-            ]
-
-            # Add venue type choices
-            self.venue_type_id.choices = [(0, 'Select a venue type...')] + [
-                (vt.id, vt.name) for vt in VenueType.query.order_by(VenueType.name).all()
-            ]
-        except:
-            self.prohibited_advertisers.choices = []
-            self.venue_id.choices = [(0, 'Select a venue...')]
-            self.venue_type_id.choices = [(0, 'Select a venue type...')]
-    title = StringField('Title', validators=[DataRequired(), Length(max=250, message="Title must be less than 250 characters")])
-    description = TextAreaField('Description', validators=[DataRequired(), Length(max=1500, message="Description must be less than 1500 characters")])
-    start_date = DateField('Start Date', validators=[DataRequired()])
-    end_date = DateField('End Date', validators=[DataRequired()])
-    start_time = TimeField('Start Time', validators=[Optional()])
-    end_time = TimeField('End Time', validators=[Optional()])
+    title = StringField('Event Name', validators=[DataRequired(), Length(min=2, max=100)])
+    description = TextAreaField('Description', validators=[DataRequired(), Length(min=10)])
+    start_date = DateField('Start Date', format='%Y-%m-%d', validators=[DataRequired()])
+    end_date = DateField('End Date', format='%Y-%m-%d', validators=[Optional()])
     all_day = BooleanField('All Day Event')
+    start_time = TimeField('Start Time', format='%H:%M', validators=[Optional()])
+    end_time = TimeField('End Time', format='%H:%M', validators=[Optional()])
 
-    # Recurring event fields
-    is_recurring = BooleanField('Recurring Event')
-    recurring_pattern = SelectField('Repeat', choices=[
-        ('daily', 'Daily'),
-        ('weekly', 'Weekly'),
-        ('monthly', 'Monthly'),
-        ('custom', 'Custom')
-    ], validators=[Optional()])
-    recurring_end_date = DateField('Repeat Until', validators=[Optional()])
+    venue_selection_type = RadioField('Venue', choices=[
+        ('existing', 'Select Existing Venue'),
+        ('new', 'Add New Venue')
+    ], default='existing')
 
-    # Sub-event fields
-    is_sub_event = BooleanField('This is a sub-event')
-    parent_event = SelectField('Parent Event', choices=[], validators=[Optional()])
-    recurrence_type = SelectField('Recurrence Pattern', choices=[
-        ('none', 'One-time Event'),
-        ('daily', 'Daily'),
-        ('weekly', 'Weekly'),
-        ('monthly', 'Monthly'),
-        ('quarterly', 'Quarterly'),
-        ('annually', 'Annually'),
-        ('custom', 'Custom')
-    ])
-    recurrence_interval = IntegerField('Repeat Every', validators=[Optional(), NumberRange(min=1)], default=1)
-    recurrence_unit = SelectField('Recurrence Unit', choices=[
-        ('days', 'Days'),
-        ('weeks', 'Weeks'),
-        ('months', 'Months')
-    ], validators=[Optional()])
-    occurrence_count = IntegerField('Number of Occurrences', validators=[Optional(), NumberRange(min=1)], default=10)
-    recurrence_end_date = DateField('Recurrence End Date')
-    street = StringField('Street Address', validators=[DataRequired()])
+    venue_id = SelectField('Select Venue', coerce=int, validators=[Optional()], default=0)
+
+    venue_name = StringField('Venue Name', validators=[Optional()])
+    venue_street = StringField('Venue Street Address', validators=[Optional()])
+    venue_city = StringField('Venue City', validators=[Optional()])
+    venue_state = StringField('Venue State', validators=[Optional()])
+    venue_zip = StringField('Venue ZIP Code', validators=[Optional()])
+    venue_type_id = SelectField('Venue Type', coerce=int, validators=[Optional()])
+    use_new_venue = BooleanField('Add this as a new venue')
+    is_venue_owner = BooleanField('I am an owner, manager, or authorized representative of this venue')
+
+    street = StringField('Street Address', validators=[Optional()])
     city = StringField('City', validators=[DataRequired()])
     state = StringField('State', validators=[DataRequired()])
     zip_code = StringField('ZIP Code', validators=[DataRequired()])
-    fun_meter = SelectField('Fun Rating', choices=[
-        ('1', '⭐'),
-        ('2', '⭐⭐'),
-        ('3', '⭐⭐⭐'),
-        ('4', '⭐⭐⭐⭐'),
-        ('5', '⭐⭐⭐⭐⭐')
+
+    category = SelectField('Event Category', choices=[
+        ('', 'Select Category'),
+        ('Sports', 'Sports'),
+        ('Music', 'Music'),
+        ('Arts & Theater', 'Arts & Theater'),
+        ('Food & Drink', 'Food & Drink'),
+        ('Family & Kids', 'Family & Kids'),
+        ('Community', 'Community'),
+        ('Business', 'Business'),
+        ('Education', 'Education'),
+        ('Other', 'Other')
     ], validators=[DataRequired()])
-    category = SelectField('Category', choices=[
-        ('arts', 'Arts & Culture'),
-        ('business', 'Business & Networking'),
-        ('charity', 'Charity & Causes'),
-        ('community', 'Community & Neighborhood'),
-        ('education', 'Education & Learning'),
-        ('family', 'Family & Kids'),
-        ('festivals', 'Festivals & Fairs'),
-        ('food', 'Food & Drink'),
-        ('health', 'Health & Wellness'),
-        ('holiday', 'Holiday & Seasonal'),
-        ('markets', 'Markets & Shopping'),
-        ('music', 'Music & Concerts'),
-        ('nightlife', 'Nightlife & Entertainment'),
-        ('outdoor', 'Outdoor & Adventure'),
-        ('sports', 'Sports & Recreation'),
-        ('tech', 'Technology & Innovation'),
-        ('theatre', 'Theatre & Performing Arts'),
-        ('other', 'Other')
-    ], validators=[DataRequired()])
-    target_audience = SelectField('Target Audience', choices=[
-        ('21plus', '21+'),
-        ('adults', 'Adults'),
-        ('families', 'Families'),
-        ('kids', 'Kids'),
-        ('parents', 'Parents'),
-        ('professionals', 'Professionals'),
-        ('seniors', 'Seniors'),
-        ('singles', 'Singles')
-    ], validators=[DataRequired()])
-    website = StringField('Website', validators=[Optional(), URL()])
-    facebook = StringField('Facebook')
-    instagram = StringField('Instagram')
-    twitter = StringField('Twitter')
-    ticket_url = StringField('Purchase Tickets URL', validators=[Optional(), URL()])
-    network_opt_out = BooleanField('Opt out of sharing this event across the American Marketing Alliance SPC Network sites')
-    terms_accepted = BooleanField('I accept the Terms and Conditions', validators=[DataRequired()])
-    submit = SubmitField('Create Event')
+
+    target_audience = StringField('Target Audience', validators=[Optional()])
+    fun_meter = RadioField('Fun Meter (1-5)', choices=[
+        ('1', '1 - Not Fun'),
+        ('2', '2 - Somewhat Fun'),
+        ('3', '3 - Fun'),
+        ('4', '4 - Very Fun'),
+        ('5', '5 - Extremely Fun')
+    ], validators=[DataRequired()], default='3')
+
+    is_recurring = BooleanField('This is a recurring event')
+    recurring_pattern = SelectField('Recurring Pattern', choices=[
+        ('', 'Select Pattern'),
+        ('daily', 'Daily'),
+        ('weekly', 'Weekly'),
+        ('monthly', 'Monthly')
+    ], validators=[Optional()])
+    recurring_end_date = DateField('Recurring Until', format='%Y-%m-%d', validators=[Optional()])
+
+    is_sub_event = BooleanField('This is a sub-event of another event')
+    parent_event = SelectField('Parent Event', choices=[], validators=[Optional()])
+
+    ticket_url = StringField('Ticket URL', validators=[Optional(), URL()])
+    network_opt_out = BooleanField('Opt out of the event network')
+
+    prohibited_advertisers = SelectMultipleField('Prohibited Advertiser Categories', coerce=int)
+
+    submit = SubmitField('Submit Event')
+
+    def __init__(self, *args, **kwargs):
+        super(EventForm, self).__init__(*args, **kwargs)
+
+        try:
+            from models import ProhibitedAdvertiserCategory
+            categories = ProhibitedAdvertiserCategory.query.all()
+            self.prohibited_advertisers.choices = [(c.id, c.name) for c in categories]
+        except Exception as e:
+            self.prohibited_advertisers.choices = []
+
+        try:
+            from models import Venue
+            venues = Venue.query.order_by(Venue.name).all()
+            self.venue_id.choices = [(0, 'Select a Venue')] + [(v.id, v.name) for v in venues]
+        except Exception as e:
+            self.venue_id.choices = [(0, 'Select a Venue')]
+
+        try:
+            from models import VenueType
+            venue_types = VenueType.query.order_by(VenueType.name).all()
+            self.venue_type_id.choices = [(0, 'Select Venue Type')] + [(vt.id, vt.name) for vt in venue_types]
+        except Exception as e:
+            self.venue_type_id.choices = [(0, 'Select Venue Type')]
+
 
 class OrganizerProfileForm(FlaskForm):
     company_name = StringField('Organization/Company Name', validators=[Optional(), Length(max=100)])

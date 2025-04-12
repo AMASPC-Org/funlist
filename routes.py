@@ -565,20 +565,24 @@ def init_routes(app):
                 if form.is_sub_event.data and form.parent_event.data:
                     event.parent_event_id = int(form.parent_event.data)
                 
-                # Geocode the address
-                coordinates = geocode_address(
-                    form.street.data,
-                    form.city.data,
-                    form.state.data,
-                    form.zip_code.data,
-                )
-
-                if coordinates:
-                    event.latitude = coordinates[0]
-                    event.longitude = coordinates[1]
-                
-                # Handle venue selection or creation
-                if form.use_new_venue.data and form.venue_name.data:
+                # Handle venue selection
+                if form.venue_selection_type.data == 'existing' and form.venue_id.data and form.venue_id.data != 0:
+                    # Use selected venue
+                    event.venue_id = form.venue_id.data
+                    
+                    # Get venue location for geocoding if event location fields are empty
+                    venue = Venue.query.get(form.venue_id.data)
+                    if venue and not event.street:
+                        event.street = venue.street
+                        event.city = venue.city
+                        event.state = venue.state
+                        event.zip_code = venue.zip_code
+                        
+                        # Use venue coordinates if available
+                        if venue.latitude and venue.longitude:
+                            event.latitude = venue.latitude
+                            event.longitude = venue.longitude
+                elif form.venue_selection_type.data == 'new' and form.use_new_venue.data and form.venue_name.data:
                     # Create a new venue
                     new_venue = Venue(
                         name=form.venue_name.data,
@@ -586,15 +590,47 @@ def init_routes(app):
                         city=form.venue_city.data,
                         state=form.venue_state.data,
                         zip_code=form.venue_zip.data,
-                        venue_type_id=form.venue_type_id.data if form.venue_type_id.data != 0 else None,
-                        user_id=current_user.id
+                        venue_type_id=form.venue_type_id.data if form.venue_type_id.data and form.venue_type_id.data != 0 else None,
+                        created_by_user_id=current_user.id
                     )
+                    
+                    # If user claims to be owner/manager
+                    if form.is_venue_owner.data:
+                        new_venue.owner_manager_user_id = current_user.id
+                        new_venue.is_verified = False  # Requires admin verification
+                        new_venue.verification_notes = f"Owner/manager claim submitted during event creation by {current_user.email} on {datetime.utcnow()}"
+                    
+                    # Geocode the venue address
+                    venue_coordinates = geocode_address(
+                        form.venue_street.data,
+                        form.venue_city.data,
+                        form.venue_state.data,
+                        form.venue_zip.data
+                    )
+                    
+                    if venue_coordinates:
+                        new_venue.latitude = venue_coordinates[0]
+                        new_venue.longitude = venue_coordinates[1]
+                        
+                        # Use these coordinates for the event too
+                        event.latitude = venue_coordinates[0]
+                        event.longitude = venue_coordinates[1]
+                    
                     db.session.add(new_venue)
                     db.session.flush()  # Get the ID without committing
                     event.venue_id = new_venue.id
-                elif form.venue_id.data and form.venue_id.data != 0:
-                    # Use selected venue
-                    event.venue_id = form.venue_id.data
+                else:
+                    # No venue selected or created, geocode the event location
+                    coordinates = geocode_address(
+                        form.street.data,
+                        form.city.data,
+                        form.state.data,
+                        form.zip_code.data
+                    )
+
+                    if coordinates:
+                        event.latitude = coordinates[0]
+                        event.longitude = coordinates[1]
                     
                     # Add network_opt_out if the form has it and the column exists
                     if hasattr(form, 'network_opt_out'):
@@ -1044,7 +1080,7 @@ def init_routes(app):
     def venue_detail(venue_id):
         venue = Venue.query.get_or_404(venue_id)
         events = Event.query.filter_by(venue_id=venue.id).all()
-        return render_template("venue_detail.html", venue=venue, events=events)
+        return render_template("venue_detail.html", venue=venue, events=events, now=datetime.utcnow())
     
     @app.route("/venues/add", methods=["GET", "POST"])
     @login_required
@@ -1067,12 +1103,33 @@ def init_routes(app):
                     contact_name=form.contact_name.data,
                     contact_phone=form.contact_phone.data,
                     contact_email=form.contact_email.data,
-                    user_id=current_user.id
+                    created_by_user_id=current_user.id
                 )
+                
+                # If user claims to be owner/manager
+                if form.is_owner_manager.data:
+                    venue.owner_manager_user_id = current_user.id
+                    venue.is_verified = False  # Requires admin verification
+                    venue.verification_notes = f"Owner/manager claim submitted by {current_user.email} on {datetime.utcnow()}"
+                
+                # Geocode the address for mapping
+                try:
+                    coordinates = geocode_address(
+                        form.street.data,
+                        form.city.data,
+                        form.state.data,
+                        form.zip_code.data
+                    )
+                    if coordinates:
+                        venue.latitude = coordinates[0]
+                        venue.longitude = coordinates[1]
+                except Exception as e:
+                    logger.error(f"Error geocoding venue address: {str(e)}")
+                
                 db.session.add(venue)
                 db.session.commit()
                 flash("Venue added successfully!", "success")
-                return redirect(url_for("venues"))
+                return redirect(url_for("venue_detail", venue_id=venue.id))
             except Exception as e:
                 db.session.rollback()
                 logger.error(f"Error adding venue: {str(e)}")
@@ -1086,9 +1143,14 @@ def init_routes(app):
         venue = Venue.query.get_or_404(venue_id)
         
         # Check if user is authorized to edit this venue
-        if venue.user_id != current_user.id and not current_user.is_admin:
-            flash("You are not authorized to edit this venue.", "danger")
-            return redirect(url_for("venues"))
+        authorized = (
+            current_user.is_admin or 
+            (venue.owner_manager_user_id == current_user.id and venue.is_verified)
+        )
+        
+        if not authorized:
+            flash("You are not authorized to edit this venue. Only verified owners/managers or admins can edit venues.", "danger")
+            return redirect(url_for("venue_detail", venue_id=venue.id))
         
         form = VenueForm(obj=venue)
         
@@ -1096,6 +1158,26 @@ def init_routes(app):
             try:
                 form.populate_obj(venue)
                 venue.updated_at = datetime.utcnow()
+                
+                # Re-geocode if address changed
+                if (form.street.data != venue.street or
+                    form.city.data != venue.city or
+                    form.state.data != venue.state or
+                    form.zip_code.data != venue.zip_code):
+                    
+                    try:
+                        coordinates = geocode_address(
+                            form.street.data,
+                            form.city.data,
+                            form.state.data,
+                            form.zip_code.data
+                        )
+                        if coordinates:
+                            venue.latitude = coordinates[0]
+                            venue.longitude = coordinates[1]
+                    except Exception as e:
+                        logger.error(f"Error geocoding venue address during edit: {str(e)}")
+                
                 db.session.commit()
                 flash("Venue updated successfully!", "success")
                 return redirect(url_for("venue_detail", venue_id=venue.id))
@@ -1106,15 +1188,46 @@ def init_routes(app):
         
         return render_template("edit_venue.html", form=form, venue=venue)
     
+    @app.route("/venues/<int:venue_id>/claim", methods=["POST"])
+    @login_required
+    def claim_venue(venue_id):
+        venue = Venue.query.get_or_404(venue_id)
+        
+        try:
+            # Check if venue already has a verified owner/manager
+            if venue.owner_manager_user_id and venue.is_verified:
+                flash("This venue already has a verified owner/manager.", "warning")
+                return redirect(url_for("venue_detail", venue_id=venue.id))
+            
+            # Record the claim
+            venue.owner_manager_user_id = current_user.id
+            venue.is_verified = False  # Pending verification
+            venue.verification_notes = f"Venue claim submitted by {current_user.email} ({current_user.id}) on {datetime.utcnow()}"
+            
+            db.session.commit()
+            flash("Your claim has been submitted. An administrator will review your request.", "success")
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error claiming venue: {str(e)}")
+            flash("There was a problem submitting your claim. Please try again.", "danger")
+        
+        return redirect(url_for("venue_detail", venue_id=venue.id))
+    
     @app.route("/venues/<int:venue_id>/delete", methods=["POST"])
     @login_required
     def delete_venue(venue_id):
         venue = Venue.query.get_or_404(venue_id)
         
         # Check if user is authorized to delete this venue
-        if venue.user_id != current_user.id and not current_user.is_admin:
+        authorized = (
+            current_user.is_admin or
+            (venue.owner_manager_user_id == current_user.id and venue.is_verified) or
+            (venue.created_by_user_id == current_user.id and not venue.owner_manager_user_id)
+        )
+        
+        if not authorized:
             flash("You are not authorized to delete this venue.", "danger")
-            return redirect(url_for("venues"))
+            return redirect(url_for("venue_detail", venue_id=venue.id))
         
         try:
             # Check if venue is used in any events
@@ -1306,6 +1419,96 @@ def init_routes(app):
         db.session.commit()
         flash("User account activated.", "success")
         return redirect(url_for("admin_dashboard", tab="users"))
+        
+    @app.route("/admin/venues")
+    @login_required
+    def admin_venues():
+        if current_user.email != 'ryan@funlist.ai':
+            flash("Access denied. Only authorized administrators can access this page.", "danger")
+            return redirect(url_for("index"))
+            
+        # Filter options
+        filter_status = request.args.get('status', 'pending')
+        
+        venues_query = Venue.query
+        
+        if filter_status == 'pending':
+            # Venues with owner/manager claims pending verification
+            venues_query = venues_query.filter(
+                Venue.owner_manager_user_id.isnot(None),
+                Venue.is_verified == False
+            )
+        elif filter_status == 'verified':
+            # Venues with verified owners/managers
+            venues_query = venues_query.filter(
+                Venue.owner_manager_user_id.isnot(None),
+                Venue.is_verified == True
+            )
+        elif filter_status == 'unclaimed':
+            # Venues without any ownership claims
+            venues_query = venues_query.filter(
+                Venue.owner_manager_user_id.is_(None)
+            )
+            
+        venues = venues_query.order_by(Venue.created_at.desc()).all()
+        
+        return render_template(
+            "admin_venues.html", 
+            venues=venues, 
+            filter_status=filter_status
+        )
+        
+    @app.route("/admin/venue/<int:venue_id>/verify", methods=["POST"])
+    @login_required
+    def admin_verify_venue(venue_id):
+        if current_user.email != 'ryan@funlist.ai':
+            return jsonify({"success": False, "message": "Unauthorized. Only administrators can perform this action."}), 403
+            
+        try:
+            venue = Venue.query.get_or_404(venue_id)
+            venue.is_verified = True
+            venue.verification_notes += f"\nVerified by admin ({current_user.email}) on {datetime.utcnow()}"
+            db.session.commit()
+            
+            return jsonify({
+                "success": True, 
+                "message": f"Venue '{venue.name}' has been verified"
+            })
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error in admin_verify_venue: {str(e)}")
+            return jsonify({
+                "success": False, 
+                "message": f"Error: {str(e)}"
+            }), 500
+            
+    @app.route("/admin/venue/<int:venue_id>/reject-claim", methods=["POST"])
+    @login_required
+    def admin_reject_venue_claim(venue_id):
+        if current_user.email != 'ryan@funlist.ai':
+            return jsonify({"success": False, "message": "Unauthorized. Only administrators can perform this action."}), 403
+            
+        try:
+            venue = Venue.query.get_or_404(venue_id)
+            previously_claimed_by = venue.owner_manager_user_id
+            
+            venue.owner_manager_user_id = None
+            venue.is_verified = False
+            venue.verification_notes += f"\nClaim rejected by admin ({current_user.email}) on {datetime.utcnow()}"
+            db.session.commit()
+            
+            return jsonify({
+                "success": True, 
+                "message": f"Ownership claim for venue '{venue.name}' has been rejected"
+            })
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error in admin_reject_venue_claim: {str(e)}")
+            return jsonify({
+                "success": False, 
+                "message": f"Error: {str(e)}"
+            }), 500
+    
     @app.route('/advertiser-exclusion-info')
     def advertiser_exclusion_info():
         return render_template('advertiser_exclusion_info.html')

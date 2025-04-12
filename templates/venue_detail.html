@@ -4,142 +4,182 @@
 {% block content %}
 <div class="container mt-4">
     <div class="row">
-        <div class="col-12">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('venues') }}">Venues</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">{{ venue.name }}</li>
-                </ol>
-            </nav>
+        <div class="col-md-8">
+            <h2>{{ venue.name }}</h2>
+            
+            {% if venue.venue_type %}
+            <p class="text-muted">{{ venue.venue_type.name }}</p>
+            {% endif %}
             
             <div class="card mb-4">
                 <div class="card-body">
-                    <h1 class="card-title">{{ venue.name }}</h1>
-                    {% if venue.venue_type %}
-                    <span class="badge bg-secondary">{{ venue.venue_type.name }}</span>
-                    {% endif %}
+                    <h5 class="card-title">Location</h5>
+                    <p>
+                        {{ venue.street }}<br>
+                        {{ venue.city }}, {{ venue.state }} {{ venue.zip_code }}<br>
+                        {{ venue.country }}
+                    </p>
                     
-                    <hr>
-                    
-                    <div class="row mt-4">
-                        <div class="col-md-6">
-                            <h5>Venue Information</h5>
-                            <p><strong>Address:</strong><br>
-                                {{ venue.street }}<br>
-                                {{ venue.city }}, {{ venue.state }} {{ venue.zip_code }}<br>
-                                {{ venue.country }}
-                            </p>
-                            
-                            {% if venue.phone %}
-                            <p><strong>Phone:</strong> {{ venue.phone }}</p>
-                            {% endif %}
-                            
-                            {% if venue.email %}
-                            <p><strong>Email:</strong> <a href="mailto:{{ venue.email }}">{{ venue.email }}</a></p>
-                            {% endif %}
-                            
-                            {% if venue.website %}
-                            <p><strong>Website:</strong> <a href="{{ venue.website }}" target="_blank">{{ venue.website }}</a></p>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="col-md-6">
-                            {% if venue.contact_name or venue.contact_phone or venue.contact_email %}
-                            <h5>Contact Person</h5>
-                            {% if venue.contact_name %}
-                            <p><strong>Name:</strong> {{ venue.contact_name }}</p>
-                            {% endif %}
-                            
-                            {% if venue.contact_phone %}
-                            <p><strong>Phone:</strong> {{ venue.contact_phone }}</p>
-                            {% endif %}
-                            
-                            {% if venue.contact_email %}
-                            <p><strong>Email:</strong> <a href="mailto:{{ venue.contact_email }}">{{ venue.contact_email }}</a></p>
-                            {% endif %}
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    <!-- Actions -->
-                    {% if current_user.is_authenticated and (current_user.id == venue.user_id or current_user.is_admin) %}
-                    <div class="mt-4">
-                        <a href="{{ url_for('edit_venue', venue_id=venue.id) }}" class="btn btn-primary">Edit Venue</a>
-                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteVenueModal">
-                            Delete Venue
-                        </button>
-                    </div>
+                    {% if venue.latitude and venue.longitude %}
+                    <div id="venue-map" style="height: 300px; width: 100%;"></div>
                     {% endif %}
                 </div>
             </div>
             
-            <!-- Events at this venue -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Contact Information</h5>
+                    {% if venue.phone %}
+                    <p><strong>Phone:</strong> {{ venue.phone }}</p>
+                    {% endif %}
+                    
+                    {% if venue.email %}
+                    <p><strong>Email:</strong> {{ venue.email }}</p>
+                    {% endif %}
+                    
+                    {% if venue.website %}
+                    <p><strong>Website:</strong> <a href="{{ venue.website }}" target="_blank">{{ venue.website }}</a></p>
+                    {% endif %}
+                    
+                    {% if venue.contact_name %}
+                    <p><strong>Contact Person:</strong> {{ venue.contact_name }}</p>
+                    {% if venue.contact_phone %}
+                    <p><strong>Contact Phone:</strong> {{ venue.contact_phone }}</p>
+                    {% endif %}
+                    {% if venue.contact_email %}
+                    <p><strong>Contact Email:</strong> {{ venue.contact_email }}</p>
+                    {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if venue.description %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">About this Venue</h5>
+                    <p>{{ venue.description }}</p>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="d-flex justify-content-between mt-4">
+                {% if current_user.is_authenticated %}
+                    {% if (venue.owner_manager_user_id == current_user.id and venue.is_verified) or current_user.is_admin %}
+                        <a href="{{ url_for('edit_venue', venue_id=venue.id) }}" class="btn btn-primary">Edit Venue</a>
+                    {% elif not venue.owner_manager_user_id or not venue.is_verified %}
+                        <form action="{{ url_for('claim_venue', venue_id=venue.id) }}" method="post">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                            <button type="submit" class="btn btn-success">Claim this Venue</button>
+                        </form>
+                    {% endif %}
+                    
+                    <a href="{{ url_for('submit_event', venue_id=venue.id) }}" class="btn btn-outline-primary">Create Event at this Venue</a>
+                {% else %}
+                    <a href="{{ url_for('login', next=url_for('venue_detail', venue_id=venue.id)) }}" class="btn btn-primary">Log in to claim or create events</a>
+                {% endif %}
+                
+                <a href="{{ url_for('venues') }}" class="btn btn-secondary">Back to Venues</a>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            {% if venue.is_verified and venue.owner_manager %}
+            <div class="card mb-4 border-success">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">Verified Venue</h5>
+                </div>
+                <div class="card-body">
+                    <p>This venue has been verified and is managed by {{ venue.owner_manager.email }}.</p>
+                </div>
+            </div>
+            {% elif venue.owner_manager %}
+            <div class="card mb-4 border-warning">
+                <div class="card-header bg-warning">
+                    <h5 class="card-title mb-0">Verification Pending</h5>
+                </div>
+                <div class="card-body">
+                    <p>This venue has been claimed and is pending verification.</p>
+                </div>
+            </div>
+            {% else %}
+            <div class="card mb-4 border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">Community Added</h5>
+                </div>
+                <div class="card-body">
+                    <p>This venue was added by a community member.</p>
+                    <p>Are you the owner or manager? Claim this venue to verify your ownership.</p>
+                </div>
+            </div>
+            {% endif %}
+            
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5 class="mb-0">Events at this Venue</h5>
+                    <h5 class="card-title mb-0">Upcoming Events</h5>
                 </div>
                 <div class="card-body">
                     {% if events %}
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Event</th>
-                                    <th>Date</th>
-                                    <th>Category</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for event in events %}
-                                <tr>
-                                    <td>{{ event.title }}</td>
-                                    <td>{{ event.start_date.strftime('%Y-%m-%d') }}</td>
-                                    <td>{{ event.category }}</td>
-                                    <td>
-                                        <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-sm btn-outline-primary">View</a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                    <ul class="list-group">
+                        {% for event in events %}
+                        {% if event.start_date >= now %}
+                        <li class="list-group-item">
+                            <a href="{{ url_for('event_detail', event_id=event.id) }}">{{ event.title }}</a>
+                            <small class="text-muted d-block">{{ event.start_date.strftime('%Y-%m-%d %H:%M') }}</small>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+                    </ul>
                     {% else %}
-                    <p class="mb-0">No events currently scheduled at this venue.</p>
+                    <p class="text-muted">No upcoming events at this venue.</p>
                     {% endif %}
-                    
-                    {% if current_user.is_authenticated and current_user.is_event_creator %}
-                    <div class="mt-3">
-                        <a href="{{ url_for('submit_event') }}?venue_id={{ venue.id }}" class="btn btn-outline-primary">Create Event at this Venue</a>
-                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('submit_event', venue_id=venue.id) }}" class="btn btn-sm btn-outline-primary">Submit an Event</a>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Past Events</h5>
+                </div>
+                <div class="card-body">
+                    {% if events %}
+                    <ul class="list-group">
+                        {% for event in events %}
+                        {% if event.start_date < now %}
+                        <li class="list-group-item">
+                            <a href="{{ url_for('event_detail', event_id=event.id) }}">{{ event.title }}</a>
+                            <small class="text-muted d-block">{{ event.start_date.strftime('%Y-%m-%d %H:%M') }}</small>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="text-muted">No past events at this venue.</p>
                     {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
 
-<!-- Delete Venue Modal -->
-{% if current_user.is_authenticated and (current_user.id == venue.user_id or current_user.is_admin) %}
-<div class="modal fade" id="deleteVenueModal" tabindex="-1" aria-labelledby="deleteVenueModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteVenueModalLabel">Confirm Deletion</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to delete the venue "{{ venue.name }}"? This action cannot be undone.</p>
-                <p class="text-danger"><strong>Note:</strong> You cannot delete a venue that has events associated with it.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form action="{{ url_for('delete_venue', venue_id=venue.id) }}" method="POST">
-                    <button type="submit" class="btn btn-danger">Delete Venue</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+{% block extra_js %}
+{% if venue.latitude and venue.longitude %}
+<script src="https://maps.googleapis.com/maps/api/js?key={{ config.GOOGLE_MAPS_API_KEY }}&callback=initMap" async defer></script>
+<script>
+function initMap() {
+    const venueLocation = { lat: {{ venue.latitude }}, lng: {{ venue.longitude }} };
+    const map = new google.maps.Map(document.getElementById("venue-map"), {
+        zoom: 15,
+        center: venueLocation,
+    });
+    const marker = new google.maps.Marker({
+        position: venueLocation,
+        map: map,
+        title: "{{ venue.name }}"
+    });
+}
+</script>
 {% endif %}
 {% endblock %}

@@ -113,7 +113,7 @@ class Event(db.Model):
     website = Column(String(255))
     created_at = Column(DateTime, default=datetime.utcnow)
     user_id = Column(Integer, ForeignKey('users.id'))
-    venue_id = Column(Integer, ForeignKey('venues.id'), nullable=True)
+    venue_id = Column(Integer, ForeignKey('venues.id'))
     category = Column(String(100))
     target_audience = Column(String(255))
     tags = Column(String(255))
@@ -146,8 +146,8 @@ class ProhibitedAdvertiserCategory(db.Model):
     name = Column(String(100), unique=True, nullable=False)
 
 event_prohibited_advertisers = db.Table('event_prohibited_advertisers',
-    db.Column('event_id', db.Integer, db.ForeignKey('events.id'), primary_key=True),
-    db.Column('category_id', db.Integer, db.ForeignKey('prohibited_advertiser_categories.id'), primary_key=True)
+    Column('event_id', Integer, ForeignKey('events.id'), primary_key=True),
+    Column('category_id', Integer, ForeignKey('prohibited_advertiser_categories.id'), primary_key=True)
 )
 
 class Subscriber(db.Model):
@@ -173,20 +173,20 @@ class Subscriber(db.Model):
 
 class VenueType(db.Model):
     __tablename__ = 'venue_types'
-    
+
     id = Column(Integer, primary_key=True)
     name = Column(String(100), nullable=False)
     category = Column(String(100), nullable=True)
     description = Column(Text, nullable=True)
-    
+
     venues = relationship("Venue", back_populates="venue_type")
-    
+
     def __repr__(self):
         return f"<VenueType {self.name}>"
 
 class Venue(db.Model):
     __tablename__ = 'venues'
-    
+
     id = Column(Integer, primary_key=True)
     name = Column(String(100), nullable=False)
     street = Column(String(100), nullable=True)
@@ -203,11 +203,18 @@ class Venue(db.Model):
     contact_email = Column(String(120), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    user_id = Column(Integer, ForeignKey('users.id'))
-    
+    created_by_user_id = Column(Integer, ForeignKey('users.id'))
+    owner_manager_user_id = Column(Integer, ForeignKey('users.id'))
+    is_verified = Column(Boolean, default=False)
+    verification_notes = Column(Text)
+    latitude = Column(Float)
+    longitude = Column(Float)
+    description = Column(Text)
+
     venue_type = relationship("VenueType", back_populates="venues")
-    user = relationship("User", backref=backref("venues", lazy="dynamic"))
+    created_by = relationship("User", foreign_keys=[created_by_user_id], backref=backref("created_venues", lazy="dynamic"))
+    owner_manager = relationship("User", foreign_keys=[owner_manager_user_id], backref=backref("managed_venues", lazy="dynamic"))
     events = relationship("Event", back_populates="venue")
-    
+
     def __repr__(self):
         return f"<Venue {self.name}>"

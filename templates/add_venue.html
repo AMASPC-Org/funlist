@@ -5,62 +5,88 @@
 {% block content %}
 <div class="container mt-4">
     <div class="row">
-        <div class="col-12">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('venues') }}">Venues</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Add New Venue</li>
-                </ol>
-            </nav>
+        <div class="col-md-8 offset-md-2">
+            <h2>Add a New Venue</h2>
+            <p class="text-muted">Add a venue to our database for events and activities.</p>
             
             <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Add New Venue</h2>
-                </div>
                 <div class="card-body">
-                    <form method="POST">
+                    <form method="POST" enctype="multipart/form-data">
                         {{ form.hidden_tag() }}
                         
-                        <div class="row mb-4">
-                            <div class="col-12">
-                                <h5>Basic Information</h5>
-                            </div>
-                            <div class="col-md-6">
-                                {{ render_field(form.name, class="form-control") }}
-                                {{ render_field(form.venue_type_id, class="form-select") }}
-                            </div>
-                            <div class="col-md-6">
-                                {{ render_field(form.phone, class="form-control") }}
-                                {{ render_field(form.email, class="form-control") }}
-                                {{ render_field(form.website, class="form-control") }}
-                            </div>
-                        </div>
-                        
-                        <div class="row mb-4">
-                            <div class="col-12">
-                                <h5>Address Information</h5>
-                            </div>
-                            <div class="col-md-6">
-                                {{ render_field(form.street, class="form-control") }}
-                                {{ render_field(form.city, class="form-control") }}
-                            </div>
-                            <div class="col-md-6">
-                                {{ render_field(form.state, class="form-control") }}
-                                {{ render_field(form.zip_code, class="form-control") }}
-                                {{ render_field(form.country, class="form-control") }}
+                        <div class="mb-4">
+                            <h5>Venue Information</h5>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    {{ render_field(form.name, class="form-control") }}
+                                </div>
+                                <div class="col-md-6">
+                                    {{ render_field(form.street, class="form-control") }}
+                                </div>
+                                <div class="col-md-6">
+                                    {{ render_field(form.city, class="form-control") }}
+                                </div>
+                                <div class="col-md-4">
+                                    {{ render_field(form.state, class="form-control") }}
+                                </div>
+                                <div class="col-md-4">
+                                    {{ render_field(form.zip_code, class="form-control") }}
+                                </div>
+                                <div class="col-md-4">
+                                    {{ render_field(form.country, class="form-control") }}
+                                </div>
                             </div>
                         </div>
                         
-                        <div class="row mb-4">
-                            <div class="col-12">
-                                <h5>Contact Person</h5>
+                        <div class="mb-4">
+                            <h5>Venue Type & Description</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    {{ render_field(form.venue_type_id, class="form-select") }}
+                                </div>
+                                <div class="col-md-12">
+                                    {{ render_field(form.description, class="form-control", rows=4) }}
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                {{ render_field(form.contact_name, class="form-control") }}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5>Contact Information</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    {{ render_field(form.phone, class="form-control") }}
+                                </div>
+                                <div class="col-md-6">
+                                    {{ render_field(form.email, class="form-control") }}
+                                </div>
+                                <div class="col-md-12">
+                                    {{ render_field(form.website, class="form-control") }}
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                {{ render_field(form.contact_phone, class="form-control") }}
-                                {{ render_field(form.contact_email, class="form-control") }}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5>Primary Contact Person</h5>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    {{ render_field(form.contact_name, class="form-control") }}
+                                </div>
+                                <div class="col-md-6">
+                                    {{ render_field(form.contact_phone, class="form-control") }}
+                                </div>
+                                <div class="col-md-6">
+                                    {{ render_field(form.contact_email, class="form-control") }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <div class="form-check">
+                                {{ form.is_owner_manager(class="form-check-input") }}
+                                {{ form.is_owner_manager.label(class="form-check-label") }}
+                                <small class="form-text text-muted d-block">
+                                    Checking this box indicates that you own or manage this venue. Our team may verify this information.
+                                </small>
                             </div>
                         </div>
                         
