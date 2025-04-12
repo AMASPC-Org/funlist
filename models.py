@@ -4,7 +4,7 @@ from db_init import db
 from werkzeug.security import generate_password_hash, check_password_hash
 import json
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Float, Text, ForeignKey, Table
-from sqlalchemy.orm import relationship, backref # Added missing import
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.hybrid import hybrid_property
 
 class User(db.Model, UserMixin):
@@ -18,7 +18,7 @@ class User(db.Model, UserMixin):
     last_name = Column(String(120), nullable=True)
     account_active = Column(Boolean, default=True)
     is_admin = Column(Boolean, default=False)
-    _is_event_creator = Column('is_event_creator', Boolean, default=False) # Renamed column
+    _is_event_creator = Column('is_event_creator', Boolean, default=False)
     is_organizer = Column(Boolean, default=False)
     is_vendor = Column(Boolean, default=False)
     vendor_type = Column(String(50), nullable=True)
@@ -37,7 +37,7 @@ class User(db.Model, UserMixin):
     phone = Column(String(20), nullable=True)
     newsletter_opt_in = Column(Boolean, default=True)
     marketing_opt_in = Column(Boolean, default=False)
-    user_preferences = Column(Text, nullable=True)  # Stored as JSON
+    user_preferences = Column(Text, nullable=True)
     birth_date = Column(DateTime, nullable=True)
     interests = Column(Text, nullable=True)
 
@@ -52,7 +52,6 @@ class User(db.Model, UserMixin):
     def is_event_creator(self, value):
         self._is_event_creator = value
 
-    # Define relationships
     events = relationship("Event", back_populates="user", cascade="all, delete-orphan")
 
     def set_password(self, password):
@@ -68,9 +67,8 @@ class User(db.Model, UserMixin):
 
     def set_preferences(self, preferences_dict):
         self.user_preferences = json.dumps(preferences_dict)
-        
+
     def update_organizer_profile(self, data):
-        """Update organizer profile fields"""
         if 'company_name' in data:
             self.company_name = data['company_name']
         if 'organizer_description' in data:
@@ -92,8 +90,8 @@ class Event(db.Model):
     start_date = Column(DateTime, nullable=False)
     end_date = Column(DateTime)
     all_day = Column(Boolean, default=False)
-    start_time = Column(String(8), nullable=True)  # Format: HH:MM:SS
-    end_time = Column(String(8), nullable=True)    # Format: HH:MM:SS
+    start_time = Column(String(8), nullable=True)
+    end_time = Column(String(8), nullable=True)
     location = Column(String(255))
     street = Column(String(255))
     city = Column(String(100))
@@ -101,11 +99,8 @@ class Event(db.Model):
     zip_code = Column(String(20))
     parent_event_id = Column(Integer, ForeignKey('events.id'), nullable=True)
     is_recurring = Column(Boolean, default=False)
-    recurring_pattern = Column(String(50), nullable=True)  # daily, weekly, monthly, etc.
+    recurring_pattern = Column(String(50), nullable=True)
     recurring_end_date = Column(DateTime, nullable=True)
-
-    # Relationships
-    parent_event = relationship("Event", remote_side=[id], backref=backref("sub_events"))
     latitude = Column(Float)
     longitude = Column(Float)
     website = Column(String(255))
@@ -113,18 +108,17 @@ class Event(db.Model):
     user_id = Column(Integer, ForeignKey('users.id'))
     category = Column(String(100))
     target_audience = Column(String(255))
-    tags = Column(String(255))  # Comma-separated tags
+    tags = Column(String(255))
     attendance_count = Column(Integer, default=0)
     views_count = Column(Integer, default=0)
-    featured = Column(Boolean, default=False)  # Changed from is_featured to match database
-    fun_rating = Column(Integer, default=3)  # Scale of 1-5
-    fun_meter = Column(Integer, default=3)  # Alias for fun_rating
-    status = Column(String(50), default="pending")  # draft, pending, approved, rejected
+    featured = Column(Boolean, default=False)
+    fun_rating = Column(Integer, default=3)
+    fun_meter = Column(Integer, default=3)
+    status = Column(String(50), default="pending")
+    network_opt_out = Column(Boolean, default=False)
     prohibited_advertisers = relationship('ProhibitedAdvertiserCategory',
                                           secondary='event_prohibited_advertisers',
                                           backref=backref('events', lazy='dynamic'))
-
-    # Define relationships
     user = relationship("User", back_populates="events")
 
     @hybrid_property
@@ -132,11 +126,9 @@ class Event(db.Model):
         return self.end_date < datetime.utcnow() if self.end_date else self.start_date < datetime.utcnow()
 
     def is_advertiser_prohibited(self, advertiser_category_id):
-        """Check if an advertiser category is prohibited for this event"""
         return any(cat.id == advertiser_category_id for cat in self.prohibited_advertisers)
 
     def get_prohibited_category_ids(self):
-        """Get list of prohibited category IDs"""
         return [cat.id for cat in self.prohibited_advertisers]
 
 class ProhibitedAdvertiserCategory(db.Model):
@@ -157,7 +149,7 @@ class Subscriber(db.Model):
     first_name = Column(String(120))
     last_name = Column(String(120))
     zip_code = Column(String(20))
-    preferences = Column(Text)  # JSON string of preferences
+    preferences = Column(Text)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

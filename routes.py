@@ -506,7 +506,9 @@ def init_routes(app):
                         category=form.category.data,
                         target_audience=form.target_audience.data,
                         fun_meter=form.fun_meter.data,
-                        user_id=current_user.id
+                        user_id=current_user.id,
+                        network_opt_out=form.network_opt_out.data, # Added network_opt_out field
+                        ticket_url=form.ticket_url.data
                     )
 
                     # Handle prohibited advertisers
@@ -770,7 +772,7 @@ def init_routes(app):
         return render_template('reset_password.html', form=form, token=token)
 
     @app.route("/admin/analytics")
-    @login_required
+    @loginrequired
     def admin_analytics():
         if current_user.email != 'ryan@funlist.ai':
             flash("Access denied. Only authorized administrators can access this page.", "danger")

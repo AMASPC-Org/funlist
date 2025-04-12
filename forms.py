@@ -229,6 +229,7 @@ class EventForm(FlaskForm):
     instagram = StringField('Instagram')
     twitter = StringField('Twitter')
     ticket_url = StringField('Purchase Tickets URL', validators=[Optional(), URL()])
+    network_opt_out = BooleanField('Opt out of sharing this event across the American Marketing Alliance SPC Network sites')
     terms_accepted = BooleanField('I accept the Terms and Conditions', validators=[DataRequired()])
     submit = SubmitField('Create Event')
 

@@ -163,6 +163,13 @@
 
     <div class="mb-4">
         <div class="form-check mb-3">
+                    {{ form.network_opt_out(class="form-check-input") }}
+                    <label class="form-check-label" for="network_opt_out">
+                        Opt out of sharing this event across the American Marketing Alliance SPC Network sites 
+                        <i class="fas fa-info-circle" data-bs-toggle="tooltip" title="By default, your event may be shared on BusinessCalendar.ai, DateCalendar.ai, FindLiveMusic.ai, PopHappyHour.com, and TacoNight.ai when appropriate"></i>
+                    </label>
+                </div>
+        <div class="form-check mb-3">
                     {{ form.terms_accepted(class="form-check-input") }}
                     <label class="form-check-label" for="terms_accepted">
                         I accept the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms and Conditions</a>
@@ -196,11 +203,12 @@
                                     <li><strong>Prohibited Content:</strong> You agree not to submit listings that contain hateful, defamatory, obscene, infringing, or otherwise objectionable content. FunList.ai reserves the right to define "objectionable" at its sole discretion.</li>
                                     <li><strong>Moderation Rights:</strong> FunList.ai reserves the right, at its sole discretion, to review, edit, reject, or remove any event listing at any time, for any reason, without prior notice. This includes listings deemed inaccurate, inappropriate, promotional (rather than event-focused), or otherwise not aligned with the platform's purpose.</li>
                                     <li><strong>License Grant:</strong> By submitting your event, you grant FunList.ai a non-exclusive, worldwide, royalty-free license to use, reproduce, display, distribute, and modify the submitted content (including text and images) in connection with the operation and promotion of the FunList.ai platform.</li>
+                                    <li><strong>Network Distribution:</strong> By default, your event may be shared across the American Marketing Alliance SPC Network of websites, which includes BusinessCalendar.ai, DateCalendar.ai, FindLiveMusic.ai, PopHappyHour.com, and TacoNight.ai, when appropriate for the event type. You may opt out of this network distribution by indicating your preference during the submission process. For example, a family farm event with live music and food vendors may be featured on multiple network sites to maximize exposure, unless you choose to opt out.</li>
                                     <li><strong>Indemnification:</strong> You agree to indemnify and hold harmless FunList.ai, its parent company (American Marketing Alliance SPC), affiliates, officers, and employees from any claim or demand, including reasonable attorneys' fees, made by any third party due to or arising out of your event submission, your event itself, or your violation of these terms.</li>
                                     <li><strong>Disclaimer:</strong> FunList.ai provides this platform as a service and is not responsible for the execution, safety, quality, or cancellation of any listed event. Attendees participate at their own risk.</li>
                                     <li><strong>Full Terms and Privacy:</strong> Your use of FunList.ai is also governed by our main <a href="{{ url_for('terms') }}" target="_blank">Terms of Service</a> and <a href="{{ url_for('privacy') }}" target="_blank">Privacy Policy</a>. Please review them carefully.</li>
                                 </ol>
-                                <p><em>Submission of an event does not guarantee its publication on FunList.ai.</em></p>
+                                <p><em>Submission of an event does not guarantee its publication on FunList.ai or any affiliated network sites.</em></p>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
