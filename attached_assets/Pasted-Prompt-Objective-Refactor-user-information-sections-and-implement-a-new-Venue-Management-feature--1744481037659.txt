@@ -1,0 +1,60 @@
+Prompt:
+
+Objective: Refactor user information sections and implement a new Venue Management feature.
+
+Phase 1: User Information Refactoring
+
+Modify 'Personal Information' Section:
+Remove the 'City' field entirely from this section (and associated data storage).
+Modify 'Organizer Information' Section:
+Locate the 'Your Title' field within this section.
+Relocate Field:
+Move the 'Your Title' field from the 'Organizer Information' section to the 'Personal Information' section.
+Technical Implementation (Phase 1):
+Update the database schema/user model to reflect the removal of 'City' and the relocation of 'Your Title'.
+Update all relevant backend routes, APIs, and frontend forms/displays that handle user profile data. Ensure data integrity during migration if necessary.
+Phase 2: Venue Management Feature Implementation
+
+Create Venue Directory:
+Implement a new feature/section for managing Venues.
+Create a new data model/database table named 'Venues'.
+Define Venue Data Fields:
+Each Venue record must include the following fields:
+Venue Name (Text)
+Venue Address (Structured: Street, City, State, Zip Code, Country)
+Venue Phone (Text/String)
+Venue Email (Email format)
+Venue Website (URL format)
+Venue Type (See point 3)
+Contact Person Name (Text)
+Contact Person Phone (Text/String)
+Contact Person Email (Email format)
+Implement Venue Type:
+Add a 'Venue Type' field to the Venue model.
+This field should allow selection from a predefined list (e.g., dropdown, relation to a 'VenueTypes' table).
+Dependency: Populate this list using the complete list of Venue Types provided in the attached document.
+Technical Implementation (Phase 2):
+Update the database schema to include the new 'Venues' table (and 'VenueTypes' if implementing as a separate table), including appropriate data types and constraints.
+Create backend CRUD (Create, Read, Update, Delete) routes/APIs for managing Venues. Implement necessary authentication/authorization for these routes.
+Develop frontend interfaces (views/components) for:
+Listing/Browse venues.
+Adding new venues.
+Editing existing venues.
+(Optional/Admin) Deleting venues.
+Integrate with Event Submission:
+Modify the 'Submit Event' form.
+Replace manual venue detail entry fields with a mechanism to select an existing Venue from the directory (e.g., a searchable dropdown or lookup modal).
+Ensure the selected Venue's ID is associated with the Event record in the database.
+Consider: Allow users to add a new venue during event submission if it doesn't exist (this could create a basic venue record to be fully populated later, perhaps by an admin or the venue contact).
+Implement Venue Self-Management:
+Develop a system allowing designated venue contacts (or users associated with a venue) to log in and manage their specific venue listing(s).
+This requires defining how a user account is linked to a Venue record for management purposes (e.g., linking the contact person's email to a user account).
+Ensure appropriate permissions so venues can only edit their own listings.
+Update Dependencies:
+Thoroughly review and update any code sections, routes, database queries, or frontend components that depend on the old user profile structure or that will interact with the new Venue system.
+Goals Recap:
+
+Clean up user profile sections.
+Create a centralized, reusable Venue directory.
+Streamline event submission by allowing users to select pre-existing venues.
+Empower venues to maintain their own listing information directly on the site.
