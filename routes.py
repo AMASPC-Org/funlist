@@ -517,9 +517,15 @@ def init_routes(app):
 
         form = EventForm()
 
-        # Populate parent event choices
-        user_events = Event.query.filter_by(user_id=current_user.id, parent_event_id=None).all()
-        form.parent_event.choices = [(str(e.id), e.title) for e in user_events]
+        # Populate parent event choices with error handling
+        try:
+            # Start a fresh transaction
+            db.session.rollback()
+            user_events = Event.query.filter_by(user_id=current_user.id, parent_event_id=None).all()
+            form.parent_event.choices = [(str(e.id), e.title) for e in user_events]
+        except Exception as e:
+            logger.error(f"Error loading parent events: {str(e)}")
+            form.parent_event.choices = [('0', 'No parent events available')]
         
         # Check if venue_id is in request args (coming from venue detail page)
         venue_id = request.args.get('venue_id')
