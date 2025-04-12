@@ -24,4 +24,5 @@ dependencies = [
     "psutil>=7.0.0",
     "flask-migrate>=4.1.0",
     "slugify>=0.0.1",
+    "python-dateutil>=2.9.0.post0",
 ]
