@@ -2559,29 +2559,24 @@ footer {
     font-size: 1.2rem;
 }
 
-/* User avatar styles - completely redesigned */
-.user-avatar {
+/* User dropdown styling */
+.dropdown .btn-warning.rounded-circle {
     width: 38px;
     height: 38px;
     background-color: #FF8A00;
-    border-radius: 50%;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-
-.user-icon {
     color: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%;
-    height: 100%;
+    border: none;
+    padding: 0;
 }
 
-.user-icon i {
-    font-size: 20px;
-    line-height: 1;
+.dropdown .btn-warning.rounded-circle i {
+    font-size: 18px;
+}
+
+.dropdown .btn-warning.rounded-circle:hover {
+    background-color: #e67e00;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
 }
