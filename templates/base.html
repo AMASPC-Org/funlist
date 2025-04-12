@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -84,28 +85,16 @@
 <footer class="footer mt-5 py-4 bg-light">
     <div class="container">
         <div class="row">
-            <div class="col-md-2 col-sm-6 mb-4">
+            <div class="col-md-3 col-sm-6 mb-4">
                 <h5 class="mb-3">COMPANY</h5>
                 <ul class="list-unstyled mb-0">
                     <li class="mb-2"><a href="{{ url_for('about') }}">About Us</a></li>
+                    <li class="mb-2"><a href="{{ url_for('contact') }}">Contact</a></li>
                     <li class="mb-2"><a href="{{ url_for('help_center') }}">Help Center</a></li>
                     <li class="mb-2"><a href="{{ url_for('advertising') }}">Advertise with Us</a></li>
                 </ul>
             </div>
-            <div class="col-md-2 col-sm-6 mb-4">
-                <h5 class="mb-3">CONNECT</h5>
-                <ul class="list-unstyled mb-0">
-                    <li class="mb-2"><a href="tel:3602008768"><i class="fas fa-phone"></i> (360) 200-8768</a></li>
-                    <li class="mb-2"><a href="mailto:contact@funlist.ai"><i class="fas fa-envelope"></i> contact@funlist.ai</a></li>
-                    <li class="mb-2">Olympia, WA</li>
-                </ul>
-                <div class="social-buttons mt-2">
-                    <a href="https://www.facebook.com/funlistai" target="_blank" class="btn-social"><i class="fab fa-facebook-f"></i></a>
-                    <a href="https://www.instagram.com/funlistai" target="_blank" class="btn-social"><i class="fab fa-instagram"></i></a>
-                    <a href="https://www.tiktok.com/@funlistai" target="_blank" class="btn-social"><i class="fab fa-tiktok"></i></a>
-                </div>
-            </div>
-            <div class="col-md-2 col-sm-6 mb-4">
+            <div class="col-md-3 col-sm-6 mb-4">
                 <h5 class="mb-3">ACCOUNT</h5>
                 <ul class="list-unstyled mb-0">
                     <li class="mb-2"><a href="{{ url_for('login') }}" class="login-link">Sign In</a></li>
@@ -113,7 +102,7 @@
                     <li class="mb-2"><a href="{{ url_for('submit_event') }}">Add Event</a></li>
                 </ul>
             </div>
-            <div class="col-md-2 col-sm-6 mb-4">
+            <div class="col-md-3 col-sm-6 mb-4">
                 <h5 class="mb-3">LEGAL & HELP</h5>
                 <ul class="list-unstyled mb-0">
                     <li class="mb-2"><a href="{{ url_for('terms') }}">Terms & Conditions</a></li>
@@ -132,6 +121,32 @@
                 </ul>
             </div>
         </div>
+        
+        <!-- Contact information and social links -->
+        <div class="row mt-2 mb-3">
+            <div class="col-md-6">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-phone me-2"></i>
+                    <a href="tel:3602008768">(360) 200-8768</a>
+                </div>
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-envelope me-2"></i>
+                    <a href="mailto:contact@funlist.ai">contact@funlist.ai</a>
+                </div>
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-map-marker-alt me-2"></i>
+                    <span>Olympia, WA</span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="social-buttons d-flex justify-content-md-end justify-content-center mt-3 mt-md-0">
+                    <a href="https://www.facebook.com/funlistai" target="_blank" class="btn-social"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://www.instagram.com/funlistai" target="_blank" class="btn-social"><i class="fab fa-instagram"></i></a>
+                    <a href="https://www.tiktok.com/@funlistai" target="_blank" class="btn-social"><i class="fab fa-tiktok"></i></a>
+                </div>
+            </div>
+        </div>
+        
         <hr class="my-3">
         <div class="row">
             <div class="col text-center">
