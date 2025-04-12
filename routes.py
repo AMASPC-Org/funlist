@@ -9,6 +9,8 @@ from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 import logging
 from datetime import datetime, timedelta
 import json
+from dateutil.relativedelta import relativedelta
+from sqlalchemy import func
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -769,8 +771,7 @@ def init_routes(app):
 
     @app.route("/admin/analytics")
     @login_required
-    def admin_analytics():
-        if current_user.email != 'ryan@funlist.ai':
+    def admin_analytics():        if current_user.email != 'ryan@funlist.ai':
             flash("Access denied. Only authorized administrators can access this page.", "danger")
             return redirect(url_for("index"))
         # Get events by category data
@@ -850,23 +851,23 @@ def init_routes(app):
             db.session.rollback()
             logger.error(f"Error in admin_event_action: {str(e)}")
             return jsonify({"success": False, "message": f"Error: {str(e)}"}), 500
-            
+
     @app.route("/admin/event/<int:event_id>/toggle-feature", methods=["POST"])
     @login_required
     def toggle_event_feature(event_id):
         if current_user.email != 'ryan@funlist.ai':
             return jsonify({"success": False, "message": "Unauthorized. Only administrators can perform this action."}), 403
-            
+
         try:
             data = request.get_json()
             featured = data.get('featured', False)
-            
+
             event = Event.query.get_or_404(event_id)
             event.featured = featured
-            
+
             action = "featured" if featured else "unfeatured"
             message = f"Event '{event.title}' has been {action}"
-            
+
             db.session.commit()
             return jsonify({"success": True, "message": message})
         except Exception as e:
@@ -972,82 +973,94 @@ def init_routes(app):
         if current_user.email != 'ryan@funlist.ai':
             flash("Access denied. Only authorized administrators can access this page.", "danger")
             return redirect(url_for("index"))
-        tab = request.args.get("tab", "overview")
-        status = request.args.get("status", "pending")
 
-        # Get statistics for overview
+        active_tab = request.args.get('tab', 'overview')
+        status = request.args.get('status', 'pending')
 
+        # Prepare default statistics
         stats = {
-            "pending_events": Event.query.filter_by(status="pending").count(),
-            "total_users": User.query.count(),
-            "todays_events": Event.query.filter(
-                Event.start_date >= datetime.now().date(),
-                Event.start_date < datetime.now().date() + timedelta(days=1),
+            'total_users': User.query.count(),
+            'pending_events': Event.query.filter_by(status='pending').count(),
+            'todays_events': Event.query.filter(
+                Event.start_date >= datetime.now().replace(hour=0, minute=0, second=0),
+                Event.start_date < (datetime.now() + timedelta(days=1)).replace(hour=0, minute=0, second=0)
             ).count(),
-            "new_users_24h": User.query.filter(
-                User.created_at >= datetime.now() - timedelta(hours=24)
+            'new_users_24h': User.query.filter(
+                User.created_at >= (datetime.now() - timedelta(days=1))
             ).count(),
+            'featured_events': Event.query.filter_by(featured=True).count()
         }
 
-        # Get events for event management
-        if tab == 'featured_events':
-            events = Event.query.filter_by(featured=True).order_by(Event.start_date).all()
-        else:
-            events = Event.query.filter_by(status=status).order_by(Event.start_date).all()
+        events = []
+        users = []
 
-        # Get users for user management
-
-        users = User.query.order_by(User.created_at.desc()).all()
-
-        # Get analytics data
-
-        events_by_category = {
-            "labels": ["Sports", "Music", "Arts", "Food", "Other"],
-            "datasets": [
-                {
-                    "data": [
-                        Event.query.filter_by(category="Sports").count(),
-                        Event.query.filter_by(category="Music").count(),
-                        Event.query.filter_by(category="Arts").count(),
-                        Event.query.filter_by(category="Food").count(),
-                        Event.query.filter_by(category="Other").count(),
+        if active_tab == 'events':
+            # For the Events tab, include the status filter
+            query = Event.query
+            if status != 'all':
+                query = query.filter_by(status=status)
+            events = query.all()
+        elif active_tab == 'featured_events':
+            # For the Featured Events tab, only show featured events
+            events = Event.query.filter_by(featured=True).all()
+        elif active_tab == 'users':
+            users = User.query.all()
+        elif active_tab == 'analytics':
+            # Analytics data
+            categories = Event.query.with_entities(Event.category, func.count(Event.id).label('count')).group_by(Event.category).all()
+            events_by_category = {
+                'labels': [c[0] or 'Uncategorized' for c in categories],
+                'datasets': [{
+                    'label': 'Events by Category',
+                    'data': [c[1] for c in categories],
+                    'backgroundColor': [
+                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#8AC054'
                     ]
-                }
-            ],
-        }
+                }]
+            }
 
-        # User growth data (last 7 days)
+            # User growth data (monthly for the past year)
+            months = 12
+            now = datetime.now()
+            user_growth_data = {
+                'labels': [],
+                'datasets': [{
+                    'label': 'New Users',
+                    'data': [],
+                    'fill': False,
+                    'borderColor': '#36A2EB',
+                    'tension': 0.1
+                }]
+            }
 
-        user_growth_data = {
-            "labels": [
-                (datetime.now() - timedelta(days=x)).strftime("%Y-%m-%d")
-                for x in range(7)
-            ],
-            "datasets": [
-                {
-                    "label": "New Users",
-                    "data": [
-                        User.query.filter(
-                            User.created_at
-                            >= datetime.now().date() - timedelta(days=x),
-                            User.created_at
-                            < datetime.now().date() - timedelta(days=x - 1),
-                        ).count()
-                        for x in range(7)
-                    ],
-                }
-            ],
-        }
+            for i in range(months-1, -1, -1):
+                start_date = (now - relativedelta(months=i)).replace(day=1, hour=0, minute=0, second=0)
+                end_date = (start_date + relativedelta(months=1))
+
+                user_count = User.query.filter(
+                    User.created_at >= start_date,
+                    User.created_at < end_date
+                ).count()
+
+                month_name = start_date.strftime('%b %Y')
+                user_growth_data['labels'].append(month_name)
+                user_growth_data['datasets'][0]['data'].append(user_count)
+
+            return render_template(
+                'admin_dashboard.html', 
+                active_tab=active_tab,
+                stats=stats,
+                events_by_category=events_by_category,
+                user_growth_data=user_growth_data
+            )
 
         return render_template(
-            "admin_dashboard.html",
-            active_tab=tab,
+            'admin_dashboard.html', 
+            active_tab=active_tab,
+            status=status,
             stats=stats,
             events=events,
-            users=users,
-            status=status,
-            events_by_category=events_by_category,
-            user_growth_data=user_growth_data,
+            users=users
         )
 
     @app.route("/admin/user/<int:user_id>/deactivate")
