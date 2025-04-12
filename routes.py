@@ -1002,6 +1002,18 @@ def init_routes(app):
         # Redirect to the consolidated profile editing page
         flash("Your organizer profile can now be managed from your main profile page.", "info")
         return redirect(url_for("edit_profile"))
+        
+    @app.route("/change-password", methods=["GET", "POST"])
+    @login_required
+    def change_password():
+        from forms import ResetPasswordForm
+        form = ResetPasswordForm()
+        if form.validate_on_submit():
+            current_user.set_password(form.password.data)
+            db.session.commit()
+            flash("Your password has been updated successfully!", "success")
+            return redirect(url_for("profile"))
+        return render_template("change_password.html", form=form)
 
     @app.route("/vendor-profile", methods=["GET", "POST"])
     @login_required
