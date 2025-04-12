@@ -17,6 +17,7 @@
       <div class="dropdown">
         <a class="nav-link" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
           <i class="fas fa-user nav-icon"></i>
+          <span class="d-none d-lg-inline ms-1">{{ current_user.email }}</span>
         </a>
         <ul class="dropdown-menu dropdown-menu-end">
           <!-- User type indicator -->
@@ -75,6 +76,18 @@
         {% if not current_user.is_authenticated %}
           <a href="{{ url_for('login') }}" class="btn btn-sm btn-outline-primary me-2">Login</a>
           <a href="{{ url_for('signup') }}" class="btn btn-sm btn-primary">Sign Up</a>
+        {% else %}
+          <!-- Mobile-only user menu button -->
+          <div class="d-lg-none">
+            <a class="btn btn-sm btn-outline-primary" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="fas fa-user"></i> Account
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="{{ url_for('edit_profile') }}">Edit Profile</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('events') }}?filter=my_events">My Events</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+            </ul>
+          </div>
         {% endif %}
       </div>
     </div>

@@ -490,6 +490,19 @@
     background-color: rgba(255, 138, 0, 0.1);
 }
 
+.navbar .nav-icon {
+    font-size: 1.25rem;
+    color: #0d6efd;
+}
+
+.navbar .dropdown-toggle::after {
+    display: none;
+}
+
+.navbar .dropdown-menu {
+    margin-top: 0.5rem;
+}
+
 @media (max-width: 991px) {
     .navbar-collapse {
         background: white;
