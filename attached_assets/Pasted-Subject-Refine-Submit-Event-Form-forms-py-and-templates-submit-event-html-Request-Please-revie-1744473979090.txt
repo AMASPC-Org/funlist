@@ -1,0 +1,22 @@
+Subject: Refine Submit Event Form (forms.py and templates/submit_event.html)
+Request:
+Please review and update the event submission form (EventForm in forms.py) and the corresponding template (templates/submit_event.html) to address the following requirements:
+Description Character Limit: Increase the maximum character limit for the description field to 1500 characters. Ensure both the form validation (WTForms) and any database constraints (if applicable in models.py - though likely Text type already handles this) allow for this length.
+End Date Default: Implement functionality (likely using JavaScript) so that when a user selects a Start Date, the End Date field automatically defaults to the same date. The user should still be able to manually change the End Date afterwards if the event spans multiple days.
+Multi-Day Event Handling: Ensure the form clearly supports multi-day events. This likely involves ensuring the Start Date and End Date fields are distinct and function correctly.  Also, Time Fields: Add fields for Start Time and End Time These should be optional time input fields.
+Prohibited Advertisers Field:
+Update the Prohibited Advertisers section:  Remove the existing and then Add a new field to the EventForm named prohibited_advertisers.
+This field should allow multiple selections.
+Use the following list as the available choices for prohibited advertiser categories:
+Alcohol and Tobacco Products
+Marijuana and Cannabis Dispensaries
+Gambling and Betting Services
+Adult Entertainment and Products
+Junk Food and Sugary Beverages
+Energy Drinks
+Political and Religious Organizations
+In the submit_event.html template, implement this field using a user-friendly method that supports multiple selections and ideally offers type-ahead/autocomplete functionality while still allowing users to easily view the full list. A multi-select dropdown with search capabilities (like Select2 or a similar library, if feasible within Replit's environment) would be ideal. If not feasible, a list of checkboxes is an acceptable alternative.
+Context:
+The goal is to make the event submission process more comprehensive and user-friendly.
+We need to accommodate events of varying durations and allow organizers to specify advertiser restrictions.
+Please let me know if you need any clarification or additional context.
