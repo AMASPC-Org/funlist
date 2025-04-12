@@ -1,0 +1,62 @@
+Subject: Consolidate and Enhance User Profile Editing
+Request:
+Please refactor the user profile editing functionality to consolidate organizer-specific details into the main "Edit Profile" page, remove redundant navigation, and ensure all necessary fields are present. This involves changes to the navigation bar, forms, and the profile editing template. Database model changes for venues and the onboarding wizard will be handled in separate, subsequent requests.
+Tasks:
+Modify Navbar Template (templates/partials/navbar.html):
+Locate the code responsible for displaying the main navigation links when a user is logged in.
+Remove the separate "Organizer Profile" link entirely. The single "Profile Settings" link within the user dropdown menu will serve for all users.
+Modify Profile Form (forms.py):
+Locate the existing ProfileForm. If there's a separate OrganizerProfileForm, we will merge its fields into ProfileForm.
+Ensure ProfileForm includes the following fields (add any that are missing, using appropriate WTForms field types like StringField, TextAreaField, URLField):
+Personal Info (for all users):
+username (StringField, consider uniqueness validation)
+first_name (StringField)
+last_name (StringField)
+email (EmailField, likely read-only or handled separately)
+bio (TextAreaField)
+location (StringField - user's general location)
+interests (TextAreaField or TagListField if using a library)
+birth_date (DateField, Optional)
+Organizer Business Info (displayed conditionally for organizers):
+business_name (StringField, Optional)
+organizer_title (StringField, Optional - e.g., "Owner", "Marketing Manager")
+business_location (TextAreaField, Optional - Full address)
+business_phone (StringField, Optional)
+business_email (EmailField, Optional)
+business_website (URLField, Optional)
+Venue Management (Placeholder - displayed conditionally for organizers):
+(No new form fields needed for this step - we will just display associated venues initially)
+Social Links (for all users, but potentially more relevant for organizers):
+linkedin_url (URLField, Optional)
+facebook_url (URLField, Optional)
+instagram_url (URLField, Optional)
+tiktok_url (URLField, Optional)
+twitter_url (URLField, Optional)
+Use Optional() validators for fields that are not strictly required for all users (e.g., organizer fields).
+Modify Profile Editing Template (templates/edit_profile.html - Please confirm this is the correct file, or specify the actual template used for editing profiles):
+Structure the template using clear sections (e.g., using <fieldset> or <div class="card mb-3">): "Personal Information", "Social Media Links", "Organizer Information" (conditional), "Venue Management" (conditional).
+Use Jinja conditional logic ({% if current_user.is_organizer %}) to only display the "Organizer Information" and "Venue Management" sections if the logged-in user has organizer privileges.
+Render all the fields defined in the updated ProfileForm within their respective sections using your form macros (like render_field).
+Venue Management Section (Placeholder): For now, within the conditional organizer block, add a placeholder section for venue management. It could look something like this:
+{% if current_user.is_organizer %}
+  <fieldset class="mb-3">
+      <legend>Venue Management</legend>
+      <p>Manage venues associated with your organization.</p>
+      <!-- TODO: Display list of existing venues here -->
+      <!-- TODO: Add "Add New Venue" button here -->
+      <p><small>(Venue adding/editing functionality coming soon)</small></p>
+  </fieldset>
+{% endif %}
+Use code with caution.
+Html
+Modify Profile Editing Route (routes.py):
+Ensure the route that handles /profile/edit (or similar) correctly renders the edit_profile.html template, passing the updated ProfileForm instance.
+Do not modify the POST logic for saving data yet. We will address saving the new business/venue fields after the database models are updated in a later step.
+Provide Complete Code: Return the complete, fully edited code for the following files:
+templates/partials/navbar.html
+forms.py (containing the updated ProfileForm)
+templates/edit_profile.html (or the correct profile editing template file)
+routes.py (with the updated route rendering, but not the saving logic modified yet)
+Context:
+The goal is to simplify the user experience by having a single profile editing page.
+Organizers need specific fields related to their business and venues.
