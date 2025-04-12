@@ -1274,18 +1274,40 @@ main {
     height: 40px;
     border-radius: 50%;
     background-color: #f8f9fa;
-    color: #666;
+    color: #333;
+    font-size: 1.2rem;
     text-decoration: none;
     transition: all 0.3s ease;
     border: 1px solid #ddd;
     margin-right: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .btn-social:hover {
     background-color: #4CAF50;
     color: white;
     transform: translateY(-3px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.social-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin: 15px 0;
+}
+
+/* Platform-specific brand colors on hover */
+.btn-social.facebook:hover {
+    background-color: #3b5998;
+}
+
+.btn-social.instagram:hover {
+    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+}
+
+.btn-social.tiktok:hover {
+    background: linear-gradient(45deg, #25F4EE 0%, #000000 50%, #FE2C55 100%);
 }
 
 .footer a {
