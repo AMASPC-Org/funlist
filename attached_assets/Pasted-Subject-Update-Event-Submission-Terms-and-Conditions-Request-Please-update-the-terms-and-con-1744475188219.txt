@@ -1,0 +1,34 @@
+Subject: Update Event Submission Terms and Conditions
+
+Request:
+
+Please update the terms and conditions associated with the event submission form. Currently, there's a checkbox "I accept the Terms and Conditions," likely linking to a modal or simple text. We need to replace the *content* of that modal/text area with a more comprehensive set of terms specific to event submissions.
+
+Tasks:
+
+1.  **Locate Existing Terms Display:** Find the HTML element (likely a modal body or a collapsible section) in `templates/submit_event.html` (or potentially `base.html` or a partial) that currently displays the event submission terms when the user clicks "Read Terms and Conditions" or similar.
+2.  **Replace Content:** Replace the *entire inner content* of that element with the following HTML:
+
+    ```html
+    <!-- Content for the Event Submission Terms Modal/Section -->
+    <h4>Event Submission Terms and Conditions</h4>
+    <p>By submitting an event to FunList.ai, you agree to the following terms and conditions:</p>
+    <ol>
+        <li><strong>Accuracy:</strong> You represent and warrant that all information provided about the event (including title, description, dates, times, location, and any images or links) is accurate, complete, and truthful to the best of your knowledge.</li>
+        <li><strong>Rights and Permissions:</strong> You represent and warrant that you have the full right, power, and authority to submit this event information and grant FunList.ai the necessary licenses to display it. This includes obtaining any necessary permissions from venue owners, performers, or other rights holders.</li>
+        <li><strong>Content Responsibility:</strong> You are solely responsible for the content of your event listing. FunList.ai acts as a platform for discovery and does not endorse or verify the details of submitted events.</li>
+        <li><strong>Compliance with Laws:</strong> You agree that the event itself, and the content of your listing, will comply with all applicable local, state, federal, and international laws and regulations. Events promoting illegal activities are strictly prohibited.</li>
+        <li><strong>Prohibited Content:</strong> You agree not to submit listings that contain hateful, defamatory, obscene, infringing, or otherwise objectionable content. FunList.ai reserves the right to define "objectionable" at its sole discretion.</li>
+        <li><strong>Moderation Rights:</strong> FunList.ai reserves the right, at its sole discretion, to review, edit, reject, or remove any event listing at any time, for any reason, without prior notice. This includes listings deemed inaccurate, inappropriate, promotional (rather than event-focused), or otherwise not aligned with the platform's purpose.</li>
+        <li><strong>License Grant:</strong> By submitting your event, you grant FunList.ai a non-exclusive, worldwide, royalty-free license to use, reproduce, display, distribute, and modify the submitted content (including text and images) in connection with the operation and promotion of the FunList.ai platform.</li>
+        <li><strong>Indemnification:</strong> You agree to indemnify and hold harmless FunList.ai, its parent company (American Marketing Alliance SPC), affiliates, officers, and employees from any claim or demand, including reasonable attorneys' fees, made by any third party due to or arising out of your event submission, your event itself, or your violation of these terms.</li>
+        <li><strong>Disclaimer:</strong> FunList.ai provides this platform as a service and is not responsible for the execution, safety, quality, or cancellation of any listed event. Attendees participate at their own risk.</li>
+        <li><strong>Full Terms and Privacy:</strong> Your use of FunList.ai is also governed by our main <a href="{{ url_for('terms') }}" target="_blank">Terms of Service</a> and <a href="{{ url_for('privacy') }}" target="_blank">Privacy Policy</a>. Please review them carefully.</li>
+    </ol>
+    <p><em>Submission of an event does not guarantee its publication on FunList.ai.</em></p>
+    ```
+
+3.  **Ensure Links Work:** Verify that the `{{ url_for('terms') }}` and `{{ url_for('privacy') }}` links within the new terms point to the correct pages.
+4.  **Provide Complete Code:** Return the **complete, fully edited code** for the modified template file (likely `templates/submit_event.html` or wherever the terms modal/section resides).
+
+Context: The existing terms are too brief. These new terms cover standard requirements for user-submitted event content.
