@@ -236,6 +236,7 @@ class EventForm(FlaskForm):
         ('monthly', 'Monthly')
     ], validators=[Optional()])
     recurring_end_date = DateField('Recurring Until', format='%Y-%m-%d', validators=[Optional()])
+    recurrence_end_date = DateField('Recurring Until', format='%Y-%m-%d', validators=[Optional()])
 
     is_sub_event = BooleanField('This is a sub-event of another event')
     parent_event = SelectField('Parent Event', choices=[], validators=[Optional()])
@@ -244,7 +245,9 @@ class EventForm(FlaskForm):
     network_opt_out = BooleanField('Opt out of the event network')
 
     prohibited_advertisers = SelectMultipleField('Prohibited Advertiser Categories', coerce=int)
-
+    
+    terms_accepted = BooleanField('I accept the Terms and Conditions')
+    
     submit = SubmitField('Submit Event')
 
     def __init__(self, *args, **kwargs):

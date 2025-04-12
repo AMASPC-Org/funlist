@@ -87,7 +87,7 @@
                 <input class="form-check-input" type="radio" name="recurrence_end_type" id="end_on_date" value="on_date">
                 <label class="form-check-label" for="end_on_date">On date</label>
                 <div class="mt-2">
-                    {{ form.recurrence_end_date(class="form-control", type="date", id="recurrence_end_date", disabled=true) }}
+                    {{ form.recurring_end_date(class="form-control", type="date", id="recurrence_end_date", disabled=true) }}
                 </div>
             </div>
         </div>
@@ -257,7 +257,8 @@
                     </label>
                 </div>
         <div class="form-check mb-3">
-                    {{ form.terms_accepted(class="form-check-input") }}
+                    <input type="checkbox" class="form-check-input" id="terms_accepted" name="terms_accepted">
+                    <label class="form-check-label" for="terms_accepted">
                     <label class="form-check-label" for="terms_accepted">
                         I accept the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms and Conditions</a>
                     </label>
