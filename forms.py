@@ -10,6 +10,20 @@ from wtforms.validators import (
 )
 from models import User, ProhibitedAdvertiserCategory
 
+# Define event categories
+EVENT_CATEGORIES = [
+    ('', 'Select category...'),
+    ('Music', 'Music & Concerts'),
+    ('Food', 'Food & Drink'),
+    ('Arts', 'Arts & Culture'),
+    ('Sports', 'Sports & Recreation'),
+    ('Community', 'Community & Networking'),
+    ('Education', 'Education & Workshops'),
+    ('Family', 'Family & Kids'),
+    ('Festival', 'Festivals & Fairs'),
+    ('Other', 'Other')
+]
+
 class SignupForm(FlaskForm):
     email = StringField('Email', validators=[
         DataRequired(message="Please enter your email address"),
