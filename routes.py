@@ -875,6 +875,23 @@ def init_routes(app):
             logger.error(f"Error in toggle_event_feature: {str(e)}")
             return jsonify({"success": False, "message": f"Error: {str(e)}"}), 500
 
+    @app.route("/admin/event/<int:event_id>/delete", methods=["POST"])
+    @login_required
+    def admin_delete_event(event_id):
+        if current_user.email != 'ryan@funlist.ai':
+            return jsonify({"success": False, "message": "Unauthorized. Only administrators can perform this action."}), 403
+
+        try:
+            event = Event.query.get_or_404(event_id)
+            title = event.title
+            db.session.delete(event)
+            db.session.commit()
+            return jsonify({"success": True, "message": f"Event '{title}' has been deleted"})
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error in admin_delete_event: {str(e)}")
+            return jsonify({"success": False, "message": f"Error: {str(e)}"}), 500
+
     @app.route("/become-organizer")
     @login_required
     def become_organizer():

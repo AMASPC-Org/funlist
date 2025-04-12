@@ -4,6 +4,7 @@
 {{ super() }}
 <!-- Add FontAwesome for icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 {% endblock %}
 
 {% block content %}
@@ -133,28 +134,28 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="btn-group" role="group" aria-label="Event actions">
+                                        <div class="d-flex gap-1">
                                             {% if event.status == 'pending' %}
                                             <button onclick="window.approveEvent({{ event.id }})" 
-                                               class="btn btn-sm btn-outline-success" title="Approve">
-                                                <i class="fas fa-check"></i>
+                                               class="btn btn-sm btn-success" title="Approve Event">
+                                               <i class="bi bi-check-circle"></i>
                                             </button>
                                             <button onclick="window.rejectEvent({{ event.id }})" 
-                                               class="btn btn-sm btn-outline-danger" title="Reject">
-                                                <i class="fas fa-times"></i>
+                                               class="btn btn-sm btn-danger" title="Reject Event">
+                                               <i class="bi bi-x-circle"></i>
                                             </button>
                                             {% endif %}
                                             <a href="{{ url_for('event_detail', event_id=event.id) }}" 
-                                               class="btn btn-sm btn-outline-primary" title="View">
-                                                <i class="fas fa-eye"></i>
+                                               class="btn btn-sm btn-primary" title="View Event">
+                                               <i class="bi bi-eye"></i>
                                             </a>
                                             <a href="{{ url_for('admin_edit_event', event_id=event.id) }}" 
-                                               class="btn btn-sm btn-outline-secondary" title="Edit">
-                                                <i class="fas fa-edit"></i>
+                                               class="btn btn-sm btn-secondary" title="Edit Event">
+                                               <i class="bi bi-pencil"></i>
                                             </a>
                                             <button onclick="window.deleteEvent({{ event.id }})" 
-                                               class="btn btn-sm btn-outline-danger" title="Delete">
-                                                <i class="fas fa-trash"></i>
+                                               class="btn btn-sm btn-danger" title="Delete Event">
+                                               <i class="bi bi-trash"></i>
                                             </button>
                                         </div>
                                     </td>
@@ -205,18 +206,18 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="btn-group" role="group" aria-label="Event actions">
+                                        <div class="d-flex gap-1">
                                             <a href="{{ url_for('event_detail', event_id=event.id) }}" 
-                                               class="btn btn-sm btn-outline-primary" title="View">
-                                                <i class="fas fa-eye"></i>
+                                               class="btn btn-sm btn-primary" title="View Event">
+                                               <i class="bi bi-eye"></i>
                                             </a>
                                             <a href="{{ url_for('admin_edit_event', event_id=event.id) }}" 
-                                               class="btn btn-sm btn-outline-secondary" title="Edit">
-                                                <i class="fas fa-edit"></i>
+                                               class="btn btn-sm btn-secondary" title="Edit Event">
+                                               <i class="bi bi-pencil"></i>
                                             </a>
                                             <button onclick="window.deleteEvent({{ event.id }})" 
-                                               class="btn btn-sm btn-outline-danger" title="Delete">
-                                                <i class="fas fa-trash"></i>
+                                               class="btn btn-sm btn-danger" title="Delete Event">
+                                               <i class="bi bi-trash"></i>
                                             </button>
                                         </div>
                                     </td>

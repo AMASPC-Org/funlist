@@ -108,6 +108,34 @@ window.editEvent = function(eventId) {
   window.location.href = `/admin/events/${eventId}/edit`;
 };
 
+window.deleteEvent = function(eventId) {
+  const proceed = confirm(`Are you sure you want to delete this event? This action cannot be undone.`);
+  
+  if (!proceed) {
+    return;
+  }
+  
+  fetch(`/admin/event/${eventId}/delete`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+  .then(handleResponse)
+  .then(data => {
+    if (data.success) {
+      showToast(data.message, 'success');
+      setTimeout(() => { window.location.reload(); }, 1000);
+    } else {
+      showToast('Error: ' + data.message, 'danger');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    showToast('Error: ' + error.message, 'danger');
+  });
+};
+
 window.toggleFeature = function(eventId, featured) {
   const action = featured ? 'feature' : 'unfeature';
   const proceed = confirm(`Are you sure you want to ${action} this event?`);
