@@ -772,7 +772,7 @@ def init_routes(app):
         return render_template('reset_password.html', form=form, token=token)
 
     @app.route("/admin/analytics")
-    @loginrequired
+    @login_required
     def admin_analytics():
         if current_user.email != 'ryan@funlist.ai':
             flash("Access denied. Only authorized administrators can access this page.", "danger")
