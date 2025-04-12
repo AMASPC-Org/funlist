@@ -1310,6 +1310,46 @@ main {
     background: linear-gradient(45deg, #25F4EE 0%, #000000 50%, #FE2C55 100%);
 }
 
+/* Make social icons more visible */
+.social-buttons {
+    display: flex;
+    justify-content: center;
+    margin: 1rem 0;
+    gap: 1rem;
+}
+
+.btn-social {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+    background-color: #f8f9fa;
+    color: #333;
+    border-radius: 50%;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.btn-social i {
+    font-size: 18px;
+}
+
+.btn-social.facebook {
+    color: #3b5998;
+}
+
+.btn-social.instagram {
+    color: #e1306c;
+}
+
+.btn-social.tiktok {
+    color: #000000;
+}
+
 .footer a {
     color: #666;
     text-decoration: none;
