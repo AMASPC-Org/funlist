@@ -120,7 +120,7 @@
         {{ form.fun_meter.label(class="form-label") }}
         {{ form.fun_meter(class="form-control", type="number", min="1", max="5") }}
     </div>
-    
+
     <div class="mb-3">
         {{ form.prohibited_advertisers.label(class="form-label") }}
         <div class="form-text mb-2">Select categories of advertisers that should not be allowed to participate in this event</div>
@@ -129,7 +129,7 @@
             <a href="#" data-bs-toggle="modal" data-bs-target="#prohibitedInfoModal">Learn More</a> about advertiser categories
         </div>
     </div>
-    
+
     <!-- Prohibited Advertisers Info Modal -->
     <div class="modal fade" id="prohibitedInfoModal" tabindex="-1">
         <div class="modal-dialog">
@@ -160,15 +160,54 @@
         {{ form.ticket_url.label(class="form-label") }}
         {{ form.ticket_url(class="form-control") }}
     </div>
-    
+
     <div class="mb-4">
-        <div class="form-check">
-            {{ form.terms_accepted(class="form-check-input") }}
-            {{ form.terms_accepted.label(class="form-check-label") }}
-            <small class="d-block text-muted mt-1">
-                <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Read Terms and Conditions</a>
-            </small>
-        </div>
+        <div class="form-check mb-3">
+                    {{ form.terms_accepted(class="form-check-input") }}
+                    <label class="form-check-label" for="terms_accepted">
+                        I accept the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms and Conditions</a>
+                    </label>
+                    {% if form.terms_accepted.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.terms_accepted.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Terms and Conditions Modal -->
+                <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="termsModalLabel">Event Submission Terms and Conditions</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <!-- Content for the Event Submission Terms Modal/Section -->
+                                <h4>Event Submission Terms and Conditions</h4>
+                                <p>By submitting an event to FunList.ai, you agree to the following terms and conditions:</p>
+                                <ol>
+                                    <li><strong>Accuracy:</strong> You represent and warrant that all information provided about the event (including title, description, dates, times, location, and any images or links) is accurate, complete, and truthful to the best of your knowledge.</li>
+                                    <li><strong>Rights and Permissions:</strong> You represent and warrant that you have the full right, power, and authority to submit this event information and grant FunList.ai the necessary licenses to display it. This includes obtaining any necessary permissions from venue owners, performers, or other rights holders.</li>
+                                    <li><strong>Content Responsibility:</strong> You are solely responsible for the content of your event listing. FunList.ai acts as a platform for discovery and does not endorse or verify the details of submitted events.</li>
+                                    <li><strong>Compliance with Laws:</strong> You agree that the event itself, and the content of your listing, will comply with all applicable local, state, federal, and international laws and regulations. Events promoting illegal activities are strictly prohibited.</li>
+                                    <li><strong>Prohibited Content:</strong> You agree not to submit listings that contain hateful, defamatory, obscene, infringing, or otherwise objectionable content. FunList.ai reserves the right to define "objectionable" at its sole discretion.</li>
+                                    <li><strong>Moderation Rights:</strong> FunList.ai reserves the right, at its sole discretion, to review, edit, reject, or remove any event listing at any time, for any reason, without prior notice. This includes listings deemed inaccurate, inappropriate, promotional (rather than event-focused), or otherwise not aligned with the platform's purpose.</li>
+                                    <li><strong>License Grant:</strong> By submitting your event, you grant FunList.ai a non-exclusive, worldwide, royalty-free license to use, reproduce, display, distribute, and modify the submitted content (including text and images) in connection with the operation and promotion of the FunList.ai platform.</li>
+                                    <li><strong>Indemnification:</strong> You agree to indemnify and hold harmless FunList.ai, its parent company (American Marketing Alliance SPC), affiliates, officers, and employees from any claim or demand, including reasonable attorneys' fees, made by any third party due to or arising out of your event submission, your event itself, or your violation of these terms.</li>
+                                    <li><strong>Disclaimer:</strong> FunList.ai provides this platform as a service and is not responsible for the execution, safety, quality, or cancellation of any listed event. Attendees participate at their own risk.</li>
+                                    <li><strong>Full Terms and Privacy:</strong> Your use of FunList.ai is also governed by our main <a href="{{ url_for('terms') }}" target="_blank">Terms of Service</a> and <a href="{{ url_for('privacy') }}" target="_blank">Privacy Policy</a>. Please review them carefully.</li>
+                                </ol>
+                                <p><em>Submission of an event does not guarantee its publication on FunList.ai.</em></p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
     </div>
 
     <div class="d-flex flex-wrap gap-3 justify-content-start mt-4 mb-5">
@@ -199,30 +238,6 @@
     </div>
 </div>
 
-<!-- Terms Modal -->
-<div class="modal fade" id="termsModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Terms and Conditions</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>By submitting this event, you agree to our terms and conditions including:</p>
-                <ul>
-                    <li>All event information provided is accurate and truthful</li>
-                    <li>You have the right to promote this event</li>
-                    <li>You accept responsibility for the content of the event listing</li>
-                    <li>The event complies with all applicable laws and regulations</li>
-                </ul>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">I Understand</button>
-            </div>
-        </div>
-        </div>
-    </div>
-</div>
 
 <script>
 // Recurring event handling
