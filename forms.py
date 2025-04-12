@@ -155,6 +155,8 @@ class EventForm(FlaskForm):
         ('energy_drinks', 'Energy Drinks'),
         ('political_religious', 'Political and Religious Organizations')
     ], validators=[Optional()])
+    parent_event = SelectField('Parent Event', choices=[], validators=[Optional()])
+    is_sub_event = BooleanField('This is a sub-event of another event')
     title = StringField('Event Title', validators=[DataRequired(), Length(max=100)])
     description = TextAreaField('Event Description', validators=[DataRequired(), Length(max=1500)])
     date = DateField('Date', format='%Y-%m-%d', validators=[DataRequired()])

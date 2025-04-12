@@ -451,9 +451,10 @@ def init_routes(app):
 
         form = EventForm()
 
-        # Populate parent event choices
-        user_events = Event.query.filter_by(user_id=current_user.id, parent_event_id=None).all()
-        form.parent_event.choices = [(str(e.id), e.title) for e in user_events]
+        # Check if parent_event field exists in form before trying to populate it
+        if hasattr(form, 'parent_event'):
+            user_events = Event.query.filter_by(user_id=current_user.id, parent_event_id=None).all()
+            form.parent_event.choices = [(str(e.id), e.title) for e in user_events]
 
         if request.method == "POST":
             if form.validate_on_submit():
@@ -770,7 +771,7 @@ def init_routes(app):
         return render_template('reset_password.html', form=form, token=token)
 
     @app.route("/admin/analytics")
-    @login_required
+    @loginrequired
     def admin_analytics():
         if current_user.email != 'ryan@funlist.ai':
             flash("Access denied. Only authorized administrators can access this page.", "danger")
