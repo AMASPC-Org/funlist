@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block content %}
@@ -6,11 +5,11 @@
     <div class="row">
         <div class="col-md-8">
             <h2>{{ venue.name }}</h2>
-            
+
             {% if venue.venue_type %}
             <p class="text-muted">{{ venue.venue_type.name }}</p>
             {% endif %}
-            
+
             <div class="card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">Location</h5>
@@ -19,28 +18,28 @@
                         {{ venue.city }}, {{ venue.state }} {{ venue.zip_code }}<br>
                         {{ venue.country }}
                     </p>
-                    
+
                     {% if venue.latitude and venue.longitude %}
                     <div id="venue-map" style="height: 300px; width: 100%;"></div>
                     {% endif %}
                 </div>
             </div>
-            
+
             <div class="card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">Contact Information</h5>
                     {% if venue.phone %}
                     <p><strong>Phone:</strong> {{ venue.phone }}</p>
                     {% endif %}
-                    
+
                     {% if venue.email %}
                     <p><strong>Email:</strong> {{ venue.email }}</p>
                     {% endif %}
-                    
+
                     {% if venue.website %}
                     <p><strong>Website:</strong> <a href="{{ venue.website }}" target="_blank">{{ venue.website }}</a></p>
                     {% endif %}
-                    
+
                     {% if venue.contact_name %}
                     <p><strong>Contact Person:</strong> {{ venue.contact_name }}</p>
                     {% if venue.contact_phone %}
@@ -52,7 +51,7 @@
                     {% endif %}
                 </div>
             </div>
-            
+
             {% if venue.description %}
             <div class="card mb-4">
                 <div class="card-body">
@@ -61,7 +60,7 @@
                 </div>
             </div>
             {% endif %}
-            
+
             <div class="d-flex justify-content-between mt-4">
                 {% if current_user.is_authenticated %}
                     {% if (venue.owner_manager_user_id == current_user.id and venue.is_verified) or current_user.is_admin %}
@@ -72,16 +71,16 @@
                             <button type="submit" class="btn btn-success">Claim this Venue</button>
                         </form>
                     {% endif %}
-                    
+
                     <a href="{{ url_for('submit_event', venue_id=venue.id) }}" class="btn btn-outline-primary">Create Event at this Venue</a>
                 {% else %}
                     <a href="{{ url_for('login', next=url_for('venue_detail', venue_id=venue.id)) }}" class="btn btn-primary">Log in to claim or create events</a>
                 {% endif %}
-                
+
                 <a href="{{ url_for('venues') }}" class="btn btn-secondary">Back to Venues</a>
             </div>
         </div>
-        
+
         <div class="col-md-4">
             {% if venue.is_verified and venue.owner_manager %}
             <div class="card mb-4 border-success">
@@ -112,7 +111,7 @@
                 </div>
             </div>
             {% endif %}
-            
+
             <div class="card mb-4">
                 <div class="card-header">
                     <h5 class="card-title mb-0">Upcoming Events</h5>
@@ -137,7 +136,7 @@
                     <a href="{{ url_for('submit_event', venue_id=venue.id) }}" class="btn btn-sm btn-outline-primary">Submit an Event</a>
                 </div>
             </div>
-            
+
             <div class="card mb-4">
                 <div class="card-header">
                     <h5 class="card-title mb-0">Past Events</h5>
