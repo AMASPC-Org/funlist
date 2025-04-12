@@ -236,7 +236,7 @@ class OrganizerProfileForm(FlaskForm):
     company_name = StringField('Organization/Company Name', validators=[Optional(), Length(max=100)])
     description = TextAreaField('About Your Organization', validators=[Optional(), Length(max=500)])
     website = StringField('Website', validators=[Optional(), URL()])
-    submit = SubmitField('Save Organizer Profile')ield('Save Organizer Profile')
+    submit = SubmitField('Save Organizer Profile')
 
 class VendorProfileForm(FlaskForm):
     vendor_type = SelectField('Vendor Type', choices=[
