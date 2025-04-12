@@ -622,13 +622,6 @@ def init_routes(app):
                     flash("Event created successfully!", "success")
                     return redirect(url_for("events"))
                 
-            except Exception as e:
-                db.session.rollback()
-                logger.exception(f"Error during event submission: {str(e)}")
-                flash("An unexpected error occurred. Please try again later.", "danger")
-                
-        elif request.method == "POST":
-            flash("Form submission failed. Please check your inputs.", "danger")
             except SQLAlchemyError as e:
                 db.session.rollback()
                 logger.exception(
@@ -638,11 +631,12 @@ def init_routes(app):
                 return render_template("submit_event.html", form=form)
             except Exception as e:
                 db.session.rollback()
-                logger.exception(
-                    f"Unexpected error during event submission: {str(e)}"
-                )  # Improved logging
+                logger.exception(f"Error during event submission: {str(e)}")
                 flash("An unexpected error occurred. Please try again later.", "danger")
                 return render_template("submit_event.html", form=form)
+                
+        elif request.method == "POST":
+            flash("Form submission failed. Please check your inputs.", "danger")
         return render_template("submit_event.html", form=form)
 
     @app.errorhandler(500)

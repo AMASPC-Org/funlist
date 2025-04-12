@@ -1,0 +1,81 @@
+Subject: Implement Venue Management System with Ownership & Verification
+Request:
+This prompt outlines the requirements for implementing a Venue Management system within FunList.ai. Please review the entire request carefully, considering the existing codebase structure and the issues encountered in our previous interactions (database schema inconsistencies, import errors, etc.). The goal is to implement this feature correctly and completely in one pass to establish a stable foundation for venues.
+Core Requirements:
+Anyone Can Add Venues: Any logged-in user should be able to suggest/add a new venue to the system.
+Venue Ownership/Management: When adding a venue, the user must indicate if they are an owner, manager, or authorized representative of that venue.
+Venue Claiming: If a venue is added by someone not claiming ownership/management, there needs to be a mechanism for the actual owner/manager to "claim" that venue later.
+Verification: A process (even if basic initially) needs to be in place to verify claims of ownership/management to prevent fraud.
+Event Association: Event creators must be able to select an existing venue from the database OR add a new venue when submitting an event.
+Editing Restrictions: Only verified owners/managers (or site admins) should be able to edit venue details.
+Detailed Tasks:
+Database Model Changes (models.py):
+Create Venue Model: Define a new SQLAlchemy model named Venue. It should include fields for:
+id (Integer, Primary Key)
+name (String, Not Nullable)
+street_address (String)
+city (String)
+state (String)
+zip_code (String)
+phone (String, Nullable)
+website (String, Nullable)
+latitude (Float, Nullable)
+longitude (Float, Nullable)
+description (Text, Nullable)
+created_by_user_id (Integer, ForeignKey to users.id, Nullable - Who initially added it)
+owner_manager_user_id (Integer, ForeignKey to users.id, Nullable - Who verified owner/manager is)
+is_verified (Boolean, Default=False - Indicates if ownership is verified)
+verification_notes (Text, Nullable - For admin verification process)
+created_at (DateTime, Default=utcnow)
+updated_at (DateTime, Default/On Update=utcnow)
+(Add appropriate relationships, e.g., backref to User for created_by and owner_manager)
+Update Event Model: Add a venue_id (Integer, ForeignKey to venues.id, Nullable) field to associate events with venues. Add the corresponding relationship.
+Update User Model: Consider if any direct relationship from User to managed Venues is needed beyond the owner_manager_user_id on the Venue model itself (perhaps a managed_venues relationship using primaryjoin if a user can manage multiple venues).
+Form Changes (forms.py):
+Create VenueForm: Create a new WTForm class VenueForm for adding/editing venues. Include fields corresponding to the Venue model (Name, Address fields, Phone, Website, Description). Crucially, add:
+is_owner_manager (BooleanField, Label: "I am an owner, manager, or authorized representative of this venue", Optional).
+Modify EventForm:
+Add a venue_selection_type (RadioField, Choices: [('existing', 'Select Existing Venue'), ('new', 'Add New Venue')], Default='existing').
+Add a existing_venue_id (QuerySelectField - requires Flask-SQLAlchemy, loads existing Venues, allow_blank=True, Optional). Label: "Select Venue".
+Embed fields for adding a new venue (Name, Address, etc., potentially using FormField to wrap the VenueForm fields, but mark them as optional initially). These fields should be shown/hidden using JavaScript based on venue_selection_type.
+Route Changes (routes.py):
+/venues/add (GET, POST): Create a route to display and process the VenueForm for adding new venues independently of event submission. On POST, save the new venue, setting created_by_user_id to current_user.id. If is_owner_manager is checked, set owner_manager_user_id to current_user.id but keep is_verified as False (pending verification).
+/submit-event (POST Logic): Modify the existing route logic:
+Check the value of venue_selection_type.
+If 'existing', validate and use the existing_venue_id.
+If 'new', validate the embedded new venue fields, create a new Venue record (setting created_by_user_id, check is_owner_manager as above), and associate the event.venue_id with the newly created venue's ID. Handle potential validation errors for the new venue fields.
+/venue/<int:venue_id>/edit (GET, POST - Placeholder Logic): Create a route for editing venues. For now, the GET request should display the VenueForm pre-populated with venue data. The POST request should include logic to check if current_user.id == venue.owner_manager_user_id AND venue.is_verified (or if current_user.is_admin) before allowing the save. (Implement the basic check, full saving logic can be refined).
+/venue/<int:venue_id>/claim (POST - Placeholder Logic): Create a route to handle a "Claim this Venue" request. This route should:
+Check if the venue already has a verified owner (owner_manager_user_id is not Null and is_verified is True). If so, flash an error.
+If not claimed/verified, associate the current_user.id with the owner_manager_user_id field and set is_verified to False.
+Add a note to verification_notes (e.g., "Claim requested by user ID {current_user.id} on {datetime.utcnow()}").
+Flash a message like "Venue claim submitted. An administrator will review your request."
+(This implies an admin interface is needed later to manage verification).
+Template Changes:
+Create templates/add_venue.html: Create a template to render the VenueForm.
+Create/Update templates/venue_detail.html: (If it doesn't exist). Display venue details. Add a "Claim this Venue" button only if venue.owner_manager_user_id is None or venue.is_verified is False. This button should submit a POST request to the /venue/<int:venue_id>/claim route. Add an "Edit Venue" button only if the current user is the verified owner/manager or an admin.
+Update templates/submit_event.html:
+Add the venue_selection_type radio buttons.
+Add the existing_venue_id dropdown (QuerySelectField).
+Add the fields for creating a new venue (Name, Address, etc.).
+Use JavaScript to show/hide the "Select Venue" dropdown OR the "Add New Venue" fields based on the radio button selection.
+Verification Process (Conceptual):
+Acknowledge that a full verification system (e.g., email to venue owner, manual admin review) is complex and will be implemented later.
+For now, the "Claim" process sets the owner_manager_user_id and flags it for admin review (is_verified=False, add verification_notes). Admins will later need an interface to review these claims and set is_verified=True.
+Best Practices Reminder:
+Use Flask-WTF for all forms for validation and CSRF protection.
+Use Flask-SQLAlchemy correctly for database interactions.
+Ensure proper relationships are defined in models.py.
+Use clear variable names and add comments where necessary.
+Handle potential database errors gracefully (try/except blocks, db.session.rollback()).
+Ensure user authentication (@login_required) and authorization checks are applied to relevant routes (editing/claiming venues).
+Provide Complete Code:
+Please return the complete, fully edited code for the following files incorporating all the changes described above:
+models.py
+forms.py
+routes.py
+templates/submit_event.html
+templates/add_venue.html (New file)
+templates/venue_detail.html (New or updated file)
+Context:
+This is a significant feature addition. The goal is to allow users to add venues, manage ownership claims, implement a basic verification flag, and integrate venue selection/creation into the event submission process. Please implement carefully, considering the past issues with incremental changes. Ask clarifying questions if needed.
