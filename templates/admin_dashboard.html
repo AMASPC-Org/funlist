@@ -19,6 +19,11 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link {% if active_tab == 'featured_events' %}active{% endif %}" href="{{ url_for('admin_dashboard', tab='featured_events') }}">
+                            Featured Events
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link {% if active_tab == 'users' %}active{% endif %}" href="{{ url_for('admin_dashboard', tab='users') }}">
                             User Management
                         </a>
@@ -126,6 +131,60 @@
                                         <button onclick="window.toggleFeature({{ event.id }}, true)" 
                                            class="btn btn-sm btn-info">Feature</button>
                                         {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Featured Events Section -->
+            {% if active_tab == 'featured_events' %}
+            <div class="card">
+                <div class="card-header">
+                    <h5>Featured Events</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Date</th>
+                                    <th>Location</th>
+                                    <th>Organizer</th>
+                                    <th>Featured Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for event in events %}
+                                <tr>
+                                    <td>{{ event.title }}</td>
+                                    <td>{{ event.date.strftime('%Y-%m-%d %H:%M') if event.date else event.start_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>{{ event.city }}, {{ event.state }}</td>
+                                    <td>{{ event.organizer.email }}</td>
+                                    <td>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   id="featured-toggle-{{ event.id }}" 
+                                                   {% if event.featured %}checked{% endif %}
+                                                   onchange="window.toggleFeature({{ event.id }}, this.checked)">
+                                            <label class="form-check-label" for="featured-toggle-{{ event.id }}">
+                                                {{ 'Featured' if event.featured else 'Not Featured' }}
+                                            </label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('event_detail', event_id=event.id) }}" 
+                                           class="btn btn-sm btn-primary">View</a>
+                                        <a href="{{ url_for('admin_edit_event', event_id=event.id) }}" 
+                                           class="btn btn-sm btn-secondary">Edit</a>
+                                        <button onclick="window.deleteEvent({{ event.id }})" 
+                                           class="btn btn-sm btn-danger">Delete</button>
                                     </td>
                                 </tr>
                                 {% endfor %}

@@ -2239,3 +2239,23 @@ footer {
 .dropdown-menu.show {
     display: block !important;
 }
+
+/* Featured Event Toggle Switches */
+.form-check.form-switch {
+  display: flex;
+  align-items: center;
+}
+
+.form-check-input.type-checkbox {
+  cursor: pointer;
+}
+
+.form-check-label {
+  margin-left: 8px;
+  font-weight: 500;
+}
+
+.form-check-input:checked {
+  background-color: #198754;
+  border-color: #198754;
+}

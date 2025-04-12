@@ -110,30 +110,65 @@ window.editEvent = function(eventId) {
 
 window.toggleFeature = function(eventId, featured) {
   const action = featured ? 'feature' : 'unfeature';
-  if (confirm(`Are you sure you want to ${action} this event?`)) {
-    fetch(`/admin/event/${eventId}/toggle-feature`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        featured: featured
-      })
-    })
-    .then(handleResponse)
-    .then(data => {
-      if (data.success) {
-        showToast(data.message, 'success');
-        setTimeout(() => { window.location.reload(); }, 1000);
-      } else {
-        showToast('Error: ' + data.message, 'danger');
-      }
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      showToast('Error: ' + error.message, 'danger');
-    });
+  const proceed = confirm(`Are you sure you want to ${action} this event?`);
+  
+  if (!proceed) {
+    // Reset the checkbox to its previous state if user cancels
+    const checkbox = document.getElementById(`featured-toggle-${eventId}`);
+    if (checkbox) {
+      checkbox.checked = !featured;
+    }
+    return;
   }
+  
+  fetch(`/admin/event/${eventId}/toggle-feature`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      featured: featured
+    })
+  })
+  .then(handleResponse)
+  .then(data => {
+    if (data.success) {
+      // Update UI elements
+      const checkbox = document.getElementById(`featured-toggle-${eventId}`);
+      const label = checkbox ? checkbox.nextElementSibling : null;
+      
+      if (checkbox) {
+        checkbox.checked = featured;
+      }
+      
+      if (label) {
+        label.textContent = featured ? 'Featured' : 'Not Featured';
+      }
+      
+      showToast(data.message, 'success');
+      
+      // Only reload if on Event Management page, not on Featured Events page
+      if (!window.location.href.includes('featured_events')) {
+        setTimeout(() => { window.location.reload(); }, 1000);
+      }
+    } else {
+      // Reset checkbox on error
+      const checkbox = document.getElementById(`featured-toggle-${eventId}`);
+      if (checkbox) {
+        checkbox.checked = !featured;
+      }
+      showToast('Error: ' + data.message, 'danger');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    // Reset checkbox on error
+    const checkbox = document.getElementById(`featured-toggle-${eventId}`);
+    if (checkbox) {
+      checkbox.checked = !featured;
+    }
+    showToast('Error: ' + error.message, 'danger');
+  });
 };
 
 // Add event listeners when DOM is loaded

@@ -990,8 +990,10 @@ def init_routes(app):
         }
 
         # Get events for event management
-
-        events = Event.query.filter_by(status=status).order_by(Event.start_date).all()
+        if tab == 'featured_events':
+            events = Event.query.filter_by(featured=True).order_by(Event.start_date).all()
+        else:
+            events = Event.query.filter_by(status=status).order_by(Event.start_date).all()
 
         # Get users for user management
 
