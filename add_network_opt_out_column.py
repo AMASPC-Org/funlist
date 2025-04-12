@@ -2,30 +2,27 @@
 import logging
 from flask import Flask
 from db_init import db
-from sqlalchemy import text
+from sqlalchemy import text, inspect
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def add_network_opt_out_column():
     app = Flask(__name__)
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///instance/funlist.db"
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    # Use the existing database configuration from your app
+    app.config.from_object('app.config.Config')
     db.init_app(app)
     
     with app.app_context():
         try:
-            # Check if network_opt_out column exists
-            column_exists = False
-            try:
-                db.session.execute(text("SELECT network_opt_out FROM events LIMIT 1"))
-                column_exists = True
-            except Exception:
-                column_exists = False
+            # Check if network_opt_out column exists using inspect
+            inspector = inspect(db.engine)
+            columns = [column['name'] for column in inspector.get_columns('events')]
             
-            if not column_exists:
+            if 'network_opt_out' not in columns:
                 logger.info("Adding missing network_opt_out column to events table")
-                db.session.execute(text("ALTER TABLE events ADD COLUMN network_opt_out BOOLEAN DEFAULT FALSE"))
+                # Use PostgreSQL syntax for adding column
+                db.session.execute(text("ALTER TABLE events ADD COLUMN IF NOT EXISTS network_opt_out BOOLEAN DEFAULT FALSE"))
                 db.session.commit()
                 logger.info("Added network_opt_out column successfully")
             else:

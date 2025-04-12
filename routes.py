@@ -509,6 +509,13 @@ def init_routes(app):
                         user_id=current_user.id,
                         ticket_url=form.ticket_url.data
                     )
+                    
+                    # Add network_opt_out if the form has it
+                    if hasattr(form, 'network_opt_out'):
+                        try:
+                            event.network_opt_out = form.network_opt_out.data
+                        except Exception as e:
+                            logger.warning(f"Could not set network_opt_out: {str(e)}")
 
                     # Handle prohibited advertisers
                     if form.prohibited_advertisers.data:
