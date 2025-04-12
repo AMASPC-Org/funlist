@@ -1,14 +1,21 @@
-
-{% macro render_field(field) %}
-    <div class="mb-3">
+{% macro render_field(field, class="form-control", rows=None) %}
+    <div class="form-group mb-3">
         {{ field.label(class="form-label") }}
-        {{ field(class=kwargs.pop('class', ''), **kwargs) }}
         {% if field.errors %}
+            {% if field.type == 'SelectField' %}
+                {{ field(class=class + " is-invalid") }}
+            {% else %}
+                {{ field(class=class + " is-invalid", rows=rows) }}
+            {% endif %}
             {% for error in field.errors %}
-                <div class="invalid-feedback d-block">
-                    <i class="fas fa-exclamation-circle"></i> {{ error }}
-                </div>
+                <div class="invalid-feedback">{{ error }}</div>
             {% endfor %}
+        {% else %}
+            {% if field.type == 'SelectField' %}
+                {{ field(class=class) }}
+            {% else %}
+                {{ field(class=class, rows=rows) }}
+            {% endif %}
         {% endif %}
         {% if field.description %}
             <small class="form-text text-muted">{{ field.description }}</small>

@@ -1,75 +1,7 @@
-
 {% extends "base.html" %}
 {% from 'macros/_form_helpers.html' import render_field %}
 
 {% block title %}Contact Us | FunList.ai{% endblock %}
-
-{% block head %}
-{{ super() }}
-<script src="https://unpkg.com/feather-icons"></script>
-<style>
-    .contact-card {
-        height: 100%;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    }
-    .card-header-custom {
-        border-bottom: 1px solid rgba(0,0,0,0.1);
-        padding-bottom: 12px;
-    }
-    .contact-info-item {
-        display: flex;
-        align-items: flex-start;
-        margin-bottom: 15px;
-    }
-    .contact-info-item i {
-        min-width: 24px;
-        margin-right: 10px;
-        color: #4d79ff;
-    }
-    .department-card {
-        margin-bottom: 15px;
-        border-radius: 8px;
-        transition: all 0.2s ease;
-    }
-    .department-card:hover {
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-    .department-header {
-        display: flex;
-        align-items: center;
-        padding: 12px 15px;
-        border-radius: 8px;
-        cursor: pointer;
-    }
-    .department-header i {
-        color: #4d79ff;
-        margin-right: 10px;
-    }
-    .response-time-table {
-        width: 100%;
-    }
-    .response-time-table td {
-        padding: 8px 0;
-        border-bottom: 1px solid rgba(0,0,0,0.05);
-    }
-    .response-time-table td:last-child {
-        text-align: right;
-        font-weight: 500;
-    }
-    .before-contact-banner {
-        background-color: #4d79ff;
-        color: white;
-        border-radius: 8px;
-        padding: 25px;
-        margin-top: 40px;
-    }
-    .footer-logo {
-        max-width: 150px;
-        margin-bottom: 10px;
-    }
-</style>
-{% endblock %}
 
 {% block content %}
 <div class="container py-5">
@@ -81,7 +13,7 @@
     <div class="row g-4">
         <!-- Left Column: Send Message Form -->
         <div class="col-lg-7">
-            <div class="card contact-card">
+            <div class="card h-100">
                 <div class="card-body">
                     <h2>Send us a message</h2>
                     <p><small>Fill out the form below and we'll respond within 24 business hours.</small></p>
@@ -102,219 +34,182 @@
                                 {{ render_field(form.category, class="form-select") }}
                             </div>
                             <div class="col-12">
-                                {{ render_field(form.message, class="form-control", rows="5") }}
+                                {{ render_field(form.message, class="form-control", rows=5) }}
                             </div>
                             <div class="col-12">
-                                <!-- Optional: Add Attachment Field Here if needed -->
-                                <!-- {{ render_field(form.attachments, class="form-control") }} -->
-                            </div>
-                            <div class="col-12">
-                                <button type="submit" class="btn btn-primary"><i data-feather="send" class="me-2"></i>Send Message</button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane me-2"></i>Send Message
+                                </button>
                             </div>
                         </div>
                     </form>
                 </div>
             </div>
-
-            <!-- Support Resources Card -->
-            <div class="card mt-4">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h5>Get Support</h5>
-                            <p><small>Our team is ready to assist you.</small></p>
-                            <p><a href="{{ url_for('help_center') }}">Check our Help Center first!</a></p>
-                        </div>
-                        <div class="col-md-6">
-                            <h5>FAQ Resources</h5>
-                            <ul class="list-unstyled">
-                                <li><small><i data-feather="check" class="me-1"></i> <a href="{{ url_for('help_center') }}#account">Account Setup Guide</a></small></li>
-                                <li><small><i data-feather="check" class="me-1"></i> <a href="{{ url_for('help_center') }}#events">Submitting Events</a></small></li>
-                                <li><small><i data-feather="check" class="me-1"></i> <a href="{{ url_for('help_center') }}#billing">Billing & Payments FAQ</a></small></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Need Immediate Assistance Card -->
-            <div class="card mt-4 text-white" style="background-color: #0d6efd;">
-                <div class="card-body">
-                    <h5 class="card-title">Need Immediate Assistance?</h5>
-                    <p class="card-text">Our customer service team is available Monday-Friday for urgent matters.</p>
-                    <p class="card-text fs-5"><i class="fas fa-phone me-2"></i> (360) 200-8768</p>
-                </div>
-            </div>
-
-            <!-- AMA Branding -->
-            <div class="card mt-4">
-                <div class="card-body text-center">
-                    <img src="/static/images/logo.png" alt="AMA Logo" class="footer-logo">
-                    <p class="small mb-0">Part of the American Marketing Alliance SPC Network</p>
-                </div>
-            </div>
         </div>
 
-        <!-- Right Column: Contact Details & Departments -->
+        <!-- Right Column: Contact Information -->
         <div class="col-lg-5">
             <!-- Contact Information Card -->
-            <div class="card contact-card mb-4">
+            <div class="card mb-4">
                 <div class="card-body">
-                    <h4 class="card-header-custom">Contact Information</h4>
-                    
-                    <div class="mt-4">
-                        <div class="contact-info-item">
-                            <i data-feather="mail"></i>
-                            <div>
-                                <strong>Email</strong><br>
-                                <a href="mailto:contact@funlist.ai">contact@funlist.ai</a>
-                            </div>
-                        </div>
-                        
-                        <div class="contact-info-item">
-                            <i data-feather="phone"></i>
-                            <div>
-                                <strong>Phone</strong><br>
-                                (360) 200-8768<br>
-                                <small>Monday-Friday: 9AM - 5PM PT</small>
-                            </div>
-                        </div>
-                        
-                        <div class="contact-info-item">
-                            <i data-feather="map-pin"></i>
-                            <div>
-                                <strong>Address</strong><br>
-                                American Marketing Alliance SPC<br>
-                                724 Columbia St NW, Ste 260<br>
-                                Olympia, WA 98501
-                            </div>
-                        </div>
-                        
-                        <div class="contact-info-item">
-                            <i data-feather="clock"></i>
-                            <div>
-                                <strong>Business Hours</strong><br>
-                                Monday-Friday: 9AM - 5:30 PM PT<br>
-                                Saturday: 10AM - 2:00 PM PT<br>
-                                Sunday: Closed
-                            </div>
-                        </div>
-                    </div>
+                    <h2>Contact Information</h2>
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <i class="fas fa-envelope text-primary me-2"></i>
+                            <strong>Email:</strong>
+                            <a href="mailto:contact@funlist.ai">contact@funlist.ai</a>
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-phone text-primary me-2"></i>
+                            <strong>Phone:</strong>
+                            <a href="tel:3602008768">(360) 200-8768</a>
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                            <strong>Address:</strong><br>
+                            FunList.ai<br>
+                            4210 6th Avenue SE<br>
+                            Olympia, WA 98503
+                        </li>
+                        <li>
+                            <i class="fas fa-clock text-primary me-2"></i>
+                            <strong>Business Hours:</strong><br>
+                            Monday-Friday: 9:00 AM - 5:00 PM<br>
+                            Saturday: 10:00 AM - 2:00 PM<br>
+                            Sunday: Closed
+                        </li>
+                    </ul>
                 </div>
             </div>
 
-            <!-- Department Emails Card -->
-            <div class="card contact-card mb-4">
+            <!-- Department Emails -->
+            <div class="card">
                 <div class="card-body">
-                    <h4 class="card-header-custom">Department Emails</h4>
-                    <p class="small mb-3">Contact our teams directly to get faster help.</p>
-                    
-                    <div class="department-card">
-                        <div class="department-header">
-                            <i data-feather="help-circle"></i>
-                            <div>
-                                <strong>General</strong><br>
-                                <small>Questions about FunList or promotion.</small><br>
-                                <a href="mailto:contact@funlist.ai">contact@funlist.ai</a>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="department-card">
-                        <div class="department-header">
-                            <i data-feather="code"></i>
-                            <div>
-                                <strong>Support</strong><br>
-                                <small>Technical support inquiries.</small><br>
-                                <a href="mailto:support@funlist.ai">support@funlist.ai</a>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="department-card">
-                        <div class="department-header">
-                            <i data-feather="dollar-sign"></i>
-                            <div>
-                                <strong>Sales</strong><br>
-                                <small>Event listings, ads, or partnerships.</small><br>
-                                <a href="mailto:sales@funlist.ai">sales@funlist.ai</a>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="department-card">
-                        <div class="department-header">
-                            <i data-feather="users"></i>
-                            <div>
-                                <strong>Business</strong><br>
-                                <small>Media inquiries or partnerships.</small><br>
-                                <a href="mailto:business@funlist.ai">business@funlist.ai</a>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="department-card">
-                        <div class="department-header">
-                            <i data-feather="shield"></i>
-                            <div>
-                                <strong>Privacy</strong><br>
-                                <small>GDPR or CCPA requests.</small><br>
-                                <a href="mailto:privacy@funlist.ai">privacy@funlist.ai</a>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="department-card">
-                        <div class="department-header">
-                            <i data-feather="info"></i>
-                            <div>
-                                <strong>Info</strong><br>
-                                <small>For basic API related inquiries.</small><br>
-                                <a href="mailto:info@funlist.ai">info@funlist.ai</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                    <h2>Department Emails</h2>
+                    <p class="small">Direct your inquiry to a specific department to get help faster:</p>
 
-            <!-- Response Time Card -->
-            <div class="card contact-card">
-                <div class="card-body">
-                    <h4 class="card-header-custom">Response Time</h4>
-                    <table class="response-time-table mt-3">
-                        <tr>
-                            <td>Email Support:</td>
-                            <td>~24 hours</td>
-                        </tr>
-                        <tr>
-                            <td>Phone Support:</td>
-                            <td>Immediate during business hours</td>
-                        </tr>
-                        <tr>
-                            <td>Technical Issues:</td>
-                            <td>~4-8 business hours</td>
-                        </tr>
-                        <tr>
-                            <td>Billing Inquiries:</td>
-                            <td>~24-48 business hours</td>
-                        </tr>
-                    </table>
-                    <p class="small fst-italic mt-3">Urgent issues receive priority. Please mark your message as urgent only if your issue requires immediate attention.</p>
+                    <!-- Sales -->
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle bg-light p-2 me-2">
+                            <i class="fas fa-dollar-sign text-primary"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0">Sales</h5>
+                            <p class="small mb-0">Questions about pricing or partnerships</p>
+                            <a href="mailto:sales@funlist.ai">sales@funlist.ai</a>
+                        </div>
+                    </div>
+
+                    <!-- Support -->
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle bg-light p-2 me-2">
+                            <i class="fas fa-headset text-primary"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0">Support</h5>
+                            <p class="small mb-0">Technical support requests</p>
+                            <a href="mailto:support@funlist.ai">support@funlist.ai</a>
+                        </div>
+                    </div>
+
+                    <!-- Events -->
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle bg-light p-2 me-2">
+                            <i class="fas fa-calendar text-primary"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0">Events</h5>
+                            <p class="small mb-0">Event listings, updates, or partnerships</p>
+                            <a href="mailto:events@funlist.ai">events@funlist.ai</a>
+                        </div>
+                    </div>
+
+                    <!-- Marketing -->
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle bg-light p-2 me-2">
+                            <i class="fas fa-bullhorn text-primary"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0">Marketing</h5>
+                            <p class="small mb-0">Marketing collaboration or media</p>
+                            <a href="mailto:marketing@funlist.ai">marketing@funlist.ai</a>
+                        </div>
+                    </div>
+
+                    <!-- Privacy -->
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-light p-2 me-2">
+                            <i class="fas fa-shield-alt text-primary"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0">Privacy</h5>
+                            <p class="small mb-0">GDPR requests or CCPA inquiries</p>
+                            <a href="mailto:privacy@funlist.ai">privacy@funlist.ai</a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Bottom CTA: Before Contacting Support -->
-    <div class="before-contact-banner mt-5">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <h4 class="mb-2">Before contacting support</h4>
-                <p class="mb-0">Check our help articles for answers to common questions. Our help center might already have the answer you need!</p>
+    <!-- Response Time Section -->
+    <div class="row mt-4">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <h3>Response Time</h3>
+                    <p>We aim to respond to all inquiries as quickly as possible within the following timeframes:</p>
+
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Contact Type</th>
+                                    <th class="text-end">Response Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Email Support</td>
+                                    <td class="text-end">24 Hours</td>
+                                </tr>
+                                <tr>
+                                    <td>Phone Support</td>
+                                    <td class="text-end">Immediate (During Business Hours)</td>
+                                </tr>
+                                <tr>
+                                    <td>Technical Issues</td>
+                                    <td class="text-end">48 Hours</td>
+                                </tr>
+                                <tr>
+                                    <td>Billing Questions</td>
+                                    <td class="text-end">24 Hours</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Need urgent assistance?</strong> For time-sensitive matters, please contact our support team at <a href="tel:3602008768">(360) 200-8768</a>.
+                    </div>
+                </div>
             </div>
-            <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                <a href="{{ url_for('help_center') }}" class="btn btn-light me-2">Browse Help Articles</a>
-                <a href="{{ url_for('help_center') }}#faq" class="btn btn-outline-light">Check FAQs</a>
+        </div>
+    </div>
+
+    <!-- Before Contacting Support Section -->
+    <div class="row mt-4">
+        <div class="col-lg-12">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h3>Before contacting support</h3>
+                    <p>You might find immediate answers to your questions in our knowledge base and FAQs:</p>
+                    <div class="d-flex justify-content-center gap-3 mt-3">
+                        <a href="{{ url_for('help_center') }}" class="btn btn-outline-light">Browse Help Articles</a>
+                        <a href="#" class="btn btn-light">Check FAQ</a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
