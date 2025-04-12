@@ -518,8 +518,11 @@ def init_routes(app):
         # Create a new form instance
         form = EventForm()
         
-        # Make sure we have a clean session
-        db.session.remove()
+        # Make sure we have a clean database session by rolling back any failed transactions
+        try:
+            db.session.rollback()
+        except Exception as e:
+            logger.error(f"Error rolling back session: {str(e)}")
         
         # Set default choices for parent events
         form.parent_event.choices = [('0', 'No parent events available')]
@@ -529,16 +532,18 @@ def init_routes(app):
             # Make sure we have a fresh user object to work with
             user = User.query.get(current_user.id)
             
-            # Try to safely get the user's events for parent event selection
+            # Try to safely get the user's events for parent event selection in a new transaction
             try:
                 user_events = Event.query.filter_by(user_id=user.id, parent_event_id=None).all()
                 if user_events:
                     form.parent_event.choices = [(str(e.id), e.title) for e in user_events]
             except Exception as inner_e:
                 logger.error(f"Error querying parent events: {str(inner_e)}")
+                db.session.rollback()  # Roll back on error
                 # Continue execution even if this fails
         except Exception as e:
             logger.error(f"Error refreshing user session: {str(e)}")
+            db.session.rollback()  # Roll back on error
             # Don't fail the whole page if we can't get parent events
         
         # Check if venue_id is in request args (coming from venue detail page)
