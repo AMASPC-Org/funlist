@@ -2562,20 +2562,17 @@ footer {
 .user-avatar-container {
     width: 40px; 
     height: 40px; 
-    background-color: #f8f9fa; 
+    background-color: var(--primary-color); 
     border-radius: 50%; 
-    box-shadow: 0 5px 10px rgba(0,0,0,0.2); 
-    border: 1px solid #000; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
+    border: none;
     display: flex; 
     justify-content: center; 
     align-items: center;
-    overflow: visible;
 }
 
 .user-avatar-icon {
-    color: #000; 
-    font-size: 1.8rem !important;
-    display: inline-block !important;
-    width: auto !important;
-    height: auto !important;
+    color: white; 
+    font-size: 1.5rem;
+    display: inline-block;
 }
