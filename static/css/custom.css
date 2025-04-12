@@ -2569,9 +2569,13 @@ footer {
     display: flex; 
     justify-content: center; 
     align-items: center;
+    overflow: visible;
 }
 
 .user-avatar-icon {
     color: #000; 
-    font-size: 1.5rem;
+    font-size: 1.5rem !important;
+    display: inline-block !important;
+    width: auto !important;
+    height: auto !important;
 }
