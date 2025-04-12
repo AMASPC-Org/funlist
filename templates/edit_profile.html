@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 {% from "macros/_form_helpers.html" import render_field %}
 
@@ -8,10 +7,10 @@
         <div class="col-md-12">
             <h2>My Profile</h2>
             <p class="text-muted">Manage your personal information and settings</p>
-            
+
             <form method="POST" enctype="multipart/form-data">
                 {{ form.hidden_tag() }}
-                
+
                 <!-- Personal Information Section -->
                 <div class="card mb-4">
                     <div class="card-body">
@@ -23,7 +22,7 @@
                                 {{ render_field(form.title, class="form-control") }}
                             </div>
                             <div class="col-md-6">
-                                
+
                                 {% if form.profile_image %}
                                 <div class="mb-3">
                                     <label class="form-label">Profile Image</label>
@@ -46,7 +45,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Social Media Links Section -->
                 <div class="card mb-4">
                     <div class="card-body">
@@ -64,7 +63,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Organizer Information Section (conditional) -->
                 {% if current_user.is_organizer %}
                 <div class="card mb-4">
@@ -86,14 +85,14 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Venue Management Section (placeholder) -->
                 <div class="card mb-4">
                     <div class="card-body">
                         <h5 class="card-title">Venue Management</h5>
                         <p><small>Manage venues associated with your organization.</small></p>
-                        
-                        {% if current_user.venues.all() %}
+
+                        {% if current_user.created_venues.all() %}
                         <div class="table-responsive mb-3">
                             <table class="table table-striped">
                                 <thead>
@@ -105,7 +104,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for venue in current_user.venues %}
+                                    {% for venue in current_user.created_venues %}
                                     <tr>
                                         <td>{{ venue.name }}</td>
                                         <td>{{ venue.venue_type.name if venue.venue_type else 'N/A' }}</td>
@@ -124,12 +123,12 @@
                         {% else %}
                         <p class="alert alert-info">You haven't added any venues yet.</p>
                         {% endif %}
-                        
+
                         <a href="{{ url_for('add_venue') }}" class="btn btn-primary">Add New Venue</a>
                     </div>
                 </div>
                 {% endif %}
-                
+
                 <!-- Account Settings Section -->
                 <div class="card mb-4">
                     <div class="card-body">
@@ -142,7 +141,7 @@
                         <!-- Placeholder for future settings -->
                     </div>
                 </div>
-                
+
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                     <a href="{{ url_for('profile') }}" class="btn btn-secondary me-md-2">Cancel</a>
                     {{ form.submit(class="btn btn-primary") }}
