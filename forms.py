@@ -346,3 +346,26 @@ class ContactForm(FlaskForm):
         Length(min=10, max=2000, message="Message must be between 10 and 2000 characters")
     ])
     submit = SubmitField('Send Message')
+class VenueForm(FlaskForm):
+    name = StringField('Venue Name', validators=[DataRequired()])
+    street = StringField('Street Address')
+    city = StringField('City')
+    state = StringField('State/Province')
+    zip_code = StringField('ZIP/Postal Code')
+    country = StringField('Country', default='United States')
+    phone = StringField('Venue Phone')
+    email = StringField('Venue Email', validators=[Optional(), Email()])
+    website = StringField('Venue Website', validators=[Optional(), URL()])
+    venue_type_id = SelectField('Venue Type', coerce=int)
+    contact_name = StringField('Contact Person Name')
+    contact_phone = StringField('Contact Person Phone')
+    contact_email = StringField('Contact Person Email', validators=[Optional(), Email()])
+    submit = SubmitField('Save Venue')
+    
+    def __init__(self, *args, **kwargs):
+        super(VenueForm, self).__init__(*args, **kwargs)
+        from models import VenueType
+        from db_init import db
+        # Load venue types from database
+        self.venue_type_id.choices = [(vt.id, vt.name) for vt in 
+                                      db.session.query(VenueType).order_by(VenueType.name).all()]

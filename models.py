@@ -113,6 +113,7 @@ class Event(db.Model):
     website = Column(String(255))
     created_at = Column(DateTime, default=datetime.utcnow)
     user_id = Column(Integer, ForeignKey('users.id'))
+    venue_id = Column(Integer, ForeignKey('venues.id'), nullable=True)
     category = Column(String(100))
     target_audience = Column(String(255))
     tags = Column(String(255))
@@ -127,6 +128,7 @@ class Event(db.Model):
                                           secondary='event_prohibited_advertisers',
                                           backref=backref('events', lazy='dynamic'))
     user = relationship("User", back_populates="events")
+    venue = relationship("Venue", back_populates="events")
 
     @hybrid_property
     def is_past(self):
@@ -168,3 +170,44 @@ class Subscriber(db.Model):
 
     def set_preferences(self, preferences_dict):
         self.preferences = json.dumps(preferences_dict)
+
+class VenueType(db.Model):
+    __tablename__ = 'venue_types'
+    
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), nullable=False)
+    category = Column(String(100), nullable=True)
+    description = Column(Text, nullable=True)
+    
+    venues = relationship("Venue", back_populates="venue_type")
+    
+    def __repr__(self):
+        return f"<VenueType {self.name}>"
+
+class Venue(db.Model):
+    __tablename__ = 'venues'
+    
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), nullable=False)
+    street = Column(String(100), nullable=True)
+    city = Column(String(50), nullable=True)
+    state = Column(String(50), nullable=True)
+    zip_code = Column(String(20), nullable=True)
+    country = Column(String(50), default='United States')
+    phone = Column(String(20), nullable=True)
+    email = Column(String(120), nullable=True)
+    website = Column(String(200), nullable=True)
+    venue_type_id = Column(Integer, ForeignKey('venue_types.id'))
+    contact_name = Column(String(100), nullable=True)
+    contact_phone = Column(String(20), nullable=True)
+    contact_email = Column(String(120), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    user_id = Column(Integer, ForeignKey('users.id'))
+    
+    venue_type = relationship("VenueType", back_populates="venues")
+    user = relationship("User", backref=backref("venues", lazy="dynamic"))
+    events = relationship("Event", back_populates="venue")
+    
+    def __repr__(self):
+        return f"<Venue {self.name}>"

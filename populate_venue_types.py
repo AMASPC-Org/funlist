@@ -1,77 +1,80 @@
 
-import os
-import sys
-import logging
 from app import create_app
 from db_init import db
 from models import VenueType
+import logging
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[logging.StreamHandler()])
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 def populate_venue_types():
-    try:
-        app = create_app()
-        with app.app_context():
+    app = create_app()
+    with app.app_context():
+        try:
             # Check if venue types already exist
-            if VenueType.query.count() > 0:
-                logger.info("Venue types already exist in the database")
-                return
+            existing_count = VenueType.query.count()
+            if existing_count > 0:
+                logger.info(f"Venue types already exist ({existing_count} records). Skipping population.")
+                return True
                 
-            # Define venue types with their categories
-            venue_types = [
-                # Traditional & Purpose-Built Venues
-                {'name': 'Hotel or Resort', 'category': 'Traditional & Purpose-Built'},
-                {'name': 'Conference Center', 'category': 'Traditional & Purpose-Built'},
-                {'name': 'Convention Center', 'category': 'Traditional & Purpose-Built'},
-                {'name': 'Banquet Hall', 'category': 'Traditional & Purpose-Built'},
-                
-                # Hospitality Venues
-                {'name': 'Restaurant', 'category': 'Hospitality'},
-                {'name': 'Bar or Pub', 'category': 'Hospitality'},
-                {'name': 'Nightclub', 'category': 'Hospitality'},
-                {'name': 'Brewery', 'category': 'Hospitality'},
-                {'name': 'Winery', 'category': 'Hospitality'},
-                {'name': 'Distillery', 'category': 'Hospitality'},
-                
-                # Cultural & Unique Venues
-                {'name': 'Museum', 'category': 'Cultural & Unique'},
-                {'name': 'Art Gallery', 'category': 'Cultural & Unique'},
-                {'name': 'Historic Home or Estate', 'category': 'Cultural & Unique'},
-                {'name': 'Theater or Concert Hall', 'category': 'Cultural & Unique'},
-                {'name': 'Sports Stadium or Arena', 'category': 'Cultural & Unique'},
-                {'name': 'Aquarium or Zoo', 'category': 'Cultural & Unique'},
-                {'name': 'Warehouse or Industrial Space', 'category': 'Cultural & Unique'},
-                {'name': 'Boat or Yacht', 'category': 'Cultural & Unique'},
-                
-                # Outdoor & Recreational Venues
-                {'name': 'Park or Garden', 'category': 'Outdoor & Recreational'},
-                {'name': 'Beach', 'category': 'Outdoor & Recreational'},
-                {'name': 'Country Club or Golf Course', 'category': 'Outdoor & Recreational'},
-                {'name': 'Campground or Retreat Center', 'category': 'Outdoor & Recreational'},
-                
-                # Community & Other Venues
-                {'name': 'Community Center', 'category': 'Community & Other'},
-                {'name': 'Local Hall', 'category': 'Community & Other'},
-                {'name': 'Academic Institution', 'category': 'Community & Other'},
-                {'name': 'Coworking Space', 'category': 'Community & Other'},
-                {'name': 'Other', 'category': 'Other'}
+            # Traditional & Purpose-Built Venues
+            traditional_venues = [
+                {"name": "Hotel/Resort", "category": "Traditional & Purpose-Built"},
+                {"name": "Conference Center", "category": "Traditional & Purpose-Built"},
+                {"name": "Convention Center", "category": "Traditional & Purpose-Built"},
+                {"name": "Banquet Hall", "category": "Traditional & Purpose-Built"}
             ]
             
-            # Add venue types to the database
-            for venue_type in venue_types:
-                vt = VenueType(name=venue_type['name'], category=venue_type['category'])
-                db.session.add(vt)
+            # Hospitality Venues
+            hospitality_venues = [
+                {"name": "Restaurant", "category": "Hospitality"},
+                {"name": "Bar/Pub/Nightclub", "category": "Hospitality"},
+                {"name": "Brewery/Winery/Distillery", "category": "Hospitality"}
+            ]
             
+            # Cultural & Unique Venues
+            cultural_venues = [
+                {"name": "Museum/Art Gallery", "category": "Cultural & Unique"},
+                {"name": "Historic Home/Estate", "category": "Cultural & Unique"},
+                {"name": "Theater/Concert Hall", "category": "Cultural & Unique"},
+                {"name": "Stadium/Arena", "category": "Cultural & Unique"},
+                {"name": "Aquarium/Zoo", "category": "Cultural & Unique"},
+                {"name": "Warehouse/Industrial Space", "category": "Cultural & Unique"},
+                {"name": "Boat/Yacht", "category": "Cultural & Unique"}
+            ]
+            
+            # Outdoor & Recreational Venues
+            outdoor_venues = [
+                {"name": "Park/Garden", "category": "Outdoor & Recreational"},
+                {"name": "Beach", "category": "Outdoor & Recreational"},
+                {"name": "Country Club/Golf Course", "category": "Outdoor & Recreational"}
+            ]
+            
+            # Create a list of all venue types
+            all_venues = traditional_venues + hospitality_venues + cultural_venues + outdoor_venues
+            
+            # Add each venue type to the database
+            for venue_data in all_venues:
+                venue_type = VenueType(
+                    name=venue_data["name"],
+                    category=venue_data["category"]
+                )
+                db.session.add(venue_type)
+                
             db.session.commit()
-            logger.info(f"Successfully added {len(venue_types)} venue types to the database")
-    except Exception as e:
-        logger.error(f"Error populating venue types: {str(e)}")
+            logger.info(f"Successfully added {len(all_venues)} venue types to the database")
+            return True
+        
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error populating venue types: {str(e)}")
+            return False
 
 if __name__ == "__main__":
-    populate_venue_types()
-    print("Done!")
+    success = populate_venue_types()
+    if success:
+        print("Venue types populated successfully.")
+    else:
+        print("Failed to populate venue types.")
