@@ -107,7 +107,7 @@
                         <h5 class="card-title">Account Settings</h5>
                         <p><strong>Email:</strong> {{ current_user.email }}</p>
                         <p><strong>Membership Tier:</strong> {{ current_user.membership_tier.name if current_user.membership_tier else 'N/A' }}
-                           <a href="{{ url_for('membership') }}" class="btn btn-sm btn-outline-secondary ms-2">Manage Tier</a>
+                           <!-- Membership management coming soon -->
                         </p>
                         <a href="{{ url_for('change_password') }}" class="btn btn-secondary mt-2">Change Password</a>
                         <!-- Placeholder for future settings -->
