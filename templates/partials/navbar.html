@@ -34,6 +34,8 @@
           <li><a class="dropdown-item" href="{{ url_for('events') }}?filter=my_events">My Events</a></li>
           <li><a class="dropdown-item" href="{{ url_for('events') }}?filter=saved">Saved Events</a></li>
           <li><a class="dropdown-item" id="add-event-link" href="{{ url_for('submit_event') }}">Add Event</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
           {% if current_user.email == 'ryan@funlist.ai' %}
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="{{ url_for('admin_dashboard') }}">Admin Dashboard</a></li>
