@@ -1,4 +1,18 @@
 
+// Debug login link behavior
+document.addEventListener('DOMContentLoaded', function() {
+    // Add click event listener to all login links
+    const loginLinks = document.querySelectorAll('a[href="/login"], a.login-link');
+    loginLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            console.log('Login link clicked');
+            console.log('Navigating to:', this.getAttribute('href'));
+        });
+    });
+});
+
+
+
 // Initialize all dropdowns when the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize all dropdowns
