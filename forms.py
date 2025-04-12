@@ -90,7 +90,7 @@ class LoginForm(FlaskForm):
 class ProfileForm(FlaskForm):
     first_name = StringField('First Name', validators=[Optional(), Length(max=50)])
     last_name = StringField('Last Name', validators=[Optional(), Length(max=50)])
-    location = StringField('City', validators=[Optional(), Length(max=100)])
+    title = StringField('Your Title', validators=[Optional(), Length(max=100)])
     event_focus = SelectMultipleField(
         "Tell Us About Yourself", 
         choices=[
@@ -125,7 +125,6 @@ class ProfileForm(FlaskForm):
     
     # Organizer Information
     company_name = StringField('Organization/Company Name', validators=[Optional(), Length(max=100)])
-    organizer_title = StringField('Your Title', validators=[Optional(), Length(max=100)])
     organizer_description = TextAreaField('About Your Organization', validators=[Optional(), Length(max=500)])
     organizer_website = StringField('Website', validators=[Optional(), URL()])
     business_street = StringField('Street Address', validators=[Optional(), Length(max=100)])
@@ -143,11 +142,37 @@ class ProfileForm(FlaskForm):
             if user and user.id != self.user_id:
                 raise ValidationError('This username is already taken. Please choose another one.')
 
+class VenueForm(FlaskForm):
+    name = StringField('Venue Name', validators=[DataRequired(), Length(max=200)])
+    street = StringField('Street Address', validators=[DataRequired(), Length(max=255)])
+    city = StringField('City', validators=[DataRequired(), Length(max=100)])
+    state = StringField('State', validators=[DataRequired(), Length(max=100)])
+    zip_code = StringField('ZIP Code', validators=[DataRequired(), Length(max=20)])
+    country = StringField('Country', validators=[DataRequired(), Length(max=100)], default="United States")
+    phone = StringField('Venue Phone', validators=[Optional(), Length(max=20)])
+    email = StringField('Venue Email', validators=[Optional(), Email(), Length(max=120)])
+    website = StringField('Venue Website', validators=[Optional(), URL(), Length(max=255)])
+    venue_type_id = SelectField('Venue Type', coerce=int, validators=[DataRequired()])
+    contact_name = StringField('Contact Person Name', validators=[Optional(), Length(max=200)])
+    contact_phone = StringField('Contact Person Phone', validators=[Optional(), Length(max=20)])
+    contact_email = StringField('Contact Person Email', validators=[Optional(), Email(), Length(max=120)])
+    submit = SubmitField('Save Venue')
+
+    def __init__(self, *args, **kwargs):
+        super(VenueForm, self).__init__(*args, **kwargs)
+        try:
+            from models import VenueType
+            self.venue_type_id.choices = [(t.id, t.name) for t in VenueType.query.order_by(VenueType.name).all()]
+        except:
+            self.venue_type_id.choices = []
+
 class EventForm(FlaskForm):
     prohibited_advertisers = SelectMultipleField('Prohibited Advertisers',
         validators=[Optional()],
         coerce=int
     )
+    venue_id = SelectField('Select Venue', coerce=int, validators=[Optional()])
+    use_new_venue = BooleanField('Add a New Venue', default=False)
 
     def __init__(self, *args, **kwargs):
         super(EventForm, self).__init__(*args, **kwargs)
@@ -155,8 +180,13 @@ class EventForm(FlaskForm):
             self.prohibited_advertisers.choices = [
                 (cat.id, cat.name) for cat in ProhibitedAdvertiserCategory.query.all()
             ]
+            from models import Venue
+            self.venue_id.choices = [(0, 'Select a venue...')] + [
+                (venue.id, venue.name) for venue in Venue.query.order_by(Venue.name).all()
+            ]
         except:
             self.prohibited_advertisers.choices = []
+            self.venue_id.choices = [(0, 'Select a venue...')]
     title = StringField('Title', validators=[DataRequired(), Length(max=250, message="Title must be less than 250 characters")])
     description = TextAreaField('Description', validators=[DataRequired(), Length(max=1500, message="Description must be less than 1500 characters")])
     start_date = DateField('Start Date', validators=[DataRequired()])

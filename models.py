@@ -15,6 +15,7 @@ class User(db.Model, UserMixin):
     password_hash = Column(String(256), nullable=False)
     first_name = Column(String(120), nullable=True)
     last_name = Column(String(120), nullable=True)
+    title = Column(String(100), nullable=True)  # Moved from organizer_title
     account_active = Column(Boolean, default=True)
     is_admin = Column(Boolean, default=False)
     _is_event_creator = Column('is_event_creator', Boolean, default=False)
@@ -31,7 +32,6 @@ class User(db.Model, UserMixin):
     advertising_opportunities = Column(Text, nullable=True)
     sponsorship_opportunities = Column(Text, nullable=True)
     organizer_profile_updated_at = Column(DateTime, nullable=True)
-    location = Column(String(200), nullable=True)
     phone = Column(String(20), nullable=True)
     newsletter_opt_in = Column(Boolean, default=True)
     marketing_opt_in = Column(Boolean, default=False)

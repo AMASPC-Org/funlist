@@ -330,7 +330,7 @@ def init_routes(app):
             # Personal Information
             form.first_name.data = current_user.first_name
             form.last_name.data = current_user.last_name
-            form.location.data = current_user.location
+            form.title.data = current_user.title
             
             # Social Media Links (if these fields exist in the User model)
             if hasattr(current_user, 'facebook_url'):
@@ -350,8 +350,7 @@ def init_routes(app):
                 form.organizer_description.data = current_user.organizer_description
                 form.organizer_website.data = current_user.organizer_website
                 # Fill additional organizer fields if they exist in the database
-                if hasattr(current_user, 'organizer_title'):
-                    form.organizer_title.data = current_user.organizer_title
+                # organizer_title removed, now using title field in personal info
                 # Handle the split business location fields
                 if hasattr(current_user, 'business_street'):
                     form.business_street.data = current_user.business_street
@@ -372,7 +371,7 @@ def init_routes(app):
                 profile_data = {
                     "first_name": form.first_name.data,
                     "last_name": form.last_name.data,
-                    "location": form.location.data,
+                    "title": form.title.data,
                 }
                 
                 # Handle social media fields if they exist in the User model
@@ -398,9 +397,7 @@ def init_routes(app):
                         "organizer_website": form.organizer_website.data,
                     }
                     
-                    # Add additional organizer fields if they exist in the form
-                    if hasattr(form, 'organizer_title') and form.organizer_title.data:
-                        organizer_data["organizer_title"] = form.organizer_title.data
+                    # organizer_title removed, now using title field in personal info
                     if hasattr(form, 'business_street') and form.business_street.data:
                         organizer_data["business_street"] = form.business_street.data
                     if hasattr(form, 'business_city') and form.business_city.data:
@@ -1019,6 +1016,111 @@ def init_routes(app):
             flash("Your password has been updated successfully!", "success")
             return redirect(url_for("profile"))
         return render_template("change_password.html", form=form)
+
+    @app.route("/venues", methods=["GET"])
+    def venues():
+        venues = Venue.query.order_by(Venue.name).all()
+        return render_template("venues.html", venues=venues)
+        
+    @app.route("/venues/<int:venue_id>", methods=["GET"])
+    def venue_detail(venue_id):
+        venue = Venue.query.get_or_404(venue_id)
+        events = Event.query.filter_by(venue_id=venue.id).all()
+        return render_template("venue_detail.html", venue=venue, events=events)
+    
+    @app.route("/venues/add", methods=["GET", "POST"])
+    @login_required
+    def add_venue():
+        form = VenueForm()
+        
+        if form.validate_on_submit():
+            try:
+                venue = Venue(
+                    name=form.name.data,
+                    street=form.street.data,
+                    city=form.city.data,
+                    state=form.state.data,
+                    zip_code=form.zip_code.data,
+                    country=form.country.data,
+                    phone=form.phone.data,
+                    email=form.email.data,
+                    website=form.website.data,
+                    venue_type_id=form.venue_type_id.data,
+                    contact_name=form.contact_name.data,
+                    contact_phone=form.contact_phone.data,
+                    contact_email=form.contact_email.data,
+                    user_id=current_user.id
+                )
+                db.session.add(venue)
+                db.session.commit()
+                flash("Venue added successfully!", "success")
+                return redirect(url_for("venues"))
+            except Exception as e:
+                db.session.rollback()
+                logger.error(f"Error adding venue: {str(e)}")
+                flash("There was a problem adding the venue. Please try again.", "danger")
+        
+        return render_template("add_venue.html", form=form)
+    
+    @app.route("/venues/<int:venue_id>/edit", methods=["GET", "POST"])
+    @login_required
+    def edit_venue(venue_id):
+        venue = Venue.query.get_or_404(venue_id)
+        
+        # Check if user is authorized to edit this venue
+        if venue.user_id != current_user.id and not current_user.is_admin:
+            flash("You are not authorized to edit this venue.", "danger")
+            return redirect(url_for("venues"))
+        
+        form = VenueForm(obj=venue)
+        
+        if form.validate_on_submit():
+            try:
+                form.populate_obj(venue)
+                venue.updated_at = datetime.utcnow()
+                db.session.commit()
+                flash("Venue updated successfully!", "success")
+                return redirect(url_for("venue_detail", venue_id=venue.id))
+            except Exception as e:
+                db.session.rollback()
+                logger.error(f"Error updating venue: {str(e)}")
+                flash("There was a problem updating the venue. Please try again.", "danger")
+        
+        return render_template("edit_venue.html", form=form, venue=venue)
+    
+    @app.route("/venues/<int:venue_id>/delete", methods=["POST"])
+    @login_required
+    def delete_venue(venue_id):
+        venue = Venue.query.get_or_404(venue_id)
+        
+        # Check if user is authorized to delete this venue
+        if venue.user_id != current_user.id and not current_user.is_admin:
+            flash("You are not authorized to delete this venue.", "danger")
+            return redirect(url_for("venues"))
+        
+        try:
+            # Check if venue is used in any events
+            events_count = Event.query.filter_by(venue_id=venue.id).count()
+            if events_count > 0:
+                flash(f"Cannot delete venue because it is associated with {events_count} events.", "danger")
+                return redirect(url_for("venue_detail", venue_id=venue.id))
+            
+            name = venue.name
+            db.session.delete(venue)
+            db.session.commit()
+            flash(f"Venue '{name}' deleted successfully!", "success")
+            return redirect(url_for("venues"))
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error deleting venue: {str(e)}")
+            flash("There was a problem deleting the venue. Please try again.", "danger")
+            return redirect(url_for("venue_detail", venue_id=venue.id))
+            
+    @app.route("/my-venues")
+    @login_required
+    def my_venues():
+        venues = Venue.query.filter_by(user_id=current_user.id).all()
+        return render_template("my_venues.html", venues=venues)
 
     @app.route("/vendor-profile", methods=["GET", "POST"])
     @login_required
