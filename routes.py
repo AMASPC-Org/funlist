@@ -10,7 +10,7 @@ import logging
 from datetime import datetime, timedelta
 import json
 from dateutil.relativedelta import relativedelta
-from sqlalchemy import func
+from sqlalchemy import func, inspect
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -510,10 +510,17 @@ def init_routes(app):
                         ticket_url=form.ticket_url.data
                     )
                     
-                    # Add network_opt_out if the form has it
+                    # Add network_opt_out if the form has it and the column exists
                     if hasattr(form, 'network_opt_out'):
                         try:
-                            event.network_opt_out = form.network_opt_out.data
+                            # Check if the column exists in the database
+                            inspector = inspect(db.engine)
+                            columns = [column['name'] for column in inspector.get_columns('events')]
+                            
+                            if 'network_opt_out' in columns:
+                                event.network_opt_out = form.network_opt_out.data
+                            else:
+                                logger.warning("network_opt_out column does not exist in the database")
                         except Exception as e:
                             logger.warning(f"Could not set network_opt_out: {str(e)}")
 

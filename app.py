@@ -112,10 +112,10 @@ def create_app():
     def add_header(response):
         csp = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.jsdelivr.net https://*.googleapis.com; "
-            "style-src 'self' 'unsafe-inline' https://*.jsdelivr.net https://*.googleapis.com https://*.fontawesome.com; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.jsdelivr.net https://*.googleapis.com https://*.cdnjs.cloudflare.com https://unpkg.com; "
+            "style-src 'self' 'unsafe-inline' https://*.jsdelivr.net https://*.googleapis.com https://*.fontawesome.com https://*.cdnjs.cloudflare.com https://unpkg.com; "
             "img-src 'self' data: blob: https://*.googleapis.com https://*.gstatic.com https://*.google.com; "
-            "font-src 'self' data: https://*.jsdelivr.net https://*.gstatic.com https://*.fontawesome.com https://*.bootstrapcdn.com; "
+            "font-src 'self' data: https://*.jsdelivr.net https://*.gstatic.com https://*.fontawesome.com https://*.bootstrapcdn.com https://*.cdnjs.cloudflare.com; "
             "connect-src 'self' https://*.googleapis.com https://*.google.com; "
             "frame-src 'self' https://*.google.com; "
             "worker-src 'self' blob:; "
