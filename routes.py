@@ -507,7 +507,6 @@ def init_routes(app):
                         target_audience=form.target_audience.data,
                         fun_meter=form.fun_meter.data,
                         user_id=current_user.id,
-                        network_opt_out=form.network_opt_out.data, # Added network_opt_out field
                         ticket_url=form.ticket_url.data
                     )
 

@@ -145,8 +145,8 @@ class EventForm(FlaskForm):
             ]
         except:
             self.prohibited_advertisers.choices = []
-    title = StringField('Title', validators=[DataRequired(), Length(max=150, message="Title must be less than 150 characters")])
-    description = TextAreaField('Description', validators=[DataRequired()])
+    title = StringField('Title', validators=[DataRequired(), Length(max=250, message="Title must be less than 250 characters")])
+    description = TextAreaField('Description', validators=[DataRequired(), Length(max=1500, message="Description must be less than 1500 characters")])
     start_date = DateField('Start Date', validators=[DataRequired()])
     end_date = DateField('End Date', validators=[DataRequired()])
     start_time = TimeField('Start Time', validators=[Optional()])
