@@ -1,0 +1,17 @@
+
+{% macro render_field(field) %}
+    <div class="mb-3">
+        {{ field.label(class="form-label") }}
+        {{ field(class=kwargs.pop('class', ''), **kwargs) }}
+        {% if field.errors %}
+            {% for error in field.errors %}
+                <div class="invalid-feedback d-block">
+                    <i class="fas fa-exclamation-circle"></i> {{ error }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% if field.description %}
+            <small class="form-text text-muted">{{ field.description }}</small>
+        {% endif %}
+    </div>
+{% endmacro %}

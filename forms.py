@@ -277,3 +277,30 @@ class ResetPasswordForm(FlaskForm):
         EqualTo('password', message='Passwords do not match. Please try again.')
     ])
     submit = SubmitField('Reset Password')
+
+class ContactForm(FlaskForm):
+    name = StringField('Your Name', validators=[
+        DataRequired(message="Please enter your name"),
+        Length(max=100, message="Name must be less than 100 characters")
+    ])
+    email = StringField('Email Address', validators=[
+        DataRequired(message="Please enter your email address"),
+        Email(message="Please enter a valid email address"),
+        Length(max=120, message="Email address is too long")
+    ])
+    subject = StringField('Subject', validators=[
+        DataRequired(message="Please enter a subject"),
+        Length(max=100, message="Subject must be less than 100 characters")
+    ])
+    category = SelectField('Inquiry Category', choices=[
+        ('general', 'General Inquiry'),
+        ('technical', 'Technical Support'),
+        ('billing', 'Billing'),
+        ('partnership', 'Partnership'),
+        ('privacy', 'Privacy')
+    ], validators=[DataRequired(message="Please select a category")])
+    message = TextAreaField('Message', validators=[
+        DataRequired(message="Please enter your message"),
+        Length(min=10, max=2000, message="Message must be between 10 and 2000 characters")
+    ])
+    submit = SubmitField('Send Message')

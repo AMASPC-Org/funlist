@@ -783,6 +783,24 @@ def init_routes(app):
             return redirect(url_for('login'))
 
         return render_template('reset_password.html', form=form, token=token)
+        
+    @app.route("/contact", methods=["GET", "POST"])
+    def contact():
+        form = ContactForm()
+        if form.validate_on_submit():
+            try:
+                # Log the contact submission
+                app.logger.info(f"Contact form submission from {form.name.data} ({form.email.data}): {form.subject.data} - Category: {form.category.data}")
+                
+                # Here you would typically save the contact form to database or send email
+                # For now, we'll just show a success message
+                flash("Thank you for your message! We'll respond to you shortly.", "success")
+                return redirect(url_for('contact'))
+            except Exception as e:
+                app.logger.error(f"Error processing contact form: {str(e)}")
+                flash("Sorry, we encountered an error processing your request. Please try again later.", "danger")
+        
+        return render_template("contact.html", form=form)
 
     @app.route("/admin/analytics")
     @login_required

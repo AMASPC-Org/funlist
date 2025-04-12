@@ -1,0 +1,142 @@
+
+{% extends "base.html" %}
+{% from 'macros/_form_helpers.html' import render_field %}
+
+{% block title %}Contact Us | FunList.ai{% endblock %}
+
+{% block head %}
+{{ super() }}
+<script src="https://unpkg.com/feather-icons"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1>Contact FunList.ai</h1>
+        <p class="lead">We're here to help! Find the best way to reach us below.</p>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- Left Column: Send Message Form -->
+        <div class="col-lg-7">
+            <div class="card h-100"> <!-- Added h-100 -->
+                <div class="card-body">
+                    <h2>Send us a message</h2>
+                    <p><small>Fill out the form below and we'll respond within 24 business hours.</small></p>
+
+                    <form action="{{ url_for('contact') }}" method="POST" novalidate> <!-- Added novalidate -->
+                        {{ form.hidden_tag() }}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                {{ render_field(form.name, class="form-control") }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ render_field(form.email, class="form-control") }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ render_field(form.subject, class="form-control") }}
+                            </div>
+                            <div class="col-md-6">
+                                 {{ render_field(form.category, class="form-select") }} <!-- Assuming category is a SelectField -->
+                            </div>
+                            <div class="col-12">
+                                 {{ render_field(form.message, class="form-control", rows="5") }}
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary"><i data-feather="send" class="me-2"></i>Send Message</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+             <!-- Support Resources (Optional - could be combined or separate) -->
+             <div class="card mt-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Get Support</h5>
+                            <p><small>Our team is ready to assist you.</small></p>
+                            <p><a href="{{ url_for('help_center') }}">Check our Help Center first!</a></p>
+                        </div>
+                         <div class="col-md-6">
+                            <h5>FAQ Resources</h5>
+                             <ul class="list-unstyled">
+                                <li><small><i data-feather="check" class="me-1"></i> <a href="{{ url_for('help_center') }}#account">Account Setup Guide</a></small></li>
+                                <li><small><i data-feather="check" class="me-1"></i> <a href="{{ url_for('help_center') }}#events">Submitting Events</a></small></li>
+                                <li><small><i data-feather="check" class="me-1"></i> <a href="{{ url_for('help_center') }}#billing">Billing & Payments FAQ</a></small></li>
+                             </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Contact Details & Departments -->
+        <div class="col-lg-5">
+            <!-- Contact Information Card -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5>Contact Information</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i data-feather="mail" class="me-2"></i>Email: <a href="mailto:support@funlist.ai">support@funlist.ai</a></li>
+                        <li class="mb-2"><i data-feather="phone" class="me-2"></i>Phone: (360) 200-8768 <br><small>(Mon-Fri, 9am-4pm PT)</small></li>
+                        <li class="mb-2"><i data-feather="map-pin" class="me-2"></i>Mailing Address: <br><small>FunList.ai c/o AMA SPC<br>120 State Ave NE #118<br>Olympia, WA 98501</small></li>
+                        <li class="mb-2"><i data-feather="clock" class="me-2"></i>Support Hours: <br><small>Mon-Fri: 9:00 AM - 5:00 PM PT<br>Sat-Sun: Closed</small></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Department Emails Card -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5>Department Emails</h5>
+                    <p><small>Reach out directly for faster help:</small></p>
+                     <ul class="list-unstyled">
+                        <li class="mb-2"><i data-feather="dollar-sign" class="me-2"></i><strong>Billing:</strong> <a href="mailto:billing@funlist.ai">billing@funlist.ai</a><br><small>Questions about invoices or payments.</small></li>
+                        <li class="mb-2"><i data-feather="help-circle" class="me-2"></i><strong>Support:</strong> <a href="mailto:support@funlist.ai">support@funlist.ai</a><br><small>Technical or general support inquiries.</small></li>
+                        <li class="mb-2"><i data-feather="briefcase" class="me-2"></i><strong>Partnerships:</strong> <a href="mailto:partners@funlist.ai">partners@funlist.ai</a><br><small>Advertising, sponsorships, or partnerships.</small></li> <!-- Changed email -->
+                         <li class="mb-2"><i data-feather="info" class="me-2"></i><strong>General Info:</strong> <a href="mailto:info@funlist.ai">info@funlist.ai</a><br><small>Company info and general inquiries.</small></li>
+                         <li class="mb-2"><i data-feather="shield" class="me-2"></i><strong>Privacy:</strong> <a href="mailto:privacy@funlist.ai">privacy@funlist.ai</a><br><small>Data privacy or legal concerns.</small></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Response Time Card -->
+            <div class="card">
+                 <div class="card-body">
+                    <h5>Response Time</h5>
+                     <ul class="list-unstyled small">
+                        <li>Email Support: ~24 business hours</li>
+                        <li>Phone Support: Immediate during business hours</li>
+                        <li>Technical Issues: ~4-8 business hours</li>
+                        <li>Billing Inquiries: ~24-48 business hours</li>
+                    </ul>
+                     <p class="small fst-italic mt-2">Urgent issues receive priority. Please mark your message as urgent only if your issue requires immediate attention.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom CTA: Before Contacting Support -->
+    <div class="mt-5 py-4 rounded" style="background-color: #4d79ff;"> <!-- FunList blue color -->
+        <div class="container text-center text-white">
+            <h3 class="text-white">Before contacting support...</h3>
+            <p>You might find the answer you're looking for in our help articles or frequently asked questions.</p>
+            <a href="{{ url_for('help_center') }}" class="btn btn-light me-2">Browse Help Articles</a>
+            <a href="{{ url_for('help_center') }}#faqAccordion" class="btn btn-outline-light">Check FAQ</a> <!-- Link to FAQ section ID -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    // Initialize feather icons
+    document.addEventListener('DOMContentLoaded', function() {
+        feather.replace();
+    });
+</script>
+{% endblock %}
