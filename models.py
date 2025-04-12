@@ -68,6 +68,20 @@ class User(db.Model, UserMixin):
 
     def set_preferences(self, preferences_dict):
         self.user_preferences = json.dumps(preferences_dict)
+        
+    def update_organizer_profile(self, data):
+        """Update organizer profile fields"""
+        if 'company_name' in data:
+            self.company_name = data['company_name']
+        if 'organizer_description' in data:
+            self.organizer_description = data['organizer_description']
+        if 'organizer_website' in data:
+            self.organizer_website = data['organizer_website']
+        if 'advertising_opportunities' in data:
+            self.advertising_opportunities = data['advertising_opportunities']
+        if 'sponsorship_opportunities' in data:
+            self.sponsorship_opportunities = data['sponsorship_opportunities']
+        self.organizer_profile_updated_at = datetime.utcnow()
 
 class Event(db.Model):
     __tablename__ = 'events'
