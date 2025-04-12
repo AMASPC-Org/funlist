@@ -327,6 +327,7 @@ def init_routes(app):
         form.user_id = current_user.id
 
         if request.method == "GET":
+            # Personal Information
             form.username.data = current_user.username
             form.first_name.data = current_user.first_name
             form.last_name.data = current_user.last_name
@@ -334,8 +335,37 @@ def init_routes(app):
             form.location.data = current_user.location
             form.interests.data = current_user.interests
             form.birth_date.data = current_user.birth_date
+            
+            # Social Media Links (if these fields exist in the User model)
+            if hasattr(current_user, 'facebook_url'):
+                form.facebook_url.data = current_user.facebook_url
+            if hasattr(current_user, 'instagram_url'):
+                form.instagram_url.data = current_user.instagram_url
+            if hasattr(current_user, 'twitter_url'):
+                form.twitter_url.data = current_user.twitter_url
+            if hasattr(current_user, 'linkedin_url'):
+                form.linkedin_url.data = current_user.linkedin_url
+            if hasattr(current_user, 'tiktok_url'):
+                form.tiktok_url.data = current_user.tiktok_url
+            
+            # Organizer Information (if user is an organizer)
+            if current_user.is_organizer:
+                form.company_name.data = current_user.company_name
+                form.organizer_description.data = current_user.organizer_description
+                form.organizer_website.data = current_user.organizer_website
+                # Fill additional organizer fields if they exist in the database
+                if hasattr(current_user, 'organizer_title'):
+                    form.organizer_title.data = current_user.organizer_title
+                if hasattr(current_user, 'business_location'):
+                    form.business_location.data = current_user.business_location
+                if hasattr(current_user, 'business_phone'):
+                    form.business_phone.data = current_user.business_phone
+                if hasattr(current_user, 'business_email'):
+                    form.business_email.data = current_user.business_email
+                
         if form.validate_on_submit():
             try:
+                # Personal profile data
                 profile_data = {
                     "username": form.username.data,
                     "first_name": form.first_name.data,
@@ -345,8 +375,42 @@ def init_routes(app):
                     "interests": form.interests.data,
                     "birth_date": form.birth_date.data,
                 }
+                
+                # Handle social media fields if they exist in the User model
+                if hasattr(current_user, 'facebook_url'):
+                    profile_data["facebook_url"] = form.facebook_url.data
+                if hasattr(current_user, 'instagram_url'):
+                    profile_data["instagram_url"] = form.instagram_url.data
+                if hasattr(current_user, 'twitter_url'):
+                    profile_data["twitter_url"] = form.twitter_url.data
+                if hasattr(current_user, 'linkedin_url'):
+                    profile_data["linkedin_url"] = form.linkedin_url.data
+                if hasattr(current_user, 'tiktok_url'):
+                    profile_data["tiktok_url"] = form.tiktok_url.data
 
+                # Update profile with basic information
                 current_user.update_profile(profile_data)
+                
+                # If user is an organizer, also update organizer information
+                if current_user.is_organizer:
+                    organizer_data = {
+                        "company_name": form.company_name.data,
+                        "organizer_description": form.organizer_description.data,
+                        "organizer_website": form.organizer_website.data,
+                    }
+                    
+                    # Add additional organizer fields if they exist in the form
+                    if hasattr(form, 'organizer_title') and form.organizer_title.data:
+                        organizer_data["organizer_title"] = form.organizer_title.data
+                    if hasattr(form, 'business_location') and form.business_location.data:
+                        organizer_data["business_location"] = form.business_location.data
+                    if hasattr(form, 'business_phone') and form.business_phone.data:
+                        organizer_data["business_phone"] = form.business_phone.data
+                    if hasattr(form, 'business_email') and form.business_email.data:
+                        organizer_data["business_email"] = form.business_email.data
+                    
+                    current_user.update_organizer_profile(organizer_data)
+                
                 db.session.commit()
                 flash("Profile updated successfully!", "success")
                 return redirect(url_for("profile"))
@@ -935,39 +999,9 @@ def init_routes(app):
     @app.route("/organizer-profile", methods=["GET", "POST"])
     @login_required
     def organizer_profile():
-        # Import the form
-        from forms import OrganizerProfileForm
-
-        form = OrganizerProfileForm()
-
-        if request.method == "GET":
-            # Pre-populate form with existing data if available
-            form.company_name.data = current_user.company_name
-            form.description.data = current_user.organizer_description
-            form.website.data = current_user.organizer_website
-            form.advertising_opportunities.data = current_user.advertising_opportunities
-            form.sponsorship_opportunities.data = current_user.sponsorship_opportunities
-
-        if form.validate_on_submit():
-            try:
-                organizer_data = {
-                    "company_name": form.company_name.data,
-                    "organizer_description": form.description.data,
-                    "organizer_website": form.website.data,
-                    "advertising_opportunities": form.advertising_opportunities.data,
-                    "sponsorship_opportunities": form.sponsorship_opportunities.data,
-                }
-
-                current_user.update_organizer_profile(organizer_data)
-                db.session.commit()
-                flash("Organizer profile updated successfully!", "success")
-                return redirect(url_for("profile"))
-            except Exception as e:
-                db.session.rollback()
-                logger.error(f"Error updating organizer profile: {str(e)}")
-                flash("There was a problem updating your organizer profile. Please try again.", "danger")
-
-        return render_template("organizer_profile.html", form=form)
+        # Redirect to the consolidated profile editing page
+        flash("Your organizer profile can now be managed from your main profile page.", "info")
+        return redirect(url_for("edit_profile"))
 
     @app.route("/vendor-profile", methods=["GET", "POST"])
     @login_required

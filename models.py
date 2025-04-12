@@ -81,6 +81,12 @@ class User(db.Model, UserMixin):
             self.sponsorship_opportunities = data['sponsorship_opportunities']
         self.organizer_profile_updated_at = datetime.utcnow()
 
+    def update_profile(self, data):
+        # Update user attributes with provided data
+        for key, value in data.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+
 class Event(db.Model):
     __tablename__ = 'events'
 

@@ -123,6 +123,23 @@ class ProfileForm(FlaskForm):
         validators=[Optional(), Length(max=255)]
     )
     birth_date = DateField('Birth Date', validators=[Optional()])
+    
+    # Social Media Links
+    facebook_url = StringField('Facebook URL', validators=[Optional(), URL()])
+    instagram_url = StringField('Instagram URL', validators=[Optional(), URL()])
+    twitter_url = StringField('Twitter URL', validators=[Optional(), URL()])
+    linkedin_url = StringField('LinkedIn URL', validators=[Optional(), URL()])
+    tiktok_url = StringField('TikTok URL', validators=[Optional(), URL()])
+    
+    # Organizer Information
+    company_name = StringField('Organization/Company Name', validators=[Optional(), Length(max=100)])
+    organizer_title = StringField('Your Title', validators=[Optional(), Length(max=100)])
+    organizer_description = TextAreaField('About Your Organization', validators=[Optional(), Length(max=500)])
+    organizer_website = StringField('Website', validators=[Optional(), URL()])
+    business_location = StringField('Business Location', validators=[Optional(), Length(max=200)])
+    business_phone = StringField('Business Phone', validators=[Optional(), Length(max=20)])
+    business_email = StringField('Business Email', validators=[Optional(), Email(), Length(max=120)])
+    
     submit = SubmitField('Update Profile')
 
     def validate_username(self, username):
