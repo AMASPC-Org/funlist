@@ -40,8 +40,6 @@ class User(db.Model, UserMixin):
     business_city = Column(String(50), nullable=True)
     business_state = Column(String(50), nullable=True)
     business_zip = Column(String(20), nullable=True)
-    # Keep this for backward compatibility
-    business_location = Column(String(200), nullable=True)
 
 
     def is_active(self):
