@@ -1,0 +1,432 @@
+8518-b93101613251fce7.js:1 Replit version e0dc2923, pid2 version 0.0.1192
+_app-166986ff808a0729.js:13 
+      /////////////////////
+   ///////////////////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////        Curious and driven?
+  ///////////////@@@@@@@///////        Work with us!
+  ///////////////@@@@@@@///////
+  ///////////////@@@@@@@///////        https://join.replit.com/hack.with.us
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@#//////////////
+   ///////////////////////////
+      /////////////////////
+      
+_app-166986ff808a0729.js:13 [LaunchDarkly] LaunchDarkly client initialized
+_app-166986ff808a0729.js:13 [TikTok Pixel] - Invalid pixel ID
+Issue: The pixel ID is invalid. This could prevent your pixel from receiving data.
+Suggestion: Please go to Events Manager and find the correct pixel ID.
+(anonymous) @ _app-166986ff808a0729.js:13
+_app-166986ff808a0729.js:13 Adding extension: Google Cloud Auth Object
+attached_assets/image_1742568923922.png:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+framework-f0625dc4b27d756c.js:1 Unrecognized feature: 'ambient-light-sensor'.
+_ @ framework-f0625dc4b27d756c.js:1
+framework-f0625dc4b27d756c.js:1 Unrecognized feature: 'battery'.
+_ @ framework-f0625dc4b27d756c.js:1
+framework-f0625dc4b27d756c.js:1 Unrecognized feature: 'execution-while-not-rendered'.
+_ @ framework-f0625dc4b27d756c.js:1
+framework-f0625dc4b27d756c.js:1 Unrecognized feature: 'execution-while-out-of-viewport'.
+_ @ framework-f0625dc4b27d756c.js:1
+framework-f0625dc4b27d756c.js:1 Unrecognized feature: 'layout-animations'.
+_ @ framework-f0625dc4b27d756c.js:1
+framework-f0625dc4b27d756c.js:1 Unrecognized feature: 'legacy-image-formats'.
+_ @ framework-f0625dc4b27d756c.js:1
+framework-f0625dc4b27d756c.js:1 Unrecognized feature: 'navigation-override'.
+_ @ framework-f0625dc4b27d756c.js:1
+framework-f0625dc4b27d756c.js:1 Unrecognized feature: 'oversized-images'.
+_ @ framework-f0625dc4b27d756c.js:1
+framework-f0625dc4b27d756c.js:1 Unrecognized feature: 'publickey-credentials'.
+_ @ framework-f0625dc4b27d756c.js:1
+framework-f0625dc4b27d756c.js:1 Unrecognized feature: 'speaker-selection'.
+_ @ framework-f0625dc4b27d756c.js:1
+framework-f0625dc4b27d756c.js:1 Unrecognized feature: 'unoptimized-images'.
+_ @ framework-f0625dc4b27d756c.js:1
+framework-f0625dc4b27d756c.js:1 Unrecognized feature: 'unsized-media'.
+_ @ framework-f0625dc4b27d756c.js:1
+framework-f0625dc4b27d756c.js:1 Unrecognized feature: 'pointer-lock'.
+_ @ framework-f0625dc4b27d756c.js:1
+framework-f0625dc4b27d756c.js:1 Allow attribute will take precedence over 'allowfullscreen'.
+_ @ framework-f0625dc4b27d756c.js:1
+framework-f0625dc4b27d756c.js:1 Allow attribute will take precedence over 'allowpaymentrequest'.
+_ @ framework-f0625dc4b27d756c.js:1
+attached_assets/image_1742568950098.png:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Unchecked runtime.lastError: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+stallwart.build.js:1 stallwart: failed ping 1
+stallwart.build.js:1 stallwart: failed ping 1
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+3922-cd8a1371b343f372.js:1 WebSocket connection to 'wss://eval2.spock.platform.replit.com/wsv2/v2.public.Q2dZSStvam12d1lTQmdpWnBlYS9CaUlGYzNCdlkyc3dBRHF1QWdva09HRTVOekkwTXpjdE9URTVOQzAwTXpFekxXSTRZakF0WW1Fek9EZGlaV1EzWlRjMEVnTnVhWGdhRjNKbGNHeHBkQzF5WlhCc0xXWnBiR1Z6TFhOd2IyTnJJZ3hHZFc1c2FYTjBZV2t0ZGpJcUJrRk5RVk5RUTBKUkNoaHlaWEJzYVhRdGNtVndiQzFpYkc5amEzTXRjM0J2WTJzU0ZuSmxjR3hwZEMxeVpYQnNMVzFsZEdFdGMzQnZZMnNhSFhKbGNHeHBkQzF0WVhKbllYSnBibVV0WW14dlkydHpMWE53YjJOclNnY0k0T2FsRVJBQlVBQmFDR1Y0Y0d4dmNtVnlXaHB2Ym1KdllYSmthVzVuWDJWNGNHVnlhV1Z1WTJWZmJtOXVaVm9QYVc1MFpXNT...3YTJab2QyTkNlR1V4VEROc1oxQmxiVWgzYm1kamFubDBWWEJwVldka1RtMW9ZV0o0ZW1acWQxSnNaM0JHUjJwS1NUQTJNMHBqTlhCWmVtOW9kVEpuV0Zoak0zTllUVzFwWjJwV1JVTnFUR2h0ZUhwSWEzVWxNa0p3ZWxST1JUY2xNa0pTTUVWa2NUQTRSMWd4YVVST1FUUlNPVU5rTm1wUU1YVklkVWR4VG14RFptTnpXVkE1Wmt4cU1XeENjWEIzYm1Gc0pUSkNNRlUxTmpsWFdHZ3pXVTVzUlhSblRrUnpOakYxVnpSc01ubHdiakUwZUZsWWEweE1ZeVV5UmtacGJDVXlRbUZwY3pBd1p6WmFXRmhYUzFobkpUTkVKVE5FeZEwUzwP7waI6B3610jIQQavYmA1yZ1arGX2jzQ-U4_BnPa1lBWJfgzt92N7d_NpkC2rSK5V0I66bWgEqhH2Ag.Q2dad2NtOWtPak1pQ25KbGNHeHBkQzVqYjIwPQ' failed: 
+connect @ 3922-cd8a1371b343f372.js:1
+3922-cd8a1371b343f372.js:1 WebSocket connection to 'wss://eval2.spock.platform.replit.com/wsv2/v2.public.Q2dZSStvam12d1lTQmdpWnBlYS9CaUlGYzNCdlkyc3dBRHF1QWdva09HRTVOekkwTXpjdE9URTVOQzAwTXpFekxXSTRZakF0WW1Fek9EZGlaV1EzWlRjMEVnTnVhWGdhRjNKbGNHeHBkQzF5WlhCc0xXWnBiR1Z6TFhOd2IyTnJJZ3hHZFc1c2FYTjBZV2t0ZGpJcUJrRk5RVk5RUTBKUkNoaHlaWEJzYVhRdGNtVndiQzFpYkc5amEzTXRjM0J2WTJzU0ZuSmxjR3hwZEMxeVpYQnNMVzFsZEdFdGMzQnZZMnNhSFhKbGNHeHBkQzF0WVhKbllYSnBibVV0WW14dlkydHpMWE53YjJOclNnY0k0T2FsRVJBQlVBQmFDR1Y0Y0d4dmNtVnlXaHB2Ym1KdllYSmthVzVuWDJWNGNHVnlhV1Z1WTJWZmJtOXVaVm9QYVc1MFpXNT...3YTJab2QyTkNlR1V4VEROc1oxQmxiVWgzYm1kamFubDBWWEJwVldka1RtMW9ZV0o0ZW1acWQxSnNaM0JHUjJwS1NUQTJNMHBqTlhCWmVtOW9kVEpuV0Zoak0zTllUVzFwWjJwV1JVTnFUR2h0ZUhwSWEzVWxNa0p3ZWxST1JUY2xNa0pTTUVWa2NUQTRSMWd4YVVST1FUUlNPVU5rTm1wUU1YVklkVWR4VG14RFptTnpXVkE1Wmt4cU1XeENjWEIzYm1Gc0pUSkNNRlUxTmpsWFdHZ3pXVTVzUlhSblRrUnpOakYxVnpSc01ubHdiakUwZUZsWWEweE1ZeVV5UmtacGJDVXlRbUZwY3pBd1p6WmFXRmhYUzFobkpUTkVKVE5FeZEwUzwP7waI6B3610jIQQavYmA1yZ1arGX2jzQ-U4_BnPa1lBWJfgzt92N7d_NpkC2rSK5V0I66bWgEqhH2Ag.Q2dad2NtOWtPak1pQ25KbGNHeHBkQzVqYjIwPQ' failed: WebSocket is closed before the connection is established.
+cleanupSocket @ 3922-cd8a1371b343f372.js:1
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+stallwart.build.js:1 stallwart: failed ping 1
+stallwart.build.js:1 stallwart: failed ping 1
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+stallwart.build.js:1 stallwart: failed ping 1
+stallwart.build.js:1 stallwart: failed ping 1
+stallwart.build.js:1 stallwart: failed ping 1
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+stallwart.build.js:1 stallwart: failed ping 1
+stallwart.build.js:1 stallwart: failed ping 2
+_app-166986ff808a0729.js:13 MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 101 STATE_CHANGE listeners added. Use emitter.setMaxListeners() to increase limit
+    at f (https://cdn.replit.com/_next/static/chunks/3922-cd8a1371b343f372.js:1:83996)
+    at c.addListener (https://cdn.replit.com/_next/static/chunks/3922-cd8a1371b343f372.js:1:86530)
+    at Object.onStateChanged (https://cdn.replit.com/_next/static/chunks/9906-a78415c3376a2b0f.js:1:2168840)
+    at https://cdn.replit.com/_next/static/chunks/9906-a78415c3376a2b0f.js:1:2012138
+    at oO (https://cdn.replit.com/_next/static/chunks/framework-f0625dc4b27d756c.js:1:125455)
+    at uB (https://cdn.replit.com/_next/static/chunks/framework-f0625dc4b27d756c.js:1:154513)
+    at u_ (https://cdn.replit.com/_next/static/chunks/framework-f0625dc4b27d756c.js:1:137321)
+    at r6 (https://cdn.replit.com/_next/static/chunks/framework-f0625dc4b27d756c.js:1:86243)
+    at https://cdn.replit.com/_next/static/chunks/framework-f0625dc4b27d756c.js:1:152959
+    at uO (https://cdn.replit.com/_next/static/chunks/framework-f0625dc4b27d756c.js:1:152965)
+    at uS (https://cdn.replit.com/_next/static/chunks/framework-f0625dc4b27d756c.js:1:136324)
+    at C (https://cdn.replit.com/_next/static/chunks/framework-f0625dc4b27d756c.js:1:206341)
+    at MessagePort.z (https://cdn.replit.com/_next/static/chunks/framework-f0625dc4b27d756c.js:1:206871)
+(anonymous) @ _app-166986ff808a0729.js:13
+stallwart.build.js:1 stallwart: failed ping 1
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+stallwart.build.js:1 stallwart: failed ping 1
+stallwart.build.js:1 stallwart: failed ping 2
+stallwart.build.js:1 stallwart: failed ping 1
+stallwart.build.js:1 stallwart: failed ping 1
+stallwart.build.js:1 stallwart: failed ping 2
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+stallwart.build.js:1 stallwart: failed ping 1
+WARNING: Too many active WebGL contexts. Oldest context will be lost.
+WARNING: Too many active WebGL contexts. Oldest context will be lost.
+WARNING: Too many active WebGL contexts. Oldest context will be lost.
+WARNING: Too many active WebGL contexts. Oldest context will be lost.
+WARNING: Too many active WebGL contexts. Oldest context will be lost.
+WARNING: Too many active WebGL contexts. Oldest context will be lost.
+WARNING: Too many active WebGL contexts. Oldest context will be lost.
+_app-166986ff808a0729.js:13 webglcontextlost event received
+_app-166986ff808a0729.js:13 webglcontextlost event received
+_app-166986ff808a0729.js:13 webglcontextlost event received
+_app-166986ff808a0729.js:13 webglcontextlost event received
+stallwart.build.js:1 stallwart: failed ping 1
+_app-166986ff808a0729.js:13 webgl context not restored; firing onContextLoss
+(anonymous) @ _app-166986ff808a0729.js:13
+_app-166986ff808a0729.js:13 webgl context not restored; firing onContextLoss
+(anonymous) @ _app-166986ff808a0729.js:13
+_app-166986ff808a0729.js:13 webgl context not restored; firing onContextLoss
+(anonymous) @ _app-166986ff808a0729.js:13
+_app-166986ff808a0729.js:13 webgl context not restored; firing onContextLoss
+(anonymous) @ _app-166986ff808a0729.js:13
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+stallwart.build.js:1 stallwart: failed ping 1
+stallwart.build.js:1 stallwart: failed ping 2
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+stallwart.build.js:1 stallwart: failed ping 1
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+stallwart.build.js:1 stallwart: failed ping 1
+stallwart.build.js:1 stallwart: failed ping 1
+stallwart.build.js:1 stallwart: failed ping 1
+stallwart.build.js:1 stallwart: failed ping 1
+stallwart.build.js:1 stallwart: failed ping 2
+stallwart.build.js:1 stallwart: failed ping 3
+stallwart.build.js:1 stallwart: failed ping 4
+stallwart.build.js:1 stallwart: failed ping 5
+stallwart.build.js:1 stallwart: session stalled
+Funlistai-v2:1 Blocked aria-hidden on an element because its descendant retained focus. The focus must not be hidden from assistive technology users. Avoid using aria-hidden on a focused element or its ancestor. Consider using the inert attribute instead, which will also prevent focus. For more details, see the aria-hidden section of the WAI-ARIA specification at https://w3c.github.io/aria/#aria-hidden.
+Element with focus: <button.css-1pmdxvm#react-aria2846281588-:r3nh:>
+Ancestor with aria-hidden: <div#__next> <div id=​"__next">​…​</div>​
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Funlistai-v2:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+workspace_iframe.html:32 Unrecognized feature: 'ambient-light-sensor'.
+workspace_iframe.html:32 Unrecognized feature: 'battery'.
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-not-rendered'.
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-out-of-viewport'.
+workspace_iframe.html:32 Unrecognized feature: 'layout-animations'.
+workspace_iframe.html:32 Unrecognized feature: 'legacy-image-formats'.
+workspace_iframe.html:32 Unrecognized feature: 'navigation-override'.
+workspace_iframe.html:32 Unrecognized feature: 'oversized-images'.
+workspace_iframe.html:32 Unrecognized feature: 'publickey-credentials'.
+workspace_iframe.html:32 Unrecognized feature: 'speaker-selection'.
+workspace_iframe.html:32 Unrecognized feature: 'unoptimized-images'.
+workspace_iframe.html:32 Unrecognized feature: 'unsized-media'.
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowfullscreen'.
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowpaymentrequest'.
+8a972437-9194-4313-b8b0-ba387bed7e74-00-w0mn3min1puj.spock.replit.dev:8080/:15 Refused to load the stylesheet 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css' because it violates the following Content Security Policy directive: "style-src 'self' 'unsafe-inline' https://*.jsdelivr.net https://*.googleapis.com https://*.fontawesome.com https://*.cdnjs.cloudflare.com https://unpkg.com". Note that 'style-src-elem' was not explicitly set, so 'style-src' is used as a fallback.
+
+Console.js:61 Global error handler caught: Uncaught SyntaxError: Unexpected end of input
+Mt.forEach.n.<computed> @ Console.js:61
+Console.js:61 Error details: SyntaxError: Unexpected end of input
+Mt.forEach.n.<computed> @ Console.js:61
+Console.js:61 Global error handler caught: Script error.
+Mt.forEach.n.<computed> @ Console.js:61
+Console.js:61 Cross-origin script error detected. Check for cross-origin issues.
+Console.js:61 Cookie consent found, applying preferences
+Console.js:61 Analytics tracking enabled
+Console.js:61 Advertising cookies enabled
+edit:1 
+            
+            
+           Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+edit:15 Refused to load the stylesheet 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css' because it violates the following Content Security Policy directive: "style-src 'self' 'unsafe-inline' https://*.jsdelivr.net https://*.googleapis.com https://*.fontawesome.com https://*.cdnjs.cloudflare.com https://unpkg.com". Note that 'style-src-elem' was not explicitly set, so 'style-src' is used as a fallback.
+
+Console.js:61 Global error handler caught: Uncaught SyntaxError: Unexpected end of input
+Mt.forEach.n.<computed> @ Console.js:61
+Console.js:61 Error details: SyntaxError: Unexpected end of input
+Mt.forEach.n.<computed> @ Console.js:61
+Console.js:61 Cookie consent found, applying preferences
+Console.js:61 Analytics tracking enabled
+Console.js:61 Advertising cookies enabled
+
+                
+          
+          
+          
+         Chrome is moving towards a new experience that allows users to choose to browse without third-party cookies.
+edit:1 Refused to load the stylesheet 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css' because it violates the following Content Security Policy directive: "style-src 'self' 'unsafe-inline' https://*.jsdelivr.net https://*.googleapis.com https://*.fontawesome.com https://*.cdnjs.cloudflare.com https://unpkg.com". Note that 'style-src-elem' was not explicitly set, so 'style-src' is used as a fallback.
+
+
+                
+          
+          
+          
+         Chrome is moving towards a new experience that allows users to choose to browse without third-party cookies.
