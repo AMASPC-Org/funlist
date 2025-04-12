@@ -529,27 +529,54 @@ def init_routes(app):
             except (ValueError, TypeError):
                 pass
 
-        if request.method == "POST":
-            if form.validate_on_submit():
-                event = Event()
-                event.title = form.title.data
-                event.description = form.description.data
-                event.start_date = form.start_date.data
-                event.end_date = form.end_date.data
-                event.all_day = form.all_day.data
-
+        if form.validate_on_submit():
+            try:
+                # Create the event
+                event = Event(
+                    title=form.title.data,
+                    description=form.description.data,
+                    status="pending",
+                    start_date=form.start_date.data,
+                    end_date=form.end_date.data,
+                    all_day=form.all_day.data,
+                    street=form.street.data,
+                    city=form.city.data,
+                    state=form.state.data,
+                    zip_code=form.zip_code.data,
+                    category=form.category.data,
+                    target_audience=form.target_audience.data,
+                    fun_meter=int(form.fun_meter.data),
+                    user_id=current_user.id,
+                    ticket_url=form.ticket_url.data if hasattr(form, 'ticket_url') else None
+                )
+                
+                # Handle times if not all day
                 if not event.all_day:
                     event.start_time = form.start_time.data.strftime('%H:%M:%S') if form.start_time.data else None
                     event.end_time = form.end_time.data.strftime('%H:%M:%S') if form.end_time.data else None
 
-                if form.is_sub_event.data and form.parent_event.data:
-                    event.parent_event_id = int(form.parent_event.data)
-
+                # Handle recurring events
                 if form.is_recurring.data:
                     event.is_recurring = True
                     event.recurring_pattern = form.recurring_pattern.data
                     event.recurring_end_date = form.recurring_end_date.data
-                    
+                
+                # Handle sub-events
+                if form.is_sub_event.data and form.parent_event.data:
+                    event.parent_event_id = int(form.parent_event.data)
+                
+                # Geocode the address
+                coordinates = geocode_address(
+                    form.street.data,
+                    form.city.data,
+                    form.state.data,
+                    form.zip_code.data,
+                )
+
+                if coordinates:
+                    event.latitude = coordinates[0]
+                    event.longitude = coordinates[1]
+                
                 # Handle venue selection or creation
                 if form.use_new_venue.data and form.venue_name.data:
                     # Create a new venue
@@ -568,40 +595,6 @@ def init_routes(app):
                 elif form.venue_id.data and form.venue_id.data != 0:
                     # Use selected venue
                     event.venue_id = form.venue_id.data
-            try:
-                if form.validate_on_submit():
-                    is_draft = request.form.get("is_draft", "false") == "true"
-                    coordinates = geocode_address(
-                        form.street.data,
-                        form.city.data,
-                        form.state.data,
-                        form.zip_code.data,
-                    )
-
-                    if not coordinates:
-                        flash(
-                            "Could not geocode address. Please verify the address is correct.",
-                            "danger",
-                        )
-                        return render_template("submit_event.html", form=form)
-                    event = Event(
-                        title=form.title.data,
-                        description=form.description.data,
-                        status="draft" if is_draft else "pending",
-                        start_date=form.date.data,
-                        end_date=form.date.data,
-                        street=form.street.data,
-                        city=form.city.data,
-                        state=form.state.data,
-                        zip_code=form.zip_code.data,
-                        latitude=coordinates[0],
-                        longitude=coordinates[1],
-                        category=form.category.data,
-                        target_audience=form.target_audience.data,
-                        fun_meter=form.fun_meter.data,
-                        user_id=current_user.id,
-                        ticket_url=form.ticket_url.data
-                    )
                     
                     # Add network_opt_out if the form has it and the column exists
                     if hasattr(form, 'network_opt_out'):
@@ -618,20 +611,24 @@ def init_routes(app):
                             logger.warning(f"Could not set network_opt_out: {str(e)}")
 
                     # Handle prohibited advertisers
-                    if form.prohibited_advertisers.data:
+                    if hasattr(form, 'prohibited_advertisers') and form.prohibited_advertisers.data:
                         for category_id in form.prohibited_advertisers.data:
                             category = ProhibitedAdvertiserCategory.query.get(category_id)
                             if category:
                                 event.prohibited_advertisers.append(category)
+                                
                     db.session.add(event)
                     db.session.commit()
                     flash("Event created successfully!", "success")
                     return redirect(url_for("events"))
-                else:
-                    flash(
-                        "Form submission failed. Please check your inputs.", "danger"
-                    )  # Added flash message for form validation errors
-                    return render_template("submit_event.html", form=form)
+                
+            except Exception as e:
+                db.session.rollback()
+                logger.exception(f"Error during event submission: {str(e)}")
+                flash("An unexpected error occurred. Please try again later.", "danger")
+                
+        elif request.method == "POST":
+            flash("Form submission failed. Please check your inputs.", "danger")
             except SQLAlchemyError as e:
                 db.session.rollback()
                 logger.exception(
