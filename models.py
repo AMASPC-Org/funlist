@@ -102,7 +102,7 @@ class Event(db.Model):
     tags = Column(String(255))  # Comma-separated tags
     attendance_count = Column(Integer, default=0)
     views_count = Column(Integer, default=0)
-    is_featured = Column(Boolean, default=False)
+    featured = Column(Boolean, default=False)  # Changed from is_featured to match database
     fun_rating = Column(Integer, default=3)  # Scale of 1-5
     fun_meter = Column(Integer, default=3)  # Alias for fun_rating
     status = Column(String(50), default="pending")  # draft, pending, approved, rejected
