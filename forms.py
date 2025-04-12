@@ -223,6 +223,12 @@ class EventForm(FlaskForm):
     ], validators=[DataRequired()], default='3')
 
     is_recurring = BooleanField('This is a recurring event')
+    recurrence_type = SelectField('Recurrence Type', choices=[
+        ('daily', 'Daily'),
+        ('weekly', 'Weekly'),
+        ('monthly', 'Monthly'),
+        ('custom', 'Custom')
+    ], validators=[Optional()])
     recurring_pattern = SelectField('Recurring Pattern', choices=[
         ('', 'Select Pattern'),
         ('daily', 'Daily'),
