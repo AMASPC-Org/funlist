@@ -2,6 +2,7 @@
 from db_init import db
 from app import create_app
 import logging
+from sqlalchemy import text
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -14,22 +15,22 @@ def fix_featured_column():
         with app.app_context():
             # Check if the column exists
             try:
-                db.session.execute("SELECT is_featured FROM events LIMIT 1")
+                db.session.execute(text("SELECT is_featured FROM events LIMIT 1"))
                 logger.info("Found 'is_featured' column, renaming to 'featured'")
-                db.session.execute("ALTER TABLE events RENAME COLUMN is_featured TO featured")
+                db.session.execute(text("ALTER TABLE events RENAME COLUMN is_featured TO featured"))
                 db.session.commit()
                 logger.info("Column renamed successfully")
             except Exception as e:
                 logger.info(f"Column 'is_featured' doesn't exist: {str(e)}")
                 try:
                     # Try to check if featured column exists
-                    db.session.execute("SELECT featured FROM events LIMIT 1")
+                    db.session.execute(text("SELECT featured FROM events LIMIT 1"))
                     logger.info("Found 'featured' column, no changes needed")
                 except Exception as e2:
                     logger.info(f"Column 'featured' doesn't exist either: {str(e2)}")
                     # Create the column if it doesn't exist
                     logger.info("Creating 'featured' column")
-                    db.session.execute("ALTER TABLE events ADD COLUMN featured BOOLEAN DEFAULT FALSE")
+                    db.session.execute(text("ALTER TABLE events ADD COLUMN featured BOOLEAN DEFAULT FALSE"))
                     db.session.commit()
                     logger.info("Column created successfully")
         
