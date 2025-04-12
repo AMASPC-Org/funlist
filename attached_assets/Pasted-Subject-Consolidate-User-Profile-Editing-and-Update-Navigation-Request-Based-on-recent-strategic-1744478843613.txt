@@ -1,0 +1,55 @@
+Subject: Consolidate User Profile Editing and Update Navigation
+Request:
+Based on recent strategic decisions, we need to refine the user profile management flow. We will consolidate the "Edit Profile" and "Organizer Profile" functionalities into a single page accessible via one dropdown link.
+Tasks:
+Modify Navbar Template (templates/partials/navbar.html or base.html - Please locate where the user dropdown menu is defined):
+Find the user dropdown menu (<ul class="dropdown-menu dropdown-menu-end">) displayed for authenticated users.
+Locate the list item (<li>) containing the link currently labeled "Edit Profile".
+Change the link text within the <a> tag from "Edit Profile" to "My Profile".
+Ensure the href attribute of this link still correctly points to the route responsible for rendering the profile editing page (e.g., {{ url_for('edit_profile') }}).
+Remove any separate list item or link for "Organizer Profile" if it exists within this dropdown or the main navbar.
+Modify Profile Editing Template (templates/edit_profile.html - Please confirm/use the correct filename for the profile editing view):
+Structure the Page: Organize the content within the template using clear sections. Use <div class="card mb-4"><div class="card-body">...</div></div> or <fieldset class="mb-4">...</fieldset> for each section.
+Implement Sections: Ensure the following sections are present and contain the appropriate form fields (rendered using render_field or similar macro):
+Personal Information: (Include fields like username, first_name, last_name, bio, location, interests, birth_date)
+Social Media Links: (Include fields like linkedin_url, facebook_url, instagram_url, tiktok_url, twitter_url)
+Organizer Information: Wrap this entire section in a Jinja conditional block: {% if current_user.is_organizer %}. Include fields like business_name, organizer_title, business_location, business_phone, business_email, business_website.
+Venue Management (Placeholder): Inside the {% if current_user.is_organizer %} block (after Organizer Information), add this placeholder section:
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Venue Management</h5>
+        <p><small>Manage venues associated with your organization.</small></p>
+        <!-- TODO: Display list of existing venues here -->
+        <!-- TODO: Add "Add New Venue" button here -->
+        <p class="mt-3"><small><em>(Venue adding/editing functionality coming soon)</em></small></p>
+    </div>
+</div>
+Use code with caution.
+Html
+Account Settings: Add this new section, likely near the end but before the final submit button:
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Account Settings</h5>
+        <p><strong>Email:</strong> {{ current_user.email }}</p>
+        <p><strong>Membership Tier:</strong> {{ current_user.membership_tier.name if current_user.membership_tier else 'N/A' }}
+           <a href="{{ url_for('membership') }}" class="btn btn-sm btn-outline-secondary ms-2">Manage Tier</a>
+        </p>
+        <a href="{{ url_for('change_password') }}" class="btn btn-secondary mt-2">Change Password</a>
+        <!-- Placeholder for future settings -->
+    </div>
+</div>
+Use code with caution.
+Html
+Form Fields: Ensure all relevant fields from the consolidated ProfileForm (as defined in previous instructions, including personal, social, and organizer fields) are rendered within the appropriate sections of this template.
+Verify forms.py: Double-check forms.py to confirm that the ProfileForm class exists and contains all the necessary fields mentioned in Task 2 (personal, social, organizer), with appropriate validators (like Optional() for non-required fields). No code changes are required for forms.py in this specific prompt unless fields are missing.
+Verify routes.py: Ensure the route handling the profile edit (e.g., /profile/edit) renders the correct template (edit_profile.html or equivalent) and passes the ProfileForm instance to it. No changes to the POST logic for saving data are needed in this prompt.
+Provide Complete Code: Return the complete, fully edited code for the following files:
+The modified navbar file (templates/partials/navbar.html or base.html).
+The modified profile editing template (templates/edit_profile.html or specific filename).
+Context:
+We are consolidating user and organizer profile editing into a single "My Profile" page.
+The page needs clear sections, with organizer-specific content displayed conditionally.
+A placeholder for Venue Management and an initial "Account Settings" section are being added.
+Backend logic for saving organizer/venue data and the "Change Password" functionality will be handled separately.
+The onboarding wizard is also a separate, future task.
+Please implement these changes precisely.
