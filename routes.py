@@ -771,7 +771,8 @@ def init_routes(app):
 
     @app.route("/admin/analytics")
     @login_required
-    def admin_analytics():        if current_user.email != 'ryan@funlist.ai':
+    def admin_analytics():
+        if current_user.email != 'ryan@funlist.ai':
             flash("Access denied. Only authorized administrators can access this page.", "danger")
             return redirect(url_for("index"))
         # Get events by category data
