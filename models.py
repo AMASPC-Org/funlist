@@ -11,7 +11,6 @@ class User(db.Model, UserMixin):
     __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True)
-    username = Column(String(120), unique=True, nullable=True)
     email = Column(String(120), unique=True, nullable=False)
     password_hash = Column(String(256), nullable=False)
     first_name = Column(String(120), nullable=True)
@@ -32,14 +31,18 @@ class User(db.Model, UserMixin):
     advertising_opportunities = Column(Text, nullable=True)
     sponsorship_opportunities = Column(Text, nullable=True)
     organizer_profile_updated_at = Column(DateTime, nullable=True)
-    bio = Column(Text, nullable=True)
     location = Column(String(200), nullable=True)
     phone = Column(String(20), nullable=True)
     newsletter_opt_in = Column(Boolean, default=True)
     marketing_opt_in = Column(Boolean, default=False)
     user_preferences = Column(Text, nullable=True)
-    birth_date = Column(DateTime, nullable=True)
-    interests = Column(Text, nullable=True)
+    business_street = Column(String(100), nullable=True)
+    business_city = Column(String(50), nullable=True)
+    business_state = Column(String(50), nullable=True)
+    business_zip = Column(String(20), nullable=True)
+    # Keep this for backward compatibility
+    business_location = Column(String(200), nullable=True)
+
 
     def is_active(self):
         return self.account_active

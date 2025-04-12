@@ -18,15 +18,11 @@
                         <h5 class="card-title">Personal Information</h5>
                         <div class="row">
                             <div class="col-md-6">
-                                {{ render_field(form.username, class="form-control") }}
                                 {{ render_field(form.first_name, class="form-control") }}
                                 {{ render_field(form.last_name, class="form-control") }}
                                 {{ render_field(form.location, class="form-control") }}
-                                {{ render_field(form.birth_date, class="form-control", type="date") }}
                             </div>
                             <div class="col-md-6">
-                                {{ render_field(form.bio, class="form-control", rows=5) }}
-                                {{ render_field(form.interests, class="form-control") }}
                                 
                                 {% if form.profile_image %}
                                 <div class="mb-3">
@@ -78,9 +74,12 @@
                             <div class="col-md-6">
                                 {{ render_field(form.company_name, class="form-control") }}
                                 {{ render_field(form.organizer_title, class="form-control") }}
-                                {{ render_field(form.business_location, class="form-control") }}
+                                {{ render_field(form.business_street, class="form-control") }}
+                                {{ render_field(form.business_city, class="form-control") }}
                             </div>
                             <div class="col-md-6">
+                                {{ render_field(form.business_state, class="form-control") }}
+                                {{ render_field(form.business_zip, class="form-control") }}
                                 {{ render_field(form.business_phone, class="form-control") }}
                                 {{ render_field(form.business_email, class="form-control") }}
                                 {{ render_field(form.organizer_website, class="form-control") }}

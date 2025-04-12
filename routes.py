@@ -328,13 +328,9 @@ def init_routes(app):
 
         if request.method == "GET":
             # Personal Information
-            form.username.data = current_user.username
             form.first_name.data = current_user.first_name
             form.last_name.data = current_user.last_name
-            form.bio.data = current_user.bio
             form.location.data = current_user.location
-            form.interests.data = current_user.interests
-            form.birth_date.data = current_user.birth_date
             
             # Social Media Links (if these fields exist in the User model)
             if hasattr(current_user, 'facebook_url'):
@@ -356,8 +352,15 @@ def init_routes(app):
                 # Fill additional organizer fields if they exist in the database
                 if hasattr(current_user, 'organizer_title'):
                     form.organizer_title.data = current_user.organizer_title
-                if hasattr(current_user, 'business_location'):
-                    form.business_location.data = current_user.business_location
+                # Handle the split business location fields
+                if hasattr(current_user, 'business_street'):
+                    form.business_street.data = current_user.business_street
+                if hasattr(current_user, 'business_city'):
+                    form.business_city.data = current_user.business_city
+                if hasattr(current_user, 'business_state'):
+                    form.business_state.data = current_user.business_state
+                if hasattr(current_user, 'business_zip'):
+                    form.business_zip.data = current_user.business_zip
                 if hasattr(current_user, 'business_phone'):
                     form.business_phone.data = current_user.business_phone
                 if hasattr(current_user, 'business_email'):
@@ -367,13 +370,9 @@ def init_routes(app):
             try:
                 # Personal profile data
                 profile_data = {
-                    "username": form.username.data,
                     "first_name": form.first_name.data,
                     "last_name": form.last_name.data,
-                    "bio": form.bio.data,
                     "location": form.location.data,
-                    "interests": form.interests.data,
-                    "birth_date": form.birth_date.data,
                 }
                 
                 # Handle social media fields if they exist in the User model
@@ -402,8 +401,14 @@ def init_routes(app):
                     # Add additional organizer fields if they exist in the form
                     if hasattr(form, 'organizer_title') and form.organizer_title.data:
                         organizer_data["organizer_title"] = form.organizer_title.data
-                    if hasattr(form, 'business_location') and form.business_location.data:
-                        organizer_data["business_location"] = form.business_location.data
+                    if hasattr(form, 'business_street') and form.business_street.data:
+                        organizer_data["business_street"] = form.business_street.data
+                    if hasattr(form, 'business_city') and form.business_city.data:
+                        organizer_data["business_city"] = form.business_city.data
+                    if hasattr(form, 'business_state') and form.business_state.data:
+                        organizer_data["business_state"] = form.business_state.data
+                    if hasattr(form, 'business_zip') and form.business_zip.data:
+                        organizer_data["business_zip"] = form.business_zip.data
                     if hasattr(form, 'business_phone') and form.business_phone.data:
                         organizer_data["business_phone"] = form.business_phone.data
                     if hasattr(form, 'business_email') and form.business_email.data:

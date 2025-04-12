@@ -88,16 +88,9 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Sign In')
 
 class ProfileForm(FlaskForm):
-    username = StringField('Username', validators=[
-        Optional(),
-        Length(min=3, max=50, message="Username must be between 3 and 50 characters"),
-        Regexp(r'^[\w.]+$', message="Username can only contain letters, numbers, dots, and underscores")
-    ])
     first_name = StringField('First Name', validators=[Optional(), Length(max=50)])
     last_name = StringField('Last Name', validators=[Optional(), Length(max=50)])
-    bio = TextAreaField('Bio', validators=[Optional(), Length(max=500)])
-    location = StringField('Location', validators=[Optional(), Length(max=100)])
-    interests = StringField('Interests', validators=[Optional(), Length(max=255)])
+    location = StringField('City', validators=[Optional(), Length(max=100)])
     event_focus = SelectMultipleField(
         "Tell Us About Yourself", 
         choices=[
@@ -122,7 +115,6 @@ class ProfileForm(FlaskForm):
         description="Enter interests separated by commas (e.g., sports,music,outdoors)",
         validators=[Optional(), Length(max=255)]
     )
-    birth_date = DateField('Birth Date', validators=[Optional()])
     
     # Social Media Links
     facebook_url = StringField('Facebook URL', validators=[Optional(), URL()])
@@ -136,7 +128,10 @@ class ProfileForm(FlaskForm):
     organizer_title = StringField('Your Title', validators=[Optional(), Length(max=100)])
     organizer_description = TextAreaField('About Your Organization', validators=[Optional(), Length(max=500)])
     organizer_website = StringField('Website', validators=[Optional(), URL()])
-    business_location = StringField('Business Location', validators=[Optional(), Length(max=200)])
+    business_street = StringField('Street Address', validators=[Optional(), Length(max=100)])
+    business_city = StringField('City', validators=[Optional(), Length(max=50)])
+    business_state = StringField('State', validators=[Optional(), Length(max=50)])
+    business_zip = StringField('ZIP Code', validators=[Optional(), Length(max=20)])
     business_phone = StringField('Business Phone', validators=[Optional(), Length(max=20)])
     business_email = StringField('Business Email', validators=[Optional(), Email(), Length(max=120)])
     
