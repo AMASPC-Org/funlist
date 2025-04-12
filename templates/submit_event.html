@@ -1,275 +1,338 @@
 {% extends "base.html" %}
 
-{% block title %}Submit Event - FunList.ai{% endblock %}
-
-{% block head %}
-{{ super() }}
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<style>
-    .select2-container {
-        width: 100% !important;
-    }
-    .char-count {
-        text-align: right;
-        font-size: 0.8rem;
-        color: #6c757d;
-    }
-    .char-count.warning {
-        color: #ffc107;
-    }
-    .char-count.danger {
-        color: #dc3545;
-    }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="container mt-5 mb-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">Submit New Event</h3>
+<div class="container py-4">
+    <h1 class="mb-4">Submit a New Event</h1>
+
+    <form id="eventForm" method="POST" action="{{ url_for('submit_event') }}" class="mx-3">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    {{ form.hidden_tag() }}
+    <div class="mb-3">
+        {{ form.title.label(class="form-label") }}
+        {{ form.title(class="form-control", maxlength="150", oninput="updateCharCount(this, 'titleCount', 150)") }}
+        <small class="text-muted"><span id="titleCount">0</span>/150 characters</small>
+    </div>
+    <div class="mb-3">
+        {{ form.description.label(class="form-label") }}
+        {{ form.description(class="form-control", rows="5", maxlength="500", oninput="updateCharCount(this, 'descriptionCount', 500)") }}
+        <small class="text-muted"><span id="descriptionCount">0</span>/500 characters</small>
+    </div>
+    <div class="mb-3">
+        {{ form.all_day.label(class="form-label") }}
+        {{ form.all_day(class="form-check-input ms-2") }}
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-6">
+            {{ form.start_date.label(class="form-label") }}
+            {{ form.start_date(class="form-control", type="date") }}
+        </div>
+        <div class="col-md-6">
+            {{ form.end_date.label(class="form-label") }}
+            {{ form.end_date(class="form-control", type="date") }}
+        </div>
+    </div>
+    <div class="row mb-3 time-fields">
+        <div class="col-md-6">
+            {{ form.start_time.label(class="form-label") }}
+            {{ form.start_time(class="form-control", type="time") }}
+        </div>
+        <div class="col-md-6">
+            {{ form.end_time.label(class="form-label") }}
+            {{ form.end_time(class="form-control", type="time") }}
+        </div>
+    </div>
+    <div class="mb-3">
+        {{ form.is_recurring.label(class="form-label") }}
+        {{ form.is_recurring(class="form-check-input ms-2", id="is_recurring") }}
+    </div>
+    <div id="recurrenceFields" class="recurrence-fields" style="display: none;">
+        <div class="mb-3">
+            {{ form.recurrence_type.label(class="form-label") }}
+            {{ form.recurrence_type(class="form-select", id="recurrence_type") }}
+        </div>
+        <div id="customRecurrenceFields" style="display: none;">
+            <div class="mb-3">
+                <label class="form-label">Repeat every</label>
+                <div class="input-group">
+                    <input type="number" class="form-control" id="recurrence_interval" min="1" value="1">
+                    <select class="form-select" id="recurrence_unit">
+                        <option value="days">Days</option>
+                        <option value="weeks">Weeks</option>
+                        <option value="months">Months</option>
+                    </select>
                 </div>
-                <div class="card-body">
-                    <form method="POST" enctype="multipart/form-data">
-                        {{ form.hidden_tag() }}
-
-                        <div class="mb-3">
-                            {{ form.title.label(class="form-label") }}
-                            {{ form.title(class="form-control") }}
-                            {% for error in form.title.errors %}
-                            <span class="text-danger">{{ error }}</span>
-                            {% endfor %}
-                        </div>
-
-                        <div class="mb-3">
-                            {{ form.description.label(class="form-label") }}
-                            {{ form.description(class="form-control", rows=5, id="description-field") }}
-                            <div id="description-char-count" class="char-count">0/1500 characters</div>
-                            {% for error in form.description.errors %}
-                            <span class="text-danger">{{ error }}</span>
-                            {% endfor %}
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                {{ form.start_date.label(class="form-label") }}
-                                {{ form.start_date(class="form-control", type="date", id="start-date") }}
-                                {% for error in form.start_date.errors %}
-                                <span class="text-danger">{{ error }}</span>
-                                {% endfor %}
-                            </div>
-                            <div class="col-md-6">
-                                {{ form.end_date.label(class="form-label") }}
-                                {{ form.end_date(class="form-control", type="date", id="end-date") }}
-                                {% for error in form.end_date.errors %}
-                                <span class="text-danger">{{ error }}</span>
-                                {% endfor %}
-                            </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                {{ form.start_time.label(class="form-label") }}
-                                {{ form.start_time(class="form-control", type="time") }}
-                                {% for error in form.start_time.errors %}
-                                <span class="text-danger">{{ error }}</span>
-                                {% endfor %}
-                            </div>
-                            <div class="col-md-6">
-                                {{ form.end_time.label(class="form-label") }}
-                                {{ form.end_time(class="form-control", type="time") }}
-                                {% for error in form.end_time.errors %}
-                                <span class="text-danger">{{ error }}</span>
-                                {% endfor %}
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            {{ form.location.label(class="form-label") }}
-                            {{ form.location(class="form-control") }}
-                            {% for error in form.location.errors %}
-                            <span class="text-danger">{{ error }}</span>
-                            {% endfor %}
-                        </div>
-
-                        <div class="mb-3">
-                            {{ form.address.label(class="form-label") }}
-                            {{ form.address(class="form-control") }}
-                            {% for error in form.address.errors %}
-                            <span class="text-danger">{{ error }}</span>
-                            {% endfor %}
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                {{ form.city.label(class="form-label") }}
-                                {{ form.city(class="form-control") }}
-                                {% for error in form.city.errors %}
-                                <span class="text-danger">{{ error }}</span>
-                                {% endfor %}
-                            </div>
-                            <div class="col-md-3">
-                                {{ form.state.label(class="form-label") }}
-                                {{ form.state(class="form-control") }}
-                                {% for error in form.state.errors %}
-                                <span class="text-danger">{{ error }}</span>
-                                {% endfor %}
-                            </div>
-                            <div class="col-md-3">
-                                {{ form.zip_code.label(class="form-label") }}
-                                {{ form.zip_code(class="form-control") }}
-                                {% for error in form.zip_code.errors %}
-                                <span class="text-danger">{{ error }}</span>
-                                {% endfor %}
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            {{ form.category.label(class="form-label") }}
-                            {{ form.category(class="form-select") }}
-                            {% for error in form.category.errors %}
-                            <span class="text-danger">{{ error }}</span>
-                            {% endfor %}
-                        </div>
-
-                        <div class="mb-3">
-                            {{ form.website.label(class="form-label") }}
-                            {{ form.website(class="form-control") }}
-                            {% for error in form.website.errors %}
-                            <span class="text-danger">{{ error }}</span>
-                            {% endfor %}
-                        </div>
-
-                        <div class="mb-3">
-                            <div class="form-check">
-                                {{ form.is_free(class="form-check-input") }}
-                                {{ form.is_free.label(class="form-check-label") }}
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            {{ form.price.label(class="form-label") }}
-                            {{ form.price(class="form-control") }}
-                            {% for error in form.price.errors %}
-                            <span class="text-danger">{{ error }}</span>
-                            {% endfor %}
-                        </div>
-
-                        <div class="mb-3">
-                            {{ form.contact_email.label(class="form-label") }}
-                            {{ form.contact_email(class="form-control") }}
-                            {% for error in form.contact_email.errors %}
-                            <span class="text-danger">{{ error }}</span>
-                            {% endfor %}
-                        </div>
-
-                        <div class="mb-3">
-                            {{ form.contact_phone.label(class="form-label") }}
-                            {{ form.contact_phone(class="form-control") }}
-                            {% for error in form.contact_phone.errors %}
-                            <span class="text-danger">{{ error }}</span>
-                            {% endfor %}
-                        </div>
-
-                        <div class="mb-3">
-                            {{ form.image_url.label(class="form-label") }}
-                            {{ form.image_url(class="form-control") }}
-                            {% for error in form.image_url.errors %}
-                            <span class="text-danger">{{ error }}</span>
-                            {% endfor %}
-                        </div>
-
-                        <div class="mb-3">
-                            {{ form.prohibited_advertisers.label(class="form-label") }}
-                            <p class="text-muted small">Select categories of advertisers that should not appear alongside your event</p>
-                            {{ form.prohibited_advertisers(class="form-control select2-multi", multiple="multiple", id="prohibited-advertisers") }}
-                            {% for error in form.prohibited_advertisers.errors %}
-                            <span class="text-danger">{{ error }}</span>
-                            {% endfor %}
-                        </div>
-
-                        {% if current_user.is_admin %}
-                        <div class="mb-3">
-                            <div class="form-check">
-                                {{ form.is_featured(class="form-check-input") }}
-                                {{ form.is_featured.label(class="form-check-label") }}
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        <div class="text-center">
-                            {{ form.submit(class="btn btn-primary btn-lg") }}
-                        </div>
-                    </form>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">End recurrence</label>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="recurrence_end_type" id="never_end" value="never" checked>
+                <label class="form-check-label" for="never_end">Never</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="recurrence_end_type" id="end_after" value="after">
+                <label class="form-check-label" for="end_after">After</label>
+                <div class="input-group mt-2" style="width: 200px;">
+                    <input type="number" class="form-control" id="occurrence_count" value="10" min="1" disabled>
+                    <span class="input-group-text">occurrences</span>
+                </div>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="recurrence_end_type" id="end_on_date" value="on_date">
+                <label class="form-check-label" for="end_on_date">On date</label>
+                <div class="mt-2">
+                    {{ form.recurrence_end_date(class="form-control", type="date", id="recurrence_end_date", disabled=true) }}
                 </div>
             </div>
         </div>
     </div>
+    <div class="mb-3">
+        {{ form.street.label(class="form-label") }}
+        {{ form.street(class="form-control") }}
+    </div>
+    <div class="mb-3">
+        {{ form.city.label(class="form-label") }}
+        {{ form.city(class="form-control") }}
+    </div>
+    <div class="mb-3">
+        {{ form.state.label(class="form-label") }}
+        {{ form.state(class="form-control") }}
+    </div>
+    <div class="mb-3">
+        {{ form.zip_code.label(class="form-label") }}
+        {{ form.zip_code(class="form-control") }}
+    </div>
+    <div class="mb-3">
+        {{ form.category.label(class="form-label") }}
+        {{ form.category(class="form-select") }}
+    </div>
+    <div class="mb-3">
+        {{ form.target_audience.label(class="form-label") }}
+        {{ form.target_audience(class="form-select") }}
+    </div>
+    <div class="mb-3">
+        {{ form.fun_meter.label(class="form-label") }}
+        {{ form.fun_meter(class="form-control", type="number", min="1", max="5") }}
+    </div>
+    
+    <div class="mb-3">
+        {{ form.prohibited_advertisers.label(class="form-label") }}
+        <div class="form-text mb-2">Select categories of advertisers that should not be allowed to participate in this event</div>
+        {{ form.prohibited_advertisers(class="form-select", multiple="multiple", size="7") }}
+        <div class="mt-2">
+            <a href="#" data-bs-toggle="modal" data-bs-target="#prohibitedInfoModal">Learn More</a> about advertiser categories
+        </div>
+    </div>
+    
+    <!-- Prohibited Advertisers Info Modal -->
+    <div class="modal fade" id="prohibitedInfoModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">About Prohibited Advertisers</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>You can exclude certain types of advertisers from participating in your event:</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">Alcohol and Tobacco - Bars, liquor stores, tobacco shops</li>
+                        <li class="list-group-item">Cannabis - Dispensaries and related products</li>
+                        <li class="list-group-item">Gambling - Casinos, betting services, lottery</li>
+                        <li class="list-group-item">Adult Entertainment - Adult venues and products</li>
+                        <li class="list-group-item">Junk Food - Fast food, sugary snacks and drinks</li>
+                        <li class="list-group-item">Energy Drinks - High-caffeine beverages</li>
+                        <li class="list-group-item">Political/Religious - Political campaigns, religious organizations</li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Got it</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="mb-3">
+        {{ form.ticket_url.label(class="form-label") }}
+        {{ form.ticket_url(class="form-control") }}
+    </div>
+    
+    <div class="mb-4">
+        <div class="form-check">
+            {{ form.terms_accepted(class="form-check-input") }}
+            {{ form.terms_accepted.label(class="form-check-label") }}
+            <small class="d-block text-muted mt-1">
+                <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Read Terms and Conditions</a>
+            </small>
+        </div>
+    </div>
+
+    <div class="d-flex flex-wrap gap-3 justify-content-start mt-4 mb-5">
+        {{ form.submit(class="btn btn-primary px-4", id="submitBtn") }}
+        <button type="button" class="btn btn-outline-primary px-4" id="previewBtn">Preview</button>
+        <button type="button" class="btn btn-outline-secondary px-4" id="saveAsDraftBtn">Save Draft</button>
+        <button type="button" class="btn btn-outline-danger px-4" id="clearFormBtn">
+            <i class="fas fa-trash-alt me-2"></i>Clear
+        </button>
+    </div>
+</form>
+
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Event Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="previewContent">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="submitFromPreview">Submit Event</button>
+            </div>
+        </div>
+    </div>
 </div>
-{% endblock %}
 
-{% block scripts %}
-{{ super() }}
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<!-- Terms Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Terms and Conditions</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>By submitting this event, you agree to our terms and conditions including:</p>
+                <ul>
+                    <li>All event information provided is accurate and truthful</li>
+                    <li>You have the right to promote this event</li>
+                    <li>You accept responsibility for the content of the event listing</li>
+                    <li>The event complies with all applicable laws and regulations</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">I Understand</button>
+            </div>
+        </div>
+        </div>
+    </div>
+</div>
+
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize Select2 for prohibited advertisers
+// Recurring event handling
+document.addEventListener('DOMContentLoaded', function() {
+    const isRecurringCheckbox = document.getElementById('is_recurring');
+    const recurrenceFields = document.getElementById('recurrenceFields');
+    const recurrenceType = document.getElementById('recurrence_type');
+    const customRecurrenceFields = document.getElementById('customRecurrenceFields');
+    const endAfterRadio = document.getElementById('end_after');
+    const endOnDateRadio = document.getElementById('end_on_date');
+    const occurrenceCount = document.getElementById('occurrence_count');
+    const recurrenceEndDate = document.getElementById('recurrence_end_date');
+
+    isRecurringCheckbox.addEventListener('change', function() {
+        recurrenceFields.style.display = this.checked ? 'block' : 'none';
+    });
+
+    recurrenceType.addEventListener('change', function() {
+        customRecurrenceFields.style.display = this.value === 'custom' ? 'block' : 'none';
+    });
+
+    endAfterRadio.addEventListener('change', function() {
+        occurrenceCount.disabled = !this.checked;
+        recurrenceEndDate.disabled = true;
+    });
+
+    endOnDateRadio.addEventListener('change', function() {
+        recurrenceEndDate.disabled = !this.checked;
+        occurrenceCount.disabled = true;
+    });
+
+    document.getElementById('never_end').addEventListener('change', function() {
+        occurrenceCount.disabled = true;
+        recurrenceEndDate.disabled = true;
+    });
+});
+
+function updateCharCount(input, counterId, maxLength) {
+    const count = input.value.length;
+    document.getElementById(counterId).textContent = count;
+
+    // Add visual feedback
+    const small = input.nextElementSibling;
+    if (count > maxLength * 0.9) {
+        small.classList.add('text-warning');
+    } else {
+        small.classList.remove('text-warning');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize character counts
+    updateCharCount(document.getElementById('title'), 'titleCount', 150);
+    updateCharCount(document.getElementById('description'), 'descriptionCount', 500);
+    const form = document.querySelector('form');
+    const previewBtn = document.getElementById('previewBtn');
+    const saveAsDraftBtn = document.getElementById('saveAsDraftBtn');
+    const clearFormBtn = document.getElementById('clearFormBtn');
+    const submitFromPreview = document.getElementById('submitFromPreview');
+
+    previewBtn.addEventListener('click', function() {
+        const formData = new FormData(form);
+        const previewContent = document.getElementById('previewContent');
+
+        // Create preview HTML
+        const preview = `
+            <div class="event-preview">
+                <h3>${formData.get('title')}</h3>
+                <p>${formData.get('description')}</p>
+                <div class="event-details">
+                    <p><strong>Date:</strong> ${formData.get('start_date')} to ${formData.get('end_date')}</p>
+                    <p><strong>Location:</strong> ${formData.get('street')}, ${formData.get('city')}, ${formData.get('state')} ${formData.get('zip_code')}</p>
+                    <p><strong>Category:</strong> ${formData.get('category')}</p>
+                    <p><strong>Target Audience:</strong> ${formData.get('target_audience')}</p>
+                    <p><strong>Fun Rating:</strong> ${formData.get('fun_meter')} ⭐</p>
+                    ${formData.get('ticket_url') ? `<p><strong>Tickets:</strong> <a href="${formData.get('ticket_url')}">${formData.get('ticket_url')}</a></p>` : ''}
+                </div>
+            </div>
+        `;
+
+        previewContent.innerHTML = preview;
+        new bootstrap.Modal(document.getElementById('previewModal')).show();
+    });
+
+    submitFromPreview.addEventListener('click', function() {
+        form.submit();
+    });
+
+    saveAsDraftBtn.addEventListener('click', async function() {
+        const formData = new FormData(form);
+        formData.append('is_draft', 'true');
+
         try {
-            $('.select2-multi').select2({
-                placeholder: 'Select prohibited advertiser categories',
-                allowClear: true
+            const response = await fetch('/submit-event', {
+                method: 'POST',
+                body: formData
             });
-        } catch (e) {
-            console.error('Error initializing Select2:', e);
-            // Fallback to standard select if Select2 fails
-        }
-
-        // Auto-set end date when start date is selected
-        const startDateInput = document.getElementById('start-date');
-        const endDateInput = document.getElementById('end-date');
-
-        if (startDateInput && endDateInput) {
-            startDateInput.addEventListener('change', function() {
-                // Only set the end date if it's not already set
-                if (!endDateInput.value) {
-                    endDateInput.value = startDateInput.value;
-                }
-            });
-        }
-
-        // Character counter for description
-        const descriptionField = document.getElementById('description-field');
-        const charCountDisplay = document.getElementById('description-char-count');
-
-        if (descriptionField && charCountDisplay) {
-            const maxLength = 1500;
-
-            const updateCharCount = function() {
-                const currentLength = descriptionField.value.length;
-                charCountDisplay.textContent = `${currentLength}/${maxLength} characters`;
-
-                // Update styling based on length
-                if (currentLength > maxLength * 0.9) {
-                    charCountDisplay.classList.add('warning');
-                } else {
-                    charCountDisplay.classList.remove('warning');
-                }
-
-                if (currentLength > maxLength) {
-                    charCountDisplay.classList.add('danger');
-                } else {
-                    charCountDisplay.classList.remove('danger');
-                }
-            };
-
-            // Initial count
-            updateCharCount();
-
-            // Update on input
-            descriptionField.addEventListener('input', updateCharCount);
+            if (response.ok) {
+                window.location.href = '/events';
+            }
+        } catch (error) {
+            console.error('Error saving draft:', error);
         }
     });
+
+    clearFormBtn.addEventListener('click', function() {
+        if (confirm('Are you sure you want to clear the form?')) {
+            form.reset();
+        }
+    });
+});
 </script>
 {% endblock %}

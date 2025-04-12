@@ -451,10 +451,9 @@ def init_routes(app):
 
         form = EventForm()
 
-        # Check if parent_event field exists in form before trying to populate it
-        if hasattr(form, 'parent_event'):
-            user_events = Event.query.filter_by(user_id=current_user.id, parent_event_id=None).all()
-            form.parent_event.choices = [(str(e.id), e.title) for e in user_events]
+        # Populate parent event choices
+        user_events = Event.query.filter_by(user_id=current_user.id, parent_event_id=None).all()
+        form.parent_event.choices = [(str(e.id), e.title) for e in user_events]
 
         if request.method == "POST":
             if form.validate_on_submit():

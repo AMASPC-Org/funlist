@@ -10,20 +10,6 @@ from wtforms.validators import (
 )
 from models import User, ProhibitedAdvertiserCategory
 
-# Define event categories
-EVENT_CATEGORIES = [
-    ('', 'Select category...'),
-    ('Music', 'Music & Concerts'),
-    ('Food', 'Food & Drink'),
-    ('Arts', 'Arts & Culture'),
-    ('Sports', 'Sports & Recreation'),
-    ('Community', 'Community & Networking'),
-    ('Education', 'Education & Workshops'),
-    ('Family', 'Family & Kids'),
-    ('Festival', 'Festivals & Fairs'),
-    ('Other', 'Other')
-]
-
 class SignupForm(FlaskForm):
     email = StringField('Email', validators=[
         DataRequired(message="Please enter your email address"),
@@ -146,45 +132,110 @@ class ProfileForm(FlaskForm):
                 raise ValidationError('This username is already taken. Please choose another one.')
 
 class EventForm(FlaskForm):
-    prohibited_advertisers = SelectMultipleField('Prohibited Advertisers', choices=[
-        ('alcohol_tobacco', 'Alcohol and Tobacco Products'),
-        ('marijuana_cannabis', 'Marijuana and Cannabis Dispensaries'),
-        ('gambling_betting', 'Gambling and Betting Services'),
-        ('adult_entertainment', 'Adult Entertainment and Products'),
-        ('junk_food', 'Junk Food and Sugary Beverages'),
-        ('energy_drinks', 'Energy Drinks'),
-        ('political_religious', 'Political and Religious Organizations')
-    ], validators=[Optional()])
-    parent_event = SelectField('Parent Event', choices=[], validators=[Optional()])
-    is_sub_event = BooleanField('This is a sub-event of another event')
-    title = StringField('Event Title', validators=[DataRequired(), Length(max=100)])
-    description = TextAreaField('Event Description', validators=[DataRequired(), Length(max=1500)])
-    date = DateField('Date', format='%Y-%m-%d', validators=[DataRequired()])
+    prohibited_advertisers = SelectMultipleField('Prohibited Advertisers',
+        validators=[Optional()],
+        coerce=int
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(EventForm, self).__init__(*args, **kwargs)
+        try:
+            self.prohibited_advertisers.choices = [
+                (cat.id, cat.name) for cat in ProhibitedAdvertiserCategory.query.all()
+            ]
+        except:
+            self.prohibited_advertisers.choices = []
+    title = StringField('Title', validators=[DataRequired(), Length(max=150, message="Title must be less than 150 characters")])
+    description = TextAreaField('Description', validators=[DataRequired()])
+    start_date = DateField('Start Date', validators=[DataRequired()])
+    end_date = DateField('End Date', validators=[DataRequired()])
     start_time = TimeField('Start Time', validators=[Optional()])
     end_time = TimeField('End Time', validators=[Optional()])
-    start_date = DateField('Start Date', format='%Y-%m-%d', validators=[Optional()])
-    end_date = DateField('End Date', format='%Y-%m-%d', validators=[Optional()])
-    location = StringField('Location', validators=[DataRequired(), Length(max=100)])
-    address = StringField('Street Address', validators=[DataRequired(), Length(max=200)])
-    city = StringField('City', validators=[DataRequired(), Length(max=100)])
-    state = StringField('State', validators=[DataRequired(), Length(max=2)])
-    zip_code = StringField('ZIP Code', validators=[DataRequired(), Length(max=10)])
-    category = SelectField('Category', choices=EVENT_CATEGORIES, validators=[DataRequired()])
+    all_day = BooleanField('All Day Event')
+
+    # Recurring event fields
+    is_recurring = BooleanField('Recurring Event')
+    recurring_pattern = SelectField('Repeat', choices=[
+        ('daily', 'Daily'),
+        ('weekly', 'Weekly'),
+        ('monthly', 'Monthly'),
+        ('custom', 'Custom')
+    ], validators=[Optional()])
+    recurring_end_date = DateField('Repeat Until', validators=[Optional()])
+
+    # Sub-event fields
+    is_sub_event = BooleanField('This is a sub-event')
+    parent_event = SelectField('Parent Event', choices=[], validators=[Optional()])
+    recurrence_type = SelectField('Recurrence Pattern', choices=[
+        ('none', 'One-time Event'),
+        ('daily', 'Daily'),
+        ('weekly', 'Weekly'),
+        ('monthly', 'Monthly'),
+        ('quarterly', 'Quarterly'),
+        ('annually', 'Annually'),
+        ('custom', 'Custom')
+    ])
+    recurrence_interval = IntegerField('Repeat Every', validators=[Optional(), NumberRange(min=1)], default=1)
+    recurrence_unit = SelectField('Recurrence Unit', choices=[
+        ('days', 'Days'),
+        ('weeks', 'Weeks'),
+        ('months', 'Months')
+    ], validators=[Optional()])
+    occurrence_count = IntegerField('Number of Occurrences', validators=[Optional(), NumberRange(min=1)], default=10)
+    recurrence_end_date = DateField('Recurrence End Date')
+    street = StringField('Street Address', validators=[DataRequired()])
+    city = StringField('City', validators=[DataRequired()])
+    state = StringField('State', validators=[DataRequired()])
+    zip_code = StringField('ZIP Code', validators=[DataRequired()])
+    fun_meter = SelectField('Fun Rating', choices=[
+        ('1', '⭐'),
+        ('2', '⭐⭐'),
+        ('3', '⭐⭐⭐'),
+        ('4', '⭐⭐⭐⭐'),
+        ('5', '⭐⭐⭐⭐⭐')
+    ], validators=[DataRequired()])
+    category = SelectField('Category', choices=[
+        ('arts', 'Arts & Culture'),
+        ('business', 'Business & Networking'),
+        ('charity', 'Charity & Causes'),
+        ('community', 'Community & Neighborhood'),
+        ('education', 'Education & Learning'),
+        ('family', 'Family & Kids'),
+        ('festivals', 'Festivals & Fairs'),
+        ('food', 'Food & Drink'),
+        ('health', 'Health & Wellness'),
+        ('holiday', 'Holiday & Seasonal'),
+        ('markets', 'Markets & Shopping'),
+        ('music', 'Music & Concerts'),
+        ('nightlife', 'Nightlife & Entertainment'),
+        ('outdoor', 'Outdoor & Adventure'),
+        ('sports', 'Sports & Recreation'),
+        ('tech', 'Technology & Innovation'),
+        ('theatre', 'Theatre & Performing Arts'),
+        ('other', 'Other')
+    ], validators=[DataRequired()])
+    target_audience = SelectField('Target Audience', choices=[
+        ('21plus', '21+'),
+        ('adults', 'Adults'),
+        ('families', 'Families'),
+        ('kids', 'Kids'),
+        ('parents', 'Parents'),
+        ('professionals', 'Professionals'),
+        ('seniors', 'Seniors'),
+        ('singles', 'Singles')
+    ], validators=[DataRequired()])
     website = StringField('Website', validators=[Optional(), URL()])
-    is_free = BooleanField('This is a free event')
-    price = StringField('Price (if not free)', validators=[Optional(), Length(max=100)])
-    contact_email = StringField('Contact Email', validators=[Optional(), Email(), Length(max=100)])
-    contact_phone = StringField('Contact Phone', validators=[Optional(), Length(max=20)])
-    image_url = StringField('Image URL', validators=[Optional(), URL(), Length(max=200)])
-    is_featured = BooleanField('Feature this event')
-    submit = SubmitField('Submit Event')
+    facebook = StringField('Facebook')
+    instagram = StringField('Instagram')
+    twitter = StringField('Twitter')
+    ticket_url = StringField('Purchase Tickets URL', validators=[Optional(), URL()])
+    terms_accepted = BooleanField('I accept the Terms and Conditions', validators=[DataRequired()])
+    submit = SubmitField('Create Event')
 
 class OrganizerProfileForm(FlaskForm):
     company_name = StringField('Organization/Company Name', validators=[Optional(), Length(max=100)])
     description = TextAreaField('About Your Organization', validators=[Optional(), Length(max=500)])
     website = StringField('Website', validators=[Optional(), URL()])
-    advertising_opportunities = TextAreaField('Advertising Opportunities', validators=[Optional(), Length(max=500)])
-    sponsorship_opportunities = TextAreaField('Sponsorship Opportunities', validators=[Optional(), Length(max=500)])
     submit = SubmitField('Save Organizer Profile')
 
 class VendorProfileForm(FlaskForm):
