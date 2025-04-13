@@ -8,6 +8,8 @@ from forms import (SignupForm, LoginForm, ProfileForm, EventForm,
                    ResetPasswordRequestForm, ResetPasswordForm, ContactForm, SearchForm) # Added ContactForm, SearchForm
 from models import User, Event, Subscriber, Chapter, HelpArticle, CharterMember # Added HelpArticle, CharterMember
 from db_init import db
+# Import the app instance
+from app import app
 # Removed direct import of geocode_address, assume it's in utils.utils now
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from datetime import datetime, timedelta
@@ -19,12 +21,16 @@ logger.setLevel(logging.DEBUG)
 
 # --- Helper Decorators ---
 def admin_required(f):
-    # ... (keep existing decorator) ...
-    pass # Placeholder
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_admin:
+            flash('You need admin privileges to access this page.', 'warning')
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 def chapter_leader_required(f):
-    # ... (keep existing decorator) ...
-     @wraps(f)
+    @wraps(f)
     def decorated_function(*args, **kwargs):
         if not current_user.is_authenticated or not current_user.is_admin:
             flash('You need admin privileges to access this page.', 'warning')
