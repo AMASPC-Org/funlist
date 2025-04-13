@@ -273,6 +273,29 @@ def fun_assistant_page():
 
 def fun_assistant_chat():
     """Handles chat messages for the Fun Assistant."""
+    # Check if the user is logged in or track usage for anonymous users
+    if not current_user.is_authenticated:
+        # Initialize session counter if it doesn't exist
+        if 'fun_assistant_uses' not in session:
+            session['fun_assistant_uses'] = 0
+            session['fun_assistant_reset_date'] = datetime.utcnow().strftime("%Y-%m")
+        
+        # Check if we need to reset the counter (new month)
+        current_month = datetime.utcnow().strftime("%Y-%m")
+        if session.get('fun_assistant_reset_date') != current_month:
+            session['fun_assistant_uses'] = 0
+            session['fun_assistant_reset_date'] = current_month
+            
+        # Increment the usage counter
+        session['fun_assistant_uses'] += 1
+        
+        # Check if usage limit exceeded
+        if session['fun_assistant_uses'] > 5:
+            return jsonify({
+                "limit_exceeded": True,
+                "reply": "You've reached your free usage limit for the Fun Assistant this month. Sign up for a free account to continue using this feature and get personalized recommendations!"
+            }), 200
+
     openai.api_key = os.environ.get("OPENAI_API_KEY")
     if not openai.api_key:
          logger.error("OpenAI API Key not found in environment variables.")
@@ -287,8 +310,39 @@ def fun_assistant_chat():
 
         # --- Gather Context for OpenAI ---
         # 1. User Info
+        user_context = "Anonymous visitor (limited to 5 queries per month)"
+        
+        if current_user.is_authenticated:
+            # Get detailed user profile information
+            user_preferences = current_user.get_preferences()
+            
+            user_context = f"""
+            Logged in user: {current_user.first_name or current_user.email}
+            Interests: {current_user.event_interests or 'Not specified'}
+            Location: {current_user.business_city or 'Not specified'}, {current_user.business_state or 'Not specified'}
+            """
+            
+            # Add any additional preference info if available
+            if user_preferences:
+                if 'preferred_locations' in user_preferences:
+                    user_context += f"\nPreferred locations: {user_preferences.get('preferred_locations')}"
+                if 'event_focus' in user_preferences:
+                    user_context += f"\nEvent focus: {user_preferences.get('event_focus')}"
+            
+            # Add user role information
+            roles = []
+            if current_user.is_event_creator:
+                roles.append("Event Creator")
+            if current_user.is_organizer:
+                roles.append("Organizer")
+            if current_user.is_vendor:
+                roles.append("Vendor")
+            if roles:
+                user_context += f"\nUser roles: {', '.join(roles)}"
+        
+        # For non-logged in users, we'll use basic info
         user_interests = current_user.event_interests if current_user.is_authenticated else "general fun"
-        user_location = current_user.location if current_user.is_authenticated else "their current area"
+        user_location = current_user.business_city if current_user.is_authenticated and current_user.business_city else "their current area"
 
         # 2. Relevant Events - Fetch upcoming events
         current_date = datetime.utcnow().date()
@@ -320,6 +374,7 @@ def fun_assistant_chat():
         prompt = f"""You are Fun Assistant, a friendly and helpful AI guide for the FunList.ai platform. Your goal is to help users discover fun local events based on their preferences.
 
         User Profile:
+        {user_context}
         - Interests: {user_interests}
         - Location: {user_location}
 
@@ -327,7 +382,9 @@ def fun_assistant_chat():
 
         User Query: "{user_message}"
 
-        Based ONLY on the provided user profile and event context, answer the user's query. Recommend events from the list if they match the user's interests or location. If no listed events match, suggest general types of fun activities relevant to their interests. Mention the Fun Score when recommending specific events. 
+        Based ONLY on the provided user profile and event context, answer the user's query. Recommend events from the list if they match the user's interests or location. If no listed events match, suggest general types of fun activities relevant to their interests. Mention the Fun Score when recommending specific events.
+        
+        If the user is not logged in, gently encourage them to create an account for more personalized recommendations while still providing useful information. 
 
         Your responses should be:
         1. Concise (about 2-3 short paragraphs)

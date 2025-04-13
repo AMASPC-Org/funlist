@@ -16,7 +16,22 @@
                 <div class="card-body">
                     <div class="chat-container mb-4" id="chatLog" style="height: 400px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px;">
                         <div class="chat-message assistant">
-                            <p>👋 Hi there! I'm your Fun Assistant. I can help you discover fun events and activities based on your interests and location. Ask me anything about events, activities, or recommendations!</p>
+                            <p>👋 Hi there! I'm your Fun Assistant. I can help you discover fun events and activities tailored to you!</p>
+                            {% if current_user.is_authenticated %}
+                                {% if current_user.user_preferences %}
+                                <p>I see you've set up your profile! I'll use your preferences to find events that match your interests.</p>
+                                {% else %}
+                                <p>To get the most personalized recommendations, please <a href="{{ url_for('edit_profile') }}">complete your profile</a> with your interests and preferences.</p>
+                                {% endif %}
+                            {% else %}
+                                <p>For the best experience:</p>
+                                <ul>
+                                    <li>Allow location permissions when prompted</li>
+                                    <li><a href="{{ url_for('signup') }}">Sign up for a free account</a> (non-members are limited to 5 free questions per month)</li>
+                                    <li>Complete your profile to get truly personalized recommendations</li>
+                                </ul>
+                                <p>What would you like to know about fun events in your area?</p>
+                            {% endif %}
                         </div>
                     </div>
                     
@@ -42,6 +57,40 @@
                 <div class="card-footer text-muted text-center">
                     <small>Fun Assistant uses AI to help you discover more fun in your area!</small>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Usage Limit Modal -->
+<div class="modal fade" id="usageLimitModal" tabindex="-1" aria-labelledby="usageLimitModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="usageLimitModalLabel">Unlock the Full Fun Assistant Experience!</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <i class="fas fa-robot fa-3x text-primary mb-3"></i>
+                    <h4>You've reached your free usage limit</h4>
+                    <p class="lead">Sign up for a free account to continue using the Fun Assistant and get personalized recommendations based on your interests!</p>
+                </div>
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Why sign up?</h5>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item"><i class="fas fa-check text-success me-2"></i> Unlimited Fun Assistant usage</li>
+                            <li class="list-group-item"><i class="fas fa-check text-success me-2"></i> Personalized event recommendations</li>
+                            <li class="list-group-item"><i class="fas fa-check text-success me-2"></i> Save your favorite events</li>
+                            <li class="list-group-item"><i class="fas fa-check text-success me-2"></i> Get notified about events you'll love</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Maybe Later</button>
+                <a href="/signup" class="btn btn-primary">Sign Up Now</a>
             </div>
         </div>
     </div>
@@ -111,8 +160,20 @@
                 
                 const data = await response.json();
                 
-                // Display assistant response
-                appendMessage('assistant', data.reply);
+                // Check if usage limit is exceeded
+                if (data.limit_exceeded) {
+                    // Display the limit message
+                    appendMessage('assistant', data.reply);
+                    
+                    // Show modal after a short delay
+                    setTimeout(() => {
+                        const usageLimitModal = new bootstrap.Modal(document.getElementById('usageLimitModal'));
+                        usageLimitModal.show();
+                    }, 1500);
+                } else {
+                    // Display regular assistant response
+                    appendMessage('assistant', data.reply);
+                }
                 
             } catch (error) {
                 console.error('Error sending message:', error);
