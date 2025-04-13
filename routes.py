@@ -60,7 +60,7 @@ def index():
     chapters = Chapter.query.all()
     # Check if this is a new registration to show the wizard
     new_registration = session.pop('new_registration', False)
-    return render_template("main/index.html", user=current_user, chapters=chapters, new_registration=new_registration)
+    return render_template("index.html", user=current_user, chapters=chapters, new_registration=new_registration)
 
 def map():
     # Fetch events with valid coordinates for the map
