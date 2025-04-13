@@ -2,20 +2,15 @@ window.FunlistMap = (function() {
     'use strict';
 
     let mapInstance = null;
-    const defaultLocation = {lat: 47.0379, lng: -122.9007};
+    const defaultLocation = [47.0379, -122.9007];
     let defaultZoom = 13;
     let markersList = [];
     let userMarker = null;
     let infoWindow = null;
     let eventMarkers = {};
 
-    function initMap(elementId) {
+    function init(elementId) {
         console.log("Initializing map in element:", elementId);
-
-        if (typeof google === 'undefined' || typeof google.maps === 'undefined') {
-            console.error("Google Maps API not loaded yet. Cannot initialize map.");
-            return null;
-        }
 
         const mapElement = document.getElementById(elementId);
         if (!mapElement) {
@@ -24,44 +19,16 @@ window.FunlistMap = (function() {
         }
 
         try {
-            mapInstance = new google.maps.Map(mapElement, {
-                center: defaultLocation,
-                zoom: defaultZoom,
-                mapTypeControl: true,
-                mapTypeControlOptions: {
-                    style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
-                    position: google.maps.ControlPosition.TOP_RIGHT
-                },
-                fullscreenControl: true,
-                streetViewControl: true,
-                zoomControl: true,
-                mapTypeId: google.maps.MapTypeId.ROADMAP
-            });
+            // Initialize Leaflet map
+            mapInstance = L.map(elementId).setView(defaultLocation, defaultZoom);
 
-            infoWindow = new google.maps.InfoWindow();
+            // Add the OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(mapInstance);
+
+            // Set up map event listeners
             setupMapEventListeners(mapInstance);
-            initializeLocationSearch(mapInstance);
-
-            // Add markers for all events
-            const eventCards = document.querySelectorAll('#all-events-container .event-card');
-            eventCards.forEach(function(card) {
-                const eventId = card.getAttribute('data-event-id');
-                const lat = parseFloat(card.getAttribute('data-lat'));
-                const lng = parseFloat(card.getAttribute('data-lng'));
-
-                if (!isNaN(lat) && !isNaN(lng)) {
-                    const title = card.querySelector('.card-title').textContent;
-                    const description = card.querySelector('.card-text').textContent;
-                    const popupContent = `
-                        <div class="event-popup">
-                            <h5>${title}</h5>
-                            <p>${description}</p>
-                            <a href="/event/${eventId}" class="btn btn-sm btn-primary">View Details</a>
-                        </div>
-                    `;
-                    addMarker(mapInstance, lat, lng, popupContent, eventId);
-                }
-            });
 
             return mapInstance;
         } catch (error) {
@@ -73,53 +40,33 @@ window.FunlistMap = (function() {
     function setupMapEventListeners(map) {
         if (!map) return;
 
-        google.maps.event.addListener(map, 'idle', function() {
+        map.on('moveend', function() {
             updateVisibleEvents(map);
         });
 
-        google.maps.event.addListenerOnce(map, 'tilesloaded', function() {
+        map.on('load', function() {
             updateVisibleEvents(map);
         });
     }
 
-    function initializeLocationSearch(map) {
-        const locationSearch = document.getElementById('locationSearch');
-        if (!locationSearch) return;
+    function initializeLocationSearch(searchElementId) {
+        const searchBox = document.getElementById(searchElementId);
+        if (!searchBox || !mapInstance) return;
 
-        const searchBox = new google.maps.places.SearchBox(locationSearch);
-
-        map.addListener('bounds_changed', () => {
-            searchBox.setBounds(map.getBounds());
-        });
-
-        searchBox.addListener('places_changed', () => {
-            const places = searchBox.getPlaces();
-            if (places.length === 0) return;
-
-            const bounds = new google.maps.LatLngBounds();
-            places.forEach(place => {
-                if (!place.geometry || !place.geometry.location) return;
-
-                if (place.geometry.viewport) {
-                    bounds.union(place.geometry.viewport);
-                } else {
-                    bounds.extend(place.geometry.location);
-                }
-            });
-
-            map.fitBounds(bounds);
-            map.setZoom(defaultZoom);
+        searchBox.addEventListener('input', function() {
+            // Simple implementation - you might want to add geocoding here
+            console.log("Location search input:", this.value);
         });
     }
 
     function updateVisibleEvents(map) {
+        if (!map) return;
+
         const bounds = map.getBounds();
         const visibleEventIds = [];
 
-        if (!bounds) return;
-
         markersList.forEach(function(marker) {
-            if (marker && marker.eventId && bounds.contains(marker.getPosition())) {
+            if (marker && marker.eventId && bounds.contains(marker.getLatLng())) {
                 visibleEventIds.push(marker.eventId);
             }
         });
@@ -143,6 +90,7 @@ window.FunlistMap = (function() {
 
         if (!allEventsContainer || !visibleEventsContainer) return;
 
+        // Clear current visible events (except the no-events message)
         while (visibleEventsContainer.firstChild) {
             if (visibleEventsContainer.firstChild.id !== 'no-events-message') {
                 visibleEventsContainer.removeChild(visibleEventsContainer.firstChild);
@@ -188,11 +136,7 @@ window.FunlistMap = (function() {
         }
 
         try {
-            const marker = new google.maps.Marker({
-                position: {lat: parseFloat(lat), lng: parseFloat(lng)},
-                map: map,
-                animation: google.maps.Animation.DROP
-            });
+            const marker = L.marker([lat, lng]).addTo(map);
 
             if (eventId) {
                 marker.eventId = eventId;
@@ -200,10 +144,9 @@ window.FunlistMap = (function() {
             }
 
             if (popupContent) {
-                marker.addListener('click', function() {
-                    infoWindow.setContent(popupContent);
-                    infoWindow.open(map, marker);
+                marker.bindPopup(popupContent);
 
+                marker.on('click', function() {
                     if (eventId) {
                         highlightEventCard(eventId);
                     }
@@ -211,7 +154,6 @@ window.FunlistMap = (function() {
             }
 
             markersList.push(marker);
-
             return marker;
         } catch (error) {
             console.error("Error adding marker:", error);
@@ -224,35 +166,9 @@ window.FunlistMap = (function() {
 
         const marker = eventMarkers[eventId];
         if (marker) {
-            map.panTo(marker.getPosition());
-
-            if (infoWindow) {
-                const popupContent = document.querySelector(`#all-events-container .event-card[data-event-id="${eventId}"]`);
-                if (popupContent) {
-                    const title = popupContent.querySelector('.card-title').textContent;
-                    const description = popupContent.querySelector('.card-text').textContent;
-
-                    const contentString = `
-                        <div class="event-popup">
-                            <h5>${title}</h5>
-                            <p>${description}</p>
-                            <a href="/event/${eventId}" class="btn btn-sm btn-primary">View Details</a>
-                        </div>
-                    `;
-
-                    infoWindow.setContent(contentString);
-                    infoWindow.open(map, marker);
-                }
-            }
-
-            if (marker.getAnimation() !== null) {
-                marker.setAnimation(null);
-            } else {
-                marker.setAnimation(google.maps.Animation.BOUNCE);
-                setTimeout(function() {
-                    marker.setAnimation(null);
-                }, 1500);
-            }
+            map.panTo(marker.getLatLng());
+            marker.openPopup();
+            highlightEventCard(eventId);
         }
     }
 
@@ -272,13 +188,13 @@ window.FunlistMap = (function() {
 
     function clearMarkers() {
         markersList.forEach(function(marker) {
-            marker.setMap(null);
+            marker.remove();
         });
         markersList = [];
         eventMarkers = {};
 
         if (userMarker) {
-            userMarker.setMap(null);
+            userMarker.remove();
             userMarker = null;
         }
     }
@@ -366,15 +282,6 @@ window.FunlistMap = (function() {
             return;
         }
 
-        setTimeout(function() {
-            console.log("Forcing map resize");
-            try {
-                google.maps.event.trigger(map, 'resize');
-            } catch (e) {
-                console.error("Error resizing map:", e);
-            }
-        }, 500);
-
         const dispatchLocation = (success, lat, lng) => {
             try {
                 const event = new CustomEvent('user-location-ready', {
@@ -387,8 +294,7 @@ window.FunlistMap = (function() {
             }
 
             try {
-                map.setCenter({lat: lat, lng: lng});
-                map.setZoom(defaultZoom);
+                map.setView([lat, lng], defaultZoom);
                 console.log("Map centered on user location");
             } catch (e) {
                 console.error("Error setting map center:", e);
@@ -404,51 +310,35 @@ window.FunlistMap = (function() {
                     console.log("User location obtained:", userLat, userLng);
 
                     if (userMarker) {
-                        userMarker.setMap(null);
+                        userMarker.remove();
                     }
 
                     try {
-                        userMarker = new google.maps.Marker({
-                            position: {lat: userLat, lng: userLng},
-                            map: map,
-                            title: "Your Location",
-                            icon: {
-                                path: google.maps.SymbolPath.CIRCLE,
-                                scale: 10,
-                                fillColor: "#4285F4",
-                                fillOpacity: 0.7,
-                                strokeColor: "#FFFFFF",
-                                strokeWeight: 2
-                            },
-                            zIndex: 1000
-                        });
+                        // Add special marker for user's location
+                        userMarker = L.marker([userLat, userLng], {
+                            icon: L.divIcon({
+                                className: 'user-location-marker',
+                                html: '<i class="fas fa-circle-dot text-primary"></i><div class="pulse"></div>',
+                                iconSize: [20, 20],
+                                iconAnchor: [10, 10]
+                            })
+                        }).addTo(map);
 
-                        const userInfoWindow = new google.maps.InfoWindow({
-                            content: "<div><strong>You are here</strong></div>"
-                        });
-
-                        userMarker.addListener('click', function() {
-                            userInfoWindow.open(map, userMarker);
-                        });
+                        userMarker.bindPopup("<strong>Your Location</strong>");
                     } catch (e) {
                         console.error("Error adding user location marker:", e);
                     }
 
-                    map.setCenter({lat: userLat, lng: userLng});
-                    map.setZoom(defaultZoom);
-
+                    map.setView([userLat, userLng], defaultZoom);
                     console.log("User location found:", userLat, userLng);
 
                     if (callback) callback(true, { lat: userLat, lng: userLng });
-
                     dispatchLocation(true, userLat, userLng);
                 },
                 function(error) {
                     console.warn("Error getting user location:", error.message);
-
                     if (callback) callback(false, null);
-
-                    dispatchLocation(false, defaultLocation.lat, defaultLocation.lng);
+                    dispatchLocation(false, defaultLocation[0], defaultLocation[1]);
                 },
                 {
                     enableHighAccuracy: true,
@@ -459,5 +349,18 @@ window.FunlistMap = (function() {
         } else {
             console.warn("Geolocation is not supported by this browser");
             if (callback) callback(false, null);
+            dispatchLocation(false, defaultLocation[0], defaultLocation[1]);
+        }
+    }
 
-            dispatch
+    return {
+        init: init,
+        addMarker: addMarker,
+        clearMarkers: clearMarkers,
+        highlightMarker: highlightMarker,
+        initializeLocationSearch: initializeLocationSearch,
+        filterMarkers: filterMarkers,
+        getUserLocation: getUserLocation,
+        updateVisibleEvents: updateVisibleEvents
+    };
+})();

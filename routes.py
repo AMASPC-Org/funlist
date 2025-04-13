@@ -64,15 +64,15 @@ def index():
     return render_template("index.html", user=current_user, chapters=chapters, new_registration=new_registration)
 
 def map():
-    app.logger.debug("Starting map route")
     try:
         # Fetch events with valid coordinates for the map
         events = Event.query.filter(Event.latitude.isnot(None), Event.longitude.isnot(None)).all()
         chapters = Chapter.query.all() # Pass chapters if needed in base.html
         return render_template("map.html", events=events, chapters=chapters)
     except Exception as e:
-        app.logger.error(f"Error in map route: {str(e)}")
-        app.logger.exception("Exception details:")
+        print(f"Error in map route: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return f"An error occurred: {str(e)}", 500
 
 def events():

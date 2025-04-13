@@ -1,42 +1,12 @@
+
 {% extends "base.html" %}
 
 {% block title %}Map - FunList.ai{% endblock %}
 
 {% block head %}
-<!-- Google Maps API with callback -->
-<script>
-    function initMapCallback() {
-        if (typeof FunlistMap !== 'undefined') {
-            FunlistMap.init('map');
-
-            // Setup location search
-            if (FunlistMap.initializeLocationSearch) {
-                FunlistMap.initializeLocationSearch('locationSearch');
-            }
-
-            // Setup filter buttons
-            document.getElementById('applyFilters').addEventListener('click', function() {
-                const category = document.getElementById('categoryFilter').value;
-                const date = document.getElementById('dateFilter').value;
-                const funRating = document.getElementById('funFilter').value;
-
-                if (FunlistMap.filterMarkers) {
-                    FunlistMap.filterMarkers(category, date, funRating);
-                }
-            });
-
-            // Update visible events when map changes
-            if (FunlistMap.updateVisibleEvents) {
-                google.maps.event.addListener(FunlistMap.init('map'), 'idle', function() {
-                    FunlistMap.updateVisibleEvents(FunlistMap.init('map'));
-                });
-            }
-        } else {
-            console.error('FunlistMap not loaded');
-        }
-    }
-</script>
-<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places&callback=initMapCallback" async></script>
+<!-- Leaflet CSS and JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 
 <style>
     #map {
@@ -218,22 +188,341 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', filename='js/map.js') }}"></script>
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    let map = null;
+    const markers = {};
+    let visibleEventIds = [];
+    let infoWindow = null;
+    
+    // Initialize the map
+    function initMap() {
+        // Default location (Olympia, WA)
+        const defaultLocation = [47.0379, -122.9007];
+        
+        // Create the map
+        map = L.map('map').setView(defaultLocation, 13);
+        
+        // Add the OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        
+        // Add event markers
+        addEventMarkers();
+        
+        // Update visible events when the map moves
+        map.on('moveend', updateVisibleEvents);
+        
+        // Try to get user location
+        getUserLocation();
+        
+        return map;
+    }
+    
+    // Add markers for all events
+    function addEventMarkers() {
+        const eventCards = document.querySelectorAll('#all-events-container .event-card');
+        
+        eventCards.forEach(function(card) {
+            const eventId = card.getAttribute('data-event-id');
+            const lat = parseFloat(card.getAttribute('data-lat'));
+            const lng = parseFloat(card.getAttribute('data-lng'));
+            
+            if (!isNaN(lat) && !isNaN(lng)) {
+                const title = card.querySelector('.card-title').textContent;
+                const description = card.querySelector('.card-text').textContent;
+                const popupContent = `
+                    <div class="event-popup">
+                        <h5>${title}</h5>
+                        <p>${description}</p>
+                        <a href="/event/${eventId}" class="btn btn-sm btn-primary">View Details</a>
+                    </div>
+                `;
+                
+                const marker = L.marker([lat, lng]).addTo(map);
+                marker.bindPopup(popupContent);
+                marker.eventId = eventId;
+                
+                // Add click event to highlight corresponding card
+                marker.on('click', function() {
+                    highlightEventCard(eventId);
+                });
+                
+                markers[eventId] = marker;
+            }
+        });
+    }
+    
+    // Update the list of visible events based on map bounds
+    function updateVisibleEvents() {
+        if (!map) return;
+        
+        visibleEventIds = [];
+        const bounds = map.getBounds();
+        
+        // Check each marker to see if it's in the current map bounds
+        for (const eventId in markers) {
+            const marker = markers[eventId];
+            if (bounds.contains(marker.getLatLng())) {
+                visibleEventIds.push(eventId);
+            }
+        }
+        
+        // Update the visible events list
+        updateEventsList();
+        
+        // Update the event count
+        const countElement = document.getElementById('event-count');
+        if (countElement) {
+            countElement.textContent = visibleEventIds.length + ' Events';
+        }
+        
+        // Show/hide no events message
+        const noEventsMessage = document.getElementById('no-events-message');
+        if (noEventsMessage) {
+            noEventsMessage.style.display = visibleEventIds.length > 0 ? 'none' : 'block';
+        }
+    }
+    
+    // Update the events list in the sidebar
+    function updateEventsList() {
+        const allEventsContainer = document.getElementById('all-events-container');
+        const visibleEventsContainer = document.getElementById('visible-events-container');
+        
+        if (!allEventsContainer || !visibleEventsContainer) return;
+        
+        // Clear existing events (except the no-events-message)
+        while (visibleEventsContainer.firstChild) {
+            if (visibleEventsContainer.firstChild.id !== 'no-events-message') {
+                visibleEventsContainer.removeChild(visibleEventsContainer.firstChild);
+            } else {
+                break;
+            }
+        }
+        
+        if (visibleEventIds.length === 0) {
+            return;
+        }
+        
+        // Add visible events to the container
+        const eventCards = allEventsContainer.querySelectorAll('.event-card, .advertisement-card');
+        
+        let visibleIndex = 0;
+        eventCards.forEach(function(card) {
+            if (card.classList.contains('event-card')) {
+                const eventId = card.getAttribute('data-event-id');
+                if (visibleEventIds.includes(eventId)) {
+                    const cardClone = card.cloneNode(true);
+                    
+                    // Add click handler to highlight marker
+                    cardClone.addEventListener('click', function(e) {
+                        if (e.target.tagName !== 'A') {
+                            highlightMarker(eventId);
+                        }
+                    });
+                    
+                    visibleEventsContainer.appendChild(cardClone);
+                    visibleIndex++;
+                }
+            } else if (card.classList.contains('advertisement-card')) {
+                const adPosition = parseInt(card.getAttribute('data-ad-position'));
+                if (visibleIndex + 1 === adPosition && visibleIndex < visibleEventIds.length) {
+                    const adClone = card.cloneNode(true);
+                    visibleEventsContainer.appendChild(adClone);
+                }
+            }
+        });
+    }
+    
+    // Highlight a marker when its event card is clicked
+    function highlightMarker(eventId) {
+        if (!map || !eventId || !markers[eventId]) return;
+        
+        const marker = markers[eventId];
+        
+        // Pan the map to the marker
+        map.panTo(marker.getLatLng());
+        
+        // Open the popup
+        marker.openPopup();
+        
+        // Highlight the corresponding event card
+        highlightEventCard(eventId);
+    }
+    
+    // Highlight an event card when its marker is clicked
+    function highlightEventCard(eventId) {
+        if (!eventId) return;
+        
+        // Remove highlight from all cards
+        document.querySelectorAll('.event-card').forEach(function(card) {
+            card.classList.remove('highlighted');
+        });
+        
+        // Add highlight to the selected card
+        const visibleCard = document.querySelector(`#visible-events-container .event-card[data-event-id="${eventId}"]`);
+        if (visibleCard) {
+            visibleCard.classList.add('highlighted');
+            visibleCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+    
+    // Filter markers based on category, date, and fun rating
+    function filterMarkers() {
+        const category = document.getElementById('categoryFilter').value;
+        const date = document.getElementById('dateFilter').value;
+        const funRating = document.getElementById('funFilter').value;
+        
+        // Hide all markers first
+        for (const eventId in markers) {
+            map.removeLayer(markers[eventId]);
+        }
+        
+        // Clear the markers object
+        for (const key in markers) {
+            delete markers[key];
+        }
+        
+        // Add filtered markers back to the map
+        const eventCards = document.querySelectorAll('#all-events-container .event-card');
+        
+        eventCards.forEach(function(card) {
+            const eventId = card.getAttribute('data-event-id');
+            const lat = parseFloat(card.getAttribute('data-lat'));
+            const lng = parseFloat(card.getAttribute('data-lng'));
+            const cardCategory = card.getAttribute('data-category');
+            const cardDate = card.getAttribute('data-date');
+            const cardFunRating = parseInt(card.getAttribute('data-fun-rating'));
+            
+            let passesFilter = true;
+            
+            // Apply category filter
+            if (category && category !== 'All Categories') {
+                if (cardCategory.toLowerCase() !== category.toLowerCase()) {
+                    passesFilter = false;
+                }
+            }
+            
+            // Apply fun rating filter
+            if (funRating && funRating !== 'All Fun Ratings') {
+                const minRating = parseInt(funRating);
+                if (cardFunRating < minRating) {
+                    passesFilter = false;
+                }
+            }
+            
+            // Apply date filter
+            if (date && date !== 'Any Date') {
+                const eventDate = new Date(cardDate);
+                const today = new Date();
+                
+                if (date === 'Today') {
+                    const todayStr = today.toDateString();
+                    if (eventDate.toDateString() !== todayStr) {
+                        passesFilter = false;
+                    }
+                } else if (date === 'Tomorrow') {
+                    const tomorrow = new Date(today);
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    if (eventDate.toDateString() !== tomorrow.toDateString()) {
+                        passesFilter = false;
+                    }
+                } else if (date === 'This Weekend') {
+                    const dayOfWeek = today.getDay();
+                    const saturday = new Date(today);
+                    saturday.setDate(today.getDate() + (6 - dayOfWeek) % 7);
+                    const sunday = new Date(saturday);
+                    sunday.setDate(saturday.getDate() + 1);
+                    
+                    if (!(eventDate >= saturday && eventDate <= sunday)) {
+                        passesFilter = false;
+                    }
+                } else if (date === 'Next Week') {
+                    const nextMonday = new Date(today);
+                    const daysUntilMonday = (7 - today.getDay() + 1) % 7 || 7;
+                    nextMonday.setDate(today.getDate() + daysUntilMonday);
+                    
+                    const nextSunday = new Date(nextMonday);
+                    nextSunday.setDate(nextMonday.getDate() + 6);
+                    
+                    if (!(eventDate >= nextMonday && eventDate <= nextSunday)) {
+                        passesFilter = false;
+                    }
+                }
+            }
+            
+            // If the event passes all filters, add its marker to the map
+            if (passesFilter && !isNaN(lat) && !isNaN(lng)) {
+                const title = card.querySelector('.card-title').textContent;
+                const description = card.querySelector('.card-text').textContent;
+                const popupContent = `
+                    <div class="event-popup">
+                        <h5>${title}</h5>
+                        <p>${description}</p>
+                        <a href="/event/${eventId}" class="btn btn-sm btn-primary">View Details</a>
+                    </div>
+                `;
+                
+                const marker = L.marker([lat, lng]).addTo(map);
+                marker.bindPopup(popupContent);
+                marker.eventId = eventId;
+                
+                // Add click event to highlight corresponding card
+                marker.on('click', function() {
+                    highlightEventCard(eventId);
+                });
+                
+                markers[eventId] = marker;
+            }
+        });
+        
+        // Update the visible events
+        updateVisibleEvents();
+    }
+    
+    // Get user's location and center the map there
+    function getUserLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const userLat = position.coords.latitude;
+                    const userLng = position.coords.longitude;
+                    
+                    // Add a special marker for user's location
+                    const userMarker = L.marker([userLat, userLng], {
+                        icon: L.divIcon({
+                            className: 'user-location-marker',
+                            html: '<i class="fas fa-circle-dot text-primary"></i><div class="pulse"></div>',
+                            iconSize: [20, 20],
+                            iconAnchor: [10, 10]
+                        })
+                    }).addTo(map);
+                    
+                    userMarker.bindPopup("<strong>Your Location</strong>").openPopup();
+                    
+                    // Center map on user's location
+                    map.setView([userLat, userLng], 13);
+                },
+                function(error) {
+                    console.warn("Error getting user location:", error.message);
+                    // Keep default location
+                }
+            );
+        }
+    }
+    
+    // Initialize the map when the page loads
+    initMap();
+    
+    // Set up filter button event handler
+    document.getElementById('applyFilters').addEventListener('click', filterMarkers);
+    
+    // Set up click handlers for event cards
     document.querySelectorAll('.event-card').forEach(card => {
         card.addEventListener('click', function() {
-            const lat = parseFloat(this.dataset.lat);
-            const lng = parseFloat(this.dataset.lng);
-            const eventId = this.dataset.eventId;
-
-            document.querySelectorAll('.event-card').forEach(c => c.classList.remove('highlighted'));
-            this.classList.add('highlighted');
-
-            if (FunlistMap.highlightMarker) {
-                FunlistMap.highlightMarker(FunlistMap.init('map'), eventId);
-            }
+            const eventId = this.getAttribute('data-event-id');
+            highlightMarker(eventId);
         });
     });
 });
