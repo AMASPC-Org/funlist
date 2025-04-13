@@ -41,7 +41,7 @@
           {% if current_user.email == 'ryan@funlist.ai' %}
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="{{ url_for('admin_dashboard') }}">Admin Dashboard</a></li>
-            <li><a class="dropdown-item" href="{{ url_for('admin_analytics') }}">Analytics</a></li>
+            <!-- Analytics route temporarily disabled -->
           {% endif %}
         </ul>
       </div>

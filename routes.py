@@ -212,7 +212,7 @@ def edit_profile():
 # --- Static Pages & Other ---
 def about():
     chapters = Chapter.query.all()
-    return render_template('main/about.html', chapters=chapters)
+    return render_template('about.html', chapters=chapters)
 
 def contact():
     form = ContactForm()
@@ -221,25 +221,25 @@ def contact():
         flash('Thank you for your message!', 'success')
         return redirect(url_for('contact'))
     chapters = Chapter.query.all()
-    return render_template('main/contact.html', form=form, chapters=chapters)
+    return render_template('contact.html', form=form, chapters=chapters)
 
 def help():
     chapters = Chapter.query.all()
     # Fetch FAQ articles if needed for the help template
     help_articles = HelpArticle.query.all()
-    return render_template('main/help.html', chapters=chapters, help_articles=help_articles)
+    return render_template('help_center.html', chapters=chapters, help_articles=help_articles)
 
 def terms():
     chapters = Chapter.query.all()
-    return render_template('main/terms.html', chapters=chapters)
+    return render_template('terms.html', chapters=chapters)
 
 def privacy():
     chapters = Chapter.query.all()
-    return render_template('main/privacy.html', chapters=chapters)
+    return render_template('privacy.html', chapters=chapters)
 
 def definitions():
     chapters = Chapter.query.all()
-    return render_template('main/definitions.html', chapters=chapters)
+    return render_template('definitions.html', chapters=chapters)
 
 def chapters_page():
      chapters = Chapter.query.all()
@@ -270,7 +270,7 @@ def chapter(slug):
 def fun_assistant_page():
     """Renders the dedicated Fun Assistant chat page."""
     chapters = Chapter.query.all() # Pass chapters if needed in base.html
-    return render_template('main/fun_assistant.html', chapters=chapters)
+    return render_template('partials/fun_assistant.html', chapters=chapters)
 
 @login_required
 def fun_assistant_chat():
@@ -369,7 +369,7 @@ def search():
      # ... (Keep existing logic, ensure HelpArticle is imported) ...
      form = SearchForm() # Ensure form is initialized
      chapters = Chapter.query.all()
-     return render_template("main/search.html", form=form, results=[], query=None, chapters=chapters) # updated path
+     return render_template("search.html", form=form, results=[], query=None, chapters=chapters)
 
 # Ensure all template paths use the 'main/' prefix where appropriate
 # Example: render_template('main/about.html') instead of render_template('about.html')
