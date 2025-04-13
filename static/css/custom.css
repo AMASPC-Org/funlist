@@ -2574,8 +2574,10 @@ footer {
 
 .user-icon-container i {
     font-size: 18px; /* Increased size */
-    color: #ffffff; /* Ensure icon is white */
+    color: #ffffff !important; /* Force white color with !important */
     display: inline-block; /* Ensure proper display */
+    line-height: 1; /* Ensure proper vertical alignment */
+    margin: 0; /* Remove any margins */
 }
 
 .user-icon-container:hover {
