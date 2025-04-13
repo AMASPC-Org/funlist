@@ -1,6 +1,6 @@
 import os
 import logging
-from flask import render_template, flash, redirect, url_for, request, session, jsonify, current_app
+from flask import render_template, flash, redirect, url_for, request, session, jsonify
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user, login_required, login_user, logout_user
@@ -8,7 +8,6 @@ from forms import (SignupForm, LoginForm, ProfileForm, EventForm,
                    ResetPasswordRequestForm, ResetPasswordForm, ContactForm, SearchForm) # Added ContactForm, SearchForm
 from models import User, Event, Subscriber, Chapter, HelpArticle, CharterMember # Added HelpArticle, CharterMember
 from db_init import db
-# Removed direct import of app, we'll use current_app instead
 # Removed direct import of geocode_address, assume it's in utils.utils now
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from datetime import datetime, timedelta
@@ -56,7 +55,6 @@ def investor_required(f):
     return decorated_function
 
 # --- Core Routes ---
-@current_app.route("/")
 def index():
     # Fetch chapters for the dropdown/links if needed on index
     chapters = Chapter.query.all()
@@ -64,21 +62,18 @@ def index():
     new_registration = session.pop('new_registration', False)
     return render_template("main/index.html", user=current_user, chapters=chapters, new_registration=new_registration)
 
-@app.route("/map")
 def map():
     # Fetch events with valid coordinates for the map
     events = Event.query.filter(Event.latitude.isnot(None), Event.longitude.isnot(None)).all()
     chapters = Chapter.query.all() # Pass chapters if needed in base.html
     return render_template("map.html", events=events, chapters=chapters)
 
-@app.route("/events")
 def events():
     # Implement filtering logic here later based on request args
     events = Event.query.order_by(Event.start_date.desc()).all()
     chapters = Chapter.query.all() # Pass chapters if needed in base.html
     return render_template("events.html", events=events, chapters=chapters)
 
-@app.route("/submit-event", methods=["GET", "POST"])
 @login_required
 def submit_event():
     if not current_user.is_event_creator: # Check the flag
@@ -103,21 +98,18 @@ def submit_event():
     return render_template("submit_event.html", form=form, chapters=chapters)
 
 # --- Authentication Routes ---
-@app.route('/login', methods=['GET', 'POST'])
 def login():
     # ... (Keep existing login logic) ...
     chapters = Chapter.query.all()
     form = LoginForm() # Ensure form is initialized
     return render_template('auth/login.html', form=form, chapters=chapters)
 
-@app.route('/logout')
 @login_required
 def logout():
    # ... (Keep existing logout logic) ...
    return redirect(url_for('login'))
 
 
-@app.route('/register', methods=['GET', 'POST'])
 def register():
     # ... (Keep existing registration logic using primary_role radio buttons) ...
     # Ensure you import MembershipTier, Chapter, Role, generate_password_hash
@@ -128,7 +120,6 @@ def register():
     chapters = Chapter.query.all()
     return render_template('auth/register.html', form=form, chapters=chapters)
 
-@app.route("/reset-password-request", methods=["GET", "POST"])
 def reset_password_request():
      # ... (Keep existing logic) ...
      form = ResetPasswordRequestForm() # Ensure form is initialized
@@ -136,7 +127,6 @@ def reset_password_request():
      return render_template('reset_password_request.html', form=form, chapters=chapters)
 
 
-@app.route("/reset-password/<token>", methods=["GET", "POST"])
 def reset_password(token):
     # ... (Keep existing logic) ...
     form = ResetPasswordForm() # Ensure form is initialized
@@ -145,14 +135,12 @@ def reset_password(token):
 
 
 # --- User Profile & Settings ---
-@app.route('/profile')
 @login_required
 def profile():
      # Simple profile view page
      chapters = Chapter.query.all()
      return render_template('profile.html', user=current_user, chapters=chapters)
 
-@app.route('/profile/edit', methods=['GET', 'POST'])
 @login_required
 def edit_profile():
      form = ProfileForm(obj=current_user) # Pre-populate form
@@ -222,12 +210,10 @@ def edit_profile():
      return render_template('edit_profile.html', form=form, chapters=chapters)
 
 # --- Static Pages & Other ---
-@app.route('/about')
 def about():
     chapters = Chapter.query.all()
     return render_template('main/about.html', chapters=chapters)
 
-@app.route('/contact', methods=['GET', 'POST'])
 def contact():
     form = ContactForm()
     if form.validate_on_submit():
@@ -237,35 +223,29 @@ def contact():
     chapters = Chapter.query.all()
     return render_template('main/contact.html', form=form, chapters=chapters)
 
-@app.route('/help')
 def help():
     chapters = Chapter.query.all()
     # Fetch FAQ articles if needed for the help template
     help_articles = HelpArticle.query.all()
     return render_template('main/help.html', chapters=chapters, help_articles=help_articles)
 
-@app.route('/terms')
 def terms():
     chapters = Chapter.query.all()
     return render_template('main/terms.html', chapters=chapters)
 
-@app.route('/privacy')
 def privacy():
     chapters = Chapter.query.all()
     return render_template('main/privacy.html', chapters=chapters)
 
-@app.route('/definitions') # Added Definitions route
 def definitions():
     chapters = Chapter.query.all()
     return render_template('main/definitions.html', chapters=chapters)
 
-@app.route('/chapters')
-def chapters():
+def chapters_page():
      chapters = Chapter.query.all()
      return render_template('chapters.html', chapters=chapters)
 
 # --- DYNAMIC CHAPTER ROUTE ---
-@app.route('/chapter/<string:slug>')
 def chapter(slug):
     chapter = Chapter.query.filter_by(slug=slug).first_or_404()
     all_chapters = Chapter.query.all() # Needed for base template potentially
@@ -286,14 +266,12 @@ def chapter(slug):
     # ------------------------------------------
 
 # --- Fun Assistant Routes ---
-@app.route('/fun-assistant')
 @login_required # Require login to use the assistant
 def fun_assistant_page():
     """Renders the dedicated Fun Assistant chat page."""
     chapters = Chapter.query.all() # Pass chapters if needed in base.html
     return render_template('main/fun_assistant.html', chapters=chapters)
 
-@app.route('/api/fun-assistant/chat', methods=['POST'])
 @login_required
 def fun_assistant_chat():
     """Handles chat messages for the Fun Assistant."""
@@ -367,7 +345,6 @@ def fun_assistant_chat():
         return jsonify({"error": "An internal error occurred."}), 500
 
 # --- Other Routes (Placeholder/Keep Existing) ---
-@app.route('/admin/dashboard')
 @login_required
 #@admin_required # Add decorator back once roles are solid
 def admin_dashboard():
@@ -384,12 +361,10 @@ def admin_dashboard():
 # Add other routes from your previous routes.py here, ensuring imports are correct
 # ... e.g., /marketplace, /admin/users, /api/feedback, /search, etc. ...
 
-@app.route("/api/feedback", methods=['POST'])
 def submit_feedback():
-     # ... (Keep existing logic) ...
-     pass
+     # Implement feedback submission logic
+     return jsonify({"status": "success"}), 200
 
-@app.route("/search", methods=["GET", "POST"])
 def search():
      # ... (Keep existing logic, ensure HelpArticle is imported) ...
      form = SearchForm() # Ensure form is initialized
@@ -401,14 +376,31 @@ def search():
 
 def init_routes(app):
     """Initialize all routes with the Flask app instance"""
-    # Use app context to register all routes
-    with app.app_context():
-        # Re-register all routes with the app instance
-        global current_app
-        current_app = app
-        
-        # Import all the routes functions defined in this module
-        # No need to do anything else as all route decorators will use current_app
-        
-        # Return the app instance
-        return app
+    # Register all routes with the app instance
+    app.route("/")(index)
+    app.route("/map")(map)
+    app.route("/events")(events)
+    app.route("/submit-event", methods=["GET", "POST"])(submit_event)
+    app.route('/login', methods=['GET', 'POST'])(login)
+    app.route('/logout')(logout)
+    app.route('/register', methods=['GET', 'POST'])(register)
+    app.route("/reset-password-request", methods=["GET", "POST"])(reset_password_request)
+    app.route("/reset-password/<token>", methods=["GET", "POST"])(reset_password)
+    app.route('/profile')(profile)
+    app.route('/profile/edit', methods=['GET', 'POST'])(edit_profile)
+    app.route('/about')(about)
+    app.route('/contact', methods=['GET', 'POST'])(contact)
+    app.route('/help')(help)
+    app.route('/terms')(terms)
+    app.route('/privacy')(privacy)
+    app.route('/definitions')(definitions)
+    app.route('/chapters')(chapters_page)
+    app.route('/chapter/<string:slug>')(chapter)
+    app.route('/fun-assistant')(fun_assistant_page)
+    app.route('/api/fun-assistant/chat', methods=['POST'])(fun_assistant_chat)
+    app.route('/admin/dashboard')(admin_dashboard)
+    app.route("/api/feedback", methods=['POST'])(submit_feedback)
+    app.route("/search", methods=["GET", "POST"])(search)
+    
+    # Return the app instance
+    return app
