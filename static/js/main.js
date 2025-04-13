@@ -820,11 +820,15 @@ function initFunAssistant() {
                     // Show typing indicator
                     addTypingIndicator();
 
+                    // Get CSRF token
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+                    
                     // Send to API
                     fetch('/api/fun-assistant/chat', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken
                         },
                         body: JSON.stringify({ message: message })
                     })

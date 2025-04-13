@@ -13,6 +13,7 @@ from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from datetime import datetime, timedelta
 import json
 import openai # Import OpenAI library
+from flask_wtf.csrf import CSRFProtect, csrf # Added CSRF protection imports
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -279,16 +280,16 @@ def fun_assistant_chat():
         if 'fun_assistant_uses' not in session:
             session['fun_assistant_uses'] = 0
             session['fun_assistant_reset_date'] = datetime.utcnow().strftime("%Y-%m")
-        
+
         # Check if we need to reset the counter (new month)
         current_month = datetime.utcnow().strftime("%Y-%m")
         if session.get('fun_assistant_reset_date') != current_month:
             session['fun_assistant_uses'] = 0
             session['fun_assistant_reset_date'] = current_month
-            
+
         # Increment the usage counter
         session['fun_assistant_uses'] += 1
-        
+
         # Check if usage limit exceeded
         if session['fun_assistant_uses'] > 5:
             return jsonify({
@@ -311,24 +312,24 @@ def fun_assistant_chat():
         # --- Gather Context for OpenAI ---
         # 1. User Info
         user_context = "Anonymous visitor (limited to 5 queries per month)"
-        
+
         if current_user.is_authenticated:
             # Get detailed user profile information
             user_preferences = current_user.get_preferences()
-            
+
             user_context = f"""
             Logged in user: {current_user.first_name or current_user.email}
             Interests: {current_user.event_interests or 'Not specified'}
             Location: {current_user.business_city or 'Not specified'}, {current_user.business_state or 'Not specified'}
             """
-            
+
             # Add any additional preference info if available
             if user_preferences:
                 if 'preferred_locations' in user_preferences:
                     user_context += f"\nPreferred locations: {user_preferences.get('preferred_locations')}"
                 if 'event_focus' in user_preferences:
                     user_context += f"\nEvent focus: {user_preferences.get('event_focus')}"
-            
+
             # Add user role information
             roles = []
             if current_user.is_event_creator:
@@ -339,7 +340,7 @@ def fun_assistant_chat():
                 roles.append("Vendor")
             if roles:
                 user_context += f"\nUser roles: {', '.join(roles)}"
-        
+
         # For non-logged in users, we'll use basic info
         user_interests = current_user.event_interests if current_user.is_authenticated else "general fun"
         user_location = current_user.business_city if current_user.is_authenticated and current_user.business_city else "their current area"
@@ -383,7 +384,7 @@ def fun_assistant_chat():
         User Query: "{user_message}"
 
         Based ONLY on the provided user profile and event context, answer the user's query. Recommend events from the list if they match the user's interests or location. If no listed events match, suggest general types of fun activities relevant to their interests. Mention the Fun Score when recommending specific events.
-        
+
         If the user is not logged in, gently encourage them to create an account for more personalized recommendations while still providing useful information. 
 
         Your responses should be:
@@ -454,6 +455,7 @@ def search():
 
 def init_routes(app):
     """Initialize all routes with the Flask app instance"""
+    csrf = CSRFProtect(app) #Initialize CSRF protection
     # Register all routes with the app instance
     app.route("/")(index)
     app.route("/map")(map)
@@ -479,6 +481,6 @@ def init_routes(app):
     app.route('/admin/dashboard')(admin_dashboard)
     app.route("/api/feedback", methods=['POST'])(submit_feedback)
     app.route("/search", methods=["GET", "POST"])(search)
-    
+
     # Return the app instance
     return app
