@@ -70,22 +70,24 @@ def map():
         chapters = Chapter.query.all() # Pass chapters if needed in base.html
         return render_template("map.html", events=events, chapters=chapters)
     except Exception as e:
-        print(f"Error in map route: {str(e)}")
+        import logging
+        logging.error(f"Error in map route: {str(e)}")
         import traceback
         traceback.print_exc()
-        return f"An error occurred: {str(e)}", 500
+        return render_template("500.html"), 500
 
 def events():
-    app.logger.debug("Starting events route")
+    import logging
+    logging.debug("Starting events route")
     try:
         # Implement filtering logic here later based on request args
         events = Event.query.order_by(Event.start_date.desc()).all()
         chapters = Chapter.query.all() # Pass chapters if needed in base.html
         return render_template("events.html", events=events, chapters=chapters)
     except Exception as e:
-        app.logger.error(f"Error in events route: {str(e)}")
-        app.logger.exception("Exception details:")
-        return f"An error occurred: {str(e)}", 500
+        logging.error(f"Error in events route: {str(e)}")
+        logging.exception("Exception details:")
+        return render_template("500.html"), 500
 
 @login_required
 def submit_event():

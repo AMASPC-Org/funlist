@@ -188,14 +188,23 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- Load map.js script -->
+<script src="{{ url_for('static', filename='js/map.js') }}"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    let map = null;
-    const markers = {};
-    let visibleEventIds = [];
-    let infoWindow = null;
+    console.log("Map page loaded, initializing map with FunlistMap...");
     
-    // Initialize the map
+    // Initialize the map using the FunlistMap module
+    const map = FunlistMap.init('map');
+    if (!map) {
+        console.error("Failed to initialize map");
+        return;
+    }
+    
+    let visibleEventIds = [];
+    
+    // For backward compatibility with existing code
     function initMap() {
         // Default location (Olympia, WA)
         const defaultLocation = [47.0379, -122.9007];
