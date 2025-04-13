@@ -1,39 +1,50 @@
-from app import create_app
-from db_init import db
-from sqlalchemy import text
+import os
+import sys
 import logging
+from sqlalchemy import Column, Boolean, DateTime, Float, Text, ForeignKey, String, Integer
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError, ProgrammingError
 
 # Configure logging
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
 
+def add_column(conn, cursor, table, column_name, column_type):
+    """Add a column to the table if it doesn't exist"""
+    try:
+        # First commit any pending transactions (to avoid transaction block errors)
+        conn.commit()
+        
+        # Check if column exists
+        cursor.execute(f"SELECT column_name FROM information_schema.columns WHERE table_name = '{table}' AND column_name = '{column_name}'")
+        if cursor.fetchone() is None:
+            logger.info(f"Adding {column_name} column to {table} table")
+            cursor.execute(f"ALTER TABLE {table} ADD COLUMN {column_name} {column_type}")
+            conn.commit()
+            return True
+        return False
+    except Exception as e:
+        logger.error(f"Error adding column {column_name}: {str(e)}")
+        conn.rollback()
+        return False
+
 def migrate_venue_schema():
-    app = create_app()
-    with app.app_context():
-        try:
-            # Check existing tables and columns
-            inspector = db.inspect(db.engine)
-            tables = inspector.get_table_names()
-
-            # Create venue_types table if it doesn't exist
-            if 'venue_types' not in tables:
-                logger.info("Creating venue_types table")
-                db.session.execute(text('''
-                CREATE TABLE venue_types (
-                    id SERIAL PRIMARY KEY,
-                    name VARCHAR(100) NOT NULL,
-                    category VARCHAR(100),
-                    description TEXT
-                )
-                '''))
-                db.session.commit()
-                logger.info("venue_types table created successfully")
-
-            # Create venues table if it doesn't exist
-            if 'venues' not in tables:
-                logger.info("Creating venues table")
-                db.session.execute(text('''
+    """Updates venue table schema to match the current model."""
+    try:
+        from app import db
+        from sqlalchemy import inspect
+        import psycopg2
+        
+        # Check if venues table exists
+        inspector = inspect(db.engine)
+        if 'venues' not in inspector.get_table_names():
+            logger.info("Venues table doesn't exist. Creating it...")
+            # Create venues table using SQLAlchemy
+            with db.engine.connect() as conn:
+                conn.execute(text("""
                 CREATE TABLE venues (
                     id SERIAL PRIMARY KEY,
                     name VARCHAR(100) NOT NULL,
@@ -51,46 +62,103 @@ def migrate_venue_schema():
                     contact_email VARCHAR(120),
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    user_id INTEGER REFERENCES users(id)
+                    is_verified BOOLEAN DEFAULT FALSE,
+                    verification_notes TEXT,
+                    latitude FLOAT,
+                    longitude FLOAT,
+                    description TEXT,
+                    created_by_user_id INTEGER REFERENCES users(id),
+                    owner_manager_user_id INTEGER REFERENCES users(id)
                 )
-                '''))
-                db.session.commit()
-                logger.info("venues table created successfully")
-
-            # Check if venue_id column exists in events table
-            events_columns = [c['name'] for c in inspector.get_columns('events')]
-            if "venue_id" not in events_columns:
-                logger.info("Adding venue_id column to events table")
-                db.session.execute(text('ALTER TABLE events ADD COLUMN venue_id INTEGER REFERENCES venues(id)'))
-                db.session.commit()
-                logger.info("venue_id column added successfully")
-
-            # Check for title field in users table and add if it doesn't exist
-            users_columns = [c['name'] for c in inspector.get_columns('users')]
-            if "title" not in users_columns:
-                logger.info("Adding title column to users table")
-                db.session.execute(text('ALTER TABLE users ADD COLUMN title VARCHAR(100)'))
-                db.session.commit()
-                logger.info("title column added successfully")
-
-                # Transfer data from organizer_title to title if applicable
-                if "organizer_title" in users_columns:
-                    logger.info("Transferring data from organizer_title to title")
-                    db.session.execute(text('UPDATE users SET title = organizer_title WHERE organizer_title IS NOT NULL'))
-                    db.session.commit()
-                    logger.info("Data transfer completed successfully")
-
-            logger.info("Schema migration completed successfully")
+                """))
+                conn.commit()
+            logger.info("Venues table created successfully.")
             return True
-
-        except Exception as e:
-            db.session.rollback()
-            logger.error(f"Error migrating schema: {str(e)}")
+        
+        # If the venues table exists but might be missing columns,
+        # get database connection from environment
+        db_url = os.environ.get('DATABASE_URL')
+        
+        if not db_url:
+            logger.error("DATABASE_URL environment variable not set")
             return False
+        
+        # Connect to the database
+        conn = psycopg2.connect(db_url)
+        cursor = conn.cursor()
+        
+        # List of columns to check and add if they don't exist
+        columns_to_check = [
+            ('created_by_user_id', 'INTEGER REFERENCES users(id)'),
+            ('owner_manager_user_id', 'INTEGER REFERENCES users(id)'),
+            ('is_verified', 'BOOLEAN DEFAULT FALSE'),
+            ('verification_notes', 'TEXT'),
+            ('latitude', 'FLOAT'),
+            ('longitude', 'FLOAT'),
+            ('description', 'TEXT'),
+            ('updated_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP')
+        ]
+        
+        # Add columns if they don't exist
+        added_columns = []
+        for column_name, column_type in columns_to_check:
+            if add_column(conn, cursor, 'venues', column_name, column_type):
+                added_columns.append(column_name)
+        
+        # Check if venue_types table exists
+        cursor.execute("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'venue_types')")
+        venue_types_exists = cursor.fetchone()[0]
+        
+        if not venue_types_exists:
+            logger.info("Creating venue_types table...")
+            cursor.execute("""
+            CREATE TABLE venue_types (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(100) NOT NULL,
+                category VARCHAR(100),
+                description TEXT
+            )
+            """)
+            
+            # Add some default venue types
+            cursor.execute("""
+            INSERT INTO venue_types (name, category) VALUES
+            ('Conference Center', 'Commercial'),
+            ('Hotel', 'Commercial'),
+            ('Restaurant', 'Commercial'),
+            ('Theater', 'Entertainment'),
+            ('Museum', 'Cultural'),
+            ('Park', 'Outdoor'),
+            ('Sports Arena', 'Sports'),
+            ('Community Center', 'Public'),
+            ('University', 'Educational'),
+            ('Bar/Club', 'Entertainment'),
+            ('Gallery', 'Cultural'),
+            ('Stadium', 'Sports'),
+            ('Other', 'Miscellaneous')
+            """)
+            conn.commit()
+            logger.info("venue_types table created and populated with default values.")
+        
+        if added_columns:
+            logger.info(f"Added the following columns to the venues table: {', '.join(added_columns)}")
+        else:
+            logger.info("All required columns already exist in the venues table")
+        
+        # Close the cursor and connection
+        cursor.close()
+        conn.close()
+        
+        return True
+    except SQLAlchemyError as e:
+        logger.error(f"SQL error updating venue schema: {str(e)}")
+        return False
+    except Exception as e:
+        logger.error(f"Error updating venue schema: {str(e)}")
+        return False
 
 if __name__ == "__main__":
-    success = migrate_venue_schema()
-    if success:
-        print("Venue schema migration completed successfully.")
-    else:
-        print("Failed to migrate venue schema.")
+    from app import create_app
+    app = create_app()
+    with app.app_context():
+        migrate_venue_schema()
