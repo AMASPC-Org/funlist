@@ -1,5 +1,9 @@
 { pkgs }: {
    deps = [
+     pkgs.xsimd
+     pkgs.pkg-config
+     pkgs.libxcrypt
+     pkgs.cacert
      pkgs.lsof
      pkgs.glibcLocales
      pkgs.openssl
