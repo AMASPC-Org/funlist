@@ -1,6 +1,6 @@
 import os
 import logging
-from flask import render_template, flash, redirect, url_for, request, session, jsonify
+from flask import render_template, flash, redirect, url_for, request, session, jsonify, current_app
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user, login_required, login_user, logout_user
@@ -8,8 +8,7 @@ from forms import (SignupForm, LoginForm, ProfileForm, EventForm,
                    ResetPasswordRequestForm, ResetPasswordForm, ContactForm, SearchForm) # Added ContactForm, SearchForm
 from models import User, Event, Subscriber, Chapter, HelpArticle, CharterMember # Added HelpArticle, CharterMember
 from db_init import db
-# Import the app instance
-from app import app
+# Removed direct import of app, we'll use current_app instead
 # Removed direct import of geocode_address, assume it's in utils.utils now
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from datetime import datetime, timedelta
@@ -57,7 +56,7 @@ def investor_required(f):
     return decorated_function
 
 # --- Core Routes ---
-@app.route("/")
+@current_app.route("/")
 def index():
     # Fetch chapters for the dropdown/links if needed on index
     chapters = Chapter.query.all()
@@ -402,7 +401,14 @@ def search():
 
 def init_routes(app):
     """Initialize all routes with the Flask app instance"""
-    # This function is a placeholder for compatibility with the import in app.py
-    # Since we're defining routes directly with the app instance imported at the module level,
-    # we don't need to do anything in this function
-    pass
+    # Use app context to register all routes
+    with app.app_context():
+        # Re-register all routes with the app instance
+        global current_app
+        current_app = app
+        
+        # Import all the routes functions defined in this module
+        # No need to do anything else as all route decorators will use current_app
+        
+        # Return the app instance
+        return app
