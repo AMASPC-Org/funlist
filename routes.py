@@ -64,16 +64,28 @@ def index():
     return render_template("index.html", user=current_user, chapters=chapters, new_registration=new_registration)
 
 def map():
-    # Fetch events with valid coordinates for the map
-    events = Event.query.filter(Event.latitude.isnot(None), Event.longitude.isnot(None)).all()
-    chapters = Chapter.query.all() # Pass chapters if needed in base.html
-    return render_template("map.html", events=events, chapters=chapters)
+    app.logger.debug("Starting map route")
+    try:
+        # Fetch events with valid coordinates for the map
+        events = Event.query.filter(Event.latitude.isnot(None), Event.longitude.isnot(None)).all()
+        chapters = Chapter.query.all() # Pass chapters if needed in base.html
+        return render_template("map.html", events=events, chapters=chapters)
+    except Exception as e:
+        app.logger.error(f"Error in map route: {str(e)}")
+        app.logger.exception("Exception details:")
+        return f"An error occurred: {str(e)}", 500
 
 def events():
-    # Implement filtering logic here later based on request args
-    events = Event.query.order_by(Event.start_date.desc()).all()
-    chapters = Chapter.query.all() # Pass chapters if needed in base.html
-    return render_template("events.html", events=events, chapters=chapters)
+    app.logger.debug("Starting events route")
+    try:
+        # Implement filtering logic here later based on request args
+        events = Event.query.order_by(Event.start_date.desc()).all()
+        chapters = Chapter.query.all() # Pass chapters if needed in base.html
+        return render_template("events.html", events=events, chapters=chapters)
+    except Exception as e:
+        app.logger.error(f"Error in events route: {str(e)}")
+        app.logger.exception("Exception details:")
+        return f"An error occurred: {str(e)}", 500
 
 @login_required
 def submit_event():
@@ -273,155 +285,160 @@ def fun_assistant_page():
     return render_template('partials/fun_assistant.html', chapters=chapters)
 
 def fun_assistant_chat():
-    """Handles chat messages for the Fun Assistant."""
-    # Check if the user is logged in or track usage for anonymous users
-    if not current_user.is_authenticated:
-        # Initialize session counter if it doesn't exist
-        if 'fun_assistant_uses' not in session:
-            session['fun_assistant_uses'] = 0
-            session['fun_assistant_reset_date'] = datetime.utcnow().strftime("%Y-%m")
-
-        # Check if we need to reset the counter (new month)
-        current_month = datetime.utcnow().strftime("%Y-%m")
-        if session.get('fun_assistant_reset_date') != current_month:
-            session['fun_assistant_uses'] = 0
-            session['fun_assistant_reset_date'] = current_month
-
-        # Increment the usage counter
-        session['fun_assistant_uses'] += 1
-
-        # Check if usage limit exceeded
-        if session['fun_assistant_uses'] > 5:
-            return jsonify({
-                "limit_exceeded": True,
-                "reply": "You've reached your free usage limit for the Fun Assistant this month. Sign up for a free account to continue using this feature and get personalized recommendations!"
-            }), 200
-
-    openai.api_key = os.environ.get("OPENAI_API_KEY")
-    if not openai.api_key:
-         logger.error("OpenAI API Key not found in environment variables.")
-         return jsonify({"error": "AI Assistant configuration error."}), 500
-
+    app.logger.debug("Starting Fun Assistant chat processing")
     try:
-        data = request.get_json()
-        user_message = data.get('message')
+        # Check if the user is logged in or track usage for anonymous users
+        if not current_user.is_authenticated:
+            # Initialize session counter if it doesn't exist
+            if 'fun_assistant_uses' not in session:
+                session['fun_assistant_uses'] = 0
+                session['fun_assistant_reset_date'] = datetime.utcnow().strftime("%Y-%m")
 
-        if not user_message:
-            return jsonify({"error": "No message provided."}), 400
+            # Check if we need to reset the counter (new month)
+            current_month = datetime.utcnow().strftime("%Y-%m")
+            if session.get('fun_assistant_reset_date') != current_month:
+                session['fun_assistant_uses'] = 0
+                session['fun_assistant_reset_date'] = current_month
 
-        # --- Gather Context for OpenAI ---
-        # 1. User Info
-        user_context = "Anonymous visitor (limited to 5 queries per month)"
+            # Increment the usage counter
+            session['fun_assistant_uses'] += 1
 
-        if current_user.is_authenticated:
-            # Get detailed user profile information
-            user_preferences = current_user.get_preferences()
+            # Check if usage limit exceeded
+            if session['fun_assistant_uses'] > 5:
+                return jsonify({
+                    "limit_exceeded": True,
+                    "reply": "You've reached your free usage limit for the Fun Assistant this month. Sign up for a free account to continue using this feature and get personalized recommendations!"
+                }), 200
 
-            user_context = f"""
-            Logged in user: {current_user.first_name or current_user.email}
-            Interests: {current_user.event_interests or 'Not specified'}
-            Location: {current_user.business_city or 'Not specified'}, {current_user.business_state or 'Not specified'}
+        openai.api_key = os.environ.get("OPENAI_API_KEY")
+        if not openai.api_key:
+             logger.error("OpenAI API Key not found in environment variables.")
+             return jsonify({"error": "AI Assistant configuration error."}), 500
+
+        try:
+            data = request.get_json()
+            user_message = data.get('message')
+
+            if not user_message:
+                return jsonify({"error": "No message provided."}), 400
+
+            # --- Gather Context for OpenAI ---
+            # 1. User Info
+            user_context = "Anonymous visitor (limited to 5 queries per month)"
+
+            if current_user.is_authenticated:
+                # Get detailed user profile information
+                user_preferences = current_user.get_preferences()
+
+                user_context = f"""
+                Logged in user: {current_user.first_name or current_user.email}
+                Interests: {current_user.event_interests or 'Not specified'}
+                Location: {current_user.business_city or 'Not specified'}, {current_user.business_state or 'Not specified'}
+                """
+
+                # Add any additional preference info if available
+                if user_preferences:
+                    if 'preferred_locations' in user_preferences:
+                        user_context += f"\nPreferred locations: {user_preferences.get('preferred_locations')}"
+                    if 'event_focus' in user_preferences:
+                        user_context += f"\nEvent focus: {user_preferences.get('event_focus')}"
+
+                # Add user role information
+                roles = []
+                if current_user.is_event_creator:
+                    roles.append("Event Creator")
+                if current_user.is_organizer:
+                    roles.append("Organizer")
+                if current_user.is_vendor:
+                    roles.append("Vendor")
+                if roles:
+                    user_context += f"\nUser roles: {', '.join(roles)}"
+
+            # For non-logged in users, we'll use basic info
+            user_interests = current_user.event_interests if current_user.is_authenticated else "general fun"
+            user_location = current_user.business_city if current_user.is_authenticated and current_user.business_city else "their current area"
+
+            # 2. Relevant Events - Fetch upcoming events
+            current_date = datetime.utcnow().date()
+            relevant_events = Event.query.filter(
+                Event.start_date >= current_date
+            ).order_by(Event.start_date).limit(15).all()
+
+            # 3. Events with highest fun ratings
+            top_rated_events = Event.query.filter(
+                Event.start_date >= current_date,
+                Event.fun_meter >= 4
+            ).order_by(Event.fun_meter.desc()).limit(5).all()
+
+            # Build event context for the prompt
+            event_context = "\nUpcoming events:\n"
+            if relevant_events:
+                for event in relevant_events:
+                     event_context += f"- {event.title} on {event.start_date.strftime('%Y-%m-%d')} at {event.location or 'Venue TBA'} (Fun Score: {event.fun_meter}/5): {event.description[:100]}...\n"
+            else:
+                event_context = "\nNo specific upcoming events found in the database right now.\n"
+
+            if top_rated_events:
+                event_context += "\nTop-rated events:\n"
+                for event in top_rated_events:
+                    if event not in relevant_events:  # Avoid duplicates
+                        event_context += f"- {event.title} on {event.start_date.strftime('%Y-%m-%d')} at {event.location or 'Venue TBA'} (Fun Score: {event.fun_meter}/5): {event.description[:100]}...\n"
+
+            # --- Construct Prompt ---
+            prompt = f"""You are Fun Assistant, a friendly and helpful AI guide for the FunList.ai platform. Your goal is to help users discover fun local events based on their preferences.
+
+            User Profile:
+            {user_context}
+            - Interests: {user_interests}
+            - Location: {user_location}
+
+            {event_context}
+
+            User Query: "{user_message}"
+
+            Based ONLY on the provided user profile and event context, answer the user's query. Recommend events from the list if they match the user's interests or location. If no listed events match, suggest general types of fun activities relevant to their interests. Mention the Fun Score when recommending specific events.
+
+            If the user is not logged in, gently encourage them to create an account for more personalized recommendations while still providing useful information. 
+
+            Your responses should be:
+            1. Concise (about 2-3 short paragraphs)
+            2. Friendly and enthusiastic 
+            3. Focused on actual events in the database
+            4. Personalized based on user interests if available
+            5. Include specific event details when recommending (date, fun score)
+
+            Do not invent events not listed above. If you don't have enough information, politely ask for clarification.
             """
 
-            # Add any additional preference info if available
-            if user_preferences:
-                if 'preferred_locations' in user_preferences:
-                    user_context += f"\nPreferred locations: {user_preferences.get('preferred_locations')}"
-                if 'event_focus' in user_preferences:
-                    user_context += f"\nEvent focus: {user_preferences.get('event_focus')}"
+            logger.debug(f"Sending prompt to OpenAI: {prompt}")
 
-            # Add user role information
-            roles = []
-            if current_user.is_event_creator:
-                roles.append("Event Creator")
-            if current_user.is_organizer:
-                roles.append("Organizer")
-            if current_user.is_vendor:
-                roles.append("Vendor")
-            if roles:
-                user_context += f"\nUser roles: {', '.join(roles)}"
+            # --- Call OpenAI API ---
+            try:
+                response = openai.ChatCompletion.create(
+                    model="gpt-4", # Or your chosen model
+                    messages=[
+                        {"role": "system", "content": "You are Fun Assistant, helping users find fun local events."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    max_tokens=300,  # Increased token limit for better responses
+                    temperature=0.7  # Slightly more creative but still factual
+                )
+                assistant_reply = response.choices[0].message['content'].strip()
+                logger.debug(f"Received reply from OpenAI: {assistant_reply}")
 
-        # For non-logged in users, we'll use basic info
-        user_interests = current_user.event_interests if current_user.is_authenticated else "general fun"
-        user_location = current_user.business_city if current_user.is_authenticated and current_user.business_city else "their current area"
+            except Exception as openai_error:
+                 logger.error(f"OpenAI API Error: {str(openai_error)}")
+                 assistant_reply = "Sorry, I encountered an issue connecting to my knowledge base. Please try again later."
 
-        # 2. Relevant Events - Fetch upcoming events
-        current_date = datetime.utcnow().date()
-        relevant_events = Event.query.filter(
-            Event.start_date >= current_date
-        ).order_by(Event.start_date).limit(15).all()
+            return jsonify({"reply": assistant_reply})
 
-        # 3. Events with highest fun ratings
-        top_rated_events = Event.query.filter(
-            Event.start_date >= current_date,
-            Event.fun_meter >= 4
-        ).order_by(Event.fun_meter.desc()).limit(5).all()
-
-        # Build event context for the prompt
-        event_context = "\nUpcoming events:\n"
-        if relevant_events:
-            for event in relevant_events:
-                 event_context += f"- {event.title} on {event.start_date.strftime('%Y-%m-%d')} at {event.location or 'Venue TBA'} (Fun Score: {event.fun_meter}/5): {event.description[:100]}...\n"
-        else:
-            event_context = "\nNo specific upcoming events found in the database right now.\n"
-
-        if top_rated_events:
-            event_context += "\nTop-rated events:\n"
-            for event in top_rated_events:
-                if event not in relevant_events:  # Avoid duplicates
-                    event_context += f"- {event.title} on {event.start_date.strftime('%Y-%m-%d')} at {event.location or 'Venue TBA'} (Fun Score: {event.fun_meter}/5): {event.description[:100]}...\n"
-
-        # --- Construct Prompt ---
-        prompt = f"""You are Fun Assistant, a friendly and helpful AI guide for the FunList.ai platform. Your goal is to help users discover fun local events based on their preferences.
-
-        User Profile:
-        {user_context}
-        - Interests: {user_interests}
-        - Location: {user_location}
-
-        {event_context}
-
-        User Query: "{user_message}"
-
-        Based ONLY on the provided user profile and event context, answer the user's query. Recommend events from the list if they match the user's interests or location. If no listed events match, suggest general types of fun activities relevant to their interests. Mention the Fun Score when recommending specific events.
-
-        If the user is not logged in, gently encourage them to create an account for more personalized recommendations while still providing useful information. 
-
-        Your responses should be:
-        1. Concise (about 2-3 short paragraphs)
-        2. Friendly and enthusiastic 
-        3. Focused on actual events in the database
-        4. Personalized based on user interests if available
-        5. Include specific event details when recommending (date, fun score)
-
-        Do not invent events not listed above. If you don't have enough information, politely ask for clarification.
-        """
-
-        logger.debug(f"Sending prompt to OpenAI: {prompt}")
-
-        # --- Call OpenAI API ---
-        try:
-            response = openai.ChatCompletion.create(
-                model="gpt-4", # Or your chosen model
-                messages=[
-                    {"role": "system", "content": "You are Fun Assistant, helping users find fun local events."},
-                    {"role": "user", "content": prompt}
-                ],
-                max_tokens=300,  # Increased token limit for better responses
-                temperature=0.7  # Slightly more creative but still factual
-            )
-            assistant_reply = response.choices[0].message['content'].strip()
-            logger.debug(f"Received reply from OpenAI: {assistant_reply}")
-
-        except Exception as openai_error:
-             logger.error(f"OpenAI API Error: {str(openai_error)}")
-             assistant_reply = "Sorry, I encountered an issue connecting to my knowledge base. Please try again later."
-
-        return jsonify({"reply": assistant_reply})
-
+        except Exception as e:
+            logger.error(f"Error in /api/fun-assistant/chat: {str(e)}", exc_info=True)
+            return jsonify({"error": "An internal error occurred."}), 500
     except Exception as e:
-        logger.error(f"Error in /api/fun-assistant/chat: {str(e)}", exc_info=True)
-        return jsonify({"error": "An internal error occurred."}), 500
+        app.logger.error(f"Error in Fun Assistant chat: {str(e)}")
+        app.logger.exception("Exception details:")
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
 # --- Other Routes (Placeholder/Keep Existing) ---
 @login_required
