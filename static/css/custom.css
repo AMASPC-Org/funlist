@@ -1667,10 +1667,10 @@ main {
 .floating-buttons-container {
     position: fixed;
     bottom: 2.5rem; /* Increased from 1.5rem to provide more space */
-    left: 1.5rem; /* Position container on the left side */
+    right: 1.5rem; /* Position container on the right side */
     display: flex;
     flex-direction: column; /* Stack buttons vertically */
-    align-items: flex-start; /* Align buttons to left */
+    align-items: flex-end; /* Align buttons to right */
     gap: 0.75rem; /* Space between stacked buttons */
     z-index: 1040; /* Below modals (1050) but above most content */
     pointer-events: none; /* Allow clicks to pass through the container */
@@ -1719,6 +1719,23 @@ body.is-scrolled .floating-buttons-container {
     background-color: #4CAF50;
 }
 
+.fun-assistant-button {
+    background-color: #FF8A00; /* Primary brand color */
+    animation: pulse-light 2s infinite;
+}
+
+@keyframes pulse-light {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 138, 0, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(255, 138, 0, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 138, 0, 0);
+    }
+}
+
 /* For logged-in users, we can style differently */
 body.user-logged-in .floating-button {
     opacity: 0.85;
@@ -1728,7 +1745,7 @@ body.user-logged-in .floating-button {
 @media (max-width: 576px) {
     .floating-buttons-container {
         bottom: 1.5rem; /* Adjust position for mobile */
-        left: 1rem; /* Slightly closer to edge on mobile */
+        right: 1rem; /* Slightly closer to edge on mobile */
         gap: 0.5rem; /* Less space between buttons on mobile */
     }
 
@@ -1762,6 +1779,11 @@ body.user-logged-in .floating-button {
     .subscribe-button {
         background: linear-gradient(135deg, #11998e, #38ef7d);
         box-shadow: 0 2px 15px rgba(17, 153, 142, 0.6);
+    }
+    
+    .fun-assistant-button {
+        background: linear-gradient(135deg, #FF8A00, #FF6B00);
+        box-shadow: 0 2px 15px rgba(255, 138, 0, 0.6);
     }
 
     /* When cookie consent is visible, move buttons up */

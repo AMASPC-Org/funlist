@@ -280,6 +280,14 @@ function setupFloatingButtons() {
     } else {
         console.log("Subscribe button not found in DOM");
     }
+    
+    // Check if the Fun Assistant button exists (it's an anchor tag, not a button)
+    const funAssistantBtn = document.getElementById('funAssistantButton');
+    if (funAssistantBtn) {
+        console.log("Found Fun Assistant button");
+        // The button is an <a> tag that works with the href attribute
+        // No additional click handler needed
+    }
 }
 
 // Cookie consent handling

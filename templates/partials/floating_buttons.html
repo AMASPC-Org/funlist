@@ -6,11 +6,17 @@
         <span>Feedback</span>
     </button>
 
-    <!-- Subscribe button (bottom) -->
+    <!-- Subscribe button (middle) -->
     <button class="floating-button subscribe-button" id="subscribeButton" aria-label="Subscribe to Updates">
         <i class="fas fa-envelope" aria-hidden="true"></i>
         <span>Subscribe</span>
     </button>
+    
+    <!-- Fun Assistant button (bottom) -->
+    <a href="{{ url_for('fun_assistant_page') }}" class="floating-button fun-assistant-button" id="funAssistantButton" aria-label="Open Fun Assistant">
+        <i class="fas fa-robot" aria-hidden="true"></i>
+        <span>Fun Assistant</span>
+    </a>
 </div>
 
 <!-- Feedback Modal -->
