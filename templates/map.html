@@ -189,31 +189,34 @@
 
 {% block extra_js %}
 <!-- Load map.js script -->
-<script src="{{ url_for('static', filename='js/map.js') }}"></script>
+<script src="{{ url_for('static', filename='js/map.js') }}?v={{ range(1, 10000) | random }}"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     console.log("Map page loaded, initializing map...");
     
-    // Variables to store map state
+    // Initialize map
     let map = null;
     const markers = {};
     let visibleEventIds = [];
     
-    // Initialize the map using the FunlistMap module if available
-    if (typeof FunlistMap !== 'undefined') {
-        console.log("Using FunlistMap module");
-        map = FunlistMap.init('map');
-        if (!map) {
-            console.error("Failed to initialize map with FunlistMap, falling back to direct initialization");
-            initMap();
-        } else {
-            console.log("FunlistMap initialized successfully");
-            // Add event markers to the map
-            addEventMarkers();
+    // First, make sure the FunlistMap is properly loaded
+    if (window.FunlistMap) {
+        console.log("FunlistMap module found, initializing...");
+        try {
+            map = window.FunlistMap.init('map');
+            if (map) {
+                console.log("FunlistMap initialized successfully");
+                // Continue with map setup
+            }
+        } catch (err) {
+            console.error("Error initializing FunlistMap:", err);
         }
-    } else {
-        console.log("FunlistMap module not found, using direct initialization");
+    }
+    
+    // If FunlistMap init failed or doesn't exist, fall back to direct initialization
+    if (!map) {
+        console.log("Falling back to direct map initialization");
         initMap();
     }
     

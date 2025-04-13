@@ -15,6 +15,12 @@ window.FunlistMap = (function() {
     function init(elementId) {
         console.log("Initializing map in element:", elementId);
 
+        // Safety checks
+        if (!elementId) {
+            console.error("No element ID provided to map initialization");
+            return null;
+        }
+
         const mapElement = document.getElementById(elementId);
         if (!mapElement) {
             console.error("Map container element not found:", elementId);
@@ -23,12 +29,36 @@ window.FunlistMap = (function() {
         
         if (!hasLeaflet) {
             console.error("Leaflet library not loaded. Make sure it's included before map.js");
+            // Try to load Leaflet dynamically if not available
+            const leafletCSS = document.createElement('link');
+            leafletCSS.rel = 'stylesheet';
+            leafletCSS.href = 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.css';
+            document.head.appendChild(leafletCSS);
+            
+            const leafletScript = document.createElement('script');
+            leafletScript.src = 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.js';
+            leafletScript.onload = function() {
+                console.log("Leaflet loaded dynamically");
+                // Try initialization again after loading
+                setTimeout(function() {
+                    init(elementId);
+                }, 500);
+            };
+            document.head.appendChild(leafletScript);
             return null;
         }
 
         try {
-            // Initialize Leaflet map
-            mapInstance = L.map(elementId).setView(defaultLocation, defaultZoom);
+            // Initialize Leaflet map with error handling
+            if (typeof L.map !== 'function') {
+                console.error("L.map is not a function. Leaflet might not be properly loaded.");
+                return null;
+            }
+            
+            mapInstance = L.map(elementId, {
+                center: defaultLocation,
+                zoom: defaultZoom
+            });
 
             // Add the OpenStreetMap tiles
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {

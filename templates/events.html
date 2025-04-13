@@ -1,26 +1,18 @@
-
 {% extends "base.html" %}
 
-{% block head %}
-<link rel="canonical" href="{{ url_for('events', _external=True) }}" />
-{% endblock %}
+{% block title %}Events - FunList.ai{% endblock %}
 
 {% block content %}
-<div class="container map-container-wrapper">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Explore Events</h2>
-        <div class="view-toggle btn-group" role="group">
-            <a href="{{ url_for('map') }}" class="btn btn-outline-primary">Map</a>
-            <a href="{{ url_for('events') }}" class="btn btn-primary active">List</a>
-        </div>
-    </div>
-    
-    <div class="filter-bar mb-4">
-        <div class="row g-3">
-            <div class="col-md">
-                <input type="text" class="form-control" id="locationSearch" placeholder="Enter location to search...">
+<div class="container mt-3">
+    <h1 class="text-center mb-3">Discover Events</h1>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar mb-3">
+        <div class="row g-2 justify-content-center">
+            <div class="col-md-3">
+                <input type="text" class="form-control" id="searchInput" placeholder="Search events...">
             </div>
-            <div class="col-md">
+            <div class="col-md-2">
                 <select class="form-select" id="categoryFilter">
                     <option selected>All Categories</option>
                     <option>Sports</option>
@@ -30,7 +22,7 @@
                     <option>Other</option>
                 </select>
             </div>
-            <div class="col-md">
+            <div class="col-md-2">
                 <select class="form-select" id="dateFilter">
                     <option selected>Any Date</option>
                     <option>Today</option>
@@ -39,143 +31,109 @@
                     <option>Next Week</option>
                 </select>
             </div>
-            <div class="col-md">
+            <div class="col-md-2">
                 <select class="form-select" id="funFilter">
                     <option selected>All Fun Ratings</option>
-                    <option>⭐⭐⭐⭐⭐ (5)</option>
-                    <option>⭐⭐⭐⭐ (4+)</option>
-                    <option>⭐⭐⭐ (3+)</option>
+                    <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+                    <option value="4">⭐⭐⭐⭐ (4+)</option>
+                    <option value="3">⭐⭐⭐ (3+)</option>
                 </select>
+            </div>
+            <div class="col-md-2">
+                <button id="applyFilters" class="btn btn-primary w-100">Apply Filters</button>
             </div>
         </div>
     </div>
 
-<div class="row row-cols-1 row-cols-md-3 g-4">
-    {% if events %}
-        {% for event in events %}
-        <div class="col">
-            <div class="card event-card h-100">
-                {% if event.image_url %}
-                <img src="{{ event.image_url }}" class="card-img-top" alt="{{ event.title }}">
-                {% else %}
-                <div class="card-img-top default-event-img"></div>
-                {% endif %}
-                <div class="card-body">
-                    <h5 class="card-title">{{ event.title }}</h5>
-                    <p class="card-text text-muted mb-2">
-                        <i class="far fa-calendar me-2"></i>{{ event.start_date.strftime('%B %d, %Y') }}
-                        {% if event.start_time %} at {{ event.start_time.strftime('%I:%M %p') }}{% endif %}
-                    </p>
-                    <p class="card-text text-muted mb-3">
-                        <i class="fas fa-map-marker-alt me-2"></i>
-                        {% if event.city and event.state %}
-                            {{ event.city }}, {{ event.state }}
-                        {% else %}
-                            {{ event.location }}
+    <!-- Events List -->
+    <div class="row">
+        {% if events and events|length > 0 %}
+            {% for event in events %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        {% if event.featured %}
+                            <div class="badge bg-primary position-absolute top-0 end-0 m-2">Featured</div>
                         {% endif %}
-                    </p>
-                    <p class="card-text">{{ event.description|truncate(120) }}</p>
-                    <div class="fun-rating mb-3">
-                        <span class="text-muted me-2">Fun Rating:</span>
-                        <span class="stars">{{ "⭐" * event.fun_meter }}</span>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ event.title|default('Untitled Event') }}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">
+                                {{ event.start_date.strftime('%Y-%m-%d') if event.start_date else 'Date TBA' }}
+                                {% if event.start_time %}
+                                    at {{ event.start_time }}
+                                {% endif %}
+                            </h6>
+                            <p class="card-text">{{ event.description|default('No description available')|truncate(100) }}</p>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <div>
+                                    <span class="badge bg-secondary">{{ event.category|default('Uncategorized') }}</span>
+                                    <span class="ms-2">
+                                        {% for i in range(1, (event.fun_rating or event.fun_meter or 3)|int + 1) %}
+                                            ⭐
+                                        {% endfor %}
+                                    </span>
+                                </div>
+                                <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-sm btn-outline-primary">View Details</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="card-footer bg-transparent border-top-0">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="btn-group">
-                            {% if event.website %}
-                            <a href="{{ event.website }}" class="btn btn-primary btn-sm" target="_blank">
-                                <i class="fas fa-ticket-alt me-1"></i>Get Tickets
-                            </a>
-                            {% endif %}
-                            <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-outline-primary btn-sm">
-                                Details
-                            </a>
-                        </div>
-                        <div class="social-links">
-                            {% if event.website %}
-                            <a href="{{ event.website }}" class="text-muted me-2" target="_blank" title="Website">
-                                <i class="fas fa-globe"></i>
-                            </a>
-                            {% endif %}
+
+                {% if loop.index is divisibleby 3 and not loop.last %}
+                    {# Add an advertisement every 3 items #}
+                    <div class="col-md-12 mb-4">
+                        <div class="card advertisement-card">
+                            <div class="card-body text-center">
+                                <p class="ad-label">Advertisement</p>
+                                <p>Sponsored Content - Advertisement space available</p>
+                            </div>
                         </div>
                     </div>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <div class="col-12 text-center py-5">
+                <div class="alert alert-info">
+                    <i class="fas fa-calendar-alt fa-3x mb-3"></i>
+                    <h4>No events found</h4>
+                    <p>There are currently no events to display. Check back later or try different search criteria.</p>
+
+                    {% if current_user.is_authenticated and current_user.is_event_creator %}
+                        <a href="{{ url_for('submit_event') }}" class="btn btn-primary mt-3">
+                            <i class="fas fa-plus-circle me-2"></i> Add an Event
+                        </a>
+                    {% endif %}
                 </div>
             </div>
-        </div>
-        {% endfor %}
-    {% else %}
-        <div class="col-12">
-            <div class="alert alert-info">No events found. Try adjusting your search criteria.</div>
-        </div>
-    {% endif %}
-    
-    {% if error_message %}
-        <div class="col-12">
-            <div class="alert alert-warning">{{ error_message }}</div>
-        </div>
-    {% endif %}
+        {% endif %}
+    </div>
 </div>
 {% endblock %}
 
-{% block extra_js %}
+{% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    console.log("Events page loaded");
-    
-    // Set up filter functionality
-    const locationSearch = document.getElementById('locationSearch');
-    const categoryFilter = document.getElementById('categoryFilter');
-    const dateFilter = document.getElementById('dateFilter');
-    const funFilter = document.getElementById('funFilter');
-    
-    // Apply filters when values change
-    if (locationSearch) {
-        locationSearch.addEventListener('input', applyFilters);
-    }
-    if (categoryFilter) {
-        categoryFilter.addEventListener('change', applyFilters);
-    }
-    if (dateFilter) {
-        dateFilter.addEventListener('change', applyFilters);
-    }
-    if (funFilter) {
-        funFilter.addEventListener('change', applyFilters);
-    }
-    
-    function applyFilters() {
-        // Create URL with filter parameters
-        let url = new URL(window.location.href);
-        
-        if (locationSearch && locationSearch.value) {
-            url.searchParams.set('search_location', locationSearch.value);
-        } else {
-            url.searchParams.delete('search_location');
+    document.addEventListener('DOMContentLoaded', function() {
+        // Setup for filters
+        const searchInput = document.getElementById('searchInput');
+        const categoryFilter = document.getElementById('categoryFilter');
+        const dateFilter = document.getElementById('dateFilter');
+        const funFilter = document.getElementById('funFilter');
+        const applyFiltersBtn = document.getElementById('applyFilters');
+
+        if (applyFiltersBtn) {
+            applyFiltersBtn.addEventListener('click', function() {
+                // This would be replaced with actual filter logic
+                console.log('Filtering with:', {
+                    search: searchInput ? searchInput.value : '',
+                    category: categoryFilter ? categoryFilter.value : '',
+                    date: dateFilter ? dateFilter.value : '',
+                    funRating: funFilter ? funFilter.value : ''
+                });
+
+                // For now, just reload the page
+                // In a real implementation, you'd use AJAX or form submission
+                alert('Filtering feature coming soon!');
+            });
         }
-        
-        if (categoryFilter && categoryFilter.value !== 'All Categories') {
-            url.searchParams.set('category', categoryFilter.value);
-        } else {
-            url.searchParams.delete('category');
-        }
-        
-        if (dateFilter && dateFilter.value !== 'Any Date') {
-            const dateValue = dateFilter.value.toLowerCase().replace(' ', '_');
-            url.searchParams.set('date_range', dateValue);
-        } else {
-            url.searchParams.delete('date_range');
-        }
-        
-        if (funFilter && funFilter.value !== 'All Fun Ratings') {
-            const funValue = funFilter.value.match(/\d+/)[0];
-            url.searchParams.set('fun_rating', funValue);
-        } else {
-            url.searchParams.delete('fun_rating');
-        }
-        
-        // Navigate to filtered URL
-        window.location.href = url.toString();
-    }
-});
+    });
 </script>
 {% endblock %}

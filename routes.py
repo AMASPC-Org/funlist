@@ -104,15 +104,29 @@ def map():
 
 def events():
     import logging
-    logging.debug("Starting events route")
+    logger = logging.getLogger(__name__)
+    logger.debug("Starting events route")
     try:
-        # Implement filtering logic here later based on request args
-        events = Event.query.order_by(Event.start_date.desc()).all()
-        chapters = Chapter.query.all() # Pass chapters if needed in base.html
+        # Get events with explicit error handling
+        try:
+            events = Event.query.order_by(Event.start_date.desc()).all()
+            logger.debug(f"Retrieved {len(events)} events")
+        except Exception as db_error:
+            logger.error(f"Database error: {str(db_error)}")
+            events = []  # Provide empty list as fallback
+        
+        # Get chapters with explicit error handling
+        try:
+            chapters = Chapter.query.all()
+            logger.debug(f"Retrieved {len(chapters)} chapters")
+        except Exception as ch_error:
+            logger.error(f"Error fetching chapters: {str(ch_error)}")
+            chapters = []  # Provide empty list as fallback
+        
         return render_template("events.html", events=events, chapters=chapters)
     except Exception as e:
-        logging.error(f"Error in events route: {str(e)}")
-        logging.exception("Exception details:")
+        logger.error(f"Error in events route: {str(e)}")
+        logger.exception("Exception details:")
         return render_template("500.html"), 500
 
 @login_required
