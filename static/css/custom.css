@@ -1746,7 +1746,7 @@ body.user-logged-in .floating-button {
     .floating-buttons-container {
         bottom: 1.5rem; /* Adjust position for mobile */
         right: 1rem; /* Slightly closer to edge on mobile */
-        gap: 0.5rem; /* Less space between buttons on mobile */
+        gap: 0.75rem; /* Increased space between buttons on mobile */
     }
 
     .floating-button {
@@ -1754,8 +1754,8 @@ body.user-logged-in .floating-button {
         font-size: 0.85rem;
         border-radius: 50%;
         transition: all 0.3s ease;
-        width: 2.75rem; /* Slightly smaller circle buttons */
-        height: 2.75rem; /* Slightly smaller circle buttons */
+        width: 3rem; /* Slightly larger circle buttons */
+        height: 3rem; /* Slightly larger circle buttons */
         display: flex;
         justify-content: center;
         align-items: center;
@@ -1767,7 +1767,7 @@ body.user-logged-in .floating-button {
 
     .floating-button i {
         margin-right: 0;
-        font-size: 1.1rem; /* Slightly smaller icon on mobile */
+        font-size: 1.2rem; /* Slightly larger icon on mobile */
     }
 
     /* Different styles for each button */
@@ -1775,15 +1775,11 @@ body.user-logged-in .floating-button {
         background: linear-gradient(135deg, #4e54c8, #8f94fb);
         box-shadow: 0 2px 15px rgba(78, 84, 200, 0.6);
     }
-
-    .subscribe-button {
-        background: linear-gradient(135deg, #11998e, #38ef7d);
-        box-shadow: 0 2px 15px rgba(17, 153, 142, 0.6);
-    }
     
     .fun-assistant-button {
         background: linear-gradient(135deg, #FF8A00, #FF6B00);
         box-shadow: 0 2px 15px rgba(255, 138, 0, 0.6);
+        animation: pulse-light 2s infinite;
     }
 
     /* When cookie consent is visible, move buttons up */

@@ -1,0 +1,144 @@
+
+{% extends "base.html" %}
+
+{% block title %}Fun Assistant - FunList.ai{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0 text-center">
+                        <i class="fas fa-robot mr-2"></i> Fun Assistant
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="chat-container mb-4" id="chatLog" style="height: 400px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px;">
+                        <div class="chat-message assistant">
+                            <p>👋 Hi there! I'm your Fun Assistant. I can help you discover fun events and activities based on your interests and location. Ask me anything about events, activities, or recommendations!</p>
+                        </div>
+                    </div>
+                    
+                    <form id="chatForm" class="chat-form">
+                        <div class="input-group">
+                            <input type="text" id="userInput" class="form-control" placeholder="Ask about events, activities or recommendations..." aria-label="Type your message">
+                            <button class="btn btn-primary" type="submit" id="sendButton">
+                                <i class="fas fa-paper-plane"></i> Send
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="mt-4">
+                        <h5>Quick Suggestions:</h5>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button class="btn btn-sm btn-outline-primary suggestion-btn" data-message="What's happening this weekend?">What's happening this weekend?</button>
+                            <button class="btn btn-sm btn-outline-primary suggestion-btn" data-message="Find family-friendly events">Family-friendly events</button>
+                            <button class="btn btn-sm btn-outline-primary suggestion-btn" data-message="Recommend outdoor activities">Outdoor activities</button>
+                            <button class="btn btn-sm btn-outline-primary suggestion-btn" data-message="Show events with highest fun rating">Highest fun-rated events</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer text-muted text-center">
+                    <small>Fun Assistant uses AI to help you discover more fun in your area!</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const chatForm = document.getElementById('chatForm');
+        const userInput = document.getElementById('userInput');
+        const chatLog = document.getElementById('chatLog');
+        const sendButton = document.getElementById('sendButton');
+        
+        // Function to append message to chat
+        function appendMessage(role, content) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${role}`;
+            
+            const messagePara = document.createElement('p');
+            messagePara.textContent = content;
+            
+            messageDiv.appendChild(messagePara);
+            chatLog.appendChild(messageDiv);
+            
+            // Auto-scroll to bottom
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+        
+        // Handle form submission
+        async function sendMessage(e) {
+            e.preventDefault();
+            
+            const message = userInput.value.trim();
+            if (!message) return;
+            
+            // Clear input
+            userInput.value = '';
+            
+            // Append user message
+            appendMessage('user', message);
+            
+            // Show loading indicator
+            sendButton.disabled = true;
+            const loadingMessage = document.createElement('div');
+            loadingMessage.className = 'chat-message assistant';
+            loadingMessage.innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Thinking...</p>';
+            chatLog.appendChild(loadingMessage);
+            chatLog.scrollTop = chatLog.scrollHeight;
+            
+            try {
+                // Send to API
+                const response = await fetch('/api/fun-assistant/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+                
+                // Remove loading message
+                if (chatLog.contains(loadingMessage)) {
+                    chatLog.removeChild(loadingMessage);
+                }
+                
+                if (!response.ok) {
+                    throw new Error('API request failed');
+                }
+                
+                const data = await response.json();
+                
+                // Display assistant response
+                appendMessage('assistant', data.reply);
+                
+            } catch (error) {
+                console.error('Error sending message:', error);
+                if (loadingMessage && chatLog.contains(loadingMessage)) {
+                    chatLog.removeChild(loadingMessage);
+                }
+                appendMessage('assistant', 'Sorry, there was a problem connecting to the assistant. Please try again.');
+            } finally {
+                sendButton.disabled = false;
+                userInput.focus();
+            }
+        }
+        
+        // Handle suggestion buttons
+        document.querySelectorAll('.suggestion-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                userInput.value = this.dataset.message;
+                chatForm.dispatchEvent(new Event('submit'));
+            });
+        });
+        
+        // Add event listener for form submission
+        chatForm.addEventListener('submit', sendMessage);
+        
+        // Focus the input on load
+        userInput.focus();
+    });
+</script>
+{% endblock %}

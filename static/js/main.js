@@ -253,33 +253,6 @@ function setupFloatingButtons() {
     } else {
         console.log("Feedback button not found in DOM");
     }
-
-    // Setup subscribe button
-    const subscribeBtn = document.getElementById('subscribeButton');
-    if (subscribeBtn) {
-        console.log("Found subscribe button, setting up click handler");
-        subscribeBtn.addEventListener('click', function(e) {
-            console.log("Subscribe button clicked");
-            try {
-                const subscribeModal = new bootstrap.Modal(document.getElementById('subscribeModal'));
-                subscribeModal.show();
-                
-                // Ensure proper cleanup when the modal is hidden
-                document.getElementById('subscribeModal').addEventListener('hidden.bs.modal', function () {
-                    document.body.classList.remove('modal-open');
-                    const backdrops = document.querySelectorAll('.modal-backdrop');
-                    backdrops.forEach(backdrop => {
-                        backdrop.remove();
-                    });
-                });
-            } catch (error) {
-                console.error("Error showing subscribe modal:", error);
-                alert("Sorry, there was an error opening the subscription form.");
-            }
-        });
-    } else {
-        console.log("Subscribe button not found in DOM");
-    }
     
     // Check if the Fun Assistant button exists (it's an anchor tag, not a button)
     const funAssistantBtn = document.getElementById('funAssistantButton');

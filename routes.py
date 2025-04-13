@@ -266,13 +266,11 @@ def chapter(slug):
     # ------------------------------------------
 
 # --- Fun Assistant Routes ---
-@login_required # Require login to use the assistant
 def fun_assistant_page():
     """Renders the dedicated Fun Assistant chat page."""
     chapters = Chapter.query.all() # Pass chapters if needed in base.html
     return render_template('partials/fun_assistant.html', chapters=chapters)
 
-@login_required
 def fun_assistant_chat():
     """Handles chat messages for the Fun Assistant."""
     openai.api_key = os.environ.get("OPENAI_API_KEY")
@@ -289,21 +287,34 @@ def fun_assistant_chat():
 
         # --- Gather Context for OpenAI ---
         # 1. User Info
-        user_interests = current_user.event_interests or "general fun"
-        user_location = current_user.location or "their current area"
+        user_interests = current_user.event_interests if current_user.is_authenticated else "general fun"
+        user_location = current_user.location if current_user.is_authenticated else "their current area"
 
-        # 2. Relevant Events (Example: Fetch upcoming events nearby)
-        #    This needs refinement based on actual location data and filtering
-        relevant_events = Event.query.filter(Event.start_date >= datetime.utcnow().date())\
-                                    .order_by(Event.start_date)\
-                                    .limit(10).all() # Basic example
+        # 2. Relevant Events - Fetch upcoming events
+        current_date = datetime.utcnow().date()
+        relevant_events = Event.query.filter(
+            Event.start_date >= current_date
+        ).order_by(Event.start_date).limit(15).all()
 
-        event_context = "\nSome upcoming events:\n"
+        # 3. Events with highest fun ratings
+        top_rated_events = Event.query.filter(
+            Event.start_date >= current_date,
+            Event.fun_meter >= 4
+        ).order_by(Event.fun_meter.desc()).limit(5).all()
+
+        # Build event context for the prompt
+        event_context = "\nUpcoming events:\n"
         if relevant_events:
             for event in relevant_events:
-                 event_context += f"- {event.title} ({event.start_date.strftime('%Y-%m-%d')}, Fun Score: {event.fun_meter}/5): {event.description[:100]}...\n"
+                 event_context += f"- {event.title} on {event.start_date.strftime('%Y-%m-%d')} at {event.location or 'Venue TBA'} (Fun Score: {event.fun_meter}/5): {event.description[:100]}...\n"
         else:
             event_context = "\nNo specific upcoming events found in the database right now.\n"
+
+        if top_rated_events:
+            event_context += "\nTop-rated events:\n"
+            for event in top_rated_events:
+                if event not in relevant_events:  # Avoid duplicates
+                    event_context += f"- {event.title} on {event.start_date.strftime('%Y-%m-%d')} at {event.location or 'Venue TBA'} (Fun Score: {event.fun_meter}/5): {event.description[:100]}...\n"
 
         # --- Construct Prompt ---
         prompt = f"""You are Fun Assistant, a friendly and helpful AI guide for the FunList.ai platform. Your goal is to help users discover fun local events based on their preferences.
@@ -316,7 +327,16 @@ def fun_assistant_chat():
 
         User Query: "{user_message}"
 
-        Based ONLY on the provided user profile and event context, answer the user's query. Recommend events from the list if they match the user's interests or location. If no listed events match, suggest general types of fun activities relevant to their interests. Mention the Fun Score when recommending specific events. Keep your responses concise, friendly, and focused on fun activities. Do not invent events not listed above.
+        Based ONLY on the provided user profile and event context, answer the user's query. Recommend events from the list if they match the user's interests or location. If no listed events match, suggest general types of fun activities relevant to their interests. Mention the Fun Score when recommending specific events. 
+
+        Your responses should be:
+        1. Concise (about 2-3 short paragraphs)
+        2. Friendly and enthusiastic 
+        3. Focused on actual events in the database
+        4. Personalized based on user interests if available
+        5. Include specific event details when recommending (date, fun score)
+
+        Do not invent events not listed above. If you don't have enough information, politely ask for clarification.
         """
 
         logger.debug(f"Sending prompt to OpenAI: {prompt}")
@@ -329,7 +349,8 @@ def fun_assistant_chat():
                     {"role": "system", "content": "You are Fun Assistant, helping users find fun local events."},
                     {"role": "user", "content": prompt}
                 ],
-                max_tokens=150 # Adjust as needed
+                max_tokens=300,  # Increased token limit for better responses
+                temperature=0.7  # Slightly more creative but still factual
             )
             assistant_reply = response.choices[0].message['content'].strip()
             logger.debug(f"Received reply from OpenAI: {assistant_reply}")
