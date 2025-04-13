@@ -74,7 +74,7 @@ localPort = 8082
 externalPort = 3000
 
 [workflows]
-runButton = "Run App"
+runButton = "Project"
 
 [[workflows.workflow]]
 name = "Run"
@@ -106,7 +106,7 @@ task = "packager.installForAll"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python main.py"
-waitForPort = 8080
+waitForPort = 5001
 
 [[workflows.workflow]]
 name = "Flask Server (80)"

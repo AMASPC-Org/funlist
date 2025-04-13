@@ -2553,27 +2553,7 @@ footer {
 }
 
 /* User dropdown styling */
-.user-icon-container {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    background-color: #333;
-    color: #fff;
-    border-radius: 50%;
-    transition: all 0.2s ease;
-}
-
-.user-icon-container i {
-    font-size: 16px;
-}
-
-.user-icon-container:hover {
-    background-color: #222;
-    transform: translateY(-2px);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-}
+/* User icon styles removed per requirements */
 
 /* Removed dark overlay to show the original image without shading */
 /* Hero section overlay removed for clearer image display */
