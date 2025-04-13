@@ -64,28 +64,28 @@ def index():
     return render_template("index.html", user=current_user, chapters=chapters, new_registration=new_registration)
 
 def map():
-    current_app.logger.debug("Starting map route")
+    logger.debug("Starting map route")
     try:
         # Implement filtering logic here later based on request args
         events = Event.query.all()
         chapters = Chapter.query.all() # Pass chapters if needed in base.html
         return render_template("map.html", events=events, chapters=chapters)
     except Exception as e:
-        current_app.logger.error(f"Error in map route: {str(e)}")
+        logger.error(f"Error in map route: {str(e)}")
         import traceback
         traceback.print_exc()
         return render_template("500.html", error=str(e)), 500
 
 def events():
-    current_app.logger.debug("Starting events route")
+    logger.debug("Starting events route")
     try:
         # Implement filtering logic here later based on request args
         events = Event.query.order_by(Event.start_date.desc()).all()
         chapters = Chapter.query.all() # Pass chapters if needed in base.html
         return render_template("events.html", events=events, chapters=chapters)
     except Exception as e:
-        current_app.logger.error(f"Error in events route: {str(e)}")
-        current_app.logger.exception("Exception details:")
+        logger.error(f"Error in events route: {str(e)}")
+        logger.exception("Exception details:")
         return render_template("500.html", error=str(e)), 500
 
 @login_required

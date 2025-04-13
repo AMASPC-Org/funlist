@@ -164,6 +164,24 @@ class Event(db.Model):
 
     def get_prohibited_category_ids(self):
         return [cat.id for cat in self.prohibited_advertisers]
+        
+    def to_dict(self):
+        """Convert Event object to dictionary for JSON serialization"""
+        return {
+            'id': self.id,
+            'title': self.title,
+            'description': self.description,
+            'start_date': self.start_date.strftime('%Y-%m-%d') if self.start_date else None,
+            'end_date': self.end_date.strftime('%Y-%m-%d') if self.end_date else None,
+            'location': self.location,
+            'city': self.city,
+            'state': self.state,
+            'latitude': self.latitude,
+            'longitude': self.longitude,
+            'category': self.category,
+            'fun_meter': self.fun_meter,
+            'status': self.status
+        }
 
 class ProhibitedAdvertiserCategory(db.Model):
     __tablename__ = 'prohibited_advertiser_categories'

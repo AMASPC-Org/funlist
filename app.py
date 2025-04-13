@@ -254,5 +254,11 @@ def create_app():
         logger.error(f"Failed to initialize routes: {str(e)}", exc_info=True)
         raise
 
+    # Add custom jinja filters
+    @app.template_filter('tojson')
+    def to_json(value):
+        import json
+        return json.dumps(value, default=lambda o: o.to_dict() if hasattr(o, 'to_dict') else str(o))
+        
     logger.info("Application creation completed successfully")
     return app
