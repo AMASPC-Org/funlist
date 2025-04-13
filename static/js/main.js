@@ -1,4 +1,3 @@
-
 // Debug login link behavior
 document.addEventListener('DOMContentLoaded', function() {
     // Add click event listener to all login links
@@ -20,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
         return new bootstrap.Dropdown(dropdownToggleEl)
     })
-    
+
     // Make sure user dropdown works
     const userDropdown = document.getElementById('userDropdown');
     if (userDropdown) {
@@ -84,6 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Initialize any carousels or sliders
         initializeCarousels();
+        initFunAssistant(); // Initialize Fun Assistant
     } catch (error) {
         console.error("Error initializing core features:", error);
     }
@@ -236,7 +236,7 @@ function setupFloatingButtons() {
             try {
                 const feedbackModal = new bootstrap.Modal(document.getElementById('feedbackModal'));
                 feedbackModal.show();
-                
+
                 // Ensure proper cleanup when the modal is hidden
                 document.getElementById('feedbackModal').addEventListener('hidden.bs.modal', function () {
                     document.body.classList.remove('modal-open');
@@ -253,7 +253,7 @@ function setupFloatingButtons() {
     } else {
         console.log("Feedback button not found in DOM");
     }
-    
+
     // Check if the Fun Assistant button exists (it's an anchor tag, not a button)
     const funAssistantBtn = document.getElementById('funAssistantButton');
     if (funAssistantBtn) {
@@ -540,6 +540,16 @@ function setupLocationServices() {
 document.addEventListener('DOMContentLoaded', function() {
     console.log("DOM loaded, calling setupLocationServices");
     setupLocationServices();
+
+    if (typeof bootstrap !== 'undefined') {
+        console.log('Bootstrap is loaded and available.');
+
+        // Initialize all tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    }
 });
 
 function setupFilters() {
@@ -767,6 +777,106 @@ async function loadFeaturedEvents(lat, lng) {
         const container = document.getElementById('featured-events');
         if (container) {
             container.innerHTML = '<p class="text-muted">Unable to load featured events</p>';
+        }
+    }
+}
+
+function initFunAssistant() {
+    const funAssistantButton = document.querySelector('.fun-assistant-button');
+    const funAssistantChat = document.querySelector('#funAssistantChat');
+
+    if (funAssistantButton) {
+        console.log('Found Fun Assistant button');
+
+        // Initialize the chat functionality
+        if (funAssistantChat) {
+            const chatInput = funAssistantChat.querySelector('#chatInput');
+            const sendButton = funAssistantChat.querySelector('#sendMessage');
+            const chatMessages = funAssistantChat.querySelector('#chatMessages');
+
+            if (chatInput && sendButton && chatMessages) {
+                // Handle send button click
+                sendButton.addEventListener('click', function() {
+                    sendMessage(chatInput.value);
+                });
+
+                // Handle enter key
+                chatInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        sendMessage(chatInput.value);
+                    }
+                });
+
+                // Send message function
+                function sendMessage(message) {
+                    if (!message.trim()) return;
+
+                    // Add user message to chat
+                    addMessageToChat('user', message);
+
+                    // Clear input
+                    chatInput.value = '';
+
+                    // Show typing indicator
+                    addTypingIndicator();
+
+                    // Send to API
+                    fetch('/api/fun-assistant/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ message: message })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Remove typing indicator
+                        removeTypingIndicator();
+
+                        if (data.limit_exceeded) {
+                            // Handle usage limit exceeded
+                            addMessageToChat('assistant', data.reply, true);
+                            // Maybe show a signup prompt
+                            chatInput.disabled = true;
+                            sendButton.disabled = true;
+                        } else if (data.error) {
+                            addMessageToChat('assistant', 'Sorry, I encountered an error. Please try again later.');
+                        } else {
+                            // Add response to chat
+                            addMessageToChat('assistant', data.reply);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        removeTypingIndicator();
+                        addMessageToChat('assistant', 'Sorry, I encountered an error connecting to the server. Please try again later.');
+                    });
+                }
+
+                // Helper functions
+                function addMessageToChat(sender, message, isAlert = false) {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `chat-message ${sender}-message ${isAlert ? 'alert-message' : ''}`;
+                    messageDiv.innerHTML = `<p>${message}</p>`;
+                    chatMessages.appendChild(messageDiv);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+
+                function addTypingIndicator() {
+                    const indicatorDiv = document.createElement('div');
+                    indicatorDiv.className = 'typing-indicator';
+                    indicatorDiv.innerHTML = '<span></span><span></span><span></span>';
+                    chatMessages.appendChild(indicatorDiv);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+
+                function removeTypingIndicator() {
+                    const indicator = chatMessages.querySelector('.typing-indicator');
+                    if (indicator) {
+                        chatMessages.removeChild(indicator);
+                    }
+                }
+            }
         }
     }
 }
