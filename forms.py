@@ -343,3 +343,17 @@ class ContactForm(FlaskForm):
         Length(min=10, max=2000, message="Message must be between 10 and 2000 characters")
     ])
     submit = SubmitField('Send Message')
+    
+class SearchForm(FlaskForm):
+    query = StringField('Search', validators=[
+        DataRequired(message="Please enter a search term"),
+        Length(min=2, message="Search term must be at least 2 characters")
+    ])
+    category = SelectField('Category', choices=[
+        ('all', 'All Categories'),
+        ('events', 'Events'),
+        ('venues', 'Venues'),
+        ('organizers', 'Organizers'),
+        ('help', 'Help Articles')
+    ], default='all')
+    submit = SubmitField('Search')
