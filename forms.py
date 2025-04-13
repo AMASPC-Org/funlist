@@ -26,45 +26,16 @@ class SignupForm(FlaskForm):
         DataRequired(message="Please confirm your password"),
         EqualTo('password', message='Passwords do not match. Please try again.')
     ])
-    is_event_creator = BooleanField('I want to create events')
-    is_organizer = BooleanField('I represent an organization or venue')
-    is_vendor = BooleanField('I am a vendor')
-    vendor_type = SelectField('Vendor Type', choices=[
-        ('', 'Select vendor type...'),
-        ('food', 'Food Vendor'),
-        ('alcohol', 'Alcohol Vendor'),
-        ('sound', 'Sound and Audio'),
-        ('print', 'Printing Services'),
-        ('entertainment', 'Entertainer (Magician, Clown, etc.)'),
-        ('face_paint', 'Face Painter'),
-        ('music', 'Live Music Performer'),
-        ('photography', 'Photography/Videography'),
-        ('decor', 'Decoration Services'),
-        ('other', 'Other')
-    ], validators=[Optional()])
-    event_focus = SelectMultipleField(
-        "Tell Us About Yourself", 
+    primary_role = RadioField(
+        'What is your primary reason for joining FunList.ai?', 
+        validators=[DataRequired()],
         choices=[
-            ('single', 'Single (18+)'),
-            ('senior', 'Senior'),
-            ('professional', 'Professional'),
-            ('parent', 'Parent'),
-            ('adult', 'Adult'),
-            ('family', 'Family'),
-            ('21+', '21+')
-        ],
-        validators=[Optional()],
-        description="Select all that apply to help us recommend events for you"
-    )
-    preferred_locations = StringField(
-        "Preferred Locations",
-        description="Enter up to 5 cities, separated by commas",
-        validators=[Optional(), Length(max=255)]
-    )
-    event_interests = StringField(
-        "Event Interests",
-        description="Enter interests separated by commas (e.g., sports,music,outdoors)",
-        validators=[Optional(), Length(max=255)]
+            ('attendee', 'Find events to attend'),
+            ('organizer', 'Create, list, or promote events'),
+            ('venue', 'Represent an organization or venue that hosts events'),
+            ('vendor', 'Offer services for events (e.g., catering, AV, entertainment)'),
+            ('sponsor', 'Explore advertising or sponsorship opportunities')
+        ]
     )
     terms_accepted = BooleanField('I accept the <a href="/terms" target="_blank">Terms and Conditions</a> and <a href="/privacy" target="_blank">Privacy Policy</a>', validators=[
         DataRequired(message="You must accept the Terms and Conditions and Privacy Policy to continue")
@@ -88,6 +59,7 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Sign In')
 
 class ProfileForm(FlaskForm):
+    # Personal Information
     first_name = StringField('First Name', validators=[Optional(), Length(max=50)])
     last_name = StringField('Last Name', validators=[Optional(), Length(max=50)])
     title = StringField('Your Title', validators=[Optional(), Length(max=100)])
@@ -133,7 +105,26 @@ class ProfileForm(FlaskForm):
     business_zip = StringField('ZIP Code', validators=[Optional(), Length(max=20)])
     business_phone = StringField('Business Phone', validators=[Optional(), Length(max=20)])
     business_email = StringField('Business Email', validators=[Optional(), Email(), Length(max=120)])
-
+    
+    # Vendor Information
+    vendor_type = SelectField('Vendor Type', choices=[
+        ('food', 'Food Vendor'),
+        ('alcohol', 'Alcohol Vendor'),
+        ('sound', 'Sound and Audio'),
+        ('print', 'Printing Services'),
+        ('entertainment', 'Entertainer (Magician, Clown, etc.)'),
+        ('face_paint', 'Face Painter'),
+        ('music', 'Live Music Performer'),
+        ('photography', 'Photography/Videography'),
+        ('decor', 'Decoration Services'),
+        ('other', 'Other')
+    ], validators=[Optional()])
+    vendor_description = TextAreaField('About Your Vendor Services', validators=[Optional(), Length(max=500)])
+    
+    # Sponsor Information
+    sponsorship_interests = TextAreaField('Sponsorship Interests', validators=[Optional(), Length(max=500)])
+    sponsorship_budget = StringField('Sponsorship Budget Range', validators=[Optional(), Length(max=100)])
+    
     submit = SubmitField('Update Profile')
 
     def validate_username(self, username):

@@ -18,9 +18,11 @@ class User(db.Model, UserMixin):
     title = Column(String(100), nullable=True)  # Moved from organizer_title
     account_active = Column(Boolean, default=True)
     is_admin = Column(Boolean, default=False)
+    is_subscriber = Column(Boolean, default=True)  # Added per requirements
     _is_event_creator = Column('is_event_creator', Boolean, default=False)
     is_organizer = Column(Boolean, default=False)
     is_vendor = Column(Boolean, default=False)
+    is_sponsor = Column(Boolean, default=False)  # Added per requirements
     vendor_type = Column(String(50), nullable=True)
     vendor_description = Column(Text, nullable=True)
     vendor_profile_updated_at = Column(DateTime, nullable=True)
@@ -87,6 +89,13 @@ class User(db.Model, UserMixin):
         for key, value in data.items():
             if hasattr(self, key):
                 setattr(self, key, value)
+                
+        # If user has multiple roles, track when profile data was updated
+        if self.is_organizer and 'company_name' in data:
+            self.organizer_profile_updated_at = datetime.utcnow()
+            
+        if self.is_vendor and ('vendor_type' in data or 'vendor_description' in data):
+            self.vendor_profile_updated_at = datetime.utcnow()
 
 class Event(db.Model):
     __tablename__ = 'events'

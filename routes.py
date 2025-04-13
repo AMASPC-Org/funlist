@@ -147,10 +147,9 @@ def init_routes(app):
             return redirect(url_for("index"))
         form = SignupForm()
 
-        # Pre-select organizer option if specified in URL
+        # Pre-select organizer role if specified in URL
         if request.args.get('as') == 'organizer':
-            form.is_organizer.data = True
-            form.is_event_creator.data = True
+            form.primary_role.data = 'organizer'
 
         if form.validate_on_submit():
             try:
@@ -165,48 +164,23 @@ def init_routes(app):
                 user.email = form.email.data
                 user.set_password(form.password.data)
                 user.account_active = True
-
-                # Process user intentions (can select multiple)
-                try:
-                    user_intentions = request.form.getlist('user_intention[]')
-                    if not user_intentions:
-                        user_intentions = ['find_events']  # Default
-
-                    if 'create_events' in user_intentions:
-                        user.is_event_creator = True
-                    if 'represent_organization' in user_intentions:
-                        user.is_organizer = True
-                        user.is_event_creator = True  # Organizers can also create events
-                except Exception as e:
-                    logger.warning(f"Error processing user intentions: {str(e)}")
-                    # Fallback to form fields if available
-                    if hasattr(form, 'is_event_creator') and form.is_event_creator.data:
-                        user.is_event_creator = True
-                    if hasattr(form, 'is_organizer') and form.is_organizer.data:
-                        user.is_organizer = True
-                        user.is_event_creator = True  # Organizers can also create events
-                    if hasattr(form, 'is_vendor') and form.is_vendor.data:
-                        user.is_vendor = True
-                        if hasattr(form, 'vendor_type') and form.vendor_type.data:
-                            user.vendor_type = form.vendor_type.data
-
-                # Store user preferences from registration
-                profile_data = {}
-                if hasattr(form, 'event_focus') and request.form.getlist('event_focus'):
-                    event_focus = request.form.getlist('event_focus')
-                    preferences = user.get_preferences()
-                    preferences['event_focus'] = event_focus
-                    user.set_preferences(preferences)
-
-                if hasattr(form, 'preferred_locations') and form.preferred_locations.data:
-                    profile_data['location'] = form.preferred_locations.data
-
-                if hasattr(form, 'event_interests') and form.event_interests.data:
-                    profile_data['interests'] = form.event_interests.data
-
-                if profile_data:
-                    for key, value in profile_data.items():
-                        setattr(user, key, value)
+                user.is_subscriber = True  # Always True for new signups
+                
+                # Store the primary_role selection for profile setup
+                session['primary_role'] = form.primary_role.data
+                
+                # Map the primary_role to appropriate user booleans
+                if form.primary_role.data == 'organizer':
+                    user.is_organizer = True
+                    user.is_event_creator = True  # Organizers automatically get event creator privileges
+                elif form.primary_role.data == 'venue':
+                    user.is_organizer = True  # Venue representatives need organizer capabilities
+                    user.is_event_creator = True  # Can create events at their venue
+                elif form.primary_role.data == 'vendor':
+                    user.is_vendor = True
+                elif form.primary_role.data == 'sponsor':
+                    user.is_sponsor = True
+                # For 'attendee', no additional flags needed beyond is_subscriber
 
 
                 db.session.add(user)
@@ -325,6 +299,29 @@ def init_routes(app):
     def edit_profile():
         form = ProfileForm()
         form.user_id = current_user.id
+        
+        # Handle role activation
+        if request.method == "POST" and request.form.get('activate_role'):
+            role_to_activate = request.form.get('activate_role')
+            
+            # Set appropriate flags based on requested role
+            if role_to_activate == 'event_creator':
+                current_user.is_event_creator = True
+                flash('Your Event Creator features are now active! You can now create and submit events.', 'success')
+            elif role_to_activate == 'organizer':
+                current_user.is_organizer = True
+                current_user.is_event_creator = True  # Organizers can also create events
+                flash('Your Organizer features are now active! Please complete your organization profile below.', 'success')
+            elif role_to_activate == 'vendor':
+                current_user.is_vendor = True
+                flash('Your Vendor features are now active! Please complete your vendor profile below.', 'success')
+            elif role_to_activate == 'sponsor':
+                current_user.is_sponsor = True
+                flash('Your Sponsor features are now active! Please complete your sponsorship profile below.', 'success')
+            
+            db.session.commit()
+            # Re-render the edit_profile.html template with the same form instance - don't redirect yet
+            return render_template("edit_profile.html", form=form)
 
         if request.method == "GET":
             # Personal Information
@@ -364,6 +361,20 @@ def init_routes(app):
                     form.business_phone.data = current_user.business_phone
                 if hasattr(current_user, 'business_email'):
                     form.business_email.data = current_user.business_email
+            
+            # Vendor Information (if user is a vendor)
+            if current_user.is_vendor:
+                form.vendor_type.data = current_user.vendor_type
+                form.vendor_description.data = current_user.vendor_description
+            
+            # Sponsor Information (if user is a sponsor)
+            if current_user.is_sponsor:
+                preferences = current_user.get_preferences()
+                if preferences:
+                    if 'sponsorship_interests' in preferences:
+                        form.sponsorship_interests.data = preferences.get('sponsorship_interests')
+                    if 'sponsorship_budget' in preferences:
+                        form.sponsorship_budget.data = preferences.get('sponsorship_budget')
                 
         if form.validate_on_submit():
             try:
@@ -412,6 +423,21 @@ def init_routes(app):
                         organizer_data["business_email"] = form.business_email.data
                     
                     current_user.update_organizer_profile(organizer_data)
+                
+                # If user is a vendor, update vendor information
+                if current_user.is_vendor:
+                    # Directly update vendor fields
+                    current_user.vendor_type = form.vendor_type.data
+                    current_user.vendor_description = form.vendor_description.data
+                    current_user.vendor_profile_updated_at = datetime.utcnow()
+                
+                # If user is a sponsor, update sponsor information
+                if current_user.is_sponsor:
+                    # Store sponsor information in user_preferences
+                    preferences = current_user.get_preferences()
+                    preferences['sponsorship_interests'] = form.sponsorship_interests.data
+                    preferences['sponsorship_budget'] = form.sponsorship_budget.data
+                    current_user.set_preferences(preferences)
                 
                 db.session.commit()
                 flash("Profile updated successfully!", "success")

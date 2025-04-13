@@ -2,6 +2,30 @@
 
 {% block title %}Sign Up{% endblock %}
 
+{% block styles %}
+{{ super() }}
+<style>
+    .role-option {
+        transition: all 0.2s ease-in-out;
+        cursor: pointer;
+    }
+    .role-option:hover {
+        border-color: #007bff !important;
+        background-color: rgba(0, 123, 255, 0.05);
+    }
+    .role-option input[type="radio"] {
+        cursor: pointer;
+    }
+    .role-option input[type="radio"]:checked + div label {
+        color: #0056b3;
+    }
+    .role-option.selected {
+        border-color: #007bff !important;
+        background-color: rgba(0, 123, 255, 0.1);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row justify-content-center auth-page-content">
     <div class="col-md-6">
@@ -49,75 +73,44 @@
                         {% endfor %}
                     </div>
 
-                    <h4 class="mt-4 mb-3">Your Preferences</h4>
-
-                    <div class="mb-3">
-                        {{ form.event_focus.label(class="form-label") }}
-                        <div class="form-text mb-2">{{ form.event_focus.description }}</div>
-                        <div class="row">
-                            {% for value, label in form.event_focus.choices %}
-                            <div class="col-md-6 mb-2">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="event_focus" id="event_focus_{{ loop.index }}" value="{{ value }}">
-                                    <label class="form-check-label" for="event_focus_{{ loop.index }}">{{ label }}</label>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold mb-3">{{ form.primary_role.label }}</label>
+                        <div class="role-selection-container">
+                            {% for subfield in form.primary_role %}
+                            <div class="role-option mb-2 p-3 border rounded{% if subfield.checked %} border-primary bg-light{% endif %}">
+                                <div class="d-flex align-items-start">
+                                    {{ subfield(class="form-check-input me-2 mt-1") }}
+                                    <div>
+                                        <label class="form-check-label fw-bold" for="{{ subfield.id }}">
+                                            {{ subfield.label.text }}
+                                        </label>
+                                        <p class="text-muted small mb-0">
+                                            {% if subfield.data == 'attendee' %}
+                                            Find and browse events in your area that match your interests
+                                            {% elif subfield.data == 'organizer' %}
+                                            Create, manage, and promote events for your organization
+                                            {% elif subfield.data == 'venue' %}
+                                            Manage your venue's calendar and promote hosted events 
+                                            {% elif subfield.data == 'vendor' %}
+                                            Offer your services to event organizers and venues
+                                            {% elif subfield.data == 'sponsor' %}
+                                            Find sponsorship opportunities for events and venues
+                                            {% endif %}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                             {% endfor %}
                         </div>
-                        {% for error in form.event_focus.errors %}
-                        <div class="text-danger small">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-
-                    <div class="mb-3">
-                        {{ form.preferred_locations.label(class="form-label") }}
-                        {{ form.preferred_locations(class="form-control", placeholder="e.g., Olympia,Lacey,Tumwater") }}
-                        {% if form.preferred_locations.description %}
-                        <div class="form-text">{{ form.preferred_locations.description }}</div>
+                        {% if form.primary_role.errors %}
+                            <div class="invalid-feedback d-block mt-2">
+                                {% for error in form.primary_role.errors %}
+                                    <i class="fas fa-exclamation-circle"></i> {{ error }}
+                                {% endfor %}
+                            </div>
                         {% endif %}
-                        {% for error in form.preferred_locations.errors %}
-                        <div class="text-danger small">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-
-                    <div class="mb-3">
-                        {{ form.event_interests.label(class="form-label") }}
-                        {{ form.event_interests(class="form-control", placeholder="e.g., sports,music,outdoors") }}
-                        {% if form.event_interests.description %}
-                        <div class="form-text">{{ form.event_interests.description }}</div>
-                        {% endif %}
-                        {% for error in form.event_interests.errors %}
-                        <div class="text-danger small">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">I'm here to:</label>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="user_intention[]" id="find_events" value="find_events" checked>
-                            <label class="form-check-label" for="find_events">
-                                Find events to attend
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            {{ form.is_event_creator(class="form-check-input") }}
-                            {{ form.is_event_creator.label(class="form-check-label") }}
-                        </div>
-
-                        <div class="form-check mb-2">
-                            {{ form.is_vendor(class="form-check-input", id="is_vendor_checkbox") }}
-                            {{ form.is_vendor.label(class="form-check-label") }}
-                        </div>
-                        <div id="vendor_type_container" class="mb-3" style="display: none;">
-                            {{ form.vendor_type.label(class="form-label") }}
-                            {{ form.vendor_type(class="form-select") }}
-                        </div>
-
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="user_intention[]" id="represent_organization" value="represent_organization">
-                            <label class="form-check-label" for="represent_organization">
-                                I represent an organization or venue
-                            </label>
+                        <div class="form-text mt-2">
+                            <i class="fas fa-info-circle"></i> You can add additional capabilities later through your profile settings.
                         </div>
                     </div>
 
@@ -133,11 +126,7 @@
                         {% endif %}
                     </div>
 
-                    <script>
-                        document.getElementById('is_vendor_checkbox').addEventListener('change', function() {
-                            document.getElementById('vendor_type_container').style.display = this.checked ? 'block' : 'none';
-                        });
-                    </script>
+
 
                     <div class="d-grid">
                         {{ form.submit(class="btn btn-primary") }}
@@ -150,4 +139,30 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Make entire role option card clickable
+        const roleOptions = document.querySelectorAll('.role-option');
+        
+        roleOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                const radio = this.querySelector('input[type="radio"]');
+                radio.checked = true;
+                
+                // Update visual selection
+                roleOptions.forEach(opt => {
+                    opt.classList.remove('selected', 'border-primary', 'bg-light');
+                });
+                this.classList.add('selected', 'border-primary', 'bg-light');
+            });
+        });
+        
+        // Initially highlight selected option if any
+        const selectedRadio = document.querySelector('.role-option input[type="radio"]:checked');
+        if (selectedRadio) {
+            selectedRadio.closest('.role-option').classList.add('selected', 'border-primary', 'bg-light');
+        }
+    });
+</script>
 {% endblock %}

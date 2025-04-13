@@ -1,0 +1,27 @@
+Subject: Verify Admin Privileges, Profile Page Specificity, and Database Fields
+Request:
+Please review the codebase to verify several key aspects related to user roles, profile display, and database consistency based on recent changes and requirements.
+Tasks:
+Verify Admin Privileges (ryan@funlist.ai):
+Examine Code: Review models.py (specifically the User model, including properties like is_admin or is_super_admin) and routes.py (especially any decorators like @admin_required or conditional checks like if current_user.email == 'ryan@funlist.ai').
+Confirm: Does the current code correctly grant full administrative privileges (access to all dashboards, admin functions like user/event management) specifically to the user with the email ryan@funlist.ai?
+Hardcoding Check: Confirm if the admin email (ryan@funlist.ai) is still hardcoded anywhere other than a potential check for a superuser property (like is_super_admin). Ideally, admin status should rely on a role (role.name == 'admin') or a boolean flag (is_admin), not just a hardcoded email comparison in multiple places. (Self-correction: Previous RAA briefing flagged hardcoded email as an issue to be removed). Ensure this check is consolidated or uses a role/flag.
+Verify Profile Page Specificity (edit_profile.html):
+Review Template: Examine templates/edit_profile.html (or the correct profile editing template).
+Check Conditionals: Confirm that Jinja conditional blocks ({% if current_user.is_organizer %}, {% if current_user.is_vendor %}, etc.) are correctly implemented to show/hide specific sections (Organizer Information, Venue Management, Vendor Details) based on the boolean flags set on the current_user object (which are determined during signup based on the primary_role selection).
+Confirm: Does the template accurately reflect the intention to display different sets of fields based on the user's determined role/flags?
+Verify Database Fields vs. (Previous) Signup Form:
+Review models.py (User model): Check the fields defined in the User model.
+Review forms.py (SignupForm - As it was BEFORE the last overhaul): Examine the fields that were part of the SignupForm before we removed the detailed preferences (i.e., event_focus, preferred_locations, event_interests).
+Confirm Mapping: Are there corresponding fields in the User model to store the data that used to be collected by these now-removed signup form fields? (Note: Based on previous models.py, fields like audience_type, preferred_locations, and event_interests exist, which likely map to the old form fields. Please confirm this mapping explicitly).
+Report Findings & Necessary Code:
+Provide a clear summary confirming whether admin privileges are correctly handled for ryan@funlist.ai and if the hardcoding issue persists.
+Confirm whether the edit_profile.html template uses conditional logic as intended.
+Confirm that the necessary fields exist in the User model to store the preference data that was previously collected during signup.
+If any discrepancies or errors are found in Tasks 1, 2, or 3, provide the complete, corrected code for the relevant files (models.py, routes.py, templates/edit_profile.html, etc.).
+Context:
+We need to ensure the designated admin user has full privileges.
+We need to verify that the profile editing page is correctly set up to display information relevant to the specific user type (based on flags set during the new signup flow).
+We need to confirm that the database model can accommodate the user preference data that was collected in the previous version of the signup form (as this data will now be collected post-signup).
+Please perform this verification and provide the necessary code corrections if issues are found.
+39.3s

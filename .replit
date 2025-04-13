@@ -38,7 +38,7 @@ localPort = 8082
 externalPort = 3000
 
 [workflows]
-runButton = "Flask Server (5000)"
+runButton = "Project"
 
 [[workflows.workflow]]
 name = "Run"

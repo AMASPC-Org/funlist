@@ -1,0 +1,52 @@
+Subject: Implement Multi-Role Capabilities and Refine Profile Management
+Request:
+We need to update the user system to allow users to enable multiple roles/capabilities (like Event Creator, Organizer, Vendor) after their initial signup. The signup form will capture the primary role, but the "My Profile" page will be the central place to activate and manage these capabilities and fill in associated details.
+Tasks:
+Verify models.py (User Model):
+Confirm the User model has the necessary boolean fields: is_subscriber (should default to True), is_event_creator, is_organizer, is_vendor, is_sponsor. If any are missing, add them. Provide the complete models.py if changes are made. (Self-correction: Based on previous models.py, these likely exist, but verification is needed).
+Verify Signup Route Logic (routes.py - signup function):
+Ensure the signup logic correctly sets the initial boolean flags based only on the primary_role radio button selected during signup (as defined in the previous prompt). For example:
+If primary_role == 'organizer', set user.is_organizer = True and user.is_event_creator = True.
+If primary_role == 'vendor', set user.is_vendor = True.
+All other roles initially just have user.is_subscriber = True (and other flags default to False).
+Provide the updated signup function code within routes.py.
+Modify Profile Form (forms.py):
+Ensure the ProfileForm contains all fields necessary for all roles (personal, social, organizer business info, vendor type/description), as defined previously.
+Crucially: Ensure the validators for organizer/vendor-specific fields use Optional(). These fields are not required unless the user activates that specific capability.
+Provide the complete ProfileForm class code from forms.py.
+Modify Profile Editing Template (templates/edit_profile.html - Verify Filename):
+Add "My Capabilities" Section: Create a new prominent section (e.g., using a <div class="card mb-4">) titled "My Capabilities" or "Activate Features".
+Add Activation Buttons/Toggles: Inside this section, for each capability the user doesn't currently have enabled, add a button or switch. Examples:
+{% if not current_user.is_organizer %}<button type="submit" name="activate_role" value="organizer" class="btn btn-outline-success mb-2">Become an Event Organizer</button>{% endif %}
+{% if not current_user.is_vendor %}<button type="submit" name="activate_role" value="vendor" class="btn btn-outline-success mb-2">Register as a Vendor</button>{% endif %}
+(You might need similar buttons for Event Creator if it's distinct from Organizer, and potentially Sponsor).
+Conditionally Display Detail Sections: Keep the existing conditional logic ({% if current_user.is_organizer %}, {% if current_user.is_vendor %}) around the detailed profile sections (Organizer Information, Vendor Information, Venue Management Placeholder). These sections should only be visible if the corresponding flag is True.
+Structure: Ensure the page remains clearly structured with sections for Personal Info, Social Links, Account Settings, and the conditional Organizer/Vendor/Venue sections.
+Modify Profile Editing Route Logic (routes.py - edit_profile function - POST handler):
+Handle Role Activation: Check if request.form.get('activate_role') exists. If it does:
+Get the role_to_activate (e.g., 'organizer', 'vendor').
+Set the corresponding boolean flag on current_user to True (e.g., current_user.is_organizer = True).
+Commit the change: db.session.commit().
+Flash a message: f"Your {role_to_activate.capitalize()} features are now active! Please complete the relevant profile section below."
+Re-render the edit_profile.html template with the same form instance so the user sees the newly revealed section. Do not redirect yet.
+Handle Profile Data Submission: If activate_role is not in the form data, proceed with the normal form validation (form.validate_on_submit()).
+Save Data: Update the logic to save all fields present in the ProfileForm (personal, social, and if the user has the role enabled, the organizer/vendor details) to the current_user object.
+Commit changes and redirect to the profile view page (profile) upon successful save, as before.
+Provide Complete Code: Return the complete, fully edited code for the following files:
+models.py (if changes were needed)
+forms.py
+routes.py
+templates/edit_profile.html (or specific filename)
+Context:
+Users sign up with a primary role but need the flexibility to add other capabilities later.
+The "My Profile" page is the central hub for managing these capabilities and associated details.
+Access control for features (like submitting events) should rely on checking the boolean capability flags (is_event_creator, etc.).
+Please implement these changes systematically, ensuring the database models, forms, templates, and route logic are all consistent a section where users can explicitly opt-in to roles like "Event Creator," "Organizer/Venue Rep," and "Vendor."
+Database: Your existing boolean flags (is_event_creator, is_organizer, is_vendor) on the User model are suitable for storing these enabled states.
+Forms: The ProfileForm needs checkboxes corresponding to these boolean flags.
+Templates:
+edit_profile.html: Needs the new checkboxes section. The conditional display of other sections (Organizer Info, Venue Management) should remain based on whether the actual flags (current_user.is_organizer, etc.) are True.
+Templates with restricted actions (like the "Add Event" button in navbar.html or other places): Instead of hiding/disabling these based on role (which can be complex to manage everywhere), we'll keep them visible. The permission check will happen in the corresponding route when the user tries to access the action.
+Routes:
+edit_profile (POST): Needs logic to update the boolean flags based on the submitted checkboxes.
+Protected Routes (/submit-event, /venues/add, etc.): Must perform checks like if not current_user.is_event_creator: flash(...); return redirect(url_for('edit_profile')).
