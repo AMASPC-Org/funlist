@@ -243,3 +243,58 @@ class Venue(db.Model):
 
     def __repr__(self):
         return f"<Venue {self.name}>"
+
+class Chapter(db.Model):
+    __tablename__ = 'chapters'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), nullable=False)
+    slug = Column(String(100), nullable=False, unique=True)
+    description = Column(Text, nullable=True)
+    city = Column(String(100), nullable=True)
+    state = Column(String(100), nullable=True)
+    country = Column(String(100), default='United States')
+    logo_url = Column(String(255), nullable=True)
+    banner_url = Column(String(255), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    is_active = Column(Boolean, default=True)
+    leader_user_id = Column(Integer, ForeignKey('users.id'), nullable=True)
+    
+    leader = relationship("User", foreign_keys=[leader_user_id], backref="led_chapters")
+    
+    def __repr__(self):
+        return f"<Chapter {self.name}>"
+
+
+class HelpArticle(db.Model):
+    __tablename__ = 'help_articles'
+
+    id = Column(Integer, primary_key=True)
+    title = Column(String(255), nullable=False)
+    slug = Column(String(255), nullable=False, unique=True)
+    content = Column(Text, nullable=False)
+    category = Column(String(100), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    is_published = Column(Boolean, default=True)
+    view_count = Column(Integer, default=0)
+    
+    def __repr__(self):
+        return f"<HelpArticle {self.title}>"
+
+
+class CharterMember(db.Model):
+    __tablename__ = 'charter_members'
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    chapter_id = Column(Integer, ForeignKey('chapters.id'), nullable=False)
+    role = Column(String(50), default='member')
+    joined_at = Column(DateTime, default=datetime.utcnow)
+    is_active = Column(Boolean, default=True)
+    
+    user = relationship("User", backref="charter_memberships")
+    chapter = relationship("Chapter", backref="charter_members")
+    
+    def __repr__(self):
+        return f"<CharterMember {self.user.email} in {self.chapter.name}>"
