@@ -69,7 +69,11 @@ def map():
         # Implement filtering logic here later based on request args
         events = Event.query.all()
         chapters = Chapter.query.all() # Pass chapters if needed in base.html
-        return render_template("map.html", events=events, chapters=chapters)
+        
+        # Convert events to dictionary format for JavaScript
+        events_for_map = [event.to_dict() for event in events]
+        
+        return render_template("map.html", events=events, events_json=events_for_map, chapters=chapters)
     except Exception as e:
         logger.error(f"Error in map route: {str(e)}")
         import traceback

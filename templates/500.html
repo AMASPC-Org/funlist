@@ -1,23 +1,33 @@
+
 {% extends "base.html" %}
 
-{% block title %}Server Error | FunList.ai{% endblock %}
+{% block title %}Internal Server Error | FunList.ai{% endblock %}
 
 {% block content %}
-<div class="container text-center py-5">
+<div class="container py-5 text-center">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <h1 class="display-1 text-danger">500</h1>
-            <h2 class="mb-4">Server Error</h2>
-            <p class="lead mb-4">We're sorry, but something went wrong on our end.</p>
-            <p>Our team has been notified and we're working to fix the issue.</p>
-
-            {% if error and config.DEBUG %}
-            <div class="alert alert-danger mt-4">
-                <strong>Error:</strong> {{ error }}
+            <h1 class="display-4 text-danger mb-4">
+                <i class="fas fa-exclamation-triangle"></i> 500
+            </h1>
+            <h2 class="mb-4">Internal Server Error</h2>
+            <p class="lead mb-4">We're sorry, but something went wrong on our server.</p>
+            <p class="mb-5">Our technical team has been notified and we're working to fix the issue.</p>
+            
+            {% if error %}
+            <div class="alert alert-danger">
+                <strong>Error details:</strong> {{ error }}
             </div>
             {% endif %}
-
-            <a href="{{ url_for('index') }}" class="btn btn-primary mt-4">Go to Homepage</a>
+            
+            <div class="mt-5">
+                <a href="{{ url_for('index') }}" class="btn btn-primary me-3">
+                    <i class="fas fa-home"></i> Return to Home
+                </a>
+                <a href="{{ url_for('contact') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-envelope"></i> Contact Support
+                </a>
+            </div>
         </div>
     </div>
 </div>

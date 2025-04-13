@@ -185,6 +185,9 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- Add a hidden div to store event data for the map -->
+<div id="map-data" style="display:none;" data-events="{{ events_json|tojson }}"></div>
+
 <!-- Load map.js script -->
 <script src="{{ url_for('static', filename='js/map.js') }}?v={{ range(1, 10000) | random }}"></script>
 

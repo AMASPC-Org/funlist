@@ -27,7 +27,14 @@ const FunlistMap = {
                     console.error("Error parsing events data:", e);
                     this.events = [];
                 }
+            } else {
+                console.warn("No events data found in map-data element");
+                // Fallback: try to get events from the event cards on the page
+                this.events = this.extractEventsFromDOM();
             }
+
+            // Debug log
+            console.log("Events for map:", this.events);
 
             // Initialize the map
             this.initializeMap(containerId);
@@ -84,6 +91,33 @@ const FunlistMap = {
                 this.markers[event.id] = marker;
             }
         });
+    },
+
+    // Extracts event data from event cards in the DOM.  This is a placeholder and
+    // needs to be adapted to the actual structure of your event cards.
+    extractEventsFromDOM: function() {
+        const eventCards = document.querySelectorAll('.event-card');
+        const events = [];
+        eventCards.forEach(card => {
+            const title = card.querySelector('.event-title').textContent;
+            const description = card.querySelector('.event-description').textContent;
+            const startDate = card.querySelector('.event-date').textContent;
+            const funMeter = parseInt(card.querySelector('.event-fun-meter').textContent, 10);
+            const latitude = parseFloat(card.dataset.latitude);
+            const longitude = parseFloat(card.dataset.longitude);
+            const eventId = card.dataset.id;
+
+            events.push({
+                id: eventId,
+                title: title,
+                description: description,
+                start_date: startDate,
+                fun_meter: funMeter,
+                latitude: latitude,
+                longitude: longitude
+            });
+        });
+        return events;
     }
 };
 

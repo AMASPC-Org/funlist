@@ -1,0 +1,52 @@
+Subject: Replace Navbar User Dropdown Trigger with Orange Feather Icon
+Request:
+The user icon in the main navigation bar for logged-in users is currently displaying incorrectly as a black circle. We need to replace it with a standard Feather user icon, styled with the site's primary orange color (var(--primary-color)), while keeping the existing dropdown menu functionality and links intact.
+Tasks:
+Locate Navbar Template: Open templates/partials/navbar.html.
+Identify Dropdown Trigger: Find the <a> tag with id="userDropdown" inside the {% if current_user.is_authenticated %} block.
+Modify Dropdown Trigger:
+Remove Current Icon Implementation: Delete the existing content inside the <a> tag (specifically the <span class="user-icon-container">...</span> or any other <i> tags or <div> elements used for the icon).
+Insert Orange Feather Icon: Directly inside the <a> tag, insert the Feather user icon using the data-feather attribute. Apply inline style to set the color to the primary orange variable.
+Target HTML Structure:
+<!-- File: templates/partials/navbar.html -->
+<!-- Inside the div with class="d-flex align-items-center order-lg-last" -->
+<div class="dropdown">
+    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User Menu">
+        <i data-feather="user" style="color: var(--primary-color);"></i> <!-- Orange Feather Icon -->
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end">
+        <!-- Keep ALL existing dropdown items (li elements) exactly as they are -->
+        {% if current_user.is_event_creator or current_user.is_organizer or current_user.is_vendor %}
+        <li>
+          <span class="dropdown-item-text text-muted small">
+            {% if current_user.is_event_creator %}Event Creator{% endif %}
+            {% if current_user.is_organizer %}{% if current_user.is_event_creator %} | {% endif %}Organizer{% endif %}
+            {% if current_user.is_vendor %}{% if current_user.is_event_creator or current_user.is_organizer %} | {% endif %}Vendor{% endif %}
+          </span>
+        </li>
+        <li><hr class="dropdown-divider"></li>
+        {% endif %}
+        <li><a class="dropdown-item" href="{{ url_for('edit_profile') }}">My Profile</a></li>
+        <li><a class="dropdown-item" href="{{ url_for('events') }}?filter=my_events">My Events</a></li>
+        <li><a class="dropdown-item" href="{{ url_for('events') }}?filter=saved">Saved Events</a></li>
+        <li><a class="dropdown-item" id="add-event-link" href="{{ url_for('submit_event') }}">Add Event</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+        {% if current_user.email == 'ryan@funlist.ai' %}
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item" href="{{ url_for('admin_dashboard') }}">Admin Dashboard</a></li>
+          <!-- Analytics route temporarily disabled -->
+        {% endif %}
+     </ul>
+</div>
+```4.  **Remove Conflicting CSS:** Open `static/css/custom.css`. **Delete** any custom CSS rules that were previously added specifically to style the user icon container or the icon itself within the navbar (e.g., rules targeting `.user-avatar`, `.user-icon-container`, `.navbar .dropdown-toggle i`, `.avatar-icon`, etc.). We want to rely only on the inline style for color and Feather Icons' default rendering.
+Use code with caution.
+Html
+Ensure Feather Initialization: Double-check base.html to confirm feather.replace(); is called after the Feather Icons script is loaded (it should be near the end of the <body>).
+Provide Complete Code: Return the complete, fully edited code for templates/partials/navbar.html and static/css/custom.css.
+Context:
+Previous attempts to display a Font Awesome user icon failed.
+We are switching to Feather Icons, which are already in use on the site.
+The desired icon should be the standard 'user' icon, colored orange (var(--primary-color)).
+The existing dropdown menu links must remain unchanged.
+Please implement this using the Feather Icon library.
