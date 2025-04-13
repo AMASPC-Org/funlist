@@ -1,6 +1,6 @@
 import os
 import logging
-from flask import render_template, flash, redirect, url_for, request, session, jsonify
+from flask import render_template, flash, redirect, url_for, request, session, jsonify, current_app
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user, login_required, login_user, logout_user
@@ -64,70 +64,29 @@ def index():
     return render_template("index.html", user=current_user, chapters=chapters, new_registration=new_registration)
 
 def map():
-    import logging
-    logging.debug("Starting map route")
+    current_app.logger.debug("Starting map route")
     try:
-        # Create a fallback list of events with sample data if needed
-        events = []
-        try:
-            # Fetch events with valid coordinates for the map
-            db_events = Event.query.filter(Event.latitude.isnot(None), Event.longitude.isnot(None)).all()
-            events = db_events if db_events else []
-        except Exception as inner_e:
-            logging.error(f"Error fetching events: {str(inner_e)}")
-            # Create sample events for development (remove in production)
-            events = [
-                {
-                    'id': 1, 
-                    'title': 'Sample Event 1',
-                    'description': 'This is a sample event for testing',
-                    'start_date': '2025-04-25',
-                    'latitude': 47.0379,
-                    'longitude': -122.9007,
-                    'category': 'Other',
-                    'fun_meter': 4
-                }
-            ]
-
-        # Get chapters
-        chapters = []
-        try:
-            chapters = Chapter.query.all()
-        except Exception as ch_e:
-            logging.error(f"Error fetching chapters: {str(ch_e)}")
-
+        # Implement filtering logic here later based on request args
+        events = Event.query.all()
+        chapters = Chapter.query.all() # Pass chapters if needed in base.html
         return render_template("map.html", events=events, chapters=chapters)
     except Exception as e:
-        logging.error(f"Error in map route: {str(e)}")
-        logging.exception("Exception details:")
-        return render_template("500.html"), 500
+        current_app.logger.error(f"Error in map route: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return render_template("500.html", error=str(e)), 500
 
 def events():
-    import logging
-    logger = logging.getLogger(__name__)
-    logger.debug("Starting events route")
+    current_app.logger.debug("Starting events route")
     try:
-        # Get events with explicit error handling
-        try:
-            events = Event.query.order_by(Event.start_date.desc()).all()
-            logger.debug(f"Retrieved {len(events)} events")
-        except Exception as db_error:
-            logger.error(f"Database error: {str(db_error)}")
-            events = []  # Provide empty list as fallback
-        
-        # Get chapters with explicit error handling
-        try:
-            chapters = Chapter.query.all()
-            logger.debug(f"Retrieved {len(chapters)} chapters")
-        except Exception as ch_error:
-            logger.error(f"Error fetching chapters: {str(ch_error)}")
-            chapters = []  # Provide empty list as fallback
-        
+        # Implement filtering logic here later based on request args
+        events = Event.query.order_by(Event.start_date.desc()).all()
+        chapters = Chapter.query.all() # Pass chapters if needed in base.html
         return render_template("events.html", events=events, chapters=chapters)
     except Exception as e:
-        logger.error(f"Error in events route: {str(e)}")
-        logger.exception("Exception details:")
-        return render_template("500.html"), 500
+        current_app.logger.error(f"Error in events route: {str(e)}")
+        current_app.logger.exception("Exception details:")
+        return render_template("500.html", error=str(e)), 500
 
 @login_required
 def submit_event():
@@ -327,7 +286,7 @@ def fun_assistant_page():
     return render_template('partials/fun_assistant.html', chapters=chapters)
 
 def fun_assistant_chat():
-    app.logger.debug("Starting Fun Assistant chat processing")
+    current_app.logger.debug("Starting Fun Assistant chat processing")
     try:
         # Check if the user is logged in or track usage for anonymous users
         if not current_user.is_authenticated:
@@ -354,7 +313,7 @@ def fun_assistant_chat():
 
         openai.api_key = os.environ.get("OPENAI_API_KEY")
         if not openai.api_key:
-             logger.error("OpenAI API Key not found in environment variables.")
+             current_app.logger.error("OpenAI API Key not found in environment variables.")
              return jsonify({"error": "AI Assistant configuration error."}), 500
 
         try:
@@ -452,7 +411,7 @@ def fun_assistant_chat():
             Do not invent events not listed above. If you don't have enough information, politely ask for clarification.
             """
 
-            logger.debug(f"Sending prompt to OpenAI: {prompt}")
+            current_app.logger.debug(f"Sending prompt to OpenAI: {prompt}")
 
             # --- Call OpenAI API ---
             try:
@@ -466,20 +425,20 @@ def fun_assistant_chat():
                     temperature=0.7  # Slightly more creative but still factual
                 )
                 assistant_reply = response.choices[0].message['content'].strip()
-                logger.debug(f"Received reply from OpenAI: {assistant_reply}")
+                current_app.logger.debug(f"Received reply from OpenAI: {assistant_reply}")
 
             except Exception as openai_error:
-                 logger.error(f"OpenAI API Error: {str(openai_error)}")
+                 current_app.logger.error(f"OpenAI API Error: {str(openai_error)}")
                  assistant_reply = "Sorry, I encountered an issue connecting to my knowledge base. Please try again later."
 
             return jsonify({"reply": assistant_reply})
 
         except Exception as e:
-            logger.error(f"Error in /api/fun-assistant/chat: {str(e)}", exc_info=True)
+            current_app.logger.error(f"Error in /api/fun-assistant/chat: {str(e)}", exc_info=True)
             return jsonify({"error": "An internal error occurred."}), 500
     except Exception as e:
-        app.logger.error(f"Error in Fun Assistant chat: {str(e)}")
-        app.logger.exception("Exception details:")
+        current_app.logger.error(f"Error in Fun Assistant chat: {str(e)}")
+        current_app.logger.exception("Exception details:")
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
 # --- Other Routes (Placeholder/Keep Existing) ---

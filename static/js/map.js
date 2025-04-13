@@ -1,4 +1,59 @@
-window.FunlistMap = (function() {
+// Create a namespace for the map functionality
+const FunlistMap = {
+    map: null,
+    markers: {},
+    visibleEventIds: [],
+    infoWindow: null,
+
+    init: function(mapContainerId) {
+        // Check if map container exists
+        const mapContainer = document.getElementById(mapContainerId);
+        if (!mapContainer) {
+            console.error("Map container not found: #" + mapContainerId);
+            return null;
+        }
+
+        console.log("Initializing map in container: #" + mapContainerId);
+
+        try {
+            // Initialize map
+            this.initializeMap(mapContainer);
+            return this.map;
+        } catch (error) {
+            console.error("Error initializing map:", error);
+            return null;
+        }
+    },
+
+    initializeMap: function(mapContainer) {
+        // Create map instance
+        this.map = L.map(mapContainer).setView([47.0379, -122.9007], 13);
+
+        // Add tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(this.map);
+
+        // Create info window
+        this.infoWindow = L.popup();
+
+        return this.map;
+    }
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if map container exists
+    const mapContainer = document.getElementById('map');
+    if (!mapContainer) {
+        console.log("Map container not found on this page");
+        return;
+    }
+
+    // Initialize map using the FunlistMap namespace
+    const map = FunlistMap.init('map');
+
+
+    window.FunlistMap = (function() {
     'use strict';
 
     let mapInstance = null;
@@ -8,7 +63,7 @@ window.FunlistMap = (function() {
     let userMarker = null;
     let infoWindow = null;
     let eventMarkers = {};
-    
+
     // Check if Leaflet is available
     const hasLeaflet = typeof L !== 'undefined';
 
@@ -26,7 +81,7 @@ window.FunlistMap = (function() {
             console.error("Map container element not found:", elementId);
             return null;
         }
-        
+
         if (!hasLeaflet) {
             console.error("Leaflet library not loaded. Make sure it's included before map.js");
             // Try to load Leaflet dynamically if not available
@@ -34,7 +89,7 @@ window.FunlistMap = (function() {
             leafletCSS.rel = 'stylesheet';
             leafletCSS.href = 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.css';
             document.head.appendChild(leafletCSS);
-            
+
             const leafletScript = document.createElement('script');
             leafletScript.src = 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.js';
             leafletScript.onload = function() {
@@ -54,7 +109,7 @@ window.FunlistMap = (function() {
                 console.error("L.map is not a function. Leaflet might not be properly loaded.");
                 return null;
             }
-            
+
             mapInstance = L.map(elementId, {
                 center: defaultLocation,
                 zoom: defaultZoom
@@ -67,7 +122,7 @@ window.FunlistMap = (function() {
 
             // Set up map event listeners
             setupMapEventListeners(mapInstance);
-            
+
             console.log("Map initialized successfully");
             return mapInstance;
         } catch (error) {
