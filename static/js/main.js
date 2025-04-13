@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+});
 
 
 // Event Creator Onboarding Logic
@@ -679,6 +680,22 @@ function setupEventButtons() {
 
     // You could add handlers for other event buttons here if needed
 }
+
+// Check if Bootstrap is available
+function checkBootstrapAvailability() {
+    if (typeof bootstrap === 'undefined') {
+        console.error('Bootstrap is not loaded. Modal functionality will not work.');
+        return false;
+    }
+    console.log('Bootstrap is loaded and available.');
+    return true;
+}
+
+// Initialize floating buttons on page load
+document.addEventListener('DOMContentLoaded', function() {
+    checkBootstrapAvailability();
+    setupFloatingButtons();
+});
 
 // Show cookie consent if not already accepted
 checkCookieConsent();
