@@ -236,6 +236,15 @@ function setupFloatingButtons() {
             try {
                 const feedbackModal = new bootstrap.Modal(document.getElementById('feedbackModal'));
                 feedbackModal.show();
+                
+                // Ensure proper cleanup when the modal is hidden
+                document.getElementById('feedbackModal').addEventListener('hidden.bs.modal', function () {
+                    document.body.classList.remove('modal-open');
+                    const backdrops = document.querySelectorAll('.modal-backdrop');
+                    backdrops.forEach(backdrop => {
+                        backdrop.remove();
+                    });
+                });
             } catch (error) {
                 console.error("Error showing feedback modal:", error);
                 alert("Sorry, there was an error opening the feedback form.");
@@ -254,6 +263,15 @@ function setupFloatingButtons() {
             try {
                 const subscribeModal = new bootstrap.Modal(document.getElementById('subscribeModal'));
                 subscribeModal.show();
+                
+                // Ensure proper cleanup when the modal is hidden
+                document.getElementById('subscribeModal').addEventListener('hidden.bs.modal', function () {
+                    document.body.classList.remove('modal-open');
+                    const backdrops = document.querySelectorAll('.modal-backdrop');
+                    backdrops.forEach(backdrop => {
+                        backdrop.remove();
+                    });
+                });
             } catch (error) {
                 console.error("Error showing subscribe modal:", error);
                 alert("Sorry, there was an error opening the subscription form.");
@@ -691,10 +709,24 @@ function checkBootstrapAvailability() {
     return true;
 }
 
+// Function to ensure all modals are properly cleaned up
+function setupGlobalModalHandlers() {
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('hidden.bs.modal', function () {
+            document.body.classList.remove('modal-open');
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(backdrop => {
+                backdrop.remove();
+            });
+        });
+    });
+}
+
 // Initialize floating buttons on page load
 document.addEventListener('DOMContentLoaded', function() {
     checkBootstrapAvailability();
     setupFloatingButtons();
+    setupGlobalModalHandlers();
 });
 
 // Show cookie consent if not already accepted
