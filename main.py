@@ -34,7 +34,7 @@ def run_flask_app():
     """Run the Flask application."""
     try:
         # Try to use PORT env variable, but find an available port if busy
-        preferred_port = int(os.environ.get("PORT", 5000))
+        preferred_port = int(os.environ.get("PORT", 8080))
         port = None
         
         # First check if preferred port is available
@@ -46,7 +46,7 @@ def run_flask_app():
                 port = preferred_port
             except OSError:
                 # If preferred port is busy, find another available port
-                port = find_available_port(5000)
+                port = find_available_port(8080)
                 
         print(f"\033c", flush=True)  # Clear console
         print(f"Starting Flask server on port {port}")
