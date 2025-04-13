@@ -136,7 +136,7 @@ def register():
     # form.membership_tier.choices = [...]
     # form.chapter_id.choices = [...]
     chapters = Chapter.query.all()
-    return render_template('auth/register.html', form=form, chapters=chapters)
+    return render_template('register.html', form=form, chapters=chapters)
 
 def reset_password_request():
      # ... (Keep existing logic) ...
