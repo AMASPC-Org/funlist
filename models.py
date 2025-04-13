@@ -42,6 +42,22 @@ class User(db.Model, UserMixin):
     business_city = Column(String(50), nullable=True)
     business_state = Column(String(50), nullable=True)
     business_zip = Column(String(20), nullable=True)
+    business_phone = Column(String(20), nullable=True)
+    business_email = Column(String(120), nullable=True)
+    
+    # Social media links
+    facebook_url = Column(String(255), nullable=True)
+    instagram_url = Column(String(255), nullable=True)
+    twitter_url = Column(String(255), nullable=True)
+    linkedin_url = Column(String(255), nullable=True)
+    tiktok_url = Column(String(255), nullable=True)
+    
+    # Role tracking for change detection
+    roles_last_updated = Column(DateTime, nullable=True)
+    is_event_creator_last_known = Column(Boolean, default=False)
+    is_organizer_last_known = Column(Boolean, default=False)
+    is_vendor_last_known = Column(Boolean, default=False)
+    is_sponsor_last_known = Column(Boolean, default=False)
 
 
     def is_active(self):

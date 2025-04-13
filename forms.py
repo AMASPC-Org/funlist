@@ -87,6 +87,12 @@ class ProfileForm(FlaskForm):
         description="Enter interests separated by commas (e.g., sports,music,outdoors)",
         validators=[Optional(), Length(max=255)]
     )
+    
+    # User Role Management
+    enable_event_creator = BooleanField('I want to create/list events', validators=[Optional()])
+    enable_organizer = BooleanField('I represent an organization or venue that hosts events', validators=[Optional()])
+    enable_vendor = BooleanField('I want to offer services as an event vendor', validators=[Optional()])
+    enable_sponsor = BooleanField('I want to explore sponsorship opportunities', validators=[Optional()])
 
     # Social Media Links
     facebook_url = StringField('Facebook URL', validators=[Optional(), URL()])

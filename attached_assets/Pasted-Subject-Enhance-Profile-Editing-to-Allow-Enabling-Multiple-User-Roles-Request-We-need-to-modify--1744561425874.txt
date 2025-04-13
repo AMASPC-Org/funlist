@@ -1,0 +1,82 @@
+Subject: Enhance Profile Editing to Allow Enabling Multiple User Roles
+Request:
+We need to modify the user profile system to allow users to enable additional roles (like Event Creator, Organizer, Vendor) after their initial signup. This involves updating the profile form, template, and route logic, and ensuring protected actions check these enabled roles.
+Tasks:
+Modify Profile Form (forms.py - ProfileForm):
+Add Role Checkboxes: Add the following BooleanField fields to the existing ProfileForm. These allow users to opt-in to roles:
+enable_event_creator (BooleanField, Label: "I want to create/list events", Optional)
+enable_organizer (BooleanField, Label: "I represent an organization or venue that hosts events", Optional)
+enable_vendor (BooleanField, Label: "I want to offer services as an event vendor", Optional)
+Keep Other Fields: Retain all existing fields for personal info, social links, and organizer business details.
+Modify Profile Editing Template (templates/edit_profile.html):
+Add "Manage Roles" Section: Create a new distinct section (e.g., using <div class="card mb-4">...</div>) titled "Manage Your Roles" or similar.
+Render Role Checkboxes: Inside this new section, render the enable_event_creator, enable_organizer, and enable_vendor checkboxes from the form. Make it clear that checking these boxes grants access to specific features.
+<!-- File: templates/edit_profile.html -->
+<!-- Add this new section -->
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Manage Your Roles</h5>
+        <p><small>Select the roles you want to activate for your account:</small></p>
+        <div class="form-check mb-2">
+            {{ form.enable_event_creator(class="form-check-input") }}
+            {{ form.enable_event_creator.label(class="form-check-label") }}
+            <small class="form-text text-muted d-block">Allows you to submit and manage event listings.</small>
+        </div>
+        <div class="form-check mb-2">
+            {{ form.enable_organizer(class="form-check-input") }}
+            {{ form.enable_organizer.label(class="form-check-label") }}
+             <small class="form-text text-muted d-block">Grants access to tools for managing organization/venue details and potentially hosting events.</small>
+        </div>
+        <div class="form-check mb-2">
+            {{ form.enable_vendor(class="form-check-input") }}
+            {{ form.enable_vendor.label(class="form-check-label") }}
+             <small class="form-text text-muted d-block">Allows you to create a vendor profile and list your services.</small>
+        </div>
+         {% if form.enable_event_creator.errors or form.enable_organizer.errors or form.enable_vendor.errors %}
+            <div class="text-danger small mt-2">Error updating roles.</div>
+         {% endif %}
+    </div>
+</div>
+Use code with caution.
+Keep Conditional Sections: Ensure the existing conditional sections ("Organizer Information", "Venue Management") still use {% if current_user.is_organizer %} (or the relevant actual flag) to control their display. Do not base their display on the checkboxes themselves.
+Modify Profile Editing Route (routes.py - edit_profile function):
+Update POST Logic: Within the if form.validate_on_submit(): block, after updating the standard profile fields:
+Get the values from form.enable_event_creator.data, form.enable_organizer.data, and form.enable_vendor.data.
+Update the corresponding boolean fields on the current_user object:
+current_user.is_event_creator = form.enable_event_creator.data
+current_user.is_organizer = form.enable_organizer.data
+current_user.is_vendor = form.enable_vendor.data
+# Potentially also set is_event_creator = True if is_organizer is True
+if current_user.is_organizer:
+     current_user.is_event_creator = True
+Use code with caution.
+Commit the changes: db.session.commit().
+Update GET Logic: When rendering the form on a GET request, pre-populate the new role checkboxes based on the user's current boolean flags:
+if request.method == "GET":
+    # ... (pre-populate other fields) ...
+    form.enable_event_creator.data = current_user.is_event_creator
+    form.enable_organizer.data = current_user.is_organizer
+    form.enable_vendor.data = current_user.is_vendor
+Use code with caution.
+Implement Permission Checks in Routes (Examples):
+Modify /submit-event Route: Add a check at the beginning:
+@app.route("/submit-event", methods=["GET", "POST"])
+@login_required
+def submit_event():
+    if not current_user.is_event_creator: # Check the flag
+        flash("You need to enable the 'Event Creator' role in your profile to add events.", "warning")
+        return redirect(url_for('edit_profile')) # Redirect to profile to enable
+    # ... rest of the existing route logic ...
+Use code with caution.
+Modify /venues/add Route (if created): Add a similar check using current_user.is_organizer.
+Modify /vendor-profile Route (if created): Add a similar check using current_user.is_vendor.
+Provide Complete Code: Return the complete, fully edited code for the following files:
+forms.py (with the updated ProfileForm)
+templates/edit_profile.html (with the new "Manage Roles" section and correct conditionals)
+routes.py (with the updated edit_profile logic and examples of permission checks in protected routes like submit_event)
+Context:
+Users sign up with one primary role but need the ability to add other capabilities later.
+The "My Profile" page will be the central place to manage these roles via checkboxes.
+Protected actions (like adding events) must check the user's current role flags, not rely on the initial signup choice.
+If a user lacks permission, they should be prompted to enable the required role in their profile.
+Please implement these changes carefully, ensuring the logic for setting flags and checking permissions is correct.

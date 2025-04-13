@@ -48,6 +48,142 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Manage Your Roles Section -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Manage Your Roles</h5>
+                        <p class="text-muted mb-3">Enable or disable roles to access specific features on FunList.ai. Each role provides unique capabilities.</p>
+                        
+                        <div class="row mb-4">
+                            <!-- Event Creator Role -->
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100 {% if form.enable_event_creator.data %}border-success{% else %}border{% endif %}">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div class="form-check">
+                                                {{ form.enable_event_creator(class="form-check-input role-checkbox", id="enable_event_creator") }}
+                                                <label class="form-check-label h5" for="enable_event_creator">
+                                                    <i class="fas fa-calendar-plus {% if form.enable_event_creator.data %}text-success{% endif %} me-2"></i>
+                                                    Event Creator
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <p class="text-muted mb-1">Create, manage, and promote your events on FunList.ai.</p>
+                                        <div class="role-features mt-2">
+                                            <span class="d-block mb-1"><i class="fas fa-check text-success me-2"></i> Submit new events</span>
+                                            <span class="d-block mb-1"><i class="fas fa-check text-success me-2"></i> Manage event listings</span>
+                                            <span class="d-block"><i class="fas fa-check text-success me-2"></i> Track performance</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Organizer Role -->
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100 {% if form.enable_organizer.data %}border-primary{% else %}border{% endif %}">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div class="form-check">
+                                                {{ form.enable_organizer(class="form-check-input role-checkbox", id="enable_organizer") }}
+                                                <label class="form-check-label h5" for="enable_organizer">
+                                                    <i class="fas fa-building {% if form.enable_organizer.data %}text-primary{% endif %} me-2"></i>
+                                                    Organizer
+                                                </label>
+                                            </div>
+                                            {% if form.enable_organizer.data %}
+                                                <span class="badge bg-primary">Includes Event Creator</span>
+                                            {% endif %}
+                                        </div>
+                                        <p class="text-muted mb-1">Represent an organization or venue that hosts events.</p>
+                                        <div class="role-features mt-2">
+                                            <span class="d-block mb-1"><i class="fas fa-check text-success me-2"></i> Manage venues</span>
+                                            <span class="d-block mb-1"><i class="fas fa-check text-success me-2"></i> Organization profile</span>
+                                            <span class="d-block"><i class="fas fa-check text-success me-2"></i> Enhanced visibility</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Vendor Role -->
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100 {% if form.enable_vendor.data %}border-warning{% else %}border{% endif %}">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div class="form-check">
+                                                {{ form.enable_vendor(class="form-check-input role-checkbox", id="enable_vendor") }}
+                                                <label class="form-check-label h5" for="enable_vendor">
+                                                    <i class="fas fa-store {% if form.enable_vendor.data %}text-warning{% endif %} me-2"></i>
+                                                    Vendor
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <p class="text-muted mb-1">Offer services for events such as catering, entertainment, or logistics.</p>
+                                        <div class="role-features mt-2">
+                                            <span class="d-block mb-1"><i class="fas fa-check text-success me-2"></i> Vendor profile</span>
+                                            <span class="d-block mb-1"><i class="fas fa-check text-success me-2"></i> Service listings</span>
+                                            <span class="d-block"><i class="fas fa-check text-success me-2"></i> Connect with organizers</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Sponsor Role -->
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100 {% if form.enable_sponsor.data %}border-danger{% else %}border{% endif %}">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div class="form-check">
+                                                {% if hasattr(form, 'enable_sponsor') %}
+                                                    {{ form.enable_sponsor(class="form-check-input role-checkbox", id="enable_sponsor") }}
+                                                    <label class="form-check-label h5" for="enable_sponsor">
+                                                        <i class="fas fa-handshake {% if form.enable_sponsor.data %}text-danger{% endif %} me-2"></i>
+                                                        Sponsor
+                                                    </label>
+                                                {% else %}
+                                                    <input type="checkbox" class="form-check-input role-checkbox" disabled id="enable_sponsor">
+                                                    <label class="form-check-label h5" for="enable_sponsor">
+                                                        <i class="fas fa-handshake me-2"></i>
+                                                        Sponsor
+                                                    </label>
+                                                    <span class="badge bg-secondary">Coming Soon</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <p class="text-muted mb-1">Find advertising and sponsorship opportunities for events.</p>
+                                        <div class="role-features mt-2">
+                                            <span class="d-block mb-1"><i class="fas fa-check text-success me-2"></i> Sponsor profile</span>
+                                            <span class="d-block mb-1"><i class="fas fa-check text-success me-2"></i> Opportunity matching</span>
+                                            <span class="d-block"><i class="fas fa-check text-success me-2"></i> ROI tracking</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if form.enable_event_creator.errors or form.enable_organizer.errors or form.enable_vendor.errors %}
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-triangle"></i> Error updating roles. Please try again or contact support.
+                            </div>
+                        {% endif %}
+                        
+                        <div class="alert alert-info mb-0">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <i class="fas fa-info-circle fa-2x"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Role Management Information</h6>
+                                    <ul class="mb-0 ps-3">
+                                        <li>Enabling the Organizer role automatically grants Event Creator capabilities</li>
+                                        <li>Each role may require additional profile information to be completed</li>
+                                        <li>You can enable or disable roles at any time from this page</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Personal Information Section -->
                 <div class="card mb-4">
@@ -198,6 +334,48 @@
         </div>
     </div>
 </div>
+<style>
+    /* Styles for role checkbox cards */
+    .card.border-success {
+        box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+    }
+    .card.border-primary {
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+    .card.border-warning {
+        box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.25);
+    }
+    .card.border-danger {
+        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25); 
+    }
+    .role-checkbox {
+        transform: scale(1.2);
+    }
+    .role-features span {
+        font-size: 0.9rem;
+    }
+    .role-checkbox:checked {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+    .form-check-input.role-checkbox:checked#enable_event_creator {
+        background-color: #198754;
+        border-color: #198754;
+    }
+    .form-check-input.role-checkbox:checked#enable_organizer {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+    .form-check-input.role-checkbox:checked#enable_vendor {
+        background-color: #ffc107;
+        border-color: #ffc107;
+    }
+    .form-check-input.role-checkbox:checked#enable_sponsor {
+        background-color: #dc3545;
+        border-color: #dc3545;
+    }
+</style>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Handle role activation button confirmation
@@ -253,6 +431,143 @@
                     form.submit();
                 }
             });
+        });
+        
+        // Handle role checkbox dependencies and visual updates
+        const organizerCheckbox = document.getElementById('enable_organizer');
+        const eventCreatorCheckbox = document.getElementById('enable_event_creator');
+        const roleCheckboxes = document.querySelectorAll('.role-checkbox');
+        
+        // Function to update card styling based on checkbox state
+        function updateCardStyle(checkbox) {
+            const card = checkbox.closest('.card');
+            const icon = card.querySelector('.fas');
+            
+            if (checkbox.checked) {
+                // Apply selected styling
+                if (checkbox.id === 'enable_event_creator') {
+                    card.classList.add('border-success');
+                    if (icon) icon.classList.add('text-success');
+                } else if (checkbox.id === 'enable_organizer') {
+                    card.classList.add('border-primary');
+                    if (icon) icon.classList.add('text-primary');
+                } else if (checkbox.id === 'enable_vendor') {
+                    card.classList.add('border-warning');
+                    if (icon) icon.classList.add('text-warning');
+                } else if (checkbox.id === 'enable_sponsor') {
+                    card.classList.add('border-danger');
+                    if (icon) icon.classList.add('text-danger');
+                }
+            } else {
+                // Remove styling
+                card.classList.remove('border-success', 'border-primary', 'border-warning', 'border-danger');
+                if (icon) {
+                    icon.classList.remove('text-success', 'text-primary', 'text-warning', 'text-danger');
+                }
+            }
+        }
+        
+        // Initialize card styles
+        roleCheckboxes.forEach(updateCardStyle);
+        
+        // Add change event listeners
+        roleCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                updateCardStyle(this);
+                
+                // Handle dependencies
+                if (this.id === 'enable_organizer' && this.checked) {
+                    eventCreatorCheckbox.checked = true;
+                    updateCardStyle(eventCreatorCheckbox);
+                }
+                
+                // Show feedback when a role is toggled
+                if (this.checked) {
+                    // Show a tip when a role is activated
+                    const roleId = this.id;
+                    let message = '';
+                    let messageClass = '';
+                    
+                    if (roleId === 'enable_event_creator') {
+                        message = 'Event Creator role activated. You can now create and manage events.';
+                        messageClass = 'alert-success';
+                    } else if (roleId === 'enable_organizer') {
+                        message = 'Organizer role activated. You can manage venues and organization details.';
+                        messageClass = 'alert-primary';
+                    } else if (roleId === 'enable_vendor') {
+                        message = 'Vendor role activated. You can offer services to event organizers.';
+                        messageClass = 'alert-warning';
+                    } else if (roleId === 'enable_sponsor') {
+                        message = 'Sponsor role activated. You can explore sponsorship opportunities.';
+                        messageClass = 'alert-danger';
+                    }
+                    
+                    if (message) {
+                        // Create and show tooltip or info message
+                        const infoElement = document.createElement('div');
+                        infoElement.className = `alert ${messageClass} mt-3 role-info-message`;
+                        infoElement.innerHTML = `<i class="fas fa-info-circle"></i> ${message}`;
+                        
+                        // Remove any existing info messages
+                        const existingInfos = document.querySelectorAll('.role-info-message');
+                        existingInfos.forEach(el => el.remove());
+                        
+                        // Add the new info message
+                        const rolesSection = document.querySelector('.card-body:has(#enable_event_creator)');
+                        if (rolesSection) {
+                            const alertInfoElement = rolesSection.querySelector('.alert-info');
+                            if (alertInfoElement) {
+                                rolesSection.insertBefore(infoElement, alertInfoElement);
+                            } else {
+                                rolesSection.appendChild(infoElement);
+                            }
+                            
+                            // Add a subtle animation
+                            infoElement.style.opacity = '0';
+                            infoElement.style.transform = 'translateY(-10px)';
+                            infoElement.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                            
+                            setTimeout(() => {
+                                infoElement.style.opacity = '1';
+                                infoElement.style.transform = 'translateY(0)';
+                            }, 10);
+                            
+                            // Auto-remove after 5 seconds
+                            setTimeout(() => {
+                                infoElement.style.opacity = '0';
+                                infoElement.style.transform = 'translateY(-10px)';
+                                
+                                setTimeout(() => {
+                                    infoElement.remove();
+                                }, 300);
+                            }, 5000);
+                        }
+                    }
+                }
+            });
+        });
+        
+        // Check initial state for organizer dependency
+        if (organizerCheckbox && eventCreatorCheckbox && organizerCheckbox.checked) {
+            eventCreatorCheckbox.checked = true;
+            updateCardStyle(eventCreatorCheckbox);
+        }
+        
+        // Make the entire card clickable to toggle the checkbox
+        const roleCards = document.querySelectorAll('.role-checkbox').forEach(checkbox => {
+            const card = checkbox.closest('.card');
+            if (card) {
+                card.addEventListener('click', function(e) {
+                    // Don't toggle if clicking on the checkbox itself (it already toggles)
+                    if (e.target !== checkbox) {
+                        checkbox.checked = !checkbox.checked;
+                        
+                        // Trigger the change event
+                        const changeEvent = new Event('change');
+                        checkbox.dispatchEvent(changeEvent);
+                    }
+                });
+            }
         });
     });
 </script>

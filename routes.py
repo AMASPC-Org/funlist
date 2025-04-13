@@ -329,6 +329,12 @@ def init_routes(app):
             form.last_name.data = current_user.last_name
             form.title.data = current_user.title
             
+            # User Role Management Checkboxes
+            form.enable_event_creator.data = current_user.is_event_creator
+            form.enable_organizer.data = current_user.is_organizer
+            form.enable_vendor.data = current_user.is_vendor
+            form.enable_sponsor.data = current_user.is_sponsor
+            
             # Social Media Links (if these fields exist in the User model)
             if hasattr(current_user, 'facebook_url'):
                 form.facebook_url.data = current_user.facebook_url
@@ -439,6 +445,42 @@ def init_routes(app):
                     preferences['sponsorship_budget'] = form.sponsorship_budget.data
                     current_user.set_preferences(preferences)
                 
+                # Update user roles based on checkbox selections
+                current_user.is_event_creator = form.enable_event_creator.data
+                current_user.is_organizer = form.enable_organizer.data
+                current_user.is_vendor = form.enable_vendor.data
+                
+                # Update sponsor role if the field exists
+                if hasattr(form, 'enable_sponsor'):
+                    current_user.is_sponsor = form.enable_sponsor.data
+                
+                # If user is an organizer, ensure they also have event creator privileges
+                if current_user.is_organizer:
+                    current_user.is_event_creator = True
+                    
+                # Handle role activation messages
+                if not current_user.roles_last_updated or (datetime.utcnow() - current_user.roles_last_updated).total_seconds() > 300:
+                    # Only show these messages when roles are actually changed (not on every save)
+                    role_changes = []
+                    if form.enable_event_creator.data and not current_user.is_event_creator_last_known:
+                        role_changes.append("Event Creator")
+                    if form.enable_organizer.data and not current_user.is_organizer_last_known:
+                        role_changes.append("Organizer")
+                    if form.enable_vendor.data and not current_user.is_vendor_last_known:
+                        role_changes.append("Vendor")
+                    if hasattr(form, 'enable_sponsor') and form.enable_sponsor.data and not current_user.is_sponsor_last_known:
+                        role_changes.append("Sponsor")
+                        
+                    if role_changes:
+                        flash(f"You've activated the following roles: {', '.join(role_changes)}. Additional profile sections have been added below.", "success")
+                        
+                    # Update the last known state for role change detection
+                    current_user.is_event_creator_last_known = current_user.is_event_creator
+                    current_user.is_organizer_last_known = current_user.is_organizer
+                    current_user.is_vendor_last_known = current_user.is_vendor
+                    current_user.is_sponsor_last_known = current_user.is_sponsor
+                    current_user.roles_last_updated = datetime.utcnow()
+                
                 db.session.commit()
                 flash("Profile updated successfully!", "success")
                 return redirect(url_for("profile"))
@@ -539,7 +581,8 @@ def init_routes(app):
     def submit_event():
         # Verify user has proper permissions
         if not (current_user.is_event_creator or current_user.is_admin):
-            return render_template("event_creator_required.html")
+            flash("You need to enable the 'Event Creator' role in your profile to add events.", "warning")
+            return redirect(url_for('edit_profile'))
 
         # Create a new form instance
         form = EventForm()

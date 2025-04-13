@@ -8,10 +8,16 @@
     .role-option {
         transition: all 0.2s ease-in-out;
         cursor: pointer;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        position: relative;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
     .role-option:hover {
         border-color: #007bff !important;
         background-color: rgba(0, 123, 255, 0.05);
+        transform: translateY(-2px);
     }
     .role-option input[type="radio"] {
         cursor: pointer;
@@ -22,6 +28,15 @@
     .role-option.selected {
         border-color: #007bff !important;
         background-color: rgba(0, 123, 255, 0.1);
+        box-shadow: 0 4px 8px rgba(0, 123, 255, 0.15);
+    }
+    .role-icon {
+        font-size: 1.5rem;
+        margin-right: 0.5rem;
+        color: #6c757d;
+    }
+    .selected .role-icon {
+        color: #007bff;
     }
 </style>
 {% endblock %}
@@ -82,9 +97,20 @@
                                     {{ subfield(class="form-check-input me-2 mt-1") }}
                                     <div>
                                         <label class="form-check-label fw-bold" for="{{ subfield.id }}">
+                                            {% if subfield.data == 'attendee' %}
+                                            <i class="fas fa-calendar-check role-icon"></i>
+                                            {% elif subfield.data == 'organizer' %}
+                                            <i class="fas fa-users role-icon"></i>
+                                            {% elif subfield.data == 'venue' %}
+                                            <i class="fas fa-building role-icon"></i>
+                                            {% elif subfield.data == 'vendor' %}
+                                            <i class="fas fa-store role-icon"></i>
+                                            {% elif subfield.data == 'sponsor' %}
+                                            <i class="fas fa-handshake role-icon"></i>
+                                            {% endif %}
                                             {{ subfield.label.text }}
                                         </label>
-                                        <p class="text-muted small mb-0">
+                                        <p class="text-muted mb-1">
                                             {% if subfield.data == 'attendee' %}
                                             Find and browse events in your area that match your interests
                                             {% elif subfield.data == 'organizer' %}
@@ -95,6 +121,19 @@
                                             Offer your services to event organizers and venues
                                             {% elif subfield.data == 'sponsor' %}
                                             Find sponsorship opportunities for events and venues
+                                            {% endif %}
+                                        </p>
+                                        <p class="small text-muted mb-0">
+                                            {% if subfield.data == 'attendee' %}
+                                            <i class="fas fa-info-circle"></i> Default role for discovering events
+                                            {% elif subfield.data == 'organizer' %}
+                                            <i class="fas fa-info-circle"></i> Includes event creator capabilities
+                                            {% elif subfield.data == 'venue' %}
+                                            <i class="fas fa-info-circle"></i> For representatives of physical locations
+                                            {% elif subfield.data == 'vendor' %}
+                                            <i class="fas fa-info-circle"></i> For service providers supporting events
+                                            {% elif subfield.data == 'sponsor' %}
+                                            <i class="fas fa-info-circle"></i> For businesses looking to promote at events
                                             {% endif %}
                                         </p>
                                     </div>
@@ -153,15 +192,62 @@
                 // Update visual selection
                 roleOptions.forEach(opt => {
                     opt.classList.remove('selected', 'border-primary', 'bg-light');
+                    const icon = opt.querySelector('.role-icon');
+                    if (icon) {
+                        icon.style.color = '#6c757d'; // Reset to default color
+                    }
                 });
+                
                 this.classList.add('selected', 'border-primary', 'bg-light');
+                
+                // Change icon color to primary
+                const selectedIcon = this.querySelector('.role-icon');
+                if (selectedIcon) {
+                    selectedIcon.style.color = '#007bff';
+                }
+                
+                // Show a message about additional capabilities
+                const roleInfoMsg = document.querySelector('.role-info-msg');
+                if (!roleInfoMsg) {
+                    const infoMsg = document.createElement('div');
+                    infoMsg.className = 'alert alert-info mt-3 role-info-msg';
+                    infoMsg.innerHTML = '<i class="fas fa-info-circle"></i> <strong>Great choice!</strong> Don\'t worry if you need other capabilities later. You can add them through your profile settings after signup.';
+                    
+                    const roleContainer = document.querySelector('.role-selection-container');
+                    roleContainer.parentNode.insertBefore(infoMsg, roleContainer.nextSibling);
+                }
+                
+                // Subtle animation effect on selection
+                this.style.transform = 'translateY(-3px)';
+                setTimeout(() => {
+                    this.style.transform = 'translateY(0)';
+                }, 200);
+            });
+            
+            // Add hover effects for better interaction feedback
+            option.addEventListener('mouseenter', function() {
+                if (!this.classList.contains('selected')) {
+                    this.style.transform = 'translateY(-2px)';
+                }
+            });
+            
+            option.addEventListener('mouseleave', function() {
+                if (!this.classList.contains('selected')) {
+                    this.style.transform = 'translateY(0)';
+                }
             });
         });
         
         // Initially highlight selected option if any
         const selectedRadio = document.querySelector('.role-option input[type="radio"]:checked');
         if (selectedRadio) {
-            selectedRadio.closest('.role-option').classList.add('selected', 'border-primary', 'bg-light');
+            const selectedOption = selectedRadio.closest('.role-option');
+            selectedOption.classList.add('selected', 'border-primary', 'bg-light');
+            
+            const selectedIcon = selectedOption.querySelector('.role-icon');
+            if (selectedIcon) {
+                selectedIcon.style.color = '#007bff';
+            }
         }
     });
 </script>
