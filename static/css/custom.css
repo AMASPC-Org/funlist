@@ -2573,11 +2573,12 @@ footer {
 }
 
 .user-icon-container i {
-    font-size: 18px; /* Increased size */
+    font-size: 20px; /* Larger size for better visibility */
     color: #ffffff !important; /* Force white color with !important */
     display: inline-block; /* Ensure proper display */
     line-height: 1; /* Ensure proper vertical alignment */
     margin: 0; /* Remove any margins */
+    text-shadow: 0 0 2px rgba(0,0,0,0.3); /* Add slight shadow for better contrast */
 }
 
 .user-icon-container:hover {

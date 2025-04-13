@@ -16,7 +16,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-def find_available_port(start_port=3000, max_attempts=15):
+def find_available_port(start_port=8080, max_attempts=15):
     """Find an available port starting from start_port."""
     port = start_port
     for _ in range(max_attempts):

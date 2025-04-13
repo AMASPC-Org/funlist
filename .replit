@@ -38,7 +38,7 @@ localPort = 8082
 externalPort = 3000
 
 [workflows]
-runButton = "Flask Server (5000)"
+runButton = "Run App"
 
 [[workflows.workflow]]
 name = "Run"
@@ -92,6 +92,15 @@ args = "python main.py"
 
 [[workflows.workflow]]
 name = "Flask Server (5000)"
+author = 36270944
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python main.py"
+
+[[workflows.workflow]]
+name = "Run App"
 author = 36270944
 mode = "sequential"
 
