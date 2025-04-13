@@ -1,0 +1,69 @@
+Subject: Overhaul Signup Form for Clear Role Definition
+Request:
+Please redesign the user signup form (signup.html) and its corresponding form class (forms.py) and route logic (routes.py) to clearly capture the user's primary role/intent upon registration. This will replace the current ambiguous checkbox section and defer preference collection to improve user experience and support tailored onboarding later.
+Tasks:
+Modify forms.py:
+Locate the SignupForm (or RegisterForm, based on your previous file).
+Remove the following fields:
+event_focus (Checkboxes: Single, Professional, Adult, etc.)
+preferred_locations (StringField)
+event_interests (StringField)
+is_event_creator (BooleanField)
+is_vendor (BooleanField)
+vendor_type (SelectField - this will move to the vendor profile edit)
+Add a new required field:
+primary_role (RadioField, Label: "What is your primary reason for joining FunList.ai?", validators=[DataRequired()]). Set the choices as follows:
+choices=[
+    ('attendee', 'Find events to attend'),
+    ('organizer', 'Create, list, or promote events'),
+    ('venue', 'Represent an organization or venue that hosts events'),
+    ('vendor', 'Offer services for events (e.g., catering, AV, entertainment)'),
+    ('sponsor', 'Explore advertising or sponsorship opportunities')
+]
+Use code with caution.
+Python
+Keep email, password, confirm_password, and terms_accepted fields.
+Modify Signup Template (templates/auth/signup.html - Verify Path):
+Remove Sections: Delete the entire "Your Preferences" section, including the "Tell Us About Yourself", "Preferred Locations", and "Event Interests" fields and their associated HTML.
+Remove Checkbox Section: Delete the "I'm here to:" section with all its checkboxes (find_events, is_event_creator, is_vendor, represent_organization).
+Add Radio Button Section: Add a new section to render the primary_role RadioField. Ensure it's clearly labeled and user-friendly. Example structure:
+<div class="mb-3">
+    {{ form.primary_role.label(class="form-label") }}
+    {% for subfield in form.primary_role %}
+    <div class="form-check">
+        {{ subfield(class="form-check-input") }}
+        {{ subfield.label(class="form-check-label") }}
+    </div>
+    {% endfor %}
+    {% if form.primary_role.errors %}
+        <div class="invalid-feedback d-block">
+             {% for error in form.primary_role.errors %}
+                <span>{{ error }}</span>
+             {% endfor %}
+        </div>
+    {% endif %}
+</div>
+Use code with caution.
+Html
+Keep the Email, Password, Confirm Password, Terms Acceptance, and Submit button rendering.
+Modify Signup Route Logic (routes.py - signup function):
+Remove Preference/Old Role Logic: Delete any code within the if form.validate_on_submit(): block that attempts to process or save data from the removed fields (event_focus, preferred_locations, event_interests, is_event_creator, is_vendor, etc.).
+Process primary_role: Get the selected value from form.primary_role.data.
+Map Role to User Booleans: Based on the selected primary_role, set the corresponding boolean fields on the user object before db.session.add(user):
+Set user.is_subscriber = True (Always True for new signups).
+If form.primary_role.data == 'organizer': Set user.is_organizer = True AND user.is_event_creator = True.
+If form.primary_role.data == 'venue': Set user.is_organizer = True (representing the venue itself), potentially also user.is_event_creator = True.
+If form.primary_role.data == 'vendor': Set user.is_vendor = True.
+If form.primary_role.data == 'sponsor': Consider if you have an is_sponsor boolean or similar. If not, you might not need to set a specific flag here, or you could set is_sponsor = True if that model field exists. (Self-correction: is_sponsor was part of the User model previously, let's assume it exists). Set user.is_sponsor = True.
+If form.primary_role.data == 'attendee': No additional flags needed beyond is_subscriber.
+Keep Core Logic: Retain the logic for checking existing users, setting email/password, setting account_active, adding the user to the session, committing, flashing messages, and redirecting.
+Onboarding Flag: Keep session['new_registration'] = True as this will trigger the (future) onboarding wizard.
+Provide Complete Code: Return the complete, fully edited code for the following files:
+forms.py
+templates/auth/signup.html (or specific path)
+routes.py
+Context:
+The goal is to simplify signup and clearly identify the user's primary purpose.
+Detailed preference collection is deferred to post-signup.
+The selected primary role will determine the initial user experience and which profile fields are relevant later.
+Please implement these changes carefully, ensuring the form, template, and route logic are consistent.
