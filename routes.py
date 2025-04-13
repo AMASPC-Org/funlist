@@ -13,7 +13,7 @@ from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from datetime import datetime, timedelta
 import json
 import openai # Import OpenAI library
-from flask_wtf.csrf import CSRFProtect, csrf # Added CSRF protection imports
+from flask_wtf.csrf import CSRFProtect # Fixed CSRF import
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
