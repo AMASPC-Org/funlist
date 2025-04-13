@@ -1,378 +1,385 @@
-        import os
-        import logging
-        from flask import render_template, flash, redirect, url_for, request, session, jsonify
-        from werkzeug.security import generate_password_hash, check_password_hash
-        from flask_login import current_user, login_required, login_user, logout_user
-        from forms import (SignupForm, LoginForm, ProfileForm, EventForm,
-                           ResetPasswordRequestForm, ResetPasswordForm, ContactForm, SearchForm) # Added ContactForm, SearchForm
-        from models import User, Event, Subscriber, Chapter, HelpArticle, CharterMember # Added HelpArticle, CharterMember
-        from app import app, db
-        # Removed direct import of geocode_address, assume it's in utils.utils now
-        from sqlalchemy.exc import SQLAlchemyError, IntegrityError
-        from datetime import datetime, timedelta
-        import json
-        import openai # Import OpenAI library
+import os
+import logging
+from flask import render_template, flash, redirect, url_for, request, session, jsonify
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import current_user, login_required, login_user, logout_user
+from forms import (SignupForm, LoginForm, ProfileForm, EventForm,
+                   ResetPasswordRequestForm, ResetPasswordForm, ContactForm, SearchForm) # Added ContactForm, SearchForm
+from models import User, Event, Subscriber, Chapter, HelpArticle, CharterMember # Added HelpArticle, CharterMember
+from app import app, db
+# Removed direct import of geocode_address, assume it's in utils.utils now
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+from datetime import datetime, timedelta
+import json
+import openai # Import OpenAI library
 
-        logger = logging.getLogger(__name__)
-        logger.setLevel(logging.DEBUG)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
-        # --- Helper Decorators ---
-        def admin_required(f):
-            # ... (keep existing decorator) ...
-            pass # Placeholder
+# --- Helper Decorators ---
+def admin_required(f):
+    # ... (keep existing decorator) ...
+    pass # Placeholder
 
-        def chapter_leader_required(f):
-            # ... (keep existing decorator) ...
-             pass # Placeholder
+def chapter_leader_required(f):
+    # ... (keep existing decorator) ...
+     pass # Placeholder
 
-        def sponsor_required(f):
-            # ... (keep existing decorator) ...
-             pass # Placeholder
+def sponsor_required(f):
+    # ... (keep existing decorator) ...
+     pass # Placeholder
 
-        def investor_required(f):
-            # ... (keep existing decorator) ...
-             pass # Placeholder
+def investor_required(f):
+    # ... (keep existing decorator) ...
+     pass # Placeholder
 
-        # --- Core Routes ---
-        @app.route("/")
-        def index():
-            # Fetch chapters for the dropdown/links if needed on index
-            chapters = Chapter.query.all()
-            # Check if this is a new registration to show the wizard
-            new_registration = session.pop('new_registration', False)
-            return render_template("main/index.html", user=current_user, chapters=chapters, new_registration=new_registration)
+# --- Core Routes ---
+@app.route("/")
+def index():
+    # Fetch chapters for the dropdown/links if needed on index
+    chapters = Chapter.query.all()
+    # Check if this is a new registration to show the wizard
+    new_registration = session.pop('new_registration', False)
+    return render_template("main/index.html", user=current_user, chapters=chapters, new_registration=new_registration)
 
-        @app.route("/map")
-        def map():
-            # Fetch events with valid coordinates for the map
-            events = Event.query.filter(Event.latitude.isnot(None), Event.longitude.isnot(None)).all()
-            chapters = Chapter.query.all() # Pass chapters if needed in base.html
-            return render_template("map.html", events=events, chapters=chapters)
+@app.route("/map")
+def map():
+    # Fetch events with valid coordinates for the map
+    events = Event.query.filter(Event.latitude.isnot(None), Event.longitude.isnot(None)).all()
+    chapters = Chapter.query.all() # Pass chapters if needed in base.html
+    return render_template("map.html", events=events, chapters=chapters)
 
-        @app.route("/events")
-        def events():
-            # Implement filtering logic here later based on request args
-            events = Event.query.order_by(Event.start_date.desc()).all()
-            chapters = Chapter.query.all() # Pass chapters if needed in base.html
-            return render_template("events.html", events=events, chapters=chapters)
+@app.route("/events")
+def events():
+    # Implement filtering logic here later based on request args
+    events = Event.query.order_by(Event.start_date.desc()).all()
+    chapters = Chapter.query.all() # Pass chapters if needed in base.html
+    return render_template("events.html", events=events, chapters=chapters)
 
-        @app.route("/submit-event", methods=["GET", "POST"])
-        @login_required
-        def submit_event():
-            if not current_user.is_event_creator: # Check the flag
-                flash("You need to enable the 'Event Creator' role in your profile to add events.", "warning")
-                return redirect(url_for('edit_profile')) # Redirect to profile to enable
+@app.route("/submit-event", methods=["GET", "POST"])
+@login_required
+def submit_event():
+    if not current_user.is_event_creator: # Check the flag
+        flash("You need to enable the 'Event Creator' role in your profile to add events.", "warning")
+        return redirect(url_for('edit_profile')) # Redirect to profile to enable
 
-            form = EventForm()
-            # Populate venue choices (assuming Venue model exists)
-            # form.existing_venue_id.query = Venue.query.order_by(Venue.name) # Example
+    form = EventForm()
+    # Populate venue choices (assuming Venue model exists)
+    # form.existing_venue_id.query = Venue.query.order_by(Venue.name) # Example
 
-            if form.validate_on_submit():
-                # ... (existing logic for processing event and venue data) ...
-                # Make sure to import and use geocode_address from utils
-                # from utils.utils import geocode_address
-                # coordinates = geocode_address(...)
-                # ... create Event object ...
-                # db.session.add(event)
-                # db.session.commit()
-                flash("Event submitted successfully!", "success")
-                return redirect(url_for('events'))
-            chapters = Chapter.query.all()
-            return render_template("submit_event.html", form=form, chapters=chapters)
+    if form.validate_on_submit():
+        # ... (existing logic for processing event and venue data) ...
+        # Make sure to import and use geocode_address from utils
+        # from utils.utils import geocode_address
+        # coordinates = geocode_address(...)
+        # ... create Event object ...
+        # db.session.add(event)
+        # db.session.commit()
+        flash("Event submitted successfully!", "success")
+        return redirect(url_for('events'))
+    chapters = Chapter.query.all()
+    return render_template("submit_event.html", form=form, chapters=chapters)
 
-        # --- Authentication Routes ---
-        @app.route('/login', methods=['GET', 'POST'])
-        def login():
-            # ... (Keep existing login logic) ...
-            chapters = Chapter.query.all()
-            form = LoginForm() # Ensure form is initialized
-            return render_template('auth/login.html', form=form, chapters=chapters)
+# --- Authentication Routes ---
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    # ... (Keep existing login logic) ...
+    chapters = Chapter.query.all()
+    form = LoginForm() # Ensure form is initialized
+    return render_template('auth/login.html', form=form, chapters=chapters)
 
-        @app.route('/logout')
-        @login_required
-        def logout():
-           # ... (Keep existing logout logic) ...
-           return redirect(url_for('login'))
-
-
-        @app.route('/register', methods=['GET', 'POST'])
-        def register():
-            # ... (Keep existing registration logic using primary_role radio buttons) ...
-            # Ensure you import MembershipTier, Chapter, Role, generate_password_hash
-            form = SignupForm() # Ensure form is initialized
-            # Populate choices dynamically if needed
-            # form.membership_tier.choices = [...]
-            # form.chapter_id.choices = [...]
-            chapters = Chapter.query.all()
-            return render_template('auth/register.html', form=form, chapters=chapters)
-
-        @app.route("/reset-password-request", methods=["GET", "POST"])
-        def reset_password_request():
-             # ... (Keep existing logic) ...
-             form = ResetPasswordRequestForm() # Ensure form is initialized
-             chapters = Chapter.query.all()
-             return render_template('reset_password_request.html', form=form, chapters=chapters)
+@app.route('/logout')
+@login_required
+def logout():
+   # ... (Keep existing logout logic) ...
+   return redirect(url_for('login'))
 
 
-        @app.route("/reset-password/<token>", methods=["GET", "POST"])
-        def reset_password(token):
-            # ... (Keep existing logic) ...
-            form = ResetPasswordForm() # Ensure form is initialized
-            chapters = Chapter.query.all()
-            return render_template('reset_password.html', form=form, token=token, chapters=chapters)
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    # ... (Keep existing registration logic using primary_role radio buttons) ...
+    # Ensure you import MembershipTier, Chapter, Role, generate_password_hash
+    form = SignupForm() # Ensure form is initialized
+    # Populate choices dynamically if needed
+    # form.membership_tier.choices = [...]
+    # form.chapter_id.choices = [...]
+    chapters = Chapter.query.all()
+    return render_template('auth/register.html', form=form, chapters=chapters)
+
+@app.route("/reset-password-request", methods=["GET", "POST"])
+def reset_password_request():
+     # ... (Keep existing logic) ...
+     form = ResetPasswordRequestForm() # Ensure form is initialized
+     chapters = Chapter.query.all()
+     return render_template('reset_password_request.html', form=form, chapters=chapters)
 
 
-        # --- User Profile & Settings ---
-        @app.route('/profile')
-        @login_required
-        def profile():
-             # Simple profile view page
-             chapters = Chapter.query.all()
-             return render_template('profile.html', user=current_user, chapters=chapters)
+@app.route("/reset-password/<token>", methods=["GET", "POST"])
+def reset_password(token):
+    # ... (Keep existing logic) ...
+    form = ResetPasswordForm() # Ensure form is initialized
+    chapters = Chapter.query.all()
+    return render_template('reset_password.html', form=form, token=token, chapters=chapters)
 
-        @app.route('/profile/edit', methods=['GET', 'POST'])
-        @login_required
-        def edit_profile():
-             form = ProfileForm(obj=current_user) # Pre-populate form
 
-             if request.method == 'POST':
-                 # Handle role activation
-                 role_to_activate = request.form.get('activate_role')
-                 if role_to_activate:
-                     if role_to_activate == 'organizer':
-                         current_user.is_organizer = True
-                         current_user.is_event_creator = True # Organizers can also create
-                     elif role_to_activate == 'vendor':
-                         current_user.is_vendor = True
-                     elif role_to_activate == 'event_creator':
-                          current_user.is_event_creator = True
-                     # Add other roles if needed (e.g., sponsor)
+# --- User Profile & Settings ---
+@app.route('/profile')
+@login_required
+def profile():
+     # Simple profile view page
+     chapters = Chapter.query.all()
+     return render_template('profile.html', user=current_user, chapters=chapters)
 
-                     try:
-                         db.session.commit()
-                         flash(f"Your {role_to_activate.capitalize()} features are now active! Please complete the relevant profile section below.", "success")
-                         # Re-render the form to show new sections immediately
-                         return render_template('edit_profile.html', form=form, chapters=Chapter.query.all())
-                     except Exception as e:
-                         db.session.rollback()
-                         logger.error(f"Error activating role: {str(e)}")
-                         flash("Could not activate role. Please try again.", "danger")
+@app.route('/profile/edit', methods=['GET', 'POST'])
+@login_required
+def edit_profile():
+     form = ProfileForm(obj=current_user) # Pre-populate form
 
-                 # Handle profile data submission if not activating role
-                 elif form.validate_on_submit():
-                     # Update standard profile fields
-                     current_user.username = form.username.data
-                     current_user.first_name = form.first_name.data
-                     current_user.last_name = form.last_name.data
-                     # ... (update other personal/social fields) ...
+     if request.method == 'POST':
+         # Handle role activation
+         role_to_activate = request.form.get('activate_role')
+         if role_to_activate:
+             if role_to_activate == 'organizer':
+                 current_user.is_organizer = True
+                 current_user.is_event_creator = True # Organizers can also create
+             elif role_to_activate == 'vendor':
+                 current_user.is_vendor = True
+             elif role_to_activate == 'event_creator':
+                  current_user.is_event_creator = True
+             # Add other roles if needed (e.g., sponsor)
 
-                     # Update role flags based on checkboxes
-                     current_user.is_event_creator = form.enable_event_creator.data
-                     current_user.is_organizer = form.enable_organizer.data
-                     current_user.is_vendor = form.enable_vendor.data
-                     if current_user.is_organizer: # Ensure organizers can create events
-                        current_user.is_event_creator = True
+             try:
+                 db.session.commit()
+                 flash(f"Your {role_to_activate.capitalize()} features are now active! Please complete the relevant profile section below.", "success")
+                 # Re-render the form to show new sections immediately
+                 return render_template('edit_profile.html', form=form, chapters=Chapter.query.all())
+             except Exception as e:
+                 db.session.rollback()
+                 logger.error(f"Error activating role: {str(e)}")
+                 flash("Could not activate role. Please try again.", "danger")
 
-                     # Update organizer/vendor fields *if* role is enabled
-                     if current_user.is_organizer:
-                         current_user.business_name = form.business_name.data
-                         # ... (update other organizer fields) ...
-                     if current_user.is_vendor:
-                          # current_user.vendor_type = form.vendor_type.data # Assuming vendor_type is added back later
-                          pass # Add vendor field updates here
+         # Handle profile data submission if not activating role
+         elif form.validate_on_submit():
+             # Update standard profile fields
+             current_user.username = form.username.data
+             current_user.first_name = form.first_name.data
+             current_user.last_name = form.last_name.data
+             # ... (update other personal/social fields) ...
 
-                     try:
-                         db.session.commit()
-                         flash('Profile updated successfully!', 'success')
-                         return redirect(url_for('profile')) # Redirect to view profile page
-                     except Exception as e:
-                         db.session.rollback()
-                         logger.error(f"Error updating profile: {str(e)}")
-                         flash("Could not update profile. Please try again.", "danger")
+             # Update role flags based on checkboxes
+             current_user.is_event_creator = form.enable_event_creator.data
+             current_user.is_organizer = form.enable_organizer.data
+             current_user.is_vendor = form.enable_vendor.data
+             if current_user.is_organizer: # Ensure organizers can create events
+                current_user.is_event_creator = True
 
-             # Pre-populate checkboxes on GET request
-             elif request.method == "GET":
-                 form.enable_event_creator.data = current_user.is_event_creator
-                 form.enable_organizer.data = current_user.is_organizer
-                 form.enable_vendor.data = current_user.is_vendor
+             # Update organizer/vendor fields *if* role is enabled
+             if current_user.is_organizer:
+                 current_user.business_name = form.business_name.data
+                 # ... (update other organizer fields) ...
+             if current_user.is_vendor:
+                  # current_user.vendor_type = form.vendor_type.data # Assuming vendor_type is added back later
+                  pass # Add vendor field updates here
 
-             chapters = Chapter.query.all()
-             return render_template('edit_profile.html', form=form, chapters=chapters)
+             try:
+                 db.session.commit()
+                 flash('Profile updated successfully!', 'success')
+                 return redirect(url_for('profile')) # Redirect to view profile page
+             except Exception as e:
+                 db.session.rollback()
+                 logger.error(f"Error updating profile: {str(e)}")
+                 flash("Could not update profile. Please try again.", "danger")
 
-        # --- Static Pages & Other ---
-        @app.route('/about')
-        def about():
-            chapters = Chapter.query.all()
-            return render_template('main/about.html', chapters=chapters)
+     # Pre-populate checkboxes on GET request
+     elif request.method == "GET":
+         form.enable_event_creator.data = current_user.is_event_creator
+         form.enable_organizer.data = current_user.is_organizer
+         form.enable_vendor.data = current_user.is_vendor
 
-        @app.route('/contact', methods=['GET', 'POST'])
-        def contact():
-            form = ContactForm()
-            if form.validate_on_submit():
-                # ... (Handle contact form submission - e.g., send email) ...
-                flash('Thank you for your message!', 'success')
-                return redirect(url_for('contact'))
-            chapters = Chapter.query.all()
-            return render_template('main/contact.html', form=form, chapters=chapters)
+     chapters = Chapter.query.all()
+     return render_template('edit_profile.html', form=form, chapters=chapters)
 
-        @app.route('/help')
-        def help():
-            chapters = Chapter.query.all()
-            # Fetch FAQ articles if needed for the help template
-            help_articles = HelpArticle.query.all()
-            return render_template('main/help.html', chapters=chapters, help_articles=help_articles)
+# --- Static Pages & Other ---
+@app.route('/about')
+def about():
+    chapters = Chapter.query.all()
+    return render_template('main/about.html', chapters=chapters)
 
-        @app.route('/terms')
-        def terms():
-            chapters = Chapter.query.all()
-            return render_template('main/terms.html', chapters=chapters)
+@app.route('/contact', methods=['GET', 'POST'])
+def contact():
+    form = ContactForm()
+    if form.validate_on_submit():
+        # ... (Handle contact form submission - e.g., send email) ...
+        flash('Thank you for your message!', 'success')
+        return redirect(url_for('contact'))
+    chapters = Chapter.query.all()
+    return render_template('main/contact.html', form=form, chapters=chapters)
 
-        @app.route('/privacy')
-        def privacy():
-            chapters = Chapter.query.all()
-            return render_template('main/privacy.html', chapters=chapters)
+@app.route('/help')
+def help():
+    chapters = Chapter.query.all()
+    # Fetch FAQ articles if needed for the help template
+    help_articles = HelpArticle.query.all()
+    return render_template('main/help.html', chapters=chapters, help_articles=help_articles)
 
-        @app.route('/definitions') # Added Definitions route
-        def definitions():
-            chapters = Chapter.query.all()
-            return render_template('main/definitions.html', chapters=chapters)
+@app.route('/terms')
+def terms():
+    chapters = Chapter.query.all()
+    return render_template('main/terms.html', chapters=chapters)
 
-        @app.route('/chapters')
-        def chapters():
-             chapters = Chapter.query.all()
-             return render_template('chapters.html', chapters=chapters)
+@app.route('/privacy')
+def privacy():
+    chapters = Chapter.query.all()
+    return render_template('main/privacy.html', chapters=chapters)
 
-        # --- DYNAMIC CHAPTER ROUTE ---
-        @app.route('/chapter/<string:slug>')
-        def chapter(slug):
-            chapter = Chapter.query.filter_by(slug=slug).first_or_404()
-            all_chapters = Chapter.query.all() # Needed for base template potentially
+@app.route('/definitions') # Added Definitions route
+def definitions():
+    chapters = Chapter.query.all()
+    return render_template('main/definitions.html', chapters=chapters)
 
-            # --- Placeholder for Trial Access Logic ---
-            can_view_full_content = False
-            if current_user.is_authenticated:
-                # Option 1: Paid members get full access
-                if current_user.membership_tier_id and current_user.membership_tier.price > 0:
-                     can_view_full_content = True
-                # Option 2: Check for active trial pass (implement fully later)
-                # elif user_has_active_trial(current_user):
-                #    can_view_full_content = True
-                pass # Add trial logic here
+@app.route('/chapters')
+def chapters():
+     chapters = Chapter.query.all()
+     return render_template('chapters.html', chapters=chapters)
 
-            # Pass can_view_full_content to the template
-            return render_template('chapter.html', chapter=chapter, chapters=all_chapters, can_view_full_content=can_view_full_content)
-            # ------------------------------------------
+# --- DYNAMIC CHAPTER ROUTE ---
+@app.route('/chapter/<string:slug>')
+def chapter(slug):
+    chapter = Chapter.query.filter_by(slug=slug).first_or_404()
+    all_chapters = Chapter.query.all() # Needed for base template potentially
 
-        # --- Fun Assistant Routes ---
-        @app.route('/fun-assistant')
-        @login_required # Require login to use the assistant
-        def fun_assistant_page():
-            """Renders the dedicated Fun Assistant chat page."""
-            chapters = Chapter.query.all() # Pass chapters if needed in base.html
-            return render_template('main/fun_assistant.html', chapters=chapters)
+    # --- Placeholder for Trial Access Logic ---
+    can_view_full_content = False
+    if current_user.is_authenticated:
+        # Option 1: Paid members get full access
+        if current_user.membership_tier_id and current_user.membership_tier.price > 0:
+             can_view_full_content = True
+        # Option 2: Check for active trial pass (implement fully later)
+        # elif user_has_active_trial(current_user):
+        #    can_view_full_content = True
+        pass # Add trial logic here
 
-        @app.route('/api/fun-assistant/chat', methods=['POST'])
-        @login_required
-        def fun_assistant_chat():
-            """Handles chat messages for the Fun Assistant."""
-            openai.api_key = os.environ.get("OPENAI_API_KEY")
-            if not openai.api_key:
-                 logger.error("OpenAI API Key not found in environment variables.")
-                 return jsonify({"error": "AI Assistant configuration error."}), 500
+    # Pass can_view_full_content to the template
+    return render_template('chapter.html', chapter=chapter, chapters=all_chapters, can_view_full_content=can_view_full_content)
+    # ------------------------------------------
 
-            try:
-                data = request.get_json()
-                user_message = data.get('message')
+# --- Fun Assistant Routes ---
+@app.route('/fun-assistant')
+@login_required # Require login to use the assistant
+def fun_assistant_page():
+    """Renders the dedicated Fun Assistant chat page."""
+    chapters = Chapter.query.all() # Pass chapters if needed in base.html
+    return render_template('main/fun_assistant.html', chapters=chapters)
 
-                if not user_message:
-                    return jsonify({"error": "No message provided."}), 400
+@app.route('/api/fun-assistant/chat', methods=['POST'])
+@login_required
+def fun_assistant_chat():
+    """Handles chat messages for the Fun Assistant."""
+    openai.api_key = os.environ.get("OPENAI_API_KEY")
+    if not openai.api_key:
+         logger.error("OpenAI API Key not found in environment variables.")
+         return jsonify({"error": "AI Assistant configuration error."}), 500
 
-                # --- Gather Context for OpenAI ---
-                # 1. User Info
-                user_interests = current_user.event_interests or "general fun"
-                user_location = current_user.location or "their current area"
+    try:
+        data = request.get_json()
+        user_message = data.get('message')
 
-                # 2. Relevant Events (Example: Fetch upcoming events nearby)
-                #    This needs refinement based on actual location data and filtering
-                relevant_events = Event.query.filter(Event.start_date >= datetime.utcnow().date())\
-                                            .order_by(Event.start_date)\
-                                            .limit(10).all() # Basic example
+        if not user_message:
+            return jsonify({"error": "No message provided."}), 400
 
-                event_context = "\nSome upcoming events:\n"
-                if relevant_events:
-                    for event in relevant_events:
-                         event_context += f"- {event.title} ({event.start_date.strftime('%Y-%m-%d')}, Fun Score: {event.fun_meter}/5): {event.description[:100]}...\n"
-                else:
-                    event_context = "\nNo specific upcoming events found in the database right now.\n"
+        # --- Gather Context for OpenAI ---
+        # 1. User Info
+        user_interests = current_user.event_interests or "general fun"
+        user_location = current_user.location or "their current area"
 
-                # --- Construct Prompt ---
-                prompt = f"""You are Fun Assistant, a friendly and helpful AI guide for the FunList.ai platform. Your goal is to help users discover fun local events based on their preferences.
+        # 2. Relevant Events (Example: Fetch upcoming events nearby)
+        #    This needs refinement based on actual location data and filtering
+        relevant_events = Event.query.filter(Event.start_date >= datetime.utcnow().date())\
+                                    .order_by(Event.start_date)\
+                                    .limit(10).all() # Basic example
 
-                User Profile:
-                - Interests: {user_interests}
-                - Location: {user_location}
+        event_context = "\nSome upcoming events:\n"
+        if relevant_events:
+            for event in relevant_events:
+                 event_context += f"- {event.title} ({event.start_date.strftime('%Y-%m-%d')}, Fun Score: {event.fun_meter}/5): {event.description[:100]}...\n"
+        else:
+            event_context = "\nNo specific upcoming events found in the database right now.\n"
 
-                {event_context}
+        # --- Construct Prompt ---
+        prompt = f"""You are Fun Assistant, a friendly and helpful AI guide for the FunList.ai platform. Your goal is to help users discover fun local events based on their preferences.
 
-                User Query: "{user_message}"
+        User Profile:
+        - Interests: {user_interests}
+        - Location: {user_location}
 
-                Based ONLY on the provided user profile and event context, answer the user's query. Recommend events from the list if they match the user's interests or location. If no listed events match, suggest general types of fun activities relevant to their interests. Mention the Fun Score when recommending specific events. Keep your responses concise, friendly, and focused on fun activities. Do not invent events not listed above.
-                """
+        {event_context}
 
-                logger.debug(f"Sending prompt to OpenAI: {prompt}")
+        User Query: "{user_message}"
 
-                # --- Call OpenAI API ---
-                try:
-                    response = openai.ChatCompletion.create(
-                        model="gpt-4", # Or your chosen model
-                        messages=[
-                            {"role": "system", "content": "You are Fun Assistant, helping users find fun local events."},
-                            {"role": "user", "content": prompt}
-                        ],
-                        max_tokens=150 # Adjust as needed
-                    )
-                    assistant_reply = response.choices[0].message['content'].strip()
-                    logger.debug(f"Received reply from OpenAI: {assistant_reply}")
+        Based ONLY on the provided user profile and event context, answer the user's query. Recommend events from the list if they match the user's interests or location. If no listed events match, suggest general types of fun activities relevant to their interests. Mention the Fun Score when recommending specific events. Keep your responses concise, friendly, and focused on fun activities. Do not invent events not listed above.
+        """
 
-                except Exception as openai_error:
-                     logger.error(f"OpenAI API Error: {str(openai_error)}")
-                     assistant_reply = "Sorry, I encountered an issue connecting to my knowledge base. Please try again later."
+        logger.debug(f"Sending prompt to OpenAI: {prompt}")
 
-                return jsonify({"reply": assistant_reply})
+        # --- Call OpenAI API ---
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-4", # Or your chosen model
+                messages=[
+                    {"role": "system", "content": "You are Fun Assistant, helping users find fun local events."},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=150 # Adjust as needed
+            )
+            assistant_reply = response.choices[0].message['content'].strip()
+            logger.debug(f"Received reply from OpenAI: {assistant_reply}")
 
-            except Exception as e:
-                logger.error(f"Error in /api/fun-assistant/chat: {str(e)}", exc_info=True)
-                return jsonify({"error": "An internal error occurred."}), 500
+        except Exception as openai_error:
+             logger.error(f"OpenAI API Error: {str(openai_error)}")
+             assistant_reply = "Sorry, I encountered an issue connecting to my knowledge base. Please try again later."
 
-        # --- Other Routes (Placeholder/Keep Existing) ---
-        @app.route('/admin/dashboard')
-        @login_required
-        #@admin_required # Add decorator back once roles are solid
-        def admin_dashboard():
-             # ... (Keep existing logic) ...
-             chapters = Chapter.query.all()
-             # Fetch necessary data for the admin dashboard
-             stats = { "pending_events": 0, "total_users": 0, "todays_events": 0, "new_users_24h": 0} # Placeholder
-             events = [] # Placeholder
-             users = [] # Placeholder
-             events_by_category = {"labels": [], "datasets": [{"data":[]}]} # Placeholder
-             user_growth_data = {"labels": [], "datasets": [{"label": "New Users", "data":[]}]} # Placeholder
-             return render_template('admin/dashboard.html', chapters=chapters, stats=stats, events=events, users=users, status='pending', events_by_category=events_by_category, user_growth_data=user_growth_data)
+        return jsonify({"reply": assistant_reply})
 
-        # Add other routes from your previous routes.py here, ensuring imports are correct
-        # ... e.g., /marketplace, /admin/users, /api/feedback, /search, etc. ...
+    except Exception as e:
+        logger.error(f"Error in /api/fun-assistant/chat: {str(e)}", exc_info=True)
+        return jsonify({"error": "An internal error occurred."}), 500
 
-        @app.route("/api/feedback", methods=['POST'])
-        def submit_feedback():
-             # ... (Keep existing logic) ...
-             pass
+# --- Other Routes (Placeholder/Keep Existing) ---
+@app.route('/admin/dashboard')
+@login_required
+#@admin_required # Add decorator back once roles are solid
+def admin_dashboard():
+     # ... (Keep existing logic) ...
+     chapters = Chapter.query.all()
+     # Fetch necessary data for the admin dashboard
+     stats = { "pending_events": 0, "total_users": 0, "todays_events": 0, "new_users_24h": 0} # Placeholder
+     events = [] # Placeholder
+     users = [] # Placeholder
+     events_by_category = {"labels": [], "datasets": [{"data":[]}]} # Placeholder
+     user_growth_data = {"labels": [], "datasets": [{"label": "New Users", "data":[]}]} # Placeholder
+     return render_template('admin/dashboard.html', chapters=chapters, stats=stats, events=events, users=users, status='pending', events_by_category=events_by_category, user_growth_data=user_growth_data)
 
-        @app.route("/search", methods=["GET", "POST"])
-        def search():
-             # ... (Keep existing logic, ensure HelpArticle is imported) ...
-             form = SearchForm() # Ensure form is initialized
-             chapters = Chapter.query.all()
-             return render_template("main/search.html", form=form, results=[], query=None, chapters=chapters) # updated path
+# Add other routes from your previous routes.py here, ensuring imports are correct
+# ... e.g., /marketplace, /admin/users, /api/feedback, /search, etc. ...
 
-        # Ensure all template paths use the 'main/' prefix where appropriate
-        # Example: render_template('main/about.html') instead of render_template('about.html')
+@app.route("/api/feedback", methods=['POST'])
+def submit_feedback():
+     # ... (Keep existing logic) ...
+     pass
+
+@app.route("/search", methods=["GET", "POST"])
+def search():
+     # ... (Keep existing logic, ensure HelpArticle is imported) ...
+     form = SearchForm() # Ensure form is initialized
+     chapters = Chapter.query.all()
+     return render_template("main/search.html", form=form, results=[], query=None, chapters=chapters) # updated path
+
+# Ensure all template paths use the 'main/' prefix where appropriate
+# Example: render_template('main/about.html') instead of render_template('about.html')
+
+def init_routes(app):
+    """Initialize all routes with the Flask app instance"""
+    # This function is a placeholder for compatibility with the import in app.py
+    # Since we're defining routes directly with the app instance imported at the module level,
+    # we don't need to do anything in this function
+    pass
