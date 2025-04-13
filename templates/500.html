@@ -1,19 +1,18 @@
 {% extends "base.html" %}
 
-{% block title %}Server Error{% endblock %}
+{% block title %}Server Error - FunList.ai{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h2 class="text-center mb-0">Server Error</h2>
-            </div>
-            <div class="card-body text-center">
-                <i class="fas fa-exclamation-circle fa-3x text-danger mb-3"></i>
-                <p>An unexpected error has occurred.</p>
-                <p>Our technical team has been notified. Please try again later.</p>
-                <a href="{{ url_for('index') }}" class="btn btn-primary">Go to Homepage</a>
+<div class="container mt-5 pt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <h1 class="display-1 text-danger">500</h1>
+            <h2 class="mb-4">Server Error</h2>
+            <p class="lead">Sorry, something went wrong on our server.</p>
+            <p class="mb-4">Our technical team has been notified and is working on the issue.</p>
+            <div class="mt-4">
+                <a href="{{ url_for('index') }}" class="btn btn-primary me-2">Return Home</a>
+                <button onclick="window.location.reload()" class="btn btn-outline-secondary">Try Again</button>
             </div>
         </div>
     </div>

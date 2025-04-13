@@ -193,19 +193,33 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    console.log("Map page loaded, initializing map with FunlistMap...");
+    console.log("Map page loaded, initializing map...");
     
-    // Initialize the map using the FunlistMap module
-    const map = FunlistMap.init('map');
-    if (!map) {
-        console.error("Failed to initialize map");
-        return;
-    }
-    
+    // Variables to store map state
+    let map = null;
+    const markers = {};
     let visibleEventIds = [];
     
-    // For backward compatibility with existing code
+    // Initialize the map using the FunlistMap module if available
+    if (typeof FunlistMap !== 'undefined') {
+        console.log("Using FunlistMap module");
+        map = FunlistMap.init('map');
+        if (!map) {
+            console.error("Failed to initialize map with FunlistMap, falling back to direct initialization");
+            initMap();
+        } else {
+            console.log("FunlistMap initialized successfully");
+            // Add event markers to the map
+            addEventMarkers();
+        }
+    } else {
+        console.log("FunlistMap module not found, using direct initialization");
+        initMap();
+    }
+    
+    // For compatibility or fallback
     function initMap() {
+        console.log("Initializing map directly");
         // Default location (Olympia, WA)
         const defaultLocation = [47.0379, -122.9007];
         

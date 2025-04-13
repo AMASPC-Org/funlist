@@ -8,6 +8,9 @@ window.FunlistMap = (function() {
     let userMarker = null;
     let infoWindow = null;
     let eventMarkers = {};
+    
+    // Check if Leaflet is available
+    const hasLeaflet = typeof L !== 'undefined';
 
     function init(elementId) {
         console.log("Initializing map in element:", elementId);
@@ -15,6 +18,11 @@ window.FunlistMap = (function() {
         const mapElement = document.getElementById(elementId);
         if (!mapElement) {
             console.error("Map container element not found:", elementId);
+            return null;
+        }
+        
+        if (!hasLeaflet) {
+            console.error("Leaflet library not loaded. Make sure it's included before map.js");
             return null;
         }
 
@@ -29,7 +37,8 @@ window.FunlistMap = (function() {
 
             // Set up map event listeners
             setupMapEventListeners(mapInstance);
-
+            
+            console.log("Map initialized successfully");
             return mapInstance;
         } catch (error) {
             console.error("Error initializing map:", error);

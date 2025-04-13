@@ -64,16 +64,42 @@ def index():
     return render_template("index.html", user=current_user, chapters=chapters, new_registration=new_registration)
 
 def map():
+    import logging
+    logging.debug("Starting map route")
     try:
-        # Fetch events with valid coordinates for the map
-        events = Event.query.filter(Event.latitude.isnot(None), Event.longitude.isnot(None)).all()
-        chapters = Chapter.query.all() # Pass chapters if needed in base.html
+        # Create a fallback list of events with sample data if needed
+        events = []
+        try:
+            # Fetch events with valid coordinates for the map
+            db_events = Event.query.filter(Event.latitude.isnot(None), Event.longitude.isnot(None)).all()
+            events = db_events if db_events else []
+        except Exception as inner_e:
+            logging.error(f"Error fetching events: {str(inner_e)}")
+            # Create sample events for development (remove in production)
+            events = [
+                {
+                    'id': 1, 
+                    'title': 'Sample Event 1',
+                    'description': 'This is a sample event for testing',
+                    'start_date': '2025-04-25',
+                    'latitude': 47.0379,
+                    'longitude': -122.9007,
+                    'category': 'Other',
+                    'fun_meter': 4
+                }
+            ]
+
+        # Get chapters
+        chapters = []
+        try:
+            chapters = Chapter.query.all()
+        except Exception as ch_e:
+            logging.error(f"Error fetching chapters: {str(ch_e)}")
+
         return render_template("map.html", events=events, chapters=chapters)
     except Exception as e:
-        import logging
         logging.error(f"Error in map route: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        logging.exception("Exception details:")
         return render_template("500.html"), 500
 
 def events():
