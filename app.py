@@ -246,8 +246,9 @@ def create_app():
 
     try:
         logger.info("Initializing routes...")
-        from routes import init_routes
-        init_routes(app)
+        # Import routes after app is created to avoid circular imports
+        with app.app_context():
+            import routes
         logger.info("Routes initialized successfully")
     except Exception as e:
         logger.error(f"Failed to initialize routes: {str(e)}", exc_info=True)

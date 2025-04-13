@@ -1,12 +1,13 @@
 import os
 import logging
 from flask import render_template, flash, redirect, url_for, request, session, jsonify
+from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user, login_required, login_user, logout_user
 from forms import (SignupForm, LoginForm, ProfileForm, EventForm,
                    ResetPasswordRequestForm, ResetPasswordForm, ContactForm, SearchForm) # Added ContactForm, SearchForm
 from models import User, Event, Subscriber, Chapter, HelpArticle, CharterMember # Added HelpArticle, CharterMember
-from app import app, db
+from db_init import db
 # Removed direct import of geocode_address, assume it's in utils.utils now
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from datetime import datetime, timedelta
@@ -23,15 +24,31 @@ def admin_required(f):
 
 def chapter_leader_required(f):
     # ... (keep existing decorator) ...
-     pass # Placeholder
+     @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_admin:
+            flash('You need admin privileges to access this page.', 'warning')
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 def sponsor_required(f):
-    # ... (keep existing decorator) ...
-     pass # Placeholder
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_sponsor:
+            flash('You need sponsor privileges to access this page.', 'warning')
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 def investor_required(f):
-    # ... (keep existing decorator) ...
-     pass # Placeholder
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_investor:
+            flash('You need investor privileges to access this page.', 'warning')
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 # --- Core Routes ---
 @app.route("/")
