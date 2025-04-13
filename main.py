@@ -16,7 +16,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-def find_available_port(start_port=8080, max_attempts=15):
+def find_available_port(start_port=3000, max_attempts=15):
     """Find an available port starting from start_port."""
     port = start_port
     for _ in range(max_attempts):
@@ -34,9 +34,9 @@ def run_flask_app():
     """Run the Flask application."""
     try:
         # Try to use PORT env variable, but find an available port if busy
-        preferred_port = int(os.environ.get("PORT", 8080))
+        preferred_port = int(os.environ.get("PORT", 5000))
         port = None
-
+        
         # First check if preferred port is available
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             try:
@@ -46,8 +46,8 @@ def run_flask_app():
                 port = preferred_port
             except OSError:
                 # If preferred port is busy, find another available port
-                port = find_available_port(8080)
-
+                port = find_available_port(5000)
+                
         print(f"\033c", flush=True)  # Clear console
         print(f"Starting Flask server on port {port}")
         print(f"\n🚀 Server running at: http://0.0.0.0:{port}")
@@ -111,11 +111,8 @@ except Exception as e:
 
 
 if __name__ == "__main__":
-    port = 8080
-
-    print(f"\nStarting Flask server on port {port}")
-    print(f"\n🚀 Server running at: http://0.0.0.0:{port}")
-    print(f"🌐 Public URL: https://workspace.AMASPC.repl.co")
-
-    app = create_app()
-    app.run(host="0.0.0.0", port=port)
+    try:
+        run_flask_app()
+    except Exception as e:
+        logger.error(f"Fatal error in main: {e}", exc_info=True)
+        sys.exit(1)

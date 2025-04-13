@@ -2573,16 +2573,7 @@ footer {
 }
 
 .user-icon-container i {
-    font-size: 14px; /* Appropriate size for the container */
-    color: #ffffff !important; /* Force white color with !important */
-    display: flex; /* Better centering */
-    align-items: center;
-    justify-content: center;
-    line-height: 1; /* Ensure proper vertical alignment */
-    margin: 0; /* Remove any margins */
-    text-shadow: 0 0 2px rgba(0,0,0,0.3); /* Add slight shadow for better contrast */
-    width: 100%;
-    height: 100%;
+    font-size: 16px;
 }
 
 .user-icon-container:hover {

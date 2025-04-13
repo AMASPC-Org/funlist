@@ -1,26 +1,44 @@
-run = "python main.py"
-entrypoint = "main.py"
-modules = ["python-3.11:v1-20240612-77ad89c"]
-
-hidden = [".pythonlibs"]
+modules = ["python-3.11"]
 
 [nix]
-channel = "stable-23_11"
+channel = "stable-24_05"
 
 [deployment]
 run = ["sh", "-c", "python main.py"]
-deploymentTarget = "cloudrun"
-
-[[ports]]
-localPort = 8080
-externalPort = 80
-exposeLocalhost = true
 
 [env]
 PORT = "3000"
 
+[[ports]]
+localPort = 3000
+externalPort = 80
+
+[[ports]]
+localPort = 5000
+externalPort = 5000
+
+[[ports]]
+localPort = 5001
+externalPort = 3001
+
+[[ports]]
+localPort = 5002
+externalPort = 3002
+
+[[ports]]
+localPort = 8080
+externalPort = 8080
+
+[[ports]]
+localPort = 8081
+externalPort = 8081
+
+[[ports]]
+localPort = 8082
+externalPort = 3000
+
 [workflows]
-runButton = "Run App"
+runButton = "Flask Server (5000)"
 
 [[workflows.workflow]]
 name = "Run"
@@ -80,40 +98,3 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python main.py"
-
-[[workflows.workflow]]
-name = "Run App"
-author = 36270944
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python main.py"
-
-[[ports]]
-localPort = 3000
-externalPort = 80
-
-[[ports]]
-localPort = 5000
-externalPort = 5000
-
-[[ports]]
-localPort = 5001
-externalPort = 3001
-
-[[ports]]
-localPort = 5002
-externalPort = 3002
-
-[[ports]]
-localPort = 8080
-externalPort = 80
-
-[[ports]]
-localPort = 8081
-externalPort = 8081
-
-[[ports]]
-localPort = 8082
-externalPort = 3000
