@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Fun Assistant | FunList.ai{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h1 class="text-center mb-4">Your Personal Fun Assistant</h1>
+            <div class="chat-container card">
+                <div class="card-body chat-log" id="chat-log" style="height: 400px; overflow-y: scroll;">
+                    <!-- Chat messages will appear here -->
+                    <div class="chat-message assistant mb-2">
+                        <p class="mb-0 p-2 rounded bg-light">Hi {{ current_user.first_name or 'there' }}! How can I help you find some fun events today?</p>
+                    </div>
+                </div>
+                <div class="card-footer chat-input-area">
+                    <form id="chat-form">
+                        <div class="input-group">
+                            <input type="text" id="user-input" class="form-control" placeholder="Ask about events, interests, dates..." required>
+                            <button type="submit" id="send-button" class="btn btn-primary">
+                                <i data-feather="send"></i> Send
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const chatLog = document.getElementById('chat-log');
+        const chatForm = document.getElementById('chat-form');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+
+        // Function to add a message to the chat log
+        function appendMessage(sender, message) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('chat-message', sender, 'mb-2'); // sender is 'user' or 'assistant'
+            const messageContent = document.createElement('p');
+            messageContent.classList.add('mb-0', 'p-2', 'rounded');
+             if (sender === 'user') {
+                messageContent.classList.add('bg-white', 'border'); // Style user messages
+                 messageContent.innerHTML = `<strong>You:</strong> ${message}`;
+            } else {
+                messageContent.classList.add('bg-light'); // Style assistant messages
+                messageContent.innerHTML = `<strong>Fun Assistant:</strong> ${message}`;
+            }
+            messageDiv.appendChild(messageContent);
+            chatLog.appendChild(messageDiv);
+            chatLog.scrollTop = chatLog.scrollHeight; // Scroll to bottom
+        }
+
+        // Function to handle sending a message
+        async function sendMessage(event) {
+            event.preventDefault(); // Prevent default form submission
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            appendMessage('user', message); // Display user message
+            userInput.value = ''; // Clear input
+            sendButton.disabled = true; // Disable button while waiting
+
+            // Optional: Show loading indicator
+            appendMessage('assistant', '<i>Thinking...</i>');
+             const loadingMessage = chatLog.lastElementChild; // Get reference to loading message
+
+            try {
+                const response = await fetch('/api/fun-assistant/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token() }}' // Add CSRF token
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+
+                 chatLog.removeChild(loadingMessage); // Remove loading indicator
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                if (data.reply) {
+                    appendMessage('assistant', data.reply);
+                } else if (data.error) {
+                     appendMessage('assistant', `Sorry, an error occurred: ${data.error}`);
+                } else {
+                     appendMessage('assistant', 'Sorry, I received an unexpected response.');
+                }
+
+            } catch (error) {
+                console.error('Error sending message:', error);
+                 if(loadingMessage && chatLog.contains(loadingMessage)) { // Check if still exists
+                   chatLog.removeChild(loadingMessage);
+                 }
+                appendMessage('assistant', 'Sorry, there was a problem connecting to the assistant. Please try again.');
+            } finally {
+                 sendButton.disabled = false; // Re-enable button
+                 userInput.focus(); // Refocus input
+            }
+        }
+
+        // Add event listener for form submission
+        chatForm.addEventListener('submit', sendMessage);
+
+         // Re-initialize feather icons just in case
+        feather.replace();
+    });
+</script>
+{% endblock %}

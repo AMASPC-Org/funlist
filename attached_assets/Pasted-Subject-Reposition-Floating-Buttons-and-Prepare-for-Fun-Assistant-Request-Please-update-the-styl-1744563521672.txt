@@ -1,0 +1,27 @@
+Subject: Reposition Floating Buttons and Prepare for Fun Assistant
+Request:
+Please update the styling and positioning of the floating "Feedback" and "Subscribe" buttons. The goal is to stack them vertically on the bottom-left side of the screen, making them slightly smaller and ensuring a good user experience on both desktop and mobile. This change is intended to clear the bottom-right corner for a future "Fun Assistant" button.
+Tasks:
+Locate Floating Buttons Partial: Find the template file that renders the floating buttons. This is likely templates/partials/floating_buttons.html.
+Modify CSS (static/css/custom.css):
+Find Existing Styles: Locate the existing CSS rules for .floating-buttons-container, .floating-button, .feedback-button, and .subscribe-button.
+Adjust Positioning:
+Change the positioning for .floating-buttons-container or the individual buttons to place them on the left side. Instead of right: 1.5rem;, use left: 1.5rem;. Remove any right properties from the individual button classes.
+Modify the layout within .floating-buttons-container (if necessary) or adjust individual button positioning (using bottom offsets) to make them stack vertically on the left. A simple way is to make the container narrow and let the buttons wrap, or use flexbox with flex-direction: column;.
+Resize Buttons: Reduce the padding, width, height, and font-size for the .floating-button class slightly to make them less obtrusive, particularly the circular mobile version. Adjust the icon size (i tag within the button) accordingly.
+Ensure Spacing: Add a small margin-bottom to the button that will appear on top (likely Feedback) to create space between the stacked buttons.
+Mobile Stacking: Double-check the media query (@media (max-width: 576px)) to ensure the buttons stack correctly and look good as smaller circles on the left. Adjust bottom and left properties within the media query as needed.
+Remove Conflicting Styles: Delete any previous styles that might interfere with left-side vertical stacking (e.g., right properties, justify-content: space-between on the container if it exists).
+Verify HTML Structure (templates/partials/floating_buttons.html):
+Ensure the HTML structure within the partial is clean. It should likely be a main container (.floating-buttons-container) holding the two button <a> tags directly.
+(Future Placeholder - No Code Needed Now): Keep in mind that the bottom-right corner is now reserved. We will add the "Fun Assistant" button there in a separate step.
+Provide Complete Code: Return the complete, fully edited code for:
+static/css/custom.css (with the updated floating button styles)
+templates/partials/floating_buttons.html (if any structural changes were needed, otherwise confirm no changes)
+Context:
+The current floating buttons are on opposite sides (Feedback left, Subscribe right).
+We want both buttons stacked vertically on the bottom-left.
+The buttons should be slightly smaller.
+This makes space for a new "Fun Assistant" button on the bottom-right (to be added later).
+The design needs to work well on desktop and mobile.
+Please implement these style and layout changes.

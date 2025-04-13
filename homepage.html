@@ -1,0 +1,938 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="FunList.ai - Your AI-powered guide to fun events and activities in your area">
+    <meta name="csrf-token" content="IjdjMGU0YmExZGFiNmE3MDJlOWE0ODQxNTkxMWIyNmFlZjI2MWM0Mjci.Z_vuHw.C83GGATLpPhfMXvDYqaiGpikKzA">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: data:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https: blob:; font-src 'self' https:; connect-src 'self' https: wss:; frame-src 'self' https:;">
+
+    <title>Welcome to FunList.ai</title>
+    <link rel="icon" href="/static/images/favicon.ico" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    
+
+    <!-- Custom CSS with cache-busting -->
+    <link rel="stylesheet" href="/static/css/custom.css?v=6640">
+    <link rel="stylesheet" href="/static/css/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <style>
+        .cookie-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #f8f9fa;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .cookie-content p {
+            margin: 0;
+            display: inline;
+        }
+        .cookie-content a {
+            margin-left: 10px;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .cookie-content a:hover {
+            text-decoration: underline;
+        }
+        .cookie-buttons {
+            margin-top: 10px;
+        }
+        .cookie-buttons button {
+            margin: 0 5px;
+        }
+    </style>
+</head>
+<body 
+      data-user-is-organizer="false"
+      data-user-is-event-creator="false">
+  <!-- Main Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+  <div class="container">
+    <!-- Mobile Only: Hamburger -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+      <i class="fas fa-bars nav-icon"></i>
+    </button>
+
+    <!-- Logo/Brand -->
+    <a class="navbar-brand position-absolute start-50 translate-middle-x" href="/">
+        <span class="fs-4 fw-bold">FunList.ai</span>
+    </a>
+
+    <!-- User Menu (Desktop & Mobile) -->
+    
+
+    <!-- Main Navigation Links (Collapses on Mobile) -->
+    <div class="collapse navbar-collapse" id="navbarContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link" href="/map">Map</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/events">Events</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="main-nav-add-event" href="/submit-event">Add Event</a>
+        </li>
+        
+        
+      </ul>
+
+      <!-- Search or Login/Signup based on auth state -->
+      <div class="d-flex align-items-center">
+        
+          <a href="/login" class="btn btn-sm btn-outline-primary me-2">Login</a>
+          <a href="/signup" class="btn btn-sm btn-primary">Sign Up</a>
+        
+      </div>
+    </div>
+  </div>
+</nav>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Function to check user roles and show modal if needed
+  function checkRoleAndShowModal(event) {
+    // Get user role data attributes from body
+    const isOrganizer = document.body.dataset.userIsOrganizer === 'true';
+    const isEventCreator = document.body.dataset.userIsEventCreator === 'true';
+    const isVendor = document.body.dataset.userIsVendor === 'true';
+
+    // If user doesn't have the required roles
+    if (!isOrganizer && !isEventCreator && !isVendor) {
+      event.preventDefault();
+
+      // Create modal for role check
+      const modalHTML = `
+        <div class="modal fade" id="roleCheckModal" tabindex="-1" aria-labelledby="roleCheckModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="roleCheckModalLabel">Event Creator Access Required</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>You need to be registered as an Event Organizer or Event Creator to add events.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <a href="/signup?as=organizer" class="btn btn-primary">Register as Organizer</a>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+
+        // Add modal to document
+        const modalContainer = document.createElement('div');
+        modalContainer.innerHTML = modalHTML;
+        document.body.appendChild(modalContainer);
+
+        // Show the modal
+        const roleCheckModal = new bootstrap.Modal(document.getElementById('roleCheckModal'));
+        roleCheckModal.show();
+
+        // Cleanup modal when hidden
+        document.getElementById('roleCheckModal').addEventListener('hidden.bs.modal', function() {
+          document.body.removeChild(modalContainer);
+        });
+      }
+    }
+
+    // Add event listeners to all Add Event links
+    const addEventLink = document.getElementById('add-event-link');
+    if (addEventLink) {
+      addEventLink.addEventListener('click', checkRoleAndShowModal);
+    }
+
+    const mainNavAddEvent = document.getElementById('main-nav-add-event');
+    if (mainNavAddEvent) {
+      mainNavAddEvent.addEventListener('click', checkRoleAndShowModal);
+    }
+
+    const mobileAddEvent = document.querySelector('.add-event-mobile');
+    if (mobileAddEvent) {
+      mobileAddEvent.addEventListener('click', checkRoleAndShowModal);
+    }
+});
+</script>
+
+<main role="main" class="mt-2">
+    <div class="flash-messages-container position-sticky top-0 z-3">
+        
+            
+        
+    </div>
+
+    
+<!-- Site Header and Main navigation are included from base.html -->
+
+<!-- Hero Section with improved spacing -->
+<section id="hero" class="hero-section mt-3"></section>
+
+<!-- Email Signup Modal -->
+<div class="modal fade" id="emailSignupModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Get Weekly Fun Updates</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="emailSignupForm">
+                    <div class="mb-3">
+                        <label for="signupEmail" class="form-label">Email address</label>
+                        <input type="email" class="form-control" id="signupEmail" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Subscribe</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content-section text-center py-5">
+    <div class="container">
+        <h1>Find the Best Events Near You – Rated for Fun!</h1>
+        <p class="lead">Discover fun-rated events in your area</p>
+
+        <div class="search-container mb-4">
+            <form action="/map" method="GET" class="search-form">
+                <div class="input-group">
+                    <input type="text" name="location" class="form-control form-control-lg" placeholder="Enter any location...">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-search"></i> Find Events
+                    </button>
+                </div>
+            </form>
+            <div class="text-center mt-2">
+                <a href="/map" class="btn btn-link">View Full Map</a>
+                <span class="mx-2">|</span>
+                <a href="/events" class="btn btn-link">Browse All Events</a>
+            </div>
+        </div>
+
+        <button class="btn btn-outline-primary btn-lg mt-3" data-bs-toggle="modal" data-bs-target="#emailSignupModal">
+            Get My Weekly FunList
+        </button>
+    </div>
+</section>
+
+<!-- Location functionality now uses browser's native prompt only -->
+
+<!-- Featured Events Section -->
+<section class="featured-events-section py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-4">Featured Events Near You</h2>
+        <div class="row" id="featured-events">
+            <!-- Featured events will be dynamically populated here -->
+        </div>
+    </div>
+</section>
+
+<!-- Main Features Grid -->
+<div class="container my-5">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="feature-box p-4 bg-light">
+                <h3>AI-Driven Curation</h3>
+                <p>Our AI analyzes thousands of events to find the perfect activities that match your interests and preferences.</p>
+                <a href="#ai-curation" class="btn btn-outline-primary mt-3">Learn More</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-box p-4 bg-light">
+                <h3>Fun Rating System</h3>
+                <p>Every event gets a fun rating based on activities, engagement level, and attendee experience.</p>
+                <a href="#fun-rating-section" class="btn btn-outline-primary mt-3">Learn More</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-box p-4 bg-light">
+                <h3>List Your Event</h3>
+                <p>Organize an event? Share it with our community and get discovered by fun-seeking attendees.</p>
+                <a href="/submit-event" class="btn btn-outline-primary mt-3">Submit Event</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Personal Fun Assistant Section -->
+<section id="fun-assistant" class="fun-assistant-section py-5 bg-light">
+    <div class="container">
+        <div class="row align-items-start">
+            <div class="col-md-6">
+                <h2>Your Personal Fun Assistant</h2>
+                <div style="max-width: 500px;">
+                    <p class="lead mb-4">Get personalized recommendations based on your interests and preferences:</p>
+                    <ul class="feature-list mb-4">
+                        <li>AI-powered event matching</li>
+                        <li>Based on the Fun Rating System</li>
+                        <li>Weekly personalized updates</li>
+                        <li>Customized notifications</li>
+                    </ul>
+                    <a href="#" class="btn btn-primary btn-lg">Try Fun Assistant Now</a>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chat-demo p-4 bg-white rounded shadow-sm mt-0">
+                    <div class="chat-message user mb-3">
+                        <strong>You:</strong> What fun events are happening this weekend?
+                    </div>
+                    <div class="chat-message assistant mb-3">
+                        <strong>Fun Assistant:</strong> Based on your interests in music and outdoor activities, I found these events:
+                        <ul>
+                            <li>Saturday: Downtown Music Festival (Fun Score: ⭐⭐⭐⭐)</li>
+                            <li>Sunday: Harbor Park Food & Wine (Fun Score: ⭐⭐⭐⭐⭐)</li>
+                        </ul>
+                    </div>
+                    <div class="chat-message user mb-3">
+                        <strong>You:</strong> Tell me more about the festival!
+                    </div>
+                    <div class="chat-message assistant">
+                        <strong>Fun Assistant:</strong> The Downtown Music Festival features 3 stages, local food vendors, and interactive art installations. It matches your preference for live music and social events!
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+<!-- Fun Rating System Section -->
+<section class="rating-system-section py-5">
+    <div class="container text-center">
+        <h2 class="mb-4">How the Fun Rating System Works</h2>
+        <p class="lead mb-5">Every event is rated on a 1-5 scale based on activities, engagement level, and attendee experience:</p>
+        <div class="rating-scale">
+            <div class="rating-item">
+                <span class="stars">⭐</span>
+                <p>Basic Event</p>
+            </div>
+            <div class="rating-item">
+                <span class="stars">⭐⭐</span>
+                <p>Social Elements</p>
+            </div>
+            <div class="rating-item">
+                <span class="stars">⭐⭐⭐</span>
+                <p>Interactive</p>
+            </div>
+            <div class="rating-item">
+                <span class="stars">⭐⭐⭐⭐</span>
+                <p>Multiple Activities</p>
+            </div>
+            <div class="rating-item">
+                <span class="stars">⭐⭐⭐⭐⭐</span>
+                <p>Full Experience</p>
+            </div>
+        </div>
+
+        <div class="rating-details mt-5">
+            <h3 class="mb-4">How Are Ratings Assigned?</h3>
+
+            <div class="accordion" id="ratingAccordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#whoAssigns">
+                            Who assigns Fun Ratings?
+                        </button>
+                    </h2>
+                    <div id="whoAssigns" class="accordion-collapse collapse show" data-bs-parent="#ratingAccordion">
+                        <div class="accordion-body">
+                            Event organizers initially assign their own rating during event submission.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#canAdjust">
+                            Can ratings be adjusted?
+                        </button>
+                    </h2>
+                    <div id="canAdjust" class="accordion-collapse collapse" data-bs-parent="#ratingAccordion">
+                        <div class="accordion-body">
+                            Yes, ratings may be adjusted based on user feedback and reviews after the event.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#highlyRated">
+                            What makes an event highly rated?
+                        </button>
+                    </h2>
+                    <div id="highlyRated" class="accordion-collapse collapse" data-bs-parent="#ratingAccordion">
+                        <div class="accordion-body">
+                            Events with multiple activities, interactive elements, and positive attendee experiences receive higher ratings.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+<!-- Community Sponsors Section -->
+<section class="sponsors-section py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-4">Community Sponsors</h2>
+        <div class="row" id="sponsors-carousel">
+            <!-- Sponsors will be populated dynamically -->
+            <div class="col-md-4 mb-4">
+                <div class="sponsor-card">
+                    <div class="sponsor-content">
+                        <img src="/static/images/rutledge_logo.png" alt="Rutledge Corn Maze">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Never Miss Section -->
+<section id="never-miss" class="bg-light py-5">
+    <div class="container text-center">
+        <h2>Never Miss the Fun!</h2>
+        <p class="lead mb-4">Get our weekly updates to stay informed about local events.</p>
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <form id="footerEmailForm" class="mb-3">
+                    <div class="input-group">
+                        <input type="email" class="form-control" placeholder="Your email address" required>
+                        <button class="btn btn-primary" type="submit">Sign Up</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+</main>
+
+  
+
+<footer class="footer mt-5 py-4 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3 col-sm-6 mb-4">
+                <h5 class="mb-3">COMPANY</h5>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><a href="/about">About Us</a></li>
+                    <li class="mb-2"><a href="/contact">Contact</a></li>
+                    <li class="mb-2"><a href="/help">Help Center</a></li>
+                    <li class="mb-2"><a href="/advertising">Advertise with Us</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-4">
+                <h5 class="mb-3">ACCOUNT</h5>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><a href="/login" class="login-link">Sign In</a></li>
+                    <li class="mb-2"><a href="/signup">Sign Up</a></li>
+                    <li class="mb-2"><a href="/submit-event">Add Event</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-4">
+                <h5 class="mb-3">LEGAL</h5>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><a href="/terms">Terms & Conditions</a></li>
+                    <li class="mb-2"><a href="/privacy" class="footer-link">Privacy Policy</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-4 ms-auto">
+                <h5 class="mb-3">NETWORK</h5>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><a href="https://business-calendar.replit.app/" target="_blank">BusinessCalendar.ai</a></li>
+                    <li class="mb-2"><a href="https://date-calendar.replit.app/" target="_blank">DateCalendar.ai</a></li>
+                    <li class="mb-2"><a href="https://find-live-music.replit.app/" target="_blank">FindLiveMusic.ai</a></li>
+                    <li class="mb-2"><a href="https://pop-happy-hour-amaspc.replit.app/" target="_blank">PopHappyHour.com</a></li>
+                    <li class="mb-2"><a href="https://taco-night.replit.app/" target="_blank">TacoNight.ai</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Social links -->
+        <div class="row mt-2 mb-3">
+            <div class="col-12">
+                <div class="social-buttons d-flex justify-content-center mt-3">
+                    <a href="https://www.facebook.com/funlistai" target="_blank" class="btn-social facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://www.instagram.com/funlistai" target="_blank" class="btn-social instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="https://www.tiktok.com/@funlistai" target="_blank" class="btn-social tiktok"><i class="fab fa-tiktok"></i></a>
+                </div>
+            </div>
+        </div>
+        
+        <hr class="my-3">
+        <div class="row">
+            <div class="col text-center">
+                <p class="mb-0">© 2025 FunList.ai. All rights reserved | Brought to you by 
+                <a href="https://americanmarketingalliance.com" target="_blank">American Marketing Alliance SPC</a></p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<div class="floating-buttons-container">
+    <!-- Feedback button (top) -->
+    <button class="floating-button feedback-button" id="feedbackButton" aria-label="Provide Feedback">
+        <i class="fas fa-comment" aria-hidden="true"></i>
+        <span>Feedback</span>
+    </button>
+
+    <!-- Subscribe button (bottom) -->
+    <button class="floating-button subscribe-button" id="subscribeButton" aria-label="Subscribe to Updates">
+        <i class="fas fa-envelope" aria-hidden="true"></i>
+        <span>Subscribe</span>
+    </button>
+</div>
+
+<!-- Feedback Modal -->
+<div class="modal fade" id="feedbackModal" tabindex="-1" aria-labelledby="feedbackModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="feedbackModalLabel">We Value Your Feedback</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="feedbackForm">
+                    <div class="mb-3">
+                        <label for="feedbackType" class="form-label">Feedback Type</label>
+                        <select class="form-select" id="feedbackType" required>
+                            <option value="">Select a feedback type</option>
+                            <option value="suggestion">Suggestion</option>
+                            <option value="problem">Problem</option>
+                            <option value="question">Question</option>
+                            <option value="praise">Praise</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="feedbackMessage" class="form-label">Your Message</label>
+                        <textarea class="form-control" id="feedbackMessage" rows="4" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="feedbackEmail" class="form-label">Your Email (optional)</label>
+                        <input type="email" class="form-control" id="feedbackEmail">
+                        <div class="form-text">We'll only use this to follow up if needed.</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Feedback</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Subscribe Modal -->
+<div class="modal fade" id="subscribeModal" tabindex="-1" aria-labelledby="subscribeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="subscribeModalLabel">Subscribe to Updates</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="floatingSubscribeForm">
+                    <div class="mb-3">
+                        <label for="subscribeEmail" class="form-label">Email address</label>
+                        <input type="email" class="form-control" id="subscribeEmail" required>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="preferenceEvents" checked>
+                        <label class="form-check-label" for="preferenceEvents">Events and Activities</label>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="preferenceDeals">
+                        <label class="form-check-label" for="preferenceDeals">Local Deals</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Subscribe</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  var bootstrap = window.bootstrap;
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+
+<script src="/static/js/emitter.js"></script>
+<script src="/static/js/main.js" defer></script>
+
+<script>
+    window.onerror = function(message, source, lineno, colno, error) {
+        console.error("Global error handler caught:", message);
+        if (message === "Script error." || message === "Script error") {
+            console.log("Cross-origin script error detected. Check for cross-origin issues.");
+            document.querySelectorAll('script[src^="https://"]').forEach(function(script) {
+                if (!script.hasAttribute('crossorigin')) {
+                    script.setAttribute('crossorigin', 'anonymous');
+                }
+            });
+        } else if (error) {
+            console.error("Error details:", error);
+        }
+        return true;
+    };
+
+    window.addEventListener('unhandledrejection', function(event) {
+        console.error('Unhandled promise rejection:', event.reason);
+    });
+
+    window.safeExecute = function(fn, fallback) {
+        try {
+            if (typeof fn === 'function') {
+                return fn();
+            }
+        } catch (e) {
+            console.error('Error executing function:', e);
+            if (typeof fallback === 'function') {
+                return fallback();
+            }
+        }
+        return null;
+    };
+</script>
+
+
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const map = L.map('map').setView([47.0379, -122.9007], 12);
+        const markers = {};
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Sample events (these would come from your backend)
+        const events = [
+            {
+                id: 1,
+                title: "Olympia Music Festival",
+                latitude: 47.0379,
+                longitude: -122.9007,
+                description: "A weekend of live music performances",
+                category: "Music",
+                funMeter: 5
+            }
+        ];
+
+        events.forEach(event => {
+            const marker = L.marker([event.latitude, event.longitude])
+                .bindPopup(`
+                    <div class="event-popup">
+                        <h5>${event.title}</h5>
+                        <p>${event.description}</p>
+                        <p><strong>Category:</strong> ${event.category}</p>
+                        <p><strong>Fun Meter:</strong> ${event.funMeter}/5</p>
+                    </div>
+                `);
+            markers[event.id] = marker;
+            marker.addTo(map);
+        });
+
+        // Force map to recalculate its container size
+        setTimeout(function() {
+            map.invalidateSize();
+        }, 100);
+    });
+</script>
+
+
+
+
+
+
+
+<div id="cookie-consent-banner" class="cookie-banner" style="display: none;" role="alert" aria-live="polite">
+    <div class="cookie-content">
+        <p>We use cookies to enhance your experience. By continuing to visit this site you agree to our use of cookies. 
+           <a href="#" data-bs-toggle="modal" data-bs-target="#cookieModal">Learn more</a>
+        </p>
+        <div class="cookie-buttons">
+            <button id="accept-all-cookies" class="btn btn-primary btn-sm" type="button">Accept All</button>
+            <button id="reject-non-essential-cookies" class="btn btn-outline-primary btn-sm" type="button">Reject Non-Essential</button>
+            <button id="customize-cookies" class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#cookieModal">Customize</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="cookieModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cookie Preferences</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Manage how we use cookies to improve your experience on FunList.ai.</p>
+                <form id="cookie-preferences-form">
+                    <div class="cookie-settings">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="essential-cookies" checked disabled>
+                            <label class="form-check-label" for="essential-cookies">
+                                <strong>Essential Cookies</strong>
+                                <p class="text-muted small">Required for the website to function. Cannot be disabled.</p>
+                            </label>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="analytics-cookies">
+                            <label class="form-check-label" for="analytics-cookies">
+                                <strong>Analytics Cookies</strong>
+                                <p class="text-muted small">Help us improve our website by collecting anonymous usage data.</p>
+                            </label>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="advertising-cookies">
+                            <label class="form-check-label" for="advertising-cookies">
+                                <strong>Advertising Cookies</strong>
+                                <p class="text-muted small">Used to show you relevant advertisements across other websites.</p>
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="save-cookie-preferences">Save Preferences</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add a small delay to ensure all DOM elements are loaded
+        setTimeout(() => {
+            initCookieConsent();
+        }, 500);
+    });
+
+    function initCookieConsent() {
+        const cookieConsent = document.getElementById('cookie-consent-banner');
+        const cookieForm = document.getElementById('cookie-preferences-form');
+        const savePrefsBtn = document.getElementById('save-cookie-preferences');
+
+        if (!cookieConsent) {
+            console.log('Cookie banner element not found');
+            return;
+        }
+
+        // Check if user has already set preferences (using both localStorage and cookies)
+        const hasLocalConsent = localStorage.getItem('cookieConsent');
+        const hasCookieConsent = getCookie('cookieConsentAccepted');
+        const hasSessionConsent = false;
+
+        // Show the banner if no consent is found in any storage
+        if (!hasLocalConsent && !hasCookieConsent && !hasSessionConsent) {
+            console.log('No cookie consent found, showing banner');
+            cookieConsent.style.display = 'block';
+            document.body.classList.add('cookie-consent-visible');
+        } else {
+            console.log('Cookie consent found, applying preferences');
+            try {
+                if (hasLocalConsent) {
+                    const consentData = JSON.parse(hasLocalConsent || '{}');
+                    const now = new Date().getTime();
+                    if (consentData.expires && now > consentData.expires) {
+                        console.log('Cookie consent expired, showing banner again');
+                        localStorage.removeItem('cookieConsent');
+                        deleteCookie('cookieConsentAccepted');
+                        cookieConsent.style.display = 'block';
+                        document.body.classList.add('cookie-consent-visible');
+                    } else if (consentData && consentData.preferences) {
+                        applyCookieSettings(consentData.preferences);
+                    }
+                }
+            } catch (error) {
+                console.error("Error parsing cookie preferences:", error);
+            }
+        }
+
+        // Handle form submission if form exists
+        if (cookieForm) {
+            cookieForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const preferences = {
+                    essential: true,
+                    analytics: document.getElementById('analytics-cookies').checked,
+                    advertising: document.getElementById('advertising-cookies').checked
+                };
+                saveCookiePreferences(preferences);
+                hideCookieBanner();
+            });
+        }
+
+        // Setup button listeners
+        setupCookieButtons();
+    }
+
+    function setupCookieButtons() {
+        // Accept all button
+        const acceptAllBtn = document.getElementById('accept-all-cookies');
+        if (acceptAllBtn) {
+            acceptAllBtn.addEventListener('click', function() {
+                fetch('/accept-cookies', { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            saveCookiePreferences(data.preferences);
+                            hideCookieBanner();
+                        }
+                    })
+                    .catch(error => console.error('Error accepting cookies:', error));
+            });
+        }
+
+        // Reject non-essential button
+        const rejectBtn = document.getElementById('reject-non-essential-cookies');
+        if (rejectBtn) {
+            rejectBtn.addEventListener('click', function() {
+                const preferences = {
+                    essential: true,
+                    analytics: false,
+                    advertising: false
+                };
+                saveCookiePreferences(preferences);
+                hideCookieBanner();
+            });
+        }
+        
+        // Save preferences button in the modal
+        const savePrefsBtn = document.getElementById('save-cookie-preferences');
+        if (savePrefsBtn) {
+            savePrefsBtn.addEventListener('click', function() {
+                const preferences = {
+                    essential: true,
+                    analytics: document.getElementById('analytics-cookies').checked,
+                    advertising: document.getElementById('advertising-cookies').checked
+                };
+                
+                fetch('/save-cookie-preferences', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ preferences: preferences })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        saveCookiePreferences(data.preferences);
+                        hideCookieBanner();
+                        const cookieModal = bootstrap.Modal.getInstance(document.getElementById('cookieModal'));
+                        if (cookieModal) {
+                            cookieModal.hide();
+                        }
+                    }
+                })
+                .catch(error => console.error('Error saving cookie preferences:', error));
+            });
+        }
+    }
+
+    function saveCookiePreferences(preferences) {
+        try {
+            // Save to localStorage with expiration of 6 months
+            const sixMonths = 180 * 24 * 60 * 60 * 1000;
+            const expirationDate = new Date().getTime() + sixMonths;
+
+            localStorage.setItem('cookieConsent', JSON.stringify({
+                preferences: preferences,
+                expires: expirationDate
+            }));
+            
+            // Also set a regular cookie as backup
+            setCookie('cookieConsentAccepted', 'true', 180);
+
+            // Apply cookie settings
+            applyCookieSettings(preferences);
+            
+            console.log('Cookie preferences saved:', preferences);
+        } catch (error) {
+            console.error("Error saving cookie preferences:", error);
+        }
+    }
+    
+    // Helper function to set cookies
+    function setCookie(name, value, days) {
+        let expires = '';
+        if (days) {
+            const date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            expires = '; expires=' + date.toUTCString();
+        }
+        document.cookie = name + '=' + (value || '') + expires + '; path=/; SameSite=Lax';
+    }
+    
+    // Helper function to get cookie values
+    function getCookie(name) {
+        const nameEQ = name + '=';
+        const ca = document.cookie.split(';');
+        for (let i = 0; i < ca.length; i++) {
+            let c = ca[i];
+            while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+            if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+        }
+        return null;
+    }
+
+    // Helper function to delete cookies
+    function deleteCookie(name) {
+        document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    }
+
+    function applyCookieSettings(preferences) {
+        try {
+            if (preferences && preferences.analytics) {
+                console.log('Analytics tracking enabled');
+            }
+
+            if (preferences && preferences.advertising) {
+                console.log('Advertising cookies enabled');
+            }
+        } catch (error) {
+            console.error("Error applying cookie settings:", error);
+        }
+    }
+
+    function hideCookieBanner() {
+        try {
+            const cookieBanner = document.getElementById('cookie-consent-banner');
+            if (cookieBanner) {
+                cookieBanner.style.display = 'none';
+                document.body.classList.remove('cookie-consent-visible');
+            }
+        } catch (error) {
+            console.error("Error hiding cookie banner:", error);
+        }
+    }
+</script>
+
+</body>
+</html>
