@@ -1,41 +1,23 @@
-modules = ["python-3.11"]
+run = "python main.py"
+entrypoint = "main.py"
+modules = ["python-3.11:v1-20240612-77ad89c"]
+
+hidden = [".pythonlibs"]
 
 [nix]
-channel = "stable-24_05"
+channel = "stable-23_11"
 
 [deployment]
 run = ["sh", "-c", "python main.py"]
-
-[env]
-PORT = "3000"
-
-[[ports]]
-localPort = 3000
-externalPort = 80
-
-[[ports]]
-localPort = 5000
-externalPort = 5000
-
-[[ports]]
-localPort = 5001
-externalPort = 3001
-
-[[ports]]
-localPort = 5002
-externalPort = 3002
+deploymentTarget = "cloudrun"
 
 [[ports]]
 localPort = 8080
-externalPort = 8080
+externalPort = 80
+exposeLocalhost = true
 
-[[ports]]
-localPort = 8081
-externalPort = 8081
-
-[[ports]]
-localPort = 8082
-externalPort = 3000
+[env]
+PORT = "3000"
 
 [workflows]
 runButton = "Run App"
@@ -107,3 +89,27 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python main.py"
+
+[[ports]]
+localPort = 3000
+externalPort = 80
+
+[[ports]]
+localPort = 5000
+externalPort = 5000
+
+[[ports]]
+localPort = 5001
+externalPort = 3001
+
+[[ports]]
+localPort = 5002
+externalPort = 3002
+
+[[ports]]
+localPort = 8081
+externalPort = 8081
+
+[[ports]]
+localPort = 8082
+externalPort = 3000
