@@ -59,9 +59,9 @@ def investor_required(f):
 def index():
     # Fetch chapters for the dropdown/links if needed on index
     chapters = Chapter.query.all()
-    # Check if this is a new registration to show the wizard
-    new_registration = session.pop('new_registration', False)
-    return render_template("index.html", user=current_user, chapters=chapters, new_registration=new_registration)
+    # Check if this is a new signup to show the wizard
+    new_signup = session.pop('new_signup', False)
+    return render_template("index.html", user=current_user, chapters=chapters, new_signup=new_signup)
 
 def map():
     logger.debug("Starting map route")
@@ -129,12 +129,45 @@ def logout():
 
 
 def register():
-    # ... (Keep existing registration logic using primary_role radio buttons) ...
-    # Ensure you import MembershipTier, Chapter, Role, generate_password_hash
-    form = SignupForm() # Ensure form is initialized
-    # Populate choices dynamically if needed
-    # form.membership_tier.choices = [...]
-    # form.chapter_id.choices = [...]
+    # Registration logic using primary_role radio buttons
+    form = SignupForm()
+    
+    if form.validate_on_submit():
+        # Create user with form data
+        user = User(
+            email=form.email.data,
+            password=generate_password_hash(form.password.data),
+        )
+        
+        # Set roles based on primary_role selection
+        if form.primary_role.data == 'organizer':
+            user.is_organizer = True
+            user.is_event_creator = True  # Organizers can also create events
+        elif form.primary_role.data == 'event_creator':
+            user.is_event_creator = True
+        elif form.primary_role.data == 'vendor':
+            user.is_vendor = True
+            
+        try:
+            db.session.add(user)
+            db.session.commit()
+            
+            # Log the user in
+            login_user(user)
+            
+            # Set session flag to show onboarding wizard
+            session['new_signup'] = True
+            
+            flash("Welcome to FunList.ai! Your account has been created.", "success")
+            return redirect(url_for('index'))
+        except IntegrityError:
+            db.session.rollback()
+            flash("An account with that email already exists.", "danger")
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error during user registration: {str(e)}")
+            flash("An error occurred during registration. Please try again.", "danger")
+    
     chapters = Chapter.query.all()
     return render_template('register.html', form=form, chapters=chapters)
 

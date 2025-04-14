@@ -62,7 +62,8 @@
     data-user-is-vendor="{{ current_user.is_vendor|lower }}"
 {% endif %}
       data-user-is-organizer="{{ 'true' if current_user.is_authenticated and current_user.is_organizer else 'false' }}"
-      data-user-is-event-creator="{{ 'true' if current_user.is_authenticated and current_user.is_event_creator else 'false' }}">
+      data-user-is-event-creator="{{ 'true' if current_user.is_authenticated and current_user.is_event_creator else 'false' }}"
+      data-new-signup="{{ new_signup|default('false') }}">
   {% include 'partials/navbar.html' %}
 
 <main role="main" class="mt-2">
@@ -82,8 +83,8 @@
     {% block content %}{% endblock %}
 </main>
 
-  {% if new_registration %}
-    {% include 'partials/post_registration_wizard.html' %}
+  {% if new_signup %}
+    {% include 'partials/post_signup_wizard.html' %}
   {% endif %}
 
 <footer class="footer mt-5 py-4 bg-light">
@@ -102,7 +103,7 @@
                 <h5 class="mb-3">ACCOUNT</h5>
                 <ul class="list-unstyled mb-0">
                     <li class="mb-2"><a href="{{ url_for('login') }}" class="login-link">Sign In</a></li>
-                    <li class="mb-2"><a href="{{ url_for('register') }}">Sign Up</a></li>
+                    <li class="mb-2"><a href="{{ url_for('register') }}" class="signup-link">Sign Up</a></li>
                     <li class="mb-2"><a href="{{ url_for('submit_event') }}">Add Event</a></li>
                 </ul>
             </div>
@@ -204,8 +205,8 @@
 <script src="{{ url_for('static', filename='js/admin_events.js') }}"></script>
 {% endif %}
 
-{% if new_registration %}
-<script src="{{ url_for('static', filename='js/post_registration_wizard.js') }}"></script>
+{% if new_signup %}
+<script src="{{ url_for('static', filename='js/post_signup_wizard.js') }}"></script>
 {% endif %}
 
 {% block extra_js %}{% endblock %}
