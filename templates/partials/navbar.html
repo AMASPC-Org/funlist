@@ -70,7 +70,7 @@
       <div class="d-flex align-items-center">
         {% if not current_user.is_authenticated %}
           <a href="{{ url_for('login') }}" class="btn btn-sm btn-outline-primary me-2">Login</a>
-          <a href="{{ url_for('register') }}" class="btn btn-sm btn-primary">Sign Up</a>
+          <a href="{{ url_for('signup') }}" class="btn btn-sm btn-primary">Sign Up</a>
         {% else %}
           <!-- Mobile-only user menu button -->
           <div class="d-lg-none">
@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <a href="/register?as=organizer" class="btn btn-primary">Sign Up as Organizer</a>
+                        <a href="/signup?as=organizer" class="btn btn-primary">Sign Up as Organizer</a>
                     </div>
                 </div>
             </div>

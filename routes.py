@@ -146,15 +146,15 @@ def logout():
    return redirect(url_for('login'))
 
 
-def register():
-    # Registration logic using primary_role radio buttons
+def signup():
+    # Signup logic using primary_role radio buttons
     form = SignupForm()
     
     if form.validate_on_submit():
         # Create user with form data
         user = User(
             email=form.email.data,
-            password=generate_password_hash(form.password.data),
+            password_hash=generate_password_hash(form.password.data),
         )
         
         # Set roles based on primary_role selection
@@ -183,11 +183,11 @@ def register():
             flash("An account with that email already exists.", "danger")
         except Exception as e:
             db.session.rollback()
-            logger.error(f"Error during user registration: {str(e)}")
-            flash("An error occurred during registration. Please try again.", "danger")
+            logger.error(f"Error during user signup: {str(e)}")
+            flash("An error occurred during signup. Please try again.", "danger")
     
     chapters = Chapter.query.all()
-    return render_template('register.html', form=form, chapters=chapters)
+    return render_template('signup.html', form=form, chapters=chapters)
 
 def reset_password_request():
      # ... (Keep existing logic) ...
@@ -537,7 +537,8 @@ def init_routes(app):
     app.route("/submit-event", methods=["GET", "POST"])(submit_event)
     app.route('/login', methods=['GET', 'POST'])(login)
     app.route('/logout')(logout)
-    app.route('/register', methods=['GET', 'POST'])(register)
+    app.route('/register', methods=['GET', 'POST'])(signup)
+    app.route('/signup', methods=['GET', 'POST'])(signup)
     app.route("/reset-password-request", methods=["GET", "POST"])(reset_password_request)
     app.route("/reset-password/<token>", methods=["GET", "POST"])(reset_password)
     app.route('/profile')(profile)

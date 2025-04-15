@@ -1,3 +1,4 @@
+
 document.addEventListener('DOMContentLoaded', function() {
     // Check if this is a new signup
     const isNewSignup = document.body.getAttribute('data-new-signup') === 'true';
