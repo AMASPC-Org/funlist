@@ -13,7 +13,7 @@ from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from datetime import datetime, timedelta
 import json
 import openai # Import OpenAI library
-from flask_wtf.csrf import CSRFProtect # Fixed CSRF import
+from flask_wtf.csrf import CSRFProtect # Use only CSRFProtect
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -91,6 +91,16 @@ def events():
         logger.error(f"Error in events route: {str(e)}")
         logger.exception("Exception details:")
         return render_template("500.html", error=str(e)), 500
+        
+def event_detail(event_id):
+    """Display details for a specific event."""
+    try:
+        event = Event.query.get_or_404(event_id)
+        chapters = Chapter.query.all() # Pass chapters for base template
+        return render_template("event_detail.html", event=event, chapters=chapters)
+    except Exception as e:
+        logger.error(f"Error in event_detail route: {str(e)}")
+        return render_template("500.html", error=str(e)), 500
 
 @login_required
 def submit_event():
@@ -117,10 +127,18 @@ def submit_event():
 
 # --- Authentication Routes ---
 def login():
-    # ... (Keep existing login logic) ...
     chapters = Chapter.query.all()
     form = LoginForm() # Ensure form is initialized
-    return render_template('auth/login.html', form=form, chapters=chapters)
+    
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user and check_password_hash(user.password, form.password.data):
+            login_user(user, remember=form.remember_me.data)
+            next_page = request.args.get('next')
+            return redirect(next_page) if next_page else redirect(url_for('index'))
+        flash('Invalid email or password', 'danger')
+    
+    return render_template('login.html', form=form, chapters=chapters)
 
 @login_required
 def logout():
@@ -515,6 +533,7 @@ def init_routes(app):
     app.route("/")(index)
     app.route("/map")(map)
     app.route("/events")(events)
+    app.route("/events/<int:event_id>")(event_detail)
     app.route("/submit-event", methods=["GET", "POST"])(submit_event)
     app.route('/login', methods=['GET', 'POST'])(login)
     app.route('/logout')(logout)
