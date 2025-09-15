@@ -1,62 +1,46 @@
-# FunList.ai — Active Task Backlog
+# FunList.ai — Active Task Backlog (Replit Focused)
 
-This file tracks all outstanding tasks in a lightweight, developer-friendly format.  
-Each item should be updated with status markers:  
-- [ ] = not started  
-- [~] = in progress  
-- [x] = completed  
+This file is the working backlog for Replit AI.  
+It contains only the tasks needed to build and test the MVP inside Replit.  
+Cloud infra and deployment steps will be reintroduced later.
 
 ---
 
 ## ✅ Completed
-- [x] Repo created in GitHub
-- [x] Replit project connected
-- [x] schema.sql committed
+- Repo created in GitHub  
+- Replit project connected  
+- Database schema (schema.sql) committed  
+- Project plan documented (PROJECT_PLAN.md)  
 
 ---
 
-## 🚧 Phase One: MVP Foundation
+## 🚧 Phase 1: MVP Foundation (Replit Dev Only)
 
-### Database
-- [ ] Apply schema.sql to Postgres instance in GCP
-- [ ] Set up migrations framework (Prisma / Alembic / Flyway)
-- [ ] Create ORM models based on schema
-- [ ] Seed DB with sample users, venues, and events
+### 1. Database & Backend (local Prisma + SQLite in Replit)
+- [ ] Configure Prisma ORM to use SQLite for local dev.  
+- [ ] Implement User, Event, Venue, Favorite models (match schema.sql).  
+- [ ] Add seed script with sample users, events, venues.  
+- [ ] Expose REST endpoints for:  
+  - User registration/login (attendee, organizer, admin).  
+  - Event submission (organizer).  
+  - Event search + filter (date/location).  
+  - Favorites (attendees save events).  
 
-### Backend
-- [ ] Implement user registration & login (attendee, organizer, admin)
-- [ ] Implement organizer event submission endpoint
-- [ ] Implement event search & filter (location/date)
-- [ ] Implement Funalytics scoring endpoint
-- [ ] Implement favorites (attendees can save events)
+### 2. Core Features
+- [ ] Event submission form (organizer).  
+- [ ] Event discovery UI (attendee list + search).  
+- [ ] Personal Fun Assistant (chat UI stub with mock data).  
+- [ ] Display Fun Ratings (static values for now).  
 
-### Infrastructure
-- [ ] Deploy backend to Cloud Run
-- [ ] Add CI/CD pipeline via Cloud Build
-- [ ] Configure monitoring & logging
-- [ ] Add health checks
-
----
-
-## 🚧 Phase Two: Event Attendee Experience
-- [ ] Build Personal Fun Assistant (attendee-facing AI chatbot)
-- [ ] Integrate Funalytics scoring into chatbot flow
-- [ ] Create responsive event listing & detail pages
-- [ ] Implement organizer dashboard
-- [ ] Add map-based event discovery
-
----
-
-## 🚧 Phase Three: Organizers & Ecosystem
-- [ ] Add AI-powered event optimization suggestions
-- [ ] Build analytics dashboard for organizers
-- [ ] Support multi-user organization accounts
-- [ ] Explore LocalMarketingTool.ai integration
-- [ ] Explore AMA SPC ecosystem integration
+### 3. Testing
+- [ ] Add integration tests for user login + event submission.  
+- [ ] Add sample test for Fun Assistant chat flow.  
 
 ---
 
 ## 📌 Notes
-- Keep this backlog in sync with real progress.  
-- Treat this like a lightweight sprint board.  
-- Update statuses often so Replit AI and contributors can stay aligned.
+- Replit AI: Use **SQLite** in dev (`file:./dev.db`) to avoid Cloud SQL setup.  
+- Schema and ORM must stay aligned (see schema.sql and prisma/schema.prisma).  
+- Commit code in small steps so features can be tested incrementally.  
+
+---
