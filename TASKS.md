@@ -1,46 +1,58 @@
-# FunList.ai — Active Task Backlog (Replit Focused)
+# Current Sprint Tasks
 
-This file is the working backlog for Replit AI.  
-It contains only the tasks needed to build and test the MVP inside Replit.  
-Cloud infra and deployment steps will be reintroduced later.
+## Priority: API Foundation & Testing
 
----
+### 🎯 High Priority (This Sprint)
 
-## ✅ Completed
-- Repo created in GitHub  
-- Replit project connected  
-- Database schema (schema.sql) committed  
-- Project plan documented (PROJECT_PLAN.md)  
+#### ✅ COMPLETED
+- [x] Express.js sidecar API setup with Prisma
+- [x] GET /events endpoint with venue, organizer, funalytics scores  
+- [x] POST /events endpoint with validation
+- [x] API documentation in /api/README.md with curl examples
+- [x] CORS configuration for cross-origin requests
 
----
+#### ✅ COMPLETED
+- [x] **Add integration test suite** (npm test) for API validation - 10 tests passing
+- [x] **Update roadmap.md** to mark API endpoint structure complete
 
-## 🚧 Phase 1: MVP Foundation (Replit Dev Only)
+#### ✅ COMPLETED
+- [x] **Replace mock data** with real database - WORKING! 25 events, 9 users connected
 
-### 1. Database & Backend (local Prisma + SQLite in Replit)
-- [ ] Configure Prisma ORM to use SQLite for local dev.  
-- [ ] Implement User, Event, Venue, Favorite models (match schema.sql).  
-- [ ] Add seed script with sample users, events, venues.  
-- [ ] Expose REST endpoints for:  
-  - User registration/login (attendee, organizer, admin).  
-  - Event submission (organizer).  
-  - Event search + filter (date/location).  
-  - Favorites (attendees save events).  
+#### ✅ COMPLETED
+- [x] **Fix remaining data constraints** - Street field handled, POST endpoint working
 
-### 2. Core Features
-- [ ] Event submission form (organizer).  
-- [ ] Event discovery UI (attendee list + search).  
-- [ ] Personal Fun Assistant (chat UI stub with mock data).  
-- [ ] Display Fun Ratings (static values for now).  
+### 📋 Next Up (Same Sprint)
+- [ ] Complete Fun Score system implementation
+- [ ] Add search and filter functionality to API
+- [ ] Basic error logging and monitoring
+- [ ] API rate limiting
 
-### 3. Testing
-- [ ] Add integration tests for user login + event submission.  
-- [ ] Add sample test for Fun Assistant chat flow.  
+### 🚀 Future Sprints
+- [ ] Authentication middleware for API
+- [ ] Event CRUD operations (PUT/DELETE)
+- [ ] Pagination for large event lists  
+- [ ] API versioning strategy
+- [ ] Performance monitoring
 
----
+## Current Blockers
+- **Flask Database**: Flask migrations needed to create real database tables
+- **LSP Errors**: 15 diagnostics in models.py need resolution
 
-## 📌 Notes
-- Replit AI: Use **SQLite** in dev (`file:./dev.db`) to avoid Cloud SQL setup.  
-- Schema and ORM must stay aligned (see schema.sql and prisma/schema.prisma).  
-- Commit code in small steps so features can be tested incrementally.  
+## Testing Strategy
+1. **Unit Tests**: Individual endpoint validation
+2. **Integration Tests**: End-to-end API workflows  
+3. **Manual Testing**: curl/Postman verification
+4. **Automated Testing**: npm test suite
 
----
+## Notes
+- API running successfully on port 3001
+- Flask app running on port 8080  
+- Mock data working for API demonstration
+- Ready for real database integration
+
+## Definition of Done
+- [ ] All API endpoints tested and documented
+- [ ] Integration test suite passing
+- [ ] Real database connected and working
+- [ ] No blocking LSP errors
+- [ ] Performance baseline established

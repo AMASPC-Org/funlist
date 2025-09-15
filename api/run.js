@@ -1,5 +1,5 @@
 // Simple API runner with better port handling
-require('dotenv').config();
+require('dotenv').config({ override: true });
 
 const express = require('express');
 const { PrismaClient } = require('./generated/prisma');
@@ -66,61 +66,79 @@ const validateEventData = (data) => {
   return errors;
 };
 
-// GET /events - returns all events (with fallback for missing tables)
+// GET /events - returns all events with venue, organizer, and funalytics scores
 app.get('/events', async (req, res) => {
   try {
     console.log('GET /events requested');
     
-    // Since database tables aren't ready, return mock data for demonstration
-    const mockEvents = [
-      {
-        id: 1,
-        title: "Sample Community Event",
-        description: "A great community gathering",
-        startTime: new Date('2025-09-20T18:00:00Z'),
-        endTime: new Date('2025-09-20T21:00:00Z'),
-        location: "Community Center",
-        city: "Seattle",
-        state: "WA",
-        category: "Community",
-        funalyticsScore: {
-          fun_rating: 4,
-          fun_meter: 4
-        },
-        organizer: {
-          id: 1,
-          first_name: "John",
-          last_name: "Doe",
-          company_name: "Community Events Inc",
-          email: "john@example.com"
-        },
-        venue: {
-          id: 1,
-          name: "Downtown Community Center",
-          street: "123 Main St",
-          city: "Seattle",
-          state: "WA",
-          zip_code: "98101",
-          venue_type: {
-            name: "Community Center",
-            category: "Public"
+    const page = parseInt(req.query.page) || 1;
+    const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+    const offset = (page - 1) * limit;
+
+    const events = await prisma.events.findMany({
+      skip: offset,
+      take: limit,
+      include: {
+        user: {
+          select: {
+            id: true,
+            first_name: true,
+            last_name: true,
+            company_name: true,
+            email: true
           }
         },
-        status: "approved",
-        created_at: new Date()
+        venue: {
+          select: {
+            id: true,
+            name: true,
+            street: true,
+            city: true,
+            state: true,
+            zip_code: true,
+          }
+        }
+      },
+      orderBy: {
+        created_at: 'desc'
       }
-    ];
+    });
 
-    console.log(`Returning ${mockEvents.length} mock events (database tables not yet available)`);
+    const totalEvents = await prisma.events.count();
+    
+    console.log(`Found ${events.length} real events from database`);
 
     res.json({
       success: true,
-      count: mockEvents.length,
-      events: mockEvents,
-      note: "Mock data - database tables will be connected once Flask migrations are complete"
+      count: events.length,
+      events: events.map(event => ({
+        id: event.id,
+        title: event.title,
+        description: event.description,
+        startTime: event.start_date,
+        endTime: event.end_date,
+        location: event.location,
+        city: event.city,
+        state: event.state,
+        category: event.category,
+        funalyticsScore: {
+          fun_rating: event.fun_rating,
+          fun_meter: event.fun_meter
+        },
+        organizer: event.user,
+        venue: event.venue,
+        status: event.status,
+        created_at: event.created_at
+      })),
+      pagination: {
+        page,
+        limit,
+        total: totalEvents,
+        pages: Math.ceil(totalEvents / limit)
+      }
     });
   } catch (error) {
-    console.error('Error in events endpoint:', error);
+    console.error('Error fetching events:', error);
     res.status(500).json({ 
       success: false,
       error: 'Failed to fetch events',
@@ -146,32 +164,93 @@ app.post('/events', async (req, res) => {
       });
     }
 
-    // Since database tables aren't ready, simulate successful creation
-    const mockEvent = {
-      id: Date.now(), // Use timestamp as ID for demonstration
-      title: title.trim(),
-      description: description || null,
-      startTime: new Date(startTime),
-      endTime: endTime ? new Date(endTime) : null,
-      organizer: {
-        id: parseInt(organizerId),
-        first_name: "Mock",
-        last_name: "Organizer",
-        company_name: "Event Company",
-        email: "organizer@example.com"
-      },
-      venue: venue || null,
-      status: 'pending',
-      created_at: new Date()
-    };
+    // Check if organizer exists
+    const organizer = await prisma.users.findUnique({
+      where: { id: parseInt(organizerId) }
+    });
 
-    console.log('Mock event created successfully:', mockEvent.id);
+    if (!organizer) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Invalid organizer ID' 
+      });
+    }
+
+    let venueId = null;
+    if (venue && venue.id) {
+      venueId = venue.id;
+    } else if (venue && venue.name) {
+      // Create new venue if provided
+      const newVenue = await prisma.venues.create({
+        data: {
+          name: venue.name,
+          street: venue.street || null,
+          city: venue.city || null,
+          state: venue.state || null,
+          zip_code: venue.zip_code || null,
+          created_by_user_id: parseInt(organizerId)
+        }
+      });
+      venueId = newVenue.id;
+    }
+
+    // Create the event
+    const newEvent = await prisma.events.create({
+      data: {
+        title: title.trim(),
+        description: description || 'Event created via API',  // Required field
+        start_date: new Date(startTime),
+        end_date: endTime ? new Date(endTime) : new Date(startTime),  // Required, default to start_date
+        user_id: parseInt(organizerId),
+        venue_id: venueId,
+        city: venue?.city || 'TBD',  // Required field
+        state: venue?.state || 'TBD',  // Required field
+        street: venue?.street || '',  // Required field
+        zip_code: venue?.zip_code || '',  // Required field
+        category: 'general',  // Required field
+        target_audience: 'all',  // Required field
+        fun_meter: 3,  // Required field, default value
+        status: 'pending'
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            first_name: true,
+            last_name: true,
+            company_name: true,
+            email: true
+          }
+        },
+        venue: {
+          select: {
+            id: true,
+            name: true,
+            street: true,
+            city: true,
+            state: true,
+            zip_code: true
+          }
+        }
+      }
+    });
+
+    console.log('Event created successfully in database:', newEvent.id);
 
     res.status(201).json({
       success: true,
-      message: 'Event created successfully (mock response)',
-      event: mockEvent,
-      note: "Mock response - will connect to database once Flask migrations are complete"
+      message: 'Event created successfully',
+      event: {
+        id: newEvent.id,
+        title: newEvent.title,
+        description: newEvent.description,
+        startTime: newEvent.start_date,
+        endTime: newEvent.end_date,
+        organizer: newEvent.user,
+        venue: newEvent.venue,
+        status: newEvent.status,
+        created_at: newEvent.created_at
+      }
     });
   } catch (error) {
     console.error('Error creating event:', error);

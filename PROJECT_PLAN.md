@@ -1,62 +1,60 @@
-# FunList.ai — Project Roadmap & Execution Plan
+# FunList.ai Project Plan
 
-_Last updated: 2025-09-15_
+## Current Phase: MVP Foundation (Phase 1)
 
----
+### Development Environment
+- **Primary Development**: Replit with SQLite + Prisma
+- **Architecture**: Flask web app + Express.js API sidecar
+- **Database**: PostgreSQL (shared between Flask and Express)
+- **Deployment**: Cloud deployment deferred until MVP validation
 
-## 🎯 Purpose
-This file is a **living roadmap** for FunList.ai.  
-It ensures Replit AI and all developers have a consistent, clear project direction.  
-Cloud deployment tasks are deferred until the MVP is validated in Replit.
+### Phase 1 Goals
+Create a working MVP that validates the core concept of AI-powered event discovery with Fun Rating System.
 
----
+#### ✅ Completed
+- Basic Flask application setup
+- Database schema implementation  
+- User authentication system
+- Event creation and management
+- Event discovery implementation
+- **NEW**: Express.js API endpoint structure with Prisma
 
-## ✅ Completed
-- Initial repo setup in GitHub  
-- Replit project connected  
-- Database schema (schema.sql) committed  
-- Active backlog created (TASKS.md)  
+#### ✅ Completed
+- Integration testing for API endpoints (10 tests passing)
+- Real database connection with 25+ events and 9 users
+- Express.js API fully functional with Prisma ORM
 
----
+#### 🔄 In Progress
+- Search and filter functionality
+- Fun Score system implementation
 
-## 🚧 Phase One: MVP (Replit Development Only)
+#### 📋 Upcoming (Phase 1)
+- Complete API endpoint finalization
+- Basic testing & validation
+- Performance baseline establishment
 
-1. **Database & Backend**
-   - Configure Prisma ORM with SQLite (`file:./dev.db`)  
-   - Implement models for Users, Events, Venues, Favorites  
-   - Add seed script with sample users, venues, and events  
-   - Build REST API endpoints for:  
-     - User registration & login (attendee, organizer, admin)  
-     - Organizer event submission  
-     - Event search & filter (date/location)  
-     - Attendee favorites  
+### Phase 2: Feature Enhancement (Future)
+- Digital Advertising system
+- Stripe integration
+- Advanced search functionality
+- Mobile API optimization
 
-2. **Core Features**
-   - Organizer event submission form (frontend)  
-   - Attendee event discovery UI (list + search)  
-   - **Personal Fun Assistant (stub)** — chat UI returning mock responses  
-   - Display Fun Ratings (static placeholders for now)  
+### Phase 3: Scale & Deploy (Future)  
+- Cloud deployment
+- CI/CD pipeline
+- Domain setup and production environment
+- Performance optimization
+- Security hardening
 
-3. **Testing**
-   - Integration tests for login + event submission  
-   - Basic test for Fun Assistant chat flow  
+### Architecture Decisions
+1. **Dual Backend**: Flask for web interface, Express.js for API
+2. **Shared Database**: Single PostgreSQL instance
+3. **API-First**: REST endpoints for future mobile/integration needs
+4. **Incremental Development**: Working features over complete systems
 
----
-
-## 🔮 Future Phases (Parked for Now)
-These will come after MVP validation in Replit:  
-- Switch SQLite → Cloud SQL (Postgres on GCP)  
-- CI/CD pipeline with Cloud Build + Cloud Run  
-- TLS + domain setup for funlist.ai  
-- Funalytics™ scoring (CommunityVibe™, FamilyFun™, Overall)  
-- Organizer AI Assistant (pre-publish coaching)  
-- Event ingestion agents (scrapers, email parsers)  
-
----
-
-## 📌 Notes
-- Replit AI should always reference this file and `TASKS.md` before writing code.  
-- The immediate focus is **MVP core flows in Replit only**.  
-- Cloud infra is explicitly deferred until the core experience is working.  
-
----
+### Success Metrics (Phase 1)
+- Functional event creation/discovery workflow
+- API endpoints responding correctly
+- Basic user authentication working
+- Database operations stable
+- Core Fun Rating System functional

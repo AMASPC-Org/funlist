@@ -8,7 +8,120 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model health_check {
-  id         Int       @id @default(autoincrement())
-  updated_at DateTime? @default(now()) @db.Timestamptz(6)
+model users {
+  id                     Int      @id @default(autoincrement())
+  email                  String   @unique @db.VarChar(120)
+  password_hash          String   @db.VarChar(256)
+  first_name             String?  @db.VarChar(120)
+  last_name              String?  @db.VarChar(120)
+  title                  String?  @db.VarChar(100)
+  account_active         Boolean? @default(true)
+  is_admin               Boolean? @default(false)
+  is_subscriber          Boolean? @default(true)
+  is_event_creator       Boolean? @default(false)
+  is_organizer           Boolean? @default(false)
+  is_vendor              Boolean? @default(false)
+  is_sponsor             Boolean? @default(false)
+  vendor_type            String?  @db.VarChar(50)
+  vendor_description     String?  @db.Text
+  created_at             DateTime? @default(now()) @db.Timestamp(6)
+  last_login             DateTime? @db.Timestamp(6)
+  company_name           String?  @db.VarChar(100)
+  organizer_description  String?  @db.Text
+  organizer_website      String?  @db.VarChar(200)
+  phone                  String?  @db.VarChar(20)
+  newsletter_opt_in      Boolean? @default(true)
+  marketing_opt_in       Boolean? @default(false)
+  user_preferences       String?  @db.Text
+  business_street        String?  @db.VarChar(100)
+  business_city          String?  @db.VarChar(50)
+  business_state         String?  @db.VarChar(50)
+  business_zip           String?  @db.VarChar(20)
+  business_phone         String?  @db.VarChar(20)
+  business_email         String?  @db.VarChar(120)
+
+  events              events[]
+  created_venues      venues[] @relation("CreatedByUser")
+  managed_venues      venues[] @relation("OwnerManagerUser")
+}
+
+model events {
+  id                  Int      @id @default(autoincrement())
+  title               String   @db.VarChar(255)
+  description         String?  @db.Text
+  start_date          DateTime @db.Date
+  end_date            DateTime? @db.Date
+  start_time          DateTime? @db.Time(6)
+  end_time            DateTime? @db.Time(6)
+  all_day             Boolean? @default(false)
+  location            String?  @db.VarChar(255)
+  street              String?  @db.VarChar(255)
+  city                String?  @db.VarChar(100)
+  state               String?  @db.VarChar(100)
+  zip_code            String?  @db.VarChar(20)
+  latitude            Float?   @db.DoublePrecision
+  longitude           Float?   @db.DoublePrecision
+  website             String?  @db.VarChar(255)
+  created_at          DateTime? @default(now()) @db.Timestamp(6)
+  user_id             Int
+  venue_id            Int?
+  category            String?  @db.VarChar(100)
+  target_audience     String?  @db.VarChar(255)
+  tags                String?  @db.VarChar(255)
+  attendance_count    Int?     @default(0)
+  views_count         Int?     @default(0)
+  featured            Boolean? @default(false)
+  fun_rating          Int?     @default(3)
+  fun_meter           Int?     @default(3)
+  status              String?  @default("pending") @db.VarChar(50)
+  network_opt_out     Boolean? @default(false)
+  parent_event_id     Int?
+  is_recurring        Boolean? @default(false)
+  recurring_pattern   String?  @db.VarChar(50)
+
+  user     users     @relation(fields: [user_id], references: [id])
+  venue    venues?   @relation(fields: [venue_id], references: [id])
+  parent   events?   @relation("EventRecurrence", fields: [parent_event_id], references: [id])
+  children events[]  @relation("EventRecurrence")
+}
+
+model venues {
+  id                      Int      @id @default(autoincrement())
+  name                    String   @db.VarChar(100)
+  street                  String?  @db.VarChar(100)
+  city                    String?  @db.VarChar(50)
+  state                   String?  @db.VarChar(50)
+  zip_code                String?  @db.VarChar(20)
+  country                 String?  @default("United States") @db.VarChar(50)
+  phone                   String?  @db.VarChar(20)
+  email                   String?  @db.VarChar(120)
+  website                 String?  @db.VarChar(200)
+  venue_type_id           Int?
+  contact_name            String?  @db.VarChar(100)
+  contact_phone           String?  @db.VarChar(20)
+  contact_email           String?  @db.VarChar(120)
+  created_at              DateTime? @default(now()) @db.Timestamp(6)
+  updated_at              DateTime? @default(now()) @db.Timestamp(6)
+  user_id                 Int?
+  created_by_user_id      Int?
+  owner_manager_user_id   Int?
+  is_verified             Boolean? @default(false)
+  verification_notes      String?  @db.Text
+  latitude                Float?   @db.DoublePrecision
+  longitude               Float?   @db.DoublePrecision
+  description             String?  @db.Text
+
+  venue_type     venue_types? @relation(fields: [venue_type_id], references: [id])
+  created_by     users?  @relation("CreatedByUser", fields: [created_by_user_id], references: [id])
+  owner_manager  users?  @relation("OwnerManagerUser", fields: [owner_manager_user_id], references: [id])
+  events         events[]
+}
+
+model venue_types {
+  id          Int     @id @default(autoincrement())
+  name        String  @db.VarChar(100)
+  category    String? @db.VarChar(100)
+  description String? @db.Text
+
+  venues venues[]
 }
