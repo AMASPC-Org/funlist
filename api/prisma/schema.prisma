@@ -83,6 +83,7 @@ model events {
   venue    venues?   @relation(fields: [venue_id], references: [id])
   parent   events?   @relation("EventRecurrence", fields: [parent_event_id], references: [id])
   children events[]  @relation("EventRecurrence")
+  funalytics_scores funalytics_scores[]
 }
 
 model venues {
@@ -124,4 +125,20 @@ model venue_types {
   description String? @db.Text
 
   venues venues[]
+}
+
+model funalytics_scores {
+  id            String   @id @default(uuid())
+  event_id      Int
+  event         events   @relation(fields: [event_id], references: [id])
+  
+  // Facets (0–10)
+  community_vibe Int?
+  family_fun     Int?
+  overall_score  Int?
+  
+  reasoning     String?  @db.VarChar(240) // short human explanation (<= 240 chars)
+  computed_at   DateTime @default(now())
+  
+  @@index([event_id, computed_at])
 }

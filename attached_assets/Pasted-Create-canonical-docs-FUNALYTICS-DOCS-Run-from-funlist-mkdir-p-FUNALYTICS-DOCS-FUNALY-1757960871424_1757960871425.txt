@@ -1,0 +1,262 @@
+Create canonical docs (FUNALYTICS_DOCS/)
+
+Run from ~/funlist
+
+mkdir -p FUNALYTICS_DOCS
+
+# --- FUNALYTICS_OVERVIEW.md ---
+cat > FUNALYTICS_DOCS/FUNALYTICS_OVERVIEW.md << 'EOF'
+# Funalytics™ Overview
+
+## What it is
+Funalytics™ is FunList.ai’s scoring & explanation system that helps people quickly gauge how enjoyable an event might be. It produces human-readable scores and short explanations that appear on event cards and detail pages.
+
+## Why it exists
+- **Trust & signal:** A concise, consistent score improves decision speed and quality.
+- **Transparency:** Short “why” blurbs explain the score drivers.
+- **Coaching:** Organizers learn what details improve discoverability and fit.
+
+## Core Score Facets (MVP)
+- **CommunityVibe™ (0–10):** Sense of togetherness, local flavor, inclusivity.
+- **FamilyFun™ (0–10):** Suitability for families and kids.
+- **Overall (0–10):** Weighted blend of the facets above (simple average in MVP).
+
+> Note: Use **Funalytics™** (™ until registered). Keep capitalization consistent across UI and docs.
+
+## Where it shows up
+- Event card (compact): Overall + 1–2 facet badges
+- Event detail page: All facets + short rationale (“because…”)
+- Organizer dashboard (later): Score preview + coaching tips
+
+## When it’s computed
+- On event creation (first pass)
+- On event edit (recompute)
+- On scheduled refresh jobs (e.g., nightly) if details changed materially
+
+## High-level flow (MVP)
+Event data ➜ sanitize/validate ➜ facet computations ➜ overall score ➜ compact summary ➜ store historical rows ➜ show latest on UI
+EOF
+
+# --- FUNALYTICS_TECH.md ---
+cat > FUNALYTICS_DOCS/FUNALYTICS_TECH.md << 'EOF'
+# Funalytics™ Technical Spec (MVP)
+
+## Data Model (Prisma-style)
+Historical, append-only scores per event.
+
+```ts
+model FunalyticsScore {
+  id           String   @id @default(uuid())
+  eventId      String
+  event        Event    @relation(fields: [eventId], references: [id])
+
+  // Facets (0–10)
+  communityVibe Int?
+  familyFun     Int?
+  overallScore  Int?
+
+  reasoning    String?   // short human explanation (<= 240 chars)
+  computedAt   DateTime  @default(now())
+
+  @@index([eventId, computedAt])
+}
+
+
+One Event ➜ many FunalyticsScore rows (history). Latest row by computedAt is current.
+
+Inputs (MVP)
+
+title, description
+
+startTime, endTime, duration
+
+venue.{city,state}
+
+simple tags (e.g., “family-friendly”, “community”, “music”)
+
+organizer reputation (placeholder for later)
+
+Facet Rules (MVP heuristics)
+
+CommunityVibe: +2 local tags; +2 nonprofit/community keywords; +1 smaller venues; cap 10
+
+FamilyFun: +3 “family”, “kid”, “all ages”; −2 explicit 21+; cap 10
+
+Overall: simple average of available facets (round to nearest int)
+
+These rules are deterministic for the MVP. Later we can move to an ML/LLM-assisted pipeline.
+
+Lifecycle
+
+Create: POST /events → create event → compute score → store 1 row
+
+Edit: PUT/PATCH /events/:id → recompute → append new row
+
+Nightly (later): recompute where meaningful fields changed
+
+Read: GET /events returns latest score; GET /events/:id/scores returns history (later)
+
+API Contract (MVP)
+GET /events
+
+Query: title, start, end, location
+
+Returns: array of events {..., funalytics: {overallScore, communityVibe, familyFun, reasoning}} (latest row only)
+
+POST /events
+
+Body: { title, description, startTime, endTime, organizerId, venue:{...} }
+
+Behavior: create event ➜ compute score ➜ return event + latest score
+
+POST /funalytics/recompute/:eventId (later in MVP)
+
+Recompute score for a single event; append a new history row.
+
+Output Example
+{
+  "eventId": "evt_123",
+  "computedAt": "2025-09-15T12:00:00Z",
+  "communityVibe": 8,
+  "familyFun": 9,
+  "overallScore": 9,
+  "reasoning": "Local vendors, kid crafts, and community music stage."
+}
+
+Validation & Limits
+
+Facets clamped [0..10]
+
+Reasoning ≤ 240 chars
+
+If required input is missing, produce conservative defaults and a clear reasoning note.
+
+Versioning
+
+mvp-v1 (deterministic heuristics)
+
+Change rules behind a feature flag; keep history rows immutable.
+
+Observability (later)
+
+Log compute latency
+
+Log rule hits (for debugging)
+EOF
+
+--- FUNALYTICS_FAQ.md ---
+
+cat > FUNALYTICS_DOCS/FUNALYTICS_FAQ.md << 'EOF'
+
+Funalytics™ FAQ
+Who makes the score?
+
+An automated FunList.ai engine (not a human). It uses event details and simple rules to estimate fit.
+
+What does the score mean?
+
+A quick read on likely enjoyment. Facets (CommunityVibe™, FamilyFun™) roll up into an Overall 0–10.
+
+When is it updated?
+
+On create, on edit, and periodically if details change.
+
+Where do I see it?
+
+Event cards (compact badges) and event pages (full breakdown + a short reason).
+
+Why trust it?
+
+It’s consistent, transparent (short “why”), and improves as organizers include richer details.
+
+How can organizers improve scores?
+
+Clear family-friendly signals, community elements, accurate schedules, venue info, and tags. Avoid ambiguous descriptions.
+
+Can scores be wrong?
+
+They can be imperfect—details matter. We keep a history and will refine logic and signals over time.
+
+Is it personalized?
+
+MVP is general-purpose. Personalization (by taste/location) comes later.
+
+Do you rate safety or political content?
+
+No. MVP facets focus on community & family friendliness; we avoid sensitive judgments.
+
+Can I opt out?
+
+If an organizer opts out, events won’t show a Funalytics score (policy TBD).
+EOF
+
+
+---
+
+# 2) Mark tasks complete + set next steps, then push
+
+> From `~/funlist`
+
+```bash
+# Mark event search/filtering complete and add follow-ups
+awk '1; /## 1\. Database & Backend/ {print "- [x] Extend GET /events with title/date/location filters (done)"; print "- [ ] Add endpoint: POST /funalytics/recompute/:eventId (append history)"; print "- [ ] Surface latest Funalytics on event cards/detail (UI stub)"; print "- [ ] Add indices for title, venue.city, venue.state (later)"}' TASKS.md > /tmp/TASKS.md && mv /tmp/TASKS.md TASKS.md
+
+# Note the canonical docs in PROJECT_PLAN.md
+awk '1; END{print "\n---\n\n## Documentation\n- FUNALYTICS_DOCS added (Overview, Tech, FAQ) — single source of truth for scoring and messaging."}' PROJECT_PLAN.md > /tmp/PROJECT_PLAN.md && mv /tmp/PROJECT_PLAN.md PROJECT_PLAN.md
+
+# Commit & push
+git add FUNALYTICS_DOCS TASKS.md PROJECT_PLAN.md
+git commit -m "Add canonical Funalytics docs; mark search/filter done; add next MVP steps"
+git push origin main
+
+3) One master prompt for Replit (paste this verbatim)
+
+Use this as your next Replit instruction:
+
+Before coding, read PROJECT_PLAN.md and TASKS.md.
+
+Context:
+- We’re in Phase 1 (MVP Foundation).
+- Canonical Funalytics docs live in FUNALYTICS_DOCS/ (read Overview, Tech, FAQ).
+- Search & filtering on GET /events is DONE with tests passing.
+
+Your tasks (in small, working steps):
+1) **Attach Funalytics to GET /events**:
+   - For each returned event, include the latest FunalyticsScore (overallScore, communityVibe, familyFun, reasoning).
+   - If no score exists, compute once using MVP heuristics (see FUNALYTICS_TECH.md) and store it, then return it.
+
+2) **Add recompute endpoint**:
+   - POST /funalytics/recompute/:eventId
+   - Recompute using MVP rules, append a new row (do not overwrite history).
+   - Return the new latest score.
+
+3) **Validation & limits**:
+   - Clamp facets [0..10].
+   - reasoning <= 240 chars.
+   - Propagate clear 400s for invalid eventId or missing required fields.
+
+4) **Tests**:
+   - Extend integration tests to cover:
+     - GET /events includes latest score.
+     - Recompute creates a new row and updates “latest”.
+     - No existing score → computed-on-read path works once.
+     - Reasoning length and facet clamps enforced.
+
+5) **Docs & Tasks**:
+   - If API shapes changed, add brief notes to FUNALYTICS_TECH.md (API Contract section).
+   - Update TASKS.md: check off these items when done; add next small follow-ups if needed.
+
+Rules:
+- Keep PRs small and working.
+- Prefer explicit Prisma queries; no hidden magic.
+- Use the deterministic MVP rules in FUNALYTICS_TECH.md.
+
+Why this is best practice (quick recap)
+
+Single source of truth: FUNALYTICS_DOCS/ keeps product, tech, and UX aligned for devs and Replit.
+
+Incremental dev: small, testable slices (attach latest score; add recompute; test).
+
+History preserved: append-only scores enable evolution and analytics later.
+
+Docs + Tasks loop: every code change reflected in docs and backlog, keeping Replit on-script.
