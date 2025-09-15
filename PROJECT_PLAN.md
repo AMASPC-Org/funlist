@@ -1,64 +1,62 @@
 # FunList.ai — Project Roadmap & Execution Plan
 
+_Last updated: 2025-09-15_
+
+---
+
 ## 🎯 Purpose
-This file is a living document to guide development, ensure Replit AI has consistent project context, and align contributors (including future developers).  
+This file is a **living roadmap** for FunList.ai.  
+It ensures Replit AI and all developers have a consistent, clear project direction.  
+Cloud deployment tasks are deferred until the MVP is validated in Replit.
 
 ---
 
 ## ✅ Completed
-- Initial repo setup in GitHub
-- Replit project connected
-- Database schema (schema.sql) committed
+- Initial repo setup in GitHub  
+- Replit project connected  
+- Database schema (schema.sql) committed  
+- Active backlog created (TASKS.md)  
 
 ---
 
-## 🚧 Phase One: MVP Foundation
+## 🚧 Phase One: MVP (Replit Development Only)
+
 1. **Database & Backend**
-   - Apply schema.sql to Postgres instance in GCP
-   - Set up migrations framework (Prisma / Alembic / Flyway)
-   - Implement ORM models to match schema
-   - Seed database with sample events, users, venues
+   - Configure Prisma ORM with SQLite (`file:./dev.db`)  
+   - Implement models for Users, Events, Venues, Favorites  
+   - Add seed script with sample users, venues, and events  
+   - Build REST API endpoints for:  
+     - User registration & login (attendee, organizer, admin)  
+     - Organizer event submission  
+     - Event search & filter (date/location)  
+     - Attendee favorites  
 
 2. **Core Features**
-   - User registration & login (attendee, organizer, admin roles)
-   - Organizer event submission form
-   - Event search & filter by location/date
-   - Funalytics™ scoring endpoint (CommunityVibe, FamilyFun, Overall)
-   - Favorites (attendees can save events)
+   - Organizer event submission form (frontend)  
+   - Attendee event discovery UI (list + search)  
+   - **Personal Fun Assistant (stub)** — chat UI returning mock responses  
+   - Display Fun Ratings (static placeholders for now)  
 
-3. **Infrastructure**
-   - Deploy backend to Cloud Run
-   - Configure CI/CD with Cloud Build
-   - Add health checks, logging, and basic monitoring
+3. **Testing**
+   - Integration tests for login + event submission  
+   - Basic test for Fun Assistant chat flow  
 
 ---
 
-## 🚧 Phase Two: Event Attendee Experience
-1. **Personal Fun Assistant**
-   - Attendee-facing chatbot powered by AI
-   - Personalized event discovery recommendations
-   - Integration with Funalytics scores
-
-2. **Frontend Enhancements**
-   - Event listing pages styled for mobile-first
-   - Organizer dashboard for submitted events
-   - Map-based event discovery
-
----
-
-## 🚧 Phase Three: Organizers & Ecosystem
-1. **Organizer Tools**
-   - Advanced event analytics
-   - AI-powered suggestions to optimize listings
-   - Multi-user team support for organizations
-
-2. **Partnership Integration**
-   - Connect with LocalMarketingTool.ai (future step)
-   - Explore AMA SPC ecosystem integrations
+## 🔮 Future Phases (Parked for Now)
+These will come after MVP validation in Replit:  
+- Switch SQLite → Cloud SQL (Postgres on GCP)  
+- CI/CD pipeline with Cloud Build + Cloud Run  
+- TLS + domain setup for funlist.ai  
+- Funalytics™ scoring (CommunityVibe™, FamilyFun™, Overall)  
+- Organizer AI Assistant (pre-publish coaching)  
+- Event ingestion agents (scrapers, email parsers)  
 
 ---
 
 ## 📌 Notes
-- This roadmap is incremental. Each phase builds upon the previous.
-- Replit AI and all developers should reference this document for context.
-- Update this file as tasks are completed or priorities shift.
+- Replit AI should always reference this file and `TASKS.md` before writing code.  
+- The immediate focus is **MVP core flows in Replit only**.  
+- Cloud infra is explicitly deferred until the core experience is working.  
+
+---
