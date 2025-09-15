@@ -66,6 +66,95 @@ const validateEventData = (data) => {
   return errors;
 };
 
+// Funalytics™ MVP Heuristic Scoring Functions
+const computeFunalyticsScore = (event) => {
+  const title = (event.title || '').toLowerCase();
+  const description = (event.description || '').toLowerCase();
+  const category = (event.category || '').toLowerCase();
+  const targetAudience = (event.target_audience || '').toLowerCase();
+  const tags = (event.tags || '').toLowerCase();
+  const city = (event.city || '').toLowerCase();
+  const state = (event.state || '').toLowerCase();
+  
+  // Combine all text for easier searching
+  const allText = `${title} ${description} ${category} ${targetAudience} ${tags}`;
+  
+  // CommunityVibe™ (0–10): Sense of togetherness, local flavor, inclusivity
+  let communityVibe = 4; // Base score
+  
+  // +2 for local/community keywords
+  const communityKeywords = ['local', 'community', 'neighborhood', 'town', 'city', 'nonprofit', 'volunteer', 'charity', 'fundraiser', 'civic'];
+  if (communityKeywords.some(keyword => allText.includes(keyword))) {
+    communityVibe += 2;
+  }
+  
+  // +2 for nonprofit/community organization indicators
+  const nonprofitKeywords = ['nonprofit', 'non-profit', 'community center', 'library', 'church', 'school', 'organization', 'foundation'];
+  if (nonprofitKeywords.some(keyword => allText.includes(keyword))) {
+    communityVibe += 2;
+  }
+  
+  // +1 for smaller venue indicators (community spaces vs large commercial venues)
+  const smallVenueKeywords = ['center', 'hall', 'room', 'park', 'garden', 'cafe', 'shop'];
+  if (smallVenueKeywords.some(keyword => allText.includes(keyword))) {
+    communityVibe += 1;
+  }
+  
+  // Cap at 10
+  communityVibe = Math.min(communityVibe, 10);
+  
+  // FamilyFun™ (0–10): Suitability for families and kids
+  let familyFun = 4; // Base score
+  
+  // +3 for family/kid friendly keywords
+  const familyKeywords = ['family', 'kid', 'kids', 'children', 'child', 'all ages', 'family-friendly', 'toddler', 'baby', 'parent'];
+  if (familyKeywords.some(keyword => allText.includes(keyword))) {
+    familyFun += 3;
+  }
+  
+  // -2 for explicit 21+ content
+  const adultOnlyKeywords = ['21+', '21 and up', 'adults only', 'adult only', 'mature', 'nightclub', 'bar crawl'];
+  if (adultOnlyKeywords.some(keyword => allText.includes(keyword))) {
+    familyFun -= 2;
+  }
+  
+  // +1 for educational/activity keywords
+  const educationalKeywords = ['learn', 'workshop', 'class', 'educational', 'craft', 'story', 'reading', 'game'];
+  if (educationalKeywords.some(keyword => allText.includes(keyword))) {
+    familyFun += 1;
+  }
+  
+  // Cap at 0-10 range
+  familyFun = Math.max(0, Math.min(familyFun, 10));
+  
+  // Overall Score: simple average of available facets (round to nearest int)
+  const availableFacets = [communityVibe, familyFun].filter(score => score !== null && score !== undefined);
+  const overallScore = availableFacets.length > 0 
+    ? Math.round(availableFacets.reduce((sum, score) => sum + score, 0) / availableFacets.length)
+    : 5; // Default if no facets available
+  
+  // Generate reasoning
+  const reasons = [];
+  if (communityVibe >= 7) reasons.push('strong community vibes');
+  if (familyFun >= 7) reasons.push('family-friendly activities');
+  if (communityKeywords.some(keyword => allText.includes(keyword))) reasons.push('local focus');
+  if (familyKeywords.some(keyword => allText.includes(keyword))) reasons.push('great for kids');
+  
+  const reasoning = reasons.length > 0 
+    ? `High fun score because of ${reasons.join(', ')}.`
+    : 'Computed based on event details and keywords.';
+  
+  // Ensure reasoning is <= 240 chars
+  const finalReasoning = reasoning.length > 240 ? reasoning.substring(0, 237) + '...' : reasoning;
+  
+  return {
+    communityVibe,
+    familyFun,
+    overallScore,
+    reasoning: finalReasoning
+  };
+};
+
 // GET /events - returns all events with venue, organizer, and funalytics scores
 app.get('/events', async (req, res) => {
   try {
