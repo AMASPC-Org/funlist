@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h2>Profile</h2>
+                    <a href="{{ url_for('edit_profile') }}" class="btn btn-primary">Edit Profile</a>
+                </div>
+                <div class="card-body">
+                    <div class="profile-section mb-4">
+                        <h3>{{ user.username or user.email }}</h3>
+                        {% if user.first_name or user.last_name %}
+                            <p class="text-muted">{{ user.first_name }} {{ user.last_name }}</p>
+                            {% if user.title %}
+                                <p class="text-muted">{{ user.title }}</p>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+
+                    <!-- User Roles Section -->
+                    <div class="profile-section mb-4">
+                        <h4>My Capabilities</h4>
+                        <div class="row mb-3">
+                            {% if current_user.is_subscriber %}
+                                <div class="col-md-6 mb-2">
+                                    <div class="card h-100 border-info">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <i class="fas fa-user-check text-info me-2 fs-4"></i>
+                                                <h5 class="card-title mb-0">Subscriber</h5>
+                                            </div>
+                                            <p class="card-text text-muted">Find events and receive personalized recommendations based on your interests and location preferences.</p>
+                                            <div class="text-info small">
+                                                <i class="fas fa-check-circle"></i> Active
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            {% if current_user.is_event_creator %}
+                                <div class="col-md-6 mb-2">
+                                    <div class="card h-100 border-success">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <i class="fas fa-calendar-plus text-success me-2 fs-4"></i>
+                                                <h5 class="card-title mb-0">Event Creator</h5>
+                                            </div>
+                                            <p class="card-text text-muted">Create, list, and manage events on the platform. Submit new events and track their performance.</p>
+                                            <div class="text-success small">
+                                                <i class="fas fa-check-circle"></i> Active
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            {% if current_user.is_organizer %}
+                                <div class="col-md-6 mb-2">
+                                    <div class="card h-100 border-primary">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <i class="fas fa-building text-primary me-2 fs-4"></i>
+                                                <h5 class="card-title mb-0">Organizer</h5>
+                                            </div>
+                                            <p class="card-text text-muted">Represent an organization or venue that hosts events. Manage venue listings and org details.</p>
+                                            <div class="text-primary small">
+                                                <i class="fas fa-check-circle"></i> Active
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            {% if current_user.is_vendor %}
+                                <div class="col-md-6 mb-2">
+                                    <div class="card h-100 border-warning">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <i class="fas fa-store text-warning me-2 fs-4"></i>
+                                                <h5 class="card-title mb-0">Vendor</h5>
+                                            </div>
+                                            <p class="card-text text-muted">Offer services for events such as catering, entertainment, equipment rental, or other support services.</p>
+                                            <div class="text-warning small">
+                                                <i class="fas fa-check-circle"></i> Active
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            {% if current_user.is_sponsor %}
+                                <div class="col-md-6 mb-2">
+                                    <div class="card h-100 border-danger">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <i class="fas fa-handshake text-danger me-2 fs-4"></i>
+                                                <h5 class="card-title mb-0">Sponsor</h5>
+                                            </div>
+                                            <p class="card-text text-muted">Explore advertising and sponsorship opportunities for events that align with your brand and budget.</p>
+                                            <div class="text-danger small">
+                                                <i class="fas fa-check-circle"></i> Active
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            {% if current_user.is_admin %}
+                                <div class="col-md-6 mb-2">
+                                    <div class="card h-100 border-dark">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <i class="fas fa-user-shield text-dark me-2 fs-4"></i>
+                                                <h5 class="card-title mb-0">Administrator</h5>
+                                            </div>
+                                            <p class="card-text text-muted">Manage platform settings, users, and content. Access to admin panel and system functions.</p>
+                                            <div class="text-dark small">
+                                                <i class="fas fa-check-circle"></i> Active
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="alert alert-light border">
+                            <div class="d-flex">
+                                <div class="me-3 fs-4">
+                                    <i class="fas fa-lightbulb text-warning"></i>
+                                </div>
+                                <div>
+                                    <h5>Need more capabilities?</h5>
+                                    <p class="mb-1">You can enable additional roles to access more features based on your needs.</p>
+                                    <a href="{{ url_for('edit_profile') }}" class="btn btn-sm btn-outline-primary mt-2">
+                                        <i class="fas fa-plus-circle"></i> Manage My Roles
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Personal Details -->
+                    <div class="profile-section mb-4">
+                        <h4>Details</h4>
+                        <ul class="list-unstyled">
+                            {% if user.location %}
+                            <li class="mb-2">
+                                <strong>Location:</strong> {{ user.location }}
+                            </li>
+                            {% endif %}
+                            {% if user.interests %}
+                            <li class="mb-2">
+                                <strong>Interests:</strong> {{ user.interests }}
+                            </li>
+                            {% endif %}
+                            {% if user.preferred_locations %}
+                            <li class="mb-2">
+                                <strong>Preferred Locations:</strong> {{ user.preferred_locations }}
+                            </li>
+                            {% endif %}
+                            {% if user.event_interests %}
+                            <li class="mb-2">
+                                <strong>Event Interests:</strong> {{ user.event_interests }}
+                            </li>
+                            {% endif %}
+                            <li class="mb-2">
+                                <strong>Member Since:</strong> {{ user.created_at.strftime('%B %d, %Y') }}
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Organizer Information (if applicable) -->
+                    {% if current_user.is_organizer %}
+                    <div class="profile-section mb-4">
+                        <h4>Organizer Information</h4>
+                        <p><strong>Organization:</strong> {{ current_user.company_name or "Not specified" }}</p>
+                        <p><strong>About:</strong> {{ current_user.organizer_description or "No description provided" }}</p>
+                        {% if current_user.organizer_website %}
+                        <p><strong>Website:</strong> <a href="{{ current_user.organizer_website }}" target="_blank">{{ current_user.organizer_website }}</a></p>
+                        {% endif %}
+                        <div class="mt-3">
+                            <a href="{{ url_for('submit_event') }}" class="btn btn-sm btn-success">
+                                <i class="fas fa-plus"></i> Add New Event
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Vendor Information (if applicable) -->
+                    {% if current_user.is_vendor %}
+                    <div class="profile-section mb-4">
+                        <h4>Vendor Information</h4>
+                        <p><strong>Vendor Type:</strong> {{ current_user.vendor_type or "Not specified" }}</p>
+                        <p><strong>Description:</strong> {{ current_user.vendor_description or "No description provided" }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Sponsor Information (if applicable) -->
+                    {% if current_user.is_sponsor %}
+                    <div class="profile-section mb-4">
+                        <h4>Sponsor Information</h4>
+                        {% set preferences = current_user.get_preferences() %}
+                        <p><strong>Sponsorship Interests:</strong> {{ preferences.get('sponsorship_interests') if preferences and preferences.get('sponsorship_interests') else "Not specified" }}</p>
+                        <p><strong>Budget Range:</strong> {{ preferences.get('sponsorship_budget') if preferences and preferences.get('sponsorship_budget') else "Not specified" }}</p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Quick Action Buttons -->
+                    <div class="profile-section">
+                        <h4>Quick Actions</h4>
+                        <div class="row mt-3">
+                            <div class="col-md-12 mb-3">
+                                <div class="d-flex flex-wrap gap-2">
+                                    <a href="{{ url_for('edit_profile') }}" class="btn btn-outline-primary">
+                                        <i class="fas fa-user-edit"></i> Edit Profile
+                                    </a>
+                                    <a href="{{ url_for('change_password') }}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-key"></i> Change Password
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            {% if current_user.is_event_creator %}
+                            <div class="col-md-6 mb-2">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h5 class="card-title"><i class="fas fa-calendar-plus text-success me-2"></i> Event Creator Actions</h5>
+                                        <div class="d-flex flex-wrap gap-2 mt-3">
+                                            <a href="{{ url_for('submit_event') }}" class="btn btn-success">
+                                                <i class="fas fa-plus"></i> Create New Event
+                                            </a>
+                                            <a href="{{ url_for('events') }}" class="btn btn-outline-success">
+                                                <i class="fas fa-list"></i> View My Events
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if current_user.is_organizer %}
+                            <div class="col-md-6 mb-2">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h5 class="card-title"><i class="fas fa-building text-primary me-2"></i> Organizer Actions</h5>
+                                        <div class="d-flex flex-wrap gap-2 mt-3">
+                                            <a href="{{ url_for('add_venue') }}" class="btn btn-primary">
+                                                <i class="fas fa-map-marker-alt"></i> Add New Venue
+                                            </a>
+                                            <a href="{{ url_for('my_venues') }}" class="btn btn-outline-primary">
+                                                <i class="fas fa-list-alt"></i> Manage Venues
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if current_user.is_vendor %}
+                            <div class="col-md-6 mb-2">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h5 class="card-title"><i class="fas fa-store text-warning me-2"></i> Vendor Actions</h5>
+                                        <div class="d-flex flex-wrap gap-2 mt-3">
+                                            <a href="{{ url_for('vendor_profile') }}" class="btn btn-warning">
+                                                <i class="fas fa-store-alt"></i> Manage Vendor Profile
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if current_user.is_sponsor %}
+                            <div class="col-md-6 mb-2">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h5 class="card-title"><i class="fas fa-handshake text-danger me-2"></i> Sponsor Actions</h5>
+                                        <div class="d-flex flex-wrap gap-2 mt-3">
+                                            <a href="{{ url_for('advertising') }}" class="btn btn-danger">
+                                                <i class="fas fa-ad"></i> View Sponsorship Opportunities
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if current_user.is_admin %}
+                            <div class="col-md-6 mb-2">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h5 class="card-title"><i class="fas fa-user-shield text-dark me-2"></i> Admin Actions</h5>
+                                        <div class="d-flex flex-wrap gap-2 mt-3">
+                                            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-dark">
+                                                <i class="fas fa-tachometer-alt"></i> Admin Dashboard
+                                            </a>
+                                            <a href="{{ url_for('admin_events') }}" class="btn btn-outline-dark">
+                                                <i class="fas fa-calendar-check"></i> Manage Events
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,556 @@
+{% extends "base.html" %}
+
+{% block title %}Find Events Near You - Map | FunList.ai{% endblock %}
+
+{% block head %}
+<!-- Leaflet CSS and JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+<style>
+    #map {
+        height: 600px;
+        width: 100%;
+        border-radius: 8px;
+        z-index: 1;
+        border: 1px solid #ddd;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .filter-bar {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .map-container {
+        position: relative;
+    }
+
+    .user-location-button {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 1000;
+        background-color: white;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .event-cards-container {
+        max-height: 600px;
+        overflow-y: auto;
+        padding-right: 5px;
+    }
+
+    .event-card {
+        transition: all 0.3s ease;
+        border-left: 3px solid transparent;
+        margin-bottom: 15px;
+        border-radius: 8px;
+        background-color: white;
+    }
+
+    .event-card:hover {
+        background-color: #f8f9fa;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+    }
+
+    .event-card.highlighted {
+        background-color: #e9ecef;
+        border-left-color: var(--primary-color);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .advertisement-card {
+        background-color: #fff3cd;
+        border: 1px dashed #007bff;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+    .advertisement-card .ad-label {
+        font-size: 0.9em;
+        color: #6c757d;
+        margin-bottom: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+  <div class="filter-container p-3 bg-light border-bottom shadow-sm">
+    <div class="row align-items-center">
+        <div class="col-md-3">
+            <input type="text" class="form-control" id="locationSearch" placeholder="Search location...">
+        </div>
+        <div class="col-md-2">
+            <select class="form-select" id="categoryFilter">
+                <option selected>All Categories</option>
+                <option>Sports</option>
+                <option>Music</option>
+                <option>Arts</option>
+                <option>Food</option>
+                <option>Other</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select class="form-select" id="dateFilter">
+                <option selected>Any Date</option>
+                <option>Today</option>
+                <option>Tomorrow</option>
+                <option>This Weekend</option>
+                <option>Next Week</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select class="form-select" id="funFilter">
+                <option selected>All Fun Ratings</option>
+                <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+                <option value="4">⭐⭐⭐⭐ (4+)</option>
+                <option value="3">⭐⭐⭐ (3+)</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button id="applyFilters" class="btn btn-primary w-100">Apply Filters</button>
+        </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-8">
+        <div id="map" class="map-container shadow"></div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="event-cards-container">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4>Map Events</h4>
+                <div>
+                    <span class="badge bg-primary" id="event-count">0 Events</span>
+                </div>
+            </div>
+
+            <div id="visible-events-container">
+                <div class="text-center text-muted py-4" id="no-events-message">
+                    <i class="fas fa-map-marker-alt fa-3x mb-3"></i>
+                    <p>No events currently visible on map.<br>Try adjusting your filters or zoom level.</p>
+                </div>
+            </div>
+
+            <div id="all-events-container" style="display: none;">
+                {% set next_ad_index = 2 %}
+                {% set next_gap = 4 %}
+
+                {% for event in events %}
+                    <div class="card mb-3 event-card" 
+                         data-event-id="{{ event.id }}"
+                         data-lat="{{ event.latitude }}"
+                         data-lng="{{ event.longitude }}"
+                         data-category="{{ event.category }}"
+                         data-date="{{ event.start_date }}"
+                         data-fun-rating="{{ event.fun_rating }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ event.title }}</h5>
+                            <p class="card-text small">{{ event.description|truncate(100) }}</p>
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">{{ event.start_date }}</small>
+                                <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if loop.index0 == next_ad_index %}
+                    <div class="card mb-3 advertisement-card" data-ad-position="{{ loop.index }}">
+                        <div class="card-body text-center">
+                            <p class="ad-label">Advertisement</p>
+                            <p>Sponsored Content - Advertisement space available</p>
+                        </div>
+                    </div>
+
+                    {% set next_ad_index = next_ad_index + next_gap %}
+                    {% set next_gap = next_gap + 1 %}
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Add a hidden div to store event data for the map -->
+<div id="map-data" style="display:none;" data-events="{{ events_json|tojson }}"></div>
+
+<!-- Load map.js script -->
+<script src="{{ url_for('static', filename='js/map.js') }}?v={{ range(1, 10000) | random }}"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("Map page loaded, initializing map...");
+
+    // Initialize map
+    let map = null;
+    const markers = {};
+    let visibleEventIds = [];
+
+    // First, make sure the FunlistMap is properly loaded
+    if (window.FunlistMap) {
+        console.log("FunlistMap module found, initializing...");
+        try {
+            map = window.FunlistMap.init('map');
+            if (map) {
+                console.log("FunlistMap initialized successfully");
+                // Continue with map setup
+            }
+        } catch (err) {
+            console.error("Error initializing FunlistMap:", err);
+        }
+    }
+
+    // If FunlistMap init failed or doesn't exist, fall back to direct initialization
+    if (!map) {
+        console.log("Falling back to direct map initialization");
+        initMap();
+    }
+
+    // For compatibility or fallback
+    function initMap() {
+        console.log("Initializing map directly");
+        // Default location (Olympia, WA)
+        const defaultLocation = [47.0379, -122.9007];
+
+        // Create the map
+        map = L.map('map').setView(defaultLocation, 13);
+
+        // Add the OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Add event markers
+        addEventMarkers();
+
+        // Update visible events when the map moves
+        map.on('moveend', updateVisibleEvents);
+
+        // Try to get user location
+        getUserLocation();
+
+        return map;
+    }
+
+    // Add markers for all events
+    function addEventMarkers() {
+        const eventCards = document.querySelectorAll('#all-events-container .event-card');
+
+        eventCards.forEach(function(card) {
+            const eventId = card.getAttribute('data-event-id');
+            const lat = parseFloat(card.getAttribute('data-lat'));
+            const lng = parseFloat(card.getAttribute('data-lng'));
+
+            if (!isNaN(lat) && !isNaN(lng)) {
+                const title = card.querySelector('.card-title').textContent;
+                const description = card.querySelector('.card-text').textContent;
+                const popupContent = `
+                    <div class="event-popup">
+                        <h5>${title}</h5>
+                        <p>${description}</p>
+                        <a href="/event/${eventId}" class="btn btn-sm btn-primary">View Details</a>
+                    </div>
+                `;
+
+                const marker = L.marker([lat, lng]).addTo(map);
+                marker.bindPopup(popupContent);
+                marker.eventId = eventId;
+
+                // Add click event to highlight corresponding card
+                marker.on('click', function() {
+                    highlightEventCard(eventId);
+                });
+
+                markers[eventId] = marker;
+            }
+        });
+    }
+
+    // Update the list of visible events based on map bounds
+    function updateVisibleEvents() {
+        if (!map) return;
+
+        visibleEventIds = [];
+        const bounds = map.getBounds();
+
+        // Check each marker to see if it's in the current map bounds
+        for (const eventId in markers) {
+            const marker = markers[eventId];
+            if (bounds.contains(marker.getLatLng())) {
+                visibleEventIds.push(eventId);
+            }
+        }
+
+        // Update the visible events list
+        updateEventsList();
+
+        // Update the event count
+        const countElement = document.getElementById('event-count');
+        if (countElement) {
+            countElement.textContent = visibleEventIds.length + ' Events';
+        }
+
+        // Show/hide no events message
+        const noEventsMessage = document.getElementById('no-events-message');
+        if (noEventsMessage) {
+            noEventsMessage.style.display = visibleEventIds.length > 0 ? 'none' : 'block';
+        }
+    }
+
+    // Update the events list in the sidebar
+    function updateEventsList() {
+        const allEventsContainer = document.getElementById('all-events-container');
+        const visibleEventsContainer = document.getElementById('visible-events-container');
+
+        if (!allEventsContainer || !visibleEventsContainer) return;
+
+        // Clear existing events (except the no-events-message)
+        while (visibleEventsContainer.firstChild) {
+            if (visibleEventsContainer.firstChild.id !== 'no-events-message') {
+                visibleEventsContainer.removeChild(visibleEventsContainer.firstChild);
+            } else {
+                break;
+            }
+        }
+
+        if (visibleEventIds.length === 0) {
+            return;
+        }
+
+        // Add visible events to the container
+        const eventCards = allEventsContainer.querySelectorAll('.event-card, .advertisement-card');
+
+        let visibleIndex = 0;
+        eventCards.forEach(function(card) {
+            if (card.classList.contains('event-card')) {
+                const eventId = card.getAttribute('data-event-id');
+                if (visibleEventIds.includes(eventId)) {
+                    const cardClone = card.cloneNode(true);
+
+                    // Add click handler to highlight marker
+                    cardClone.addEventListener('click', function(e) {
+                        if (e.target.tagName !== 'A') {
+                            highlightMarker(eventId);
+                        }
+                    });
+
+                    visibleEventsContainer.appendChild(cardClone);
+                    visibleIndex++;
+                }
+            } else if (card.classList.contains('advertisement-card')) {
+                const adPosition = parseInt(card.getAttribute('data-ad-position'));
+                if (visibleIndex + 1 === adPosition && visibleIndex < visibleEventIds.length) {
+                    const adClone = card.cloneNode(true);
+                    visibleEventsContainer.appendChild(adClone);
+                }
+            }
+        });
+    }
+
+    // Highlight a marker when its event card is clicked
+    function highlightMarker(eventId) {
+        if (!map || !eventId || !markers[eventId]) return;
+
+        const marker = markers[eventId];
+
+        // Pan the map to the marker
+        map.panTo(marker.getLatLng());
+
+        // Open the popup
+        marker.openPopup();
+
+        // Highlight the corresponding event card
+        highlightEventCard(eventId);
+    }
+
+    // Highlight an event card when its marker is clicked
+    function highlightEventCard(eventId) {
+        if (!eventId) return;
+
+        // Remove highlight from all cards
+        document.querySelectorAll('.event-card').forEach(function(card) {
+            card.classList.remove('highlighted');
+        });
+
+        // Add highlight to the selected card
+        const visibleCard = document.querySelector(`#visible-events-container .event-card[data-event-id="${eventId}"]`);
+        if (visibleCard) {
+            visibleCard.classList.add('highlighted');
+            visibleCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+
+    // Filter markers based on category, date, and fun rating
+    function filterMarkers() {
+        const category = document.getElementById('categoryFilter').value;
+        const date = document.getElementById('dateFilter').value;
+        const funRating = document.getElementById('funFilter').value;
+
+        // Hide all markers first
+        for (const eventId in markers) {
+            map.removeLayer(markers[eventId]);
+        }
+
+        // Clear the markers object
+        for (const key in markers) {
+            delete markers[key];
+        }
+
+        // Add filtered markers back to the map
+        const eventCards = document.querySelectorAll('#all-events-container .event-card');
+
+        eventCards.forEach(function(card) {
+            const eventId = card.getAttribute('data-event-id');
+            const lat = parseFloat(card.getAttribute('data-lat'));
+            const lng = parseFloat(card.getAttribute('data-lng'));
+            const cardCategory = card.getAttribute('data-category');
+            const cardDate = card.getAttribute('data-date');
+            const cardFunRating = parseInt(card.getAttribute('data-fun-rating'));
+
+            let passesFilter = true;
+
+            // Apply category filter
+            if (category && category !== 'All Categories') {
+                if (cardCategory.toLowerCase() !== category.toLowerCase()) {
+                    passesFilter = false;
+                }
+            }
+
+            // Apply fun rating filter
+            if (funRating && funRating !== 'All Fun Ratings') {
+                const minRating = parseInt(funRating);
+                if (cardFunRating < minRating) {
+                    passesFilter = false;
+                }
+            }
+
+            // Apply date filter
+            if (date && date !== 'Any Date') {
+                const eventDate = new Date(cardDate);
+                const today = new Date();
+
+                if (date === 'Today') {
+                    const todayStr = today.toDateString();
+                    if (eventDate.toDateString() !== todayStr) {
+                        passesFilter = false;
+                    }
+                } else if (date === 'Tomorrow') {
+                    const tomorrow = new Date(today);
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    if (eventDate.toDateString() !== tomorrow.toDateString()) {
+                        passesFilter = false;
+                    }
+                } else if (date === 'This Weekend') {
+                    const dayOfWeek = today.getDay();
+                    const saturday = new Date(today);
+                    saturday.setDate(today.getDate() + (6 - dayOfWeek) % 7);
+                    const sunday = new Date(saturday);
+                    sunday.setDate(saturday.getDate() + 1);
+
+                    if (!(eventDate >= saturday && eventDate <= sunday)) {
+                        passesFilter = false;
+                    }
+                } else if (date === 'Next Week') {
+                    const nextMonday = new Date(today);
+                    const daysUntilMonday = (7 - today.getDay() + 1) % 7 || 7;
+                    nextMonday.setDate(today.getDate() + daysUntilMonday);
+
+                    const nextSunday = new Date(nextMonday);
+                    nextSunday.setDate(nextMonday.getDate() + 6);
+
+                    if (!(eventDate >= nextMonday && eventDate <= nextSunday)) {
+                        passesFilter = false;
+                    }
+                }
+            }
+
+            // If the event passes all filters, add its marker to the map
+            if (passesFilter && !isNaN(lat) && !isNaN(lng)) {
+                const title = card.querySelector('.card-title').textContent;
+                const description = card.querySelector('.card-text').textContent;
+                const popupContent = `
+                    <div class="event-popup">
+                        <h5>${title}</h5>
+                        <p>${description}</p>
+                        <a href="/event/${eventId}" class="btn btn-sm btn-primary">View Details</a>
+                    </div>
+                `;
+
+                const marker = L.marker([lat, lng]).addTo(map);
+                marker.bindPopup(popupContent);
+                marker.eventId = eventId;
+
+                // Add click event to highlight corresponding card
+                marker.on('click', function() {
+                    highlightEventCard(eventId);
+                });
+
+                markers[eventId] = marker;
+            }
+        });
+
+        // Update the visible events
+        updateVisibleEvents();
+    }
+
+    // Get user's location and center the map there
+    function getUserLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const userLat = position.coords.latitude;
+                    const userLng = position.coords.longitude;
+
+                    // Add a special marker for user's location
+                    const userMarker = L.marker([userLat, userLng], {
+                        icon: L.divIcon({
+                            className: 'user-location-marker',
+                            html: '<i class="fas fa-circle-dot text-primary"></i><div class="pulse"></div>',
+                            iconSize: [20, 20],
+                            iconAnchor: [10, 10]
+                        })
+                    }).addTo(map);
+
+                    userMarker.bindPopup("<strong>Your Location</strong>").openPopup();
+
+                    // Center map on user's location
+                    map.setView([userLat, userLng], 13);
+                },
+                function(error) {
+                    console.warn("Error getting user location:", error.message);
+                    // Keep default location
+                }
+            );
+        }
+    }
+
+    // Initialize the map when the page loads
+    initMap();
+
+    // Set up filter button event handler
+    document.getElementById('applyFilters').addEventListener('click', filterMarkers);
+
+    // Set up click handlers for event cards
+    document.querySelectorAll('.event-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const eventId = this.getAttribute('data-event-id');
+            highlightMarker(eventId);
+        });
+    });
+});
+</script>
+{% endblock %}

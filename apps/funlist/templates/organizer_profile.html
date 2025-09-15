@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Organizer Profile{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0">Event Organizer Profile</h2>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }}">{{ message }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" action="{{ url_for('organizer_profile') }}">
+                        {{ form.hidden_tag() }}
+                        <div class="mb-3">
+                            {{ form.company_name.label(class="form-label") }}
+                            {{ form.company_name(class="form-control" + (" is-invalid" if form.company_name.errors else "")) }}
+                            {% for error in form.company_name.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                            <small class="form-text text-muted">Name of your organization, business, or event planning entity</small>
+                        </div>
+                        <div class="mb-3">
+                            {{ form.description.label(class="form-label") }}
+                            {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows="4") }}
+                            {% for error in form.description.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                            <small class="form-text text-muted">Tell people about your organization and the types of events you create</small>
+                        </div>
+                        <div class="mb-3">
+                            {{ form.website.label(class="form-label") }}
+                            {{ form.website(class="form-control" + (" is-invalid" if form.website.errors else "")) }}
+                            {% for error in form.website.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

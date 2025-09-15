@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+{% block title %}Welcome to FunList.ai{% endblock %}
+
+{% block content %}
+<!-- Site Header and Main navigation are included from base.html -->
+
+<!-- Hero Section with improved spacing -->
+<section id="hero" class="hero-section mt-3"></section>
+
+<!-- Email Signup Modal -->
+<div class="modal fade" id="emailSignupModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Get Weekly Fun Updates</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="emailSignupForm">
+                    <div class="mb-3">
+                        <label for="signupEmail" class="form-label">Email address</label>
+                        <input type="email" class="form-control" id="signupEmail" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Subscribe</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content-section text-center py-5">
+    <div class="container">
+        <h1>Find the Best Events Near You – Rated for Fun!</h1>
+        <p class="lead">Discover fun-rated events in your area</p>
+
+        <div class="search-container mb-4">
+            <form action="{{ url_for('map') }}" method="GET" class="search-form">
+                <div class="input-group">
+                    <input type="text" name="location" class="form-control form-control-lg" placeholder="Enter any location...">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-search"></i> Find Events
+                    </button>
+                </div>
+            </form>
+            <div class="text-center mt-2">
+                <a href="{{ url_for('map') }}" class="btn btn-link">View Full Map</a>
+                <span class="mx-2">|</span>
+                <a href="{{ url_for('events') }}" class="btn btn-link">Browse All Events</a>
+            </div>
+        </div>
+
+        <button class="btn btn-outline-primary btn-lg mt-3" data-bs-toggle="modal" data-bs-target="#emailSignupModal">
+            Get My Weekly FunList
+        </button>
+    </div>
+</section>
+
+<!-- Location functionality now uses browser's native prompt only -->
+
+<!-- Featured Events Section -->
+<section class="featured-events-section py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-4">Featured Events Near You</h2>
+        <div class="row" id="featured-events">
+            <!-- Featured events will be dynamically populated here -->
+        </div>
+    </div>
+</section>
+
+<!-- Main Features Grid -->
+<div class="container my-5">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="feature-box p-4 bg-light">
+                <h3>AI-Driven Curation</h3>
+                <p>Our AI analyzes thousands of events to find the perfect activities that match your interests and preferences.</p>
+                <a href="#ai-curation" class="btn btn-outline-primary mt-3">Learn More</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-box p-4 bg-light">
+                <h3>Fun Rating System</h3>
+                <p>Every event gets a fun rating based on activities, engagement level, and attendee experience.</p>
+                <a href="#fun-rating-section" class="btn btn-outline-primary mt-3">Learn More</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-box p-4 bg-light">
+                <h3>List Your Event</h3>
+                <p>Organize an event? Share it with our community and get discovered by fun-seeking attendees.</p>
+                <a href="{{ url_for('submit_event') }}" class="btn btn-outline-primary mt-3">Submit Event</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Personal Fun Assistant Section -->
+<section id="fun-assistant" class="fun-assistant-section py-5 bg-light">
+    <div class="container">
+        <div class="row align-items-start">
+            <div class="col-md-6">
+                <h2>Your Personal Fun Assistant</h2>
+                <div style="max-width: 500px;">
+                    <p class="lead mb-4">Get personalized recommendations based on your interests and preferences:</p>
+                    <ul class="feature-list mb-4">
+                        <li>AI-powered event matching</li>
+                        <li>Based on the Fun Rating System</li>
+                        <li>Weekly personalized updates</li>
+                        <li>Customized notifications</li>
+                    </ul>
+                    <a href="{{ url_for('fun_assistant_page') }}" class="btn btn-primary btn-lg">Try Fun Assistant Now</a>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chat-demo p-4 bg-white rounded shadow-sm mt-0">
+                    <div class="chat-message user mb-3">
+                        <strong>You:</strong> What fun events are happening this weekend?
+                    </div>
+                    <div class="chat-message assistant mb-3">
+                        <strong>Fun Assistant:</strong> Based on your interests in music and outdoor activities, I found these events:
+                        <ul>
+                            <li>Saturday: Downtown Music Festival (Fun Score: ⭐⭐⭐⭐)</li>
+                            <li>Sunday: Harbor Park Food & Wine (Fun Score: ⭐⭐⭐⭐⭐)</li>
+                        </ul>
+                    </div>
+                    <div class="chat-message user mb-3">
+                        <strong>You:</strong> Tell me more about the festival!
+                    </div>
+                    <div class="chat-message assistant">
+                        <strong>Fun Assistant:</strong> The Downtown Music Festival features 3 stages, local food vendors, and interactive art installations. It matches your preference for live music and social events!
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+<!-- Fun Rating System Section -->
+<section class="rating-system-section py-5">
+    <div class="container text-center">
+        <h2 class="mb-4">How the Fun Rating System Works</h2>
+        <p class="lead mb-5">Every event is rated on a 1-5 scale based on activities, engagement level, and attendee experience:</p>
+        <div class="rating-scale">
+            <div class="rating-item">
+                <span class="stars">⭐</span>
+                <p>Basic Event</p>
+            </div>
+            <div class="rating-item">
+                <span class="stars">⭐⭐</span>
+                <p>Social Elements</p>
+            </div>
+            <div class="rating-item">
+                <span class="stars">⭐⭐⭐</span>
+                <p>Interactive</p>
+            </div>
+            <div class="rating-item">
+                <span class="stars">⭐⭐⭐⭐</span>
+                <p>Multiple Activities</p>
+            </div>
+            <div class="rating-item">
+                <span class="stars">⭐⭐⭐⭐⭐</span>
+                <p>Full Experience</p>
+            </div>
+        </div>
+
+        <div class="rating-details mt-5">
+            <h3 class="mb-4">How Are Ratings Assigned?</h3>
+
+            <div class="accordion" id="ratingAccordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#whoAssigns">
+                            Who assigns Fun Ratings?
+                        </button>
+                    </h2>
+                    <div id="whoAssigns" class="accordion-collapse collapse show" data-bs-parent="#ratingAccordion">
+                        <div class="accordion-body">
+                            Event organizers initially assign their own rating during event submission.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#canAdjust">
+                            Can ratings be adjusted?
+                        </button>
+                    </h2>
+                    <div id="canAdjust" class="accordion-collapse collapse" data-bs-parent="#ratingAccordion">
+                        <div class="accordion-body">
+                            Yes, ratings may be adjusted based on user feedback and reviews after the event.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#highlyRated">
+                            What makes an event highly rated?
+                        </button>
+                    </h2>
+                    <div id="highlyRated" class="accordion-collapse collapse" data-bs-parent="#ratingAccordion">
+                        <div class="accordion-body">
+                            Events with multiple activities, interactive elements, and positive attendee experiences receive higher ratings.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+<!-- Community Sponsors Section -->
+<section class="sponsors-section py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-4">Community Sponsors</h2>
+        <div class="row" id="sponsors-carousel">
+            <!-- Sponsors will be populated dynamically -->
+            <div class="col-md-4 mb-4">
+                <div class="sponsor-card">
+                    <div class="sponsor-content">
+                        <img src="/static/images/rutledge_logo.png" alt="Rutledge Corn Maze">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Never Miss Section -->
+<section id="never-miss" class="bg-light py-5">
+    <div class="container text-center">
+        <h2>Never Miss the Fun!</h2>
+        <p class="lead mb-4">Get our weekly updates to stay informed about local events.</p>
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <form id="footerEmailForm" class="mb-3">
+                    <div class="input-group">
+                        <input type="email" class="form-control" placeholder="Your email address" required>
+                        <button class="btn btn-primary" type="submit">Sign Up</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check if map container exists before initializing
+        const mapContainer = document.getElementById('map');
+        if (!mapContainer) {
+            console.log("Map container not found on this page");
+            return;
+        }
+        
+        try {
+            const map = L.map('map').setView([47.0379, -122.9007], 12);
+            const markers = {};
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            // Sample events (these would come from your backend)
+            const events = [
+                {
+                    id: 1,
+                    title: "Olympia Music Festival",
+                    latitude: 47.0379,
+                    longitude: -122.9007,
+                    description: "A weekend of live music performances",
+                    category: "Music",
+                    funMeter: 5
+                }
+            ];
+
+            events.forEach(event => {
+                const marker = L.marker([event.latitude, event.longitude])
+                    .bindPopup(`
+                        <div class="event-popup">
+                            <h5>${event.title}</h5>
+                            <p>${event.description}</p>
+                            <p><strong>Category:</strong> ${event.category}</p>
+                            <p><strong>Fun Meter:</strong> ${event.funMeter}/5</p>
+                        </div>
+                    `);
+                markers[event.id] = marker;
+                marker.addTo(map);
+            });
+
+            // Force map to recalculate its container size
+            setTimeout(function() {
+                map.invalidateSize();
+            }, 100);
+        } catch (error) {
+            console.error("Error initializing map:", error);
+        }
+    });
+</script>
+{% endblock %}

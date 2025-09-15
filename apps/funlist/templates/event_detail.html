@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h1 class="card-title">{{ event.title }}</h1>
+                    <div class="event-meta mb-3">
+                        <span class="badge bg-primary">{{ event.category|capitalize }}</span>
+                        <span class="badge bg-info">{{ event.target_audience|capitalize }}</span>
+                        
+                        {% if event.funalytics %}
+                            <!-- Funalytics Scores -->
+                            <span class="badge bg-warning">
+                                <i class="fas fa-brain"></i> Funalytics: {{ event.funalytics.overallScore }}/10
+                            </span>
+                            <span class="badge bg-info">
+                                <i class="fas fa-users"></i> Community: {{ event.funalytics.communityVibe }}/10
+                            </span>
+                            <span class="badge bg-success">
+                                <i class="fas fa-child"></i> Family: {{ event.funalytics.familyFun }}/10
+                            </span>
+                        {% else %}
+                            <!-- Fallback to old fun rating -->
+                            <span class="badge bg-warning">Fun Rating: {{ "⭐" * event.fun_meter }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="event-description mb-4">
+                        {{ event.description }}
+                    </div>
+
+                    {% if event.funalytics %}
+                    <div class="funalytics-reasoning mb-4">
+                        <h5><i class="fas fa-lightbulb"></i> Funalytics Analysis</h5>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <p class="mb-2"><strong>Analysis:</strong> {{ event.funalytics.reasoning }}</p>
+                                <small class="text-muted">
+                                    <i class="fas fa-clock"></i> Last computed: Recently
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="event-details">
+                        <h4>Event Details</h4>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-calendar"></i> Start: {{ event.start_date.strftime('%B %d, %Y') }}
+                                {% if event.start_time %}at {{ event.start_time.strftime('%I:%M %p') }}{% endif %}</li>
+                            <li><i class="fas fa-calendar-check"></i> End: {{ event.end_date.strftime('%B %d, %Y') }}
+                                {% if event.end_time %}at {{ event.end_time.strftime('%I:%M %p') }}{% endif %}</li>
+                            <li><i class="fas fa-map-marker-alt"></i> {{ event.street }}, {{ event.city }}, {{ event.state }} {{ event.zip_code }}</li>
+                        </ul>
+                    </div>
+
+                    <div class="social-share mt-4">
+                        <h4>Share This Event</h4>
+                        <div class="share-buttons">
+                            <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url|urlencode }}" 
+                               class="btn btn-facebook" target="_blank">
+                                <i class="fab fa-facebook"></i> Share
+                            </a>
+                            <a href="https://twitter.com/intent/tweet?text={{ event.title|urlencode }}&url={{ request.url|urlencode }}" 
+                               class="btn btn-twitter" target="_blank">
+                                <i class="fab fa-twitter"></i> Tweet
+                            </a>
+                            <a href="https://www.linkedin.com/shareArticle?mini=true&url={{ request.url|urlencode }}&title={{ event.title|urlencode }}" 
+                               class="btn btn-linkedin" target="_blank">
+                                <i class="fab fa-linkedin"></i> Share
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div id="eventMap" style="height: 300px;"></div>
+                </div>
+            </div>
+
+            {% if event.website or event.facebook or event.instagram or event.twitter %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Event Links</h5>
+                    <div class="event-links">
+                        {% if event.website %}
+                        <a href="{{ event.website }}" class="btn btn-outline-primary btn-block mb-2" target="_blank">
+                            <i class="fas fa-globe"></i> Official Website
+                        </a>
+                        {% endif %}
+                        {% if event.facebook %}
+                        <a href="{{ event.facebook }}" class="btn btn-outline-facebook btn-block mb-2" target="_blank">
+                            <i class="fab fa-facebook"></i> Facebook
+                        </a>
+                        {% endif %}
+                        {% if event.instagram %}
+                        <a href="{{ event.instagram }}" class="btn btn-outline-instagram btn-block mb-2" target="_blank">
+                            <i class="fab fa-instagram"></i> Instagram
+                        </a>
+                        {% endif %}
+                        {% if event.twitter %}
+                        <a href="{{ event.twitter }}" class="btn btn-outline-twitter btn-block" target="_blank">
+                            <i class="fab fa-twitter"></i> Twitter
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if current_user.is_authenticated %}
+            <div class="card">
+                <div class="card-body">
+                    <div class="event-actions">
+                        <button class="btn btn-primary btn-block mb-2">
+                            <i class="far fa-star"></i> Express Interest
+                        </button>
+                        <button class="btn btn-success btn-block mb-2">
+                            <i class="far fa-check-circle"></i> Mark as Attended
+                        </button>
+                        
+                        {% if current_user.is_admin %}
+                        <form method="POST" action="{{ url_for('admin_recompute_funalytics', event_id=event.id) }}" class="mt-2">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <button type="submit" class="btn btn-outline-secondary btn-block">
+                                <i class="fas fa-sync-alt"></i> Recompute Funalytics Score
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var map = L.map('eventMap').setView([{{ event.latitude }}, {{ event.longitude }}], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    L.marker([{{ event.latitude }}, {{ event.longitude }}])
+        .bindPopup("{{ event.title }}")
+        .addTo(map);
+});
+</script>
+{% endblock %}

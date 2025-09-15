@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}Sign Up{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    .role-option {
+        transition: all 0.2s ease-in-out;
+        cursor: pointer;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        position: relative;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .role-option:hover {
+        border-color: #007bff !important;
+        background-color: rgba(0, 123, 255, 0.05);
+        transform: translateY(-2px);
+    }
+    .role-option input[type="radio"] {
+        cursor: pointer;
+    }
+    .role-option input[type="radio"]:checked + div label {
+        color: #0056b3;
+    }
+    .role-option.selected {
+        border-color: #007bff !important;
+        background-color: rgba(0, 123, 255, 0.1);
+        box-shadow: 0 4px 8px rgba(0, 123, 255, 0.15);
+    }
+    .role-icon {
+        font-size: 1.5rem;
+        margin-right: 0.5rem;
+        color: #6c757d;
+    }
+    .selected .role-icon {
+        color: #007bff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center auth-page-content">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="text-center mb-0">Sign Up</h2>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('signup') }}">
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        {{ form.email.label(class="form-label") }}
+                        {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
+                        {% for error in form.email.errors %}
+                            <div class="invalid-feedback">
+                                <i class="fas fa-exclamation-circle"></i> {{ error }}
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.password.label(class="form-label") }}
+                        {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else "")) }}
+                        <small class="form-text text-muted">
+                            Password must be at least 8 characters long and contain a mix of letters, numbers, and special characters.
+                        </small>
+                        {% for error in form.password.errors %}
+                            <div class="invalid-feedback">
+                                <i class="fas fa-exclamation-circle"></i> {{ error }}
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.confirm_password.label(class="form-label") }}
+                        {{ form.confirm_password(class="form-control" + (" is-invalid" if form.confirm_password.errors else "")) }}
+                        <small class="form-text text-muted">
+                            Please enter your password again to confirm.
+                        </small>
+                        {% for error in form.confirm_password.errors %}
+                            <div class="invalid-feedback">
+                                <i class="fas fa-exclamation-circle"></i> {{ error }}
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold mb-3">{{ form.primary_role.label }}</label>
+                        <div class="role-selection-container">
+                            {% for subfield in form.primary_role %}
+                            <div class="role-option mb-2 p-3 border rounded{% if subfield.checked %} border-primary bg-light{% endif %}">
+                                <div class="d-flex align-items-start">
+                                    {{ subfield(class="form-check-input me-2 mt-1") }}
+                                    <div>
+                                        <label class="form-check-label fw-bold" for="{{ subfield.id }}">
+                                            {% if subfield.data == 'attendee' %}
+                                            <i class="fas fa-calendar-check role-icon"></i>
+                                            {% elif subfield.data == 'organizer' %}
+                                            <i class="fas fa-users role-icon"></i>
+                                            {% elif subfield.data == 'venue' %}
+                                            <i class="fas fa-building role-icon"></i>
+                                            {% elif subfield.data == 'vendor' %}
+                                            <i class="fas fa-store role-icon"></i>
+                                            {% elif subfield.data == 'sponsor' %}
+                                            <i class="fas fa-handshake role-icon"></i>
+                                            {% endif %}
+                                            {{ subfield.label.text }}
+                                        </label>
+                                        <p class="text-muted mb-1">
+                                            {% if subfield.data == 'attendee' %}
+                                            Find and browse events in your area that match your interests
+                                            {% elif subfield.data == 'organizer' %}
+                                            Create, manage, and promote events for your organization
+                                            {% elif subfield.data == 'venue' %}
+                                            Manage your venue's calendar and promote hosted events 
+                                            {% elif subfield.data == 'vendor' %}
+                                            Offer your services to event organizers and venues
+                                            {% elif subfield.data == 'sponsor' %}
+                                            Find sponsorship opportunities for events and venues
+                                            {% endif %}
+                                        </p>
+                                        <p class="small text-muted mb-0">
+                                            {% if subfield.data == 'attendee' %}
+                                            <i class="fas fa-info-circle"></i> Default role for discovering events
+                                            {% elif subfield.data == 'organizer' %}
+                                            <i class="fas fa-info-circle"></i> Includes event creator capabilities
+                                            {% elif subfield.data == 'venue' %}
+                                            <i class="fas fa-info-circle"></i> For representatives of physical locations
+                                            {% elif subfield.data == 'vendor' %}
+                                            <i class="fas fa-info-circle"></i> For service providers supporting events
+                                            {% elif subfield.data == 'sponsor' %}
+                                            <i class="fas fa-info-circle"></i> For businesses looking to promote at events
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.primary_role.errors %}
+                            <div class="invalid-feedback d-block mt-2">
+                                {% for error in form.primary_role.errors %}
+                                    <i class="fas fa-exclamation-circle"></i> {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text mt-2">
+                            <i class="fas fa-info-circle"></i> You can add additional capabilities later through your profile settings.
+                        </div>
+                    </div>
+
+                    <div class="form-check mb-4 mt-3">
+                        {{ form.terms_accepted(class="form-check-input") }}
+                        <label class="form-check-label" for="terms_accepted">
+                            I accept the <a href="{{ url_for('terms') }}" target="_blank">Terms and Conditions</a> and <a href="{{ url_for('privacy') }}" target="_blank">Privacy Policy</a>
+                        </label>
+                        {% if form.terms_accepted.errors %}
+                            <div class="invalid-feedback d-block">
+                                <i class="fas fa-exclamation-circle"></i> {{ form.terms_accepted.errors[0] }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+
+
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center">
+                Already have an account? <a href="{{ url_for('login') }}">Login here</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Make entire role option card clickable
+        const roleOptions = document.querySelectorAll('.role-option');
+        
+        roleOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                const radio = this.querySelector('input[type="radio"]');
+                radio.checked = true;
+                
+                // Update visual selection
+                roleOptions.forEach(opt => {
+                    opt.classList.remove('selected', 'border-primary', 'bg-light');
+                    const icon = opt.querySelector('.role-icon');
+                    if (icon) {
+                        icon.style.color = '#6c757d'; // Reset to default color
+                    }
+                });
+                
+                this.classList.add('selected', 'border-primary', 'bg-light');
+                
+                // Change icon color to primary
+                const selectedIcon = this.querySelector('.role-icon');
+                if (selectedIcon) {
+                    selectedIcon.style.color = '#007bff';
+                }
+                
+                // Show a message about additional capabilities
+                const roleInfoMsg = document.querySelector('.role-info-msg');
+                if (!roleInfoMsg) {
+                    const infoMsg = document.createElement('div');
+                    infoMsg.className = 'alert alert-info mt-3 role-info-msg';
+                    infoMsg.innerHTML = '<i class="fas fa-info-circle"></i> <strong>Great choice!</strong> Don\'t worry if you need other capabilities later. You can add them through your profile settings after signup.';
+                    
+                    const roleContainer = document.querySelector('.role-selection-container');
+                    roleContainer.parentNode.insertBefore(infoMsg, roleContainer.nextSibling);
+                }
+                
+                // Subtle animation effect on selection
+                this.style.transform = 'translateY(-3px)';
+                setTimeout(() => {
+                    this.style.transform = 'translateY(0)';
+                }, 200);
+            });
+            
+            // Add hover effects for better interaction feedback
+            option.addEventListener('mouseenter', function() {
+                if (!this.classList.contains('selected')) {
+                    this.style.transform = 'translateY(-2px)';
+                }
+            });
+            
+            option.addEventListener('mouseleave', function() {
+                if (!this.classList.contains('selected')) {
+                    this.style.transform = 'translateY(0)';
+                }
+            });
+        });
+        
+        // Initially highlight selected option if any
+        const selectedRadio = document.querySelector('.role-option input[type="radio"]:checked');
+        if (selectedRadio) {
+            const selectedOption = selectedRadio.closest('.role-option');
+            selectedOption.classList.add('selected', 'border-primary', 'bg-light');
+            
+            const selectedIcon = selectedOption.querySelector('.role-icon');
+            if (selectedIcon) {
+                selectedIcon.style.color = '#007bff';
+            }
+        }
+    });
+</script>
+{% endblock %}

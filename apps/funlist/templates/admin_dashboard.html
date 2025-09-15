@@ -1,0 +1,421 @@
+{% extends "base.html" %}
+
+{% block head %}
+{{ super() }}
+<!-- Add FontAwesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-2 bg-light sidebar">
+            <div class="position-sticky">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_tab == 'overview' %}active{% endif %}" href="{{ url_for('admin_dashboard') }}">
+                            Overview
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_tab == 'events' %}active{% endif %}" href="{{ url_for('admin_dashboard', tab='events') }}">
+                            Event Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_tab == 'featured_events' %}active{% endif %}" href="{{ url_for('admin_dashboard', tab='featured_events') }}">
+                            Featured Events
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_tab == 'users' %}active{% endif %}" href="{{ url_for('admin_dashboard', tab='users') }}">
+                            User Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_tab == 'analytics' %}active{% endif %}" href="{{ url_for('admin_dashboard', tab='analytics') }}">
+                            Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_tab == 'venues' %}active{% endif %}" href="{{ url_for('venues') }}">
+                            Venue Management
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-10">
+            <!-- Overview Section -->
+            {% if active_tab == 'overview' or not active_tab %}
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Pending Events</h5>
+                            <h2>{{ stats.pending_events }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Users</h5>
+                            <h2>{{ stats.total_users }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Today's Events</h5>
+                            <h2>{{ stats.todays_events }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">New Users (24h)</h5>
+                            <h2>{{ stats.new_users_24h }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Event Management Section -->
+            {% if active_tab == 'events' %}
+            <div class="card">
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs">
+                        <li class="nav-item">
+                            <a class="nav-link {% if status == 'pending' %}active{% endif %}" 
+                               href="{{ url_for('admin_dashboard', tab='events', status='pending') }}">Pending</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if status == 'approved' %}active{% endif %}" 
+                               href="{{ url_for('admin_dashboard', tab='events', status='approved') }}">Approved</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if status == 'rejected' %}active{% endif %}" 
+                               href="{{ url_for('admin_dashboard', tab='events', status='rejected') }}">Rejected</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Date</th>
+                                    <th>Location</th>
+                                    <th>Organizer</th>
+                                    <th>Featured Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for event in events %}
+                                <tr>
+                                    <td>{{ event.title }}</td>
+                                    <td>{{ event.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>{{ event.city }}, {{ event.state }}</td>
+                                    <td>{{ event.organizer.email }}</td>
+                                    <td>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   id="featured-toggle-{{ event.id }}" 
+                                                   {% if event.featured %}checked{% endif %}
+                                                   onchange="window.toggleFeature({{ event.id }}, this.checked)">
+                                            <label class="form-check-label" for="featured-toggle-{{ event.id }}">
+                                                {{ 'Featured' if event.featured else 'Not Featured' }}
+                                            </label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-1">
+                                            {% if event.status == 'pending' %}
+                                            <button onclick="window.approveEvent({{ event.id }})" 
+                                               class="btn btn-sm btn-success" title="Approve Event">
+                                               <i class="bi bi-check-circle"></i>
+                                            </button>
+                                            <button onclick="window.rejectEvent({{ event.id }})" 
+                                               class="btn btn-sm btn-danger" title="Reject Event">
+                                               <i class="bi bi-x-circle"></i>
+                                            </button>
+                                            {% endif %}
+                                            <a href="{{ url_for('event_detail', event_id=event.id) }}" 
+                                               class="btn btn-sm btn-primary" title="View Event">
+                                               <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a href="{{ url_for('admin_edit_event', event_id=event.id) }}" 
+                                               class="btn btn-sm btn-secondary" title="Edit Event">
+                                               <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <button onclick="window.deleteEvent({{ event.id }})" 
+                                               class="btn btn-sm btn-danger" title="Delete Event">
+                                               <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Featured Events Section -->
+            {% if active_tab == 'featured_events' %}
+            <div class="card">
+                <div class="card-header">
+                    <h5>Featured Events</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Date</th>
+                                    <th>Location</th>
+                                    <th>Organizer</th>
+                                    <th>Featured Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for event in events %}
+                                <tr>
+                                    <td>{{ event.title }}</td>
+                                    <td>{{ event.date.strftime('%Y-%m-%d %H:%M') if event.date else event.start_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>{{ event.city }}, {{ event.state }}</td>
+                                    <td>{{ event.user.email if event.user else "Unknown" }}</td>
+                                    <td>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   id="featured-toggle-{{ event.id }}" 
+                                                   {% if event.featured %}checked{% endif %}
+                                                   onchange="window.toggleFeature({{ event.id }}, this.checked)">
+                                            <label class="form-check-label" for="featured-toggle-{{ event.id }}">
+                                                {{ 'Featured' if event.featured else 'Not Featured' }}
+                                            </label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-1">
+                                            <a href="{{ url_for('event_detail', event_id=event.id) }}" 
+                                               class="btn btn-sm btn-primary" title="View Event">
+                                               <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a href="{{ url_for('admin_edit_event', event_id=event.id) }}" 
+                                               class="btn btn-sm btn-secondary" title="Edit Event">
+                                               <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <button onclick="window.deleteEvent({{ event.id }})" 
+                                               class="btn btn-sm btn-danger" title="Delete Event">
+                                               <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- User Management Section -->
+            {% if active_tab == 'users' %}
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Email</th>
+                                    <th>Joined</th>
+                                    <th>Events Posted</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr>
+                                    <td>{{ user.email }}</td>
+                                    <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ user.organized_events|length }}</td>
+                                    <td>
+                                        {% if user.account_active %}
+                                        <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if user.account_active %}
+                                        <a href="{{ url_for('admin_deactivate_user', user_id=user.id) }}" 
+                                           class="btn btn-sm btn-warning">Deactivate</a>
+                                        {% else %}
+                                        <a href="{{ url_for('admin_activate_user', user_id=user.id) }}" 
+                                           class="btn btn-sm btn-success">Activate</a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Analytics Section -->
+            {% if active_tab == 'analytics' %}
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Events by Category</h5>
+                            <canvas id="eventsByCategory"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">User Growth</h5>
+                            <canvas id="userGrowth"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if active_tab == 'events' %}
+<script>
+// Define window functions for event management if they don't exist
+if (typeof window.approveEvent !== 'function') {
+    window.approveEvent = function(eventId) {
+        if (confirm('Are you sure you want to approve this event?')) {
+            fetch(`/admin/event/${eventId}/approve`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        }
+    };
+}
+
+if (typeof window.rejectEvent !== 'function') {
+    window.rejectEvent = function(eventId) {
+        if (confirm('Are you sure you want to reject this event?')) {
+            fetch(`/admin/event/${eventId}/reject`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        }
+    };
+}
+
+if (typeof window.toggleFeature !== 'function') {
+    window.toggleFeature = function(eventId, featured) {
+        const action = featured ? 'feature' : 'unfeature';
+        if (confirm(`Are you sure you want to ${action} this event?`)) {
+            fetch(`/admin/event/${eventId}/toggle-feature`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    featured: featured
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        }
+    };
+}
+</script>
+{% endif %}
+
+{% if active_tab == 'analytics' %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Add Chart.js initialization code here
+    const eventsByCategory = document.getElementById('eventsByCategory');
+    const userGrowth = document.getElementById('userGrowth');
+
+    // Initialize charts with data from the backend
+    if (eventsByCategory) {
+        new Chart(eventsByCategory, {
+            type: 'pie',
+            data: {{ events_by_category | tojson | safe }}
+        });
+    }
+
+    if (userGrowth) {
+        new Chart(userGrowth, {
+            type: 'line',
+            data: {{ user_growth_data | tojson | safe }}
+        });
+    }
+</script>
+{% endif %}
+{% endblock %}

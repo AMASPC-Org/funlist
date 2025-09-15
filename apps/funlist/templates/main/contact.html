@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+{% from 'macros/_form_helpers.html' import render_field %}
+
+{% block title %}Contact Us | FunList.ai{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1>Contact FunList.ai</h1>
+        <p class="lead">We're here to help! Find the best way to reach us below.</p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Left Column: Send Message Form -->
+        <div class="col-lg-7">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h2>Send us a message</h2>
+                    <p><small>Fill out the form below and we'll respond within 24 business hours.</small></p>
+
+                    <form action="{{ url_for('contact') }}" method="POST" novalidate>
+                        {{ form.hidden_tag() }}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                {{ render_field(form.name, class="form-control") }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ render_field(form.email, class="form-control") }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ render_field(form.subject, class="form-control") }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ render_field(form.category, class="form-select") }}
+                            </div>
+                            <div class="col-12">
+                                {{ render_field(form.message, class="form-control", rows=5) }}
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane me-2"></i>Send Message
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Contact Information -->
+        <div class="col-lg-5">
+            <!-- Contact Information Card -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2>Contact Information</h2>
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <i class="fas fa-envelope text-primary me-2"></i>
+                            <strong>Email:</strong>
+                            <a href="mailto:contact@funlist.ai">contact@funlist.ai</a>
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-phone text-primary me-2"></i>
+                            <strong>Phone:</strong>
+                            <a href="tel:3602008768">(360) 200-8768</a>
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                            <strong>Address:</strong><br>
+                            FunList.ai<br>
+                            4210 6th Avenue SE<br>
+                            Olympia, WA 98503
+                        </li>
+                        <li>
+                            <i class="fas fa-clock text-primary me-2"></i>
+                            <strong>Business Hours:</strong><br>
+                            Monday-Friday: 9:00 AM - 5:00 PM<br>
+                            Saturday: 10:00 AM - 2:00 PM<br>
+                            Sunday: Closed
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Department Emails -->
+            <div class="card">
+                <div class="card-body">
+                    <h2>Department Emails</h2>
+                    <p class="small">Direct your inquiry to a specific department to get help faster:</p>
+
+                    <!-- Sales -->
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle bg-light p-2 me-2">
+                            <i class="fas fa-dollar-sign text-primary"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0">Sales</h5>
+                            <p class="small mb-0">Questions about pricing or partnerships</p>
+                            <a href="mailto:sales@funlist.ai">sales@funlist.ai</a>
+                        </div>
+                    </div>
+
+                    <!-- Support -->
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle bg-light p-2 me-2">
+                            <i class="fas fa-headset text-primary"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0">Support</h5>
+                            <p class="small mb-0">Technical support requests</p>
+                            <a href="mailto:support@funlist.ai">support@funlist.ai</a>
+                        </div>
+                    </div>
+
+                    <!-- Events -->
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle bg-light p-2 me-2">
+                            <i class="fas fa-calendar text-primary"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0">Events</h5>
+                            <p class="small mb-0">Event listings, updates, or partnerships</p>
+                            <a href="mailto:events@funlist.ai">events@funlist.ai</a>
+                        </div>
+                    </div>
+
+                    <!-- Marketing -->
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle bg-light p-2 me-2">
+                            <i class="fas fa-bullhorn text-primary"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0">Marketing</h5>
+                            <p class="small mb-0">Marketing collaboration or media</p>
+                            <a href="mailto:marketing@funlist.ai">marketing@funlist.ai</a>
+                        </div>
+                    </div>
+
+                    <!-- Privacy -->
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-light p-2 me-2">
+                            <i class="fas fa-shield-alt text-primary"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0">Privacy</h5>
+                            <p class="small mb-0">GDPR requests or CCPA inquiries</p>
+                            <a href="mailto:privacy@funlist.ai">privacy@funlist.ai</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Response Time Section -->
+    <div class="row mt-4">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <h3>Response Time</h3>
+                    <p>We aim to respond to all inquiries as quickly as possible within the following timeframes:</p>
+
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Contact Type</th>
+                                    <th class="text-end">Response Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Email Support</td>
+                                    <td class="text-end">24 Hours</td>
+                                </tr>
+                                <tr>
+                                    <td>Phone Support</td>
+                                    <td class="text-end">Immediate (During Business Hours)</td>
+                                </tr>
+                                <tr>
+                                    <td>Technical Issues</td>
+                                    <td class="text-end">48 Hours</td>
+                                </tr>
+                                <tr>
+                                    <td>Billing Questions</td>
+                                    <td class="text-end">24 Hours</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Need urgent assistance?</strong> For time-sensitive matters, please contact our support team at <a href="tel:3602008768">(360) 200-8768</a>.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Before Contacting Support Section -->
+    <div class="row mt-4">
+        <div class="col-lg-12">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h3>Before contacting support</h3>
+                    <p>You might find immediate answers to your questions in our knowledge base and FAQs:</p>
+                    <div class="d-flex justify-content-center gap-3 mt-3">
+                        <a href="{{ url_for('help_center') }}" class="btn btn-outline-light">Browse Help Articles</a>
+                        <a href="#" class="btn btn-light">Check FAQ</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Feather Icons
+        feather.replace();
+    });
+</script>
+{% endblock %}

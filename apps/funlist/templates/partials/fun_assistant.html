@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}Fun Assistant - FunList.ai{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0 text-center">
+                        <i class="fas fa-robot mr-2"></i> Fun Assistant
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <!-- Fun Assistant Container - Full Version -->
+                    <div id="funAssistantContainer" class="fun-assistant-container">
+                        <div class="fun-assistant-header">
+                            <h3>Fun Assistant</h3>
+                            <button type="button" id="closeFunAssistant" class="btn-close" aria-label="Close"></button>
+                        </div>
+                        <div id="funAssistantChat" class="fun-assistant-body">
+                            <div id="chatMessages" class="chat-messages">
+                                <div class="chat-message assistant-message">
+                                    <p>Hello! I'm your Fun Assistant. I can help you discover events and activities that match your interests. How can I assist you today?</p>
+                                    <p class="small text-muted">Try asking about events near you, or specific interests like "music festivals" or "family activities this weekend".</p>
+                                </div>
+                            </div>
+                            <div class="chat-input-container">
+                                <input type="text" id="chatInput" placeholder="Ask me about fun events...">
+                                <button id="sendMessage" type="button"><i class="fas fa-paper-plane"></i></button>
+                                <div id="chatError" class="text-danger small mt-1" style="display: none;"></div>
+                            </div>
+                            <div class="fun-assistant-footer">
+                                <small class="text-muted">Powered by AI • <a href="{{ url_for('privacy') }}">Privacy Policy</a></small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <h5>Quick Suggestions:</h5>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button class="btn btn-sm btn-outline-primary suggestion-btn" data-message="What's happening this weekend?">What's happening this weekend?</button>
+                            <button class="btn btn-sm btn-outline-primary suggestion-btn" data-message="Find family-friendly events">Family-friendly events</button>
+                            <button class="btn btn-sm btn-outline-primary suggestion-btn" data-message="Recommend outdoor activities">Outdoor activities</button>
+                            <button class="btn btn-sm btn-outline-primary suggestion-btn" data-message="Show events with highest fun rating">Highest fun-rated events</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer text-muted text-center">
+                    <small>Fun Assistant uses AI to help you discover more fun in your area!</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Usage Limit Modal -->
+<div class="modal fade" id="usageLimitModal" tabindex="-1" aria-labelledby="usageLimitModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="usageLimitModalLabel">Unlock the Full Fun Assistant Experience!</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <i class="fas fa-robot fa-3x text-primary mb-3"></i>
+                    <h4>You've reached your free usage limit</h4>
+                    <p class="lead">Sign up for a free account to continue using the Fun Assistant and get personalized recommendations based on your interests!</p>
+                </div>
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Why sign up?</h5>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item"><i class="fas fa-check text-success me-2"></i> Unlimited Fun Assistant usage</li>
+                            <li class="list-group-item"><i class="fas fa-check text-success me-2"></i> Personalized event recommendations</li>
+                            <li class="list-group-item"><i class="fas fa-check text-success me-2"></i> Save your favorite events</li>
+                            <li class="list-group-item"><i class="fas fa-check text-success me-2"></i> Get notified about events you'll love</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Maybe Later</button>
+                <a href="/signup" class="btn btn-primary">Sign Up Now</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.typing-indicator {
+    display: flex;
+    padding: 10px;
+}
+.typing-indicator span {
+    height: 10px;
+    width: 10px;
+    background-color: #3498db;
+    border-radius: 50%;
+    display: inline-block;
+    margin: 0 2px;
+    animation: bounce 1.5s infinite ease-in-out;
+}
+.typing-indicator span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+.typing-indicator span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+}
+.fun-assistant-footer {
+    padding: 5px 10px;
+    text-align: center;
+    border-top: 1px solid #eee;
+    font-size: 0.8rem;
+}
+.alert-message {
+    background-color: #fff8e1;
+    border-left: 3px solid #ffb300;
+}
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const chatForm = document.getElementById('chatForm');
+        const userInput = document.getElementById('chatInput');
+        const chatLog = document.getElementById('chatMessages');
+        const sendButton = document.getElementById('sendMessage');
+        const chatError = document.getElementById('chatError'); // Added chatError element
+
+        // Function to append message to chat
+        function appendMessage(role, content) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${role}`;
+
+            const messagePara = document.createElement('p');
+            messagePara.textContent = content;
+
+            messageDiv.appendChild(messagePara);
+            chatLog.appendChild(messageDiv);
+
+            // Auto-scroll to bottom
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+
+        // Handle form submission
+        async function sendMessage(e) {
+            e.preventDefault();
+
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            // Clear input
+            userInput.value = '';
+
+            // Append user message
+            appendMessage('user', message);
+
+
+            try {
+                // Send to API
+                const response = await fetch('/api/fun-assistant/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token() }}' // Added CSRF token
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    const errorMessage = errorData.error || 'API request failed';
+                    appendMessage('assistant', errorMessage);
+                    if (chatError) {
+                        chatError.textContent = errorMessage;
+                        chatError.style.display = 'block';
+                        setTimeout(() => {
+                            chatError.style.display = 'none';
+                        }, 5000);
+                    }
+                    return;
+                }
+
+
+                const data = await response.json();
+
+                // Check if usage limit is exceeded
+                if (data.limit_exceeded) {
+                    // Display the limit message
+                    appendMessage('assistant', data.reply);
+
+                    // Show modal after a short delay
+                    setTimeout(() => {
+                        const usageLimitModal = new bootstrap.Modal(document.getElementById('usageLimitModal'));
+                        usageLimitModal.show();
+                    }, 1500);
+                } else {
+                    // Display regular assistant response
+                    appendMessage('assistant', data.reply);
+                }
+
+            } catch (error) {
+                console.error('Error sending message:', error);
+                appendMessage('assistant', 'Sorry, there was a problem connecting to the assistant. Please try again.');
+                if (chatError) {
+                    chatError.textContent = 'Connection error. Please try again in a moment.';
+                    chatError.style.display = 'block';
+                    setTimeout(() => {
+                        chatError.style.display = 'none';
+                    }, 5000);
+                }
+            } finally {
+                userInput.focus();
+            }
+        }
+
+        // Handle suggestion buttons
+        document.querySelectorAll('.suggestion-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                userInput.value = this.dataset.message;
+                sendMessage({ preventDefault: () => {} }); //Simulate event for testing
+            });
+        });
+
+        // Add event listener for form submission
+        chatForm.addEventListener('submit', sendMessage);
+
+        // Focus the input on load
+        userInput.focus();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,149 @@
+
+{% extends "base.html" %}
+
+{% block title %}About FunList.ai{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h1 class="mb-4">About FunList.ai</h1>
+            
+            <section class="mb-5">
+                <h2>Our Mission</h2>
+                <p class="lead">Making fun discoverable for everyone in Thurston County and beyond.</p>
+                <p>FunList.ai is an AI-powered platform dedicated to helping residents and visitors discover local events while offering event organizers an easy way to promote their activities. We're your ultimate fun companion, making it simple to find and enjoy the best events in your area.</p>
+                <p>FunList.ai is proudly part of the <strong>American Marketing Alliance SPC</strong> (Social Purpose Corporation), a Washington-based organization dedicated to transforming local marketing through AI-driven automation. As part of AMA's ecosystem, we work alongside other innovative platforms to help businesses, nonprofits, and media organizations engage effectively with their target audiences.</p>
+            </section>
+
+            <section class="mb-5">
+                <h2>What Sets Us Apart</h2>
+                <p>Our platform stands out through our unique Fun Rating system, helping you quickly gauge the entertainment value of events. We offer:</p>
+                <ul class="list-unstyled">
+                    <li class="mb-2">✓ AI-Driven Event Curation</li>
+                    <li class="mb-2">✓ Personalized Event Recommendations</li>
+                    <li class="mb-2">✓ Weekly Fun List Updates</li>
+                    <li class="mb-2">✓ Comprehensive Event Categories</li>
+                </ul>
+            </section>
+
+            <section class="mb-5">
+                <h2>Who We Serve</h2>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Event Seekers</h5>
+                                <ul class="list-unstyled">
+                                    <li>• Parents & Families</li>
+                                    <li>• Adults Seeking Entertainment</li>
+                                    <li>• Singles Looking for Social Events</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Event Organizers</h5>
+                                <ul class="list-unstyled">
+                                    <li>• Local Businesses</li>
+                                    <li>• Community Organizations</li>
+                                    <li>• Event Promoters</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="mb-5">
+                <h2>Contact Us</h2>
+                <p>Have questions? We'd love to hear from you!</p>
+                <div class="contact-info">
+                    <p><i class="fas fa-envelope me-2"></i> contact@funlist.ai</p>
+                    <p><i class="fas fa-phone me-2"></i> (360) 200-8768</p>
+                    <p><i class="fas fa-map-marker-alt me-2"></i> Olympia, WA</p>
+                </div>
+            </section>
+
+            <hr class="my-5 w-75 mx-auto opacity-25">
+
+            <section class="mb-5">
+                <h2>About American Marketing Alliance SPC</h2>
+                <p>American Marketing Alliance SPC is a Washington-based Social Purpose Corporation dedicated to transforming local marketing through AI-driven automation. AMA owns and operates multiple integrated platforms designed to optimize hyper-local advertising, sponsorships, and event discovery.</p>
+                <p>Our parent organization's mission is to help businesses, nonprofits, and media organizations engage effectively with their target audiences while democratizing AI-powered marketing for small and mid-sized businesses.</p>
+            </section>
+
+            <section class="text-center mt-5">
+                <h3>Ultimate Fun Companion</h3>
+                <p class="lead mb-4">Your go-to guide for discovering and promoting fun events anywhere!</p>
+                
+                <div class="cta-section py-4 px-3 rounded" style="background: linear-gradient(to right, rgba(240,240,255,0.4), rgba(230,240,255,0.6));">
+                    <div class="mt-4" id="about-page-ctas">
+                        <a href="{{ url_for('submit_event') }}" class="btn btn-primary cta-button-host" 
+                           aria-label="Host an event and get discovered on FunList" 
+                           onclick="trackCtaClick('host_event')">
+                            <i class="fas fa-calendar-plus me-1"></i> Host an Event – Get Discovered!
+                        </a>
+                        <a href="#" class="btn btn-outline-primary cta-button-subscribe" 
+                           data-bs-toggle="modal" data-bs-target="#emailSignupModal"
+                           aria-label="Subscribe to weekly updates about fun events" 
+                           onclick="trackCtaClick('subscribe')">
+                            <i class="fas fa-bell me-1"></i> Get Weekly Fun Alerts!
+                            <div class="small text-muted mt-1">No spam—just the best local events!</div>
+                        </a>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+<!-- Email signup modal with enhanced UI -->
+<div class="modal fade" id="emailSignupModal" tabindex="-1" aria-labelledby="emailSignupModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="emailSignupModalLabel">Stay in the Loop!</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="emailSignupForm">
+                    <div class="mb-3">
+                        <input type="email" class="form-control rounded-pill" id="emailInput" placeholder="Enter your email to stay in the loop..." required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">I'm interested in: (optional)</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="music" id="musicCheck">
+                                <label class="form-check-label" for="musicCheck">🎵 Music</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="food" id="foodCheck">
+                                <label class="form-check-label" for="foodCheck">🍽️ Food</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="arts" id="artsCheck">
+                                <label class="form-check-label" for="artsCheck">🎭 Arts</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="sports" id="sportsCheck">
+                                <label class="form-check-label" for="sportsCheck">🏆 Sports</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="family" id="familyCheck">
+                                <label class="form-check-label" for="familyCheck">👪 Family</label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary w-100" onclick="submitEmailSignup()">Sign Me Up!</button>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

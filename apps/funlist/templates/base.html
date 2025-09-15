@@ -1,0 +1,220 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="description" content="FunList.ai - Your AI-powered guide to fun events and activities in your area">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: data:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https: blob:; font-src 'self' https:; connect-src 'self' https: wss:; frame-src 'self' https:;">
+
+    <title>{% block title %}FunList.ai{% endblock %}</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Feather Icons -->
+    <script src="https://unpkg.com/feather-icons"></script>
+
+    {% block head %}{% endblock %}
+
+    <!-- Custom CSS with cache-busting -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}?v={{ range(1, 10000) | random }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <style>
+        .cookie-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #f8f9fa;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .cookie-content p {
+            margin: 0;
+            display: inline;
+        }
+        .cookie-content a {
+            margin-left: 10px;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .cookie-content a:hover {
+            text-decoration: underline;
+        }
+        .cookie-buttons {
+            margin-top: 10px;
+        }
+        .cookie-buttons button {
+            margin: 0 5px;
+        }
+    </style>
+</head>
+<body {% if current_user.is_authenticated %}
+    data-user-id="{{ current_user.id if current_user.is_authenticated else 0 }}"
+    data-user-is-organizer="{{ current_user.is_organizer|lower }}"
+    data-user-is-event-creator="{{ current_user.is_event_creator|lower }}"
+    data-user-is-vendor="{{ current_user.is_vendor|lower }}"
+{% endif %}
+      data-user-is-organizer="{{ 'true' if current_user.is_authenticated and current_user.is_organizer else 'false' }}"
+      data-user-is-event-creator="{{ 'true' if current_user.is_authenticated and current_user.is_event_creator else 'false' }}"
+      data-new-signup="{{ new_signup|default('false') }}">
+  {% include 'partials/navbar.html' %}
+
+<main role="main" class="mt-2">
+    <div class="flash-messages-container position-sticky top-0 z-3">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show m-2" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    {% block content %}{% endblock %}
+</main>
+
+  {% if new_signup %}
+    {% include 'partials/post_signup_wizard.html' %}
+  {% endif %}
+
+<footer class="footer mt-5 py-4 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3 col-sm-6 mb-4">
+                <h5 class="mb-3">COMPANY</h5>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><a href="{{ url_for('about') }}">About Us</a></li>
+                    <li class="mb-2"><a href="{{ url_for('contact') }}">Contact</a></li>
+                    <li class="mb-2"><a href="{{ url_for('help') }}">Help Center</a></li>
+                    <li class="mb-2"><a href="#">Advertise with Us</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-4">
+                <h5 class="mb-3">ACCOUNT</h5>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><a href="{{ url_for('login') }}" class="login-link">Sign In</a></li>
+                    <li class="mb-2"><a href="{{ url_for('signup') }}" class="signup-link">Sign Up</a></li>
+                    <li class="mb-2"><a href="{{ url_for('submit_event') }}">Add Event</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-4">
+                <h5 class="mb-3">LEGAL</h5>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><a href="{{ url_for('terms') }}">Terms & Conditions</a></li>
+                    <li class="mb-2"><a href="{{ url_for('privacy') }}" class="footer-link">Privacy Policy</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-4 ms-auto">
+                <h5 class="mb-3">NETWORK</h5>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><a href="https://business-calendar.replit.app/" target="_blank">BusinessCalendar.ai</a></li>
+                    <li class="mb-2"><a href="https://date-calendar.replit.app/" target="_blank">DateCalendar.ai</a></li>
+                    <li class="mb-2"><a href="https://find-live-music.replit.app/" target="_blank">FindLiveMusic.ai</a></li>
+                    <li class="mb-2"><a href="https://pop-happy-hour-amaspc.replit.app/" target="_blank">PopHappyHour.com</a></li>
+                    <li class="mb-2"><a href="https://taco-night.replit.app/" target="_blank">TacoNight.ai</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Social links -->
+        <div class="row mt-2 mb-3">
+            <div class="col-12">
+                <div class="social-buttons d-flex justify-content-center mt-3">
+                    <a href="https://www.facebook.com/funlistai" target="_blank" class="btn-social facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://www.instagram.com/funlistai" target="_blank" class="btn-social instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="https://www.tiktok.com/@funlistai" target="_blank" class="btn-social tiktok"><i class="fab fa-tiktok"></i></a>
+                </div>
+            </div>
+        </div>
+        
+        <hr class="my-3">
+        <div class="row">
+            <div class="col text-center">
+                <p class="mb-0">© 2025 FunList.ai. All rights reserved | Brought to you by 
+                <a href="https://americanmarketingalliance.com" target="_blank">American Marketing Alliance SPC</a></p>
+            </div>
+        </div>
+    </div>
+</footer>
+{% include 'partials/floating_buttons.html' %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  var bootstrap = window.bootstrap;
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+
+<script src="{{ url_for('static', filename='js/emitter.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+
+<script>
+    window.onerror = function(message, source, lineno, colno, error) {
+        console.error("Global error handler caught:", message);
+        if (message === "Script error." || message === "Script error") {
+            console.log("Cross-origin script error detected. Check for cross-origin issues.");
+            document.querySelectorAll('script[src^="https://"]').forEach(function(script) {
+                if (!script.hasAttribute('crossorigin')) {
+                    script.setAttribute('crossorigin', 'anonymous');
+                }
+            });
+        } else if (error) {
+            console.error("Error details:", error);
+        }
+        return true;
+    };
+
+    window.addEventListener('unhandledrejection', function(event) {
+        console.error('Unhandled promise rejection:', event.reason);
+    });
+
+    window.safeExecute = function(fn, fallback) {
+        try {
+            if (typeof fn === 'function') {
+                return fn();
+            }
+        } catch (e) {
+            console.error('Error executing function:', e);
+            if (typeof fallback === 'function') {
+                return fallback();
+            }
+        }
+        return null;
+    };
+</script>
+
+{% block scripts %}{% endblock %}
+{% if current_user.is_authenticated and current_user.email == 'ryan@funlist.ai' %}
+<script src="{{ url_for('static', filename='js/admin_events.js') }}"></script>
+{% endif %}
+
+{% if new_signup %}
+<script src="{{ url_for('static', filename='js/post_signup_wizard.js') }}"></script>
+{% endif %}
+
+{% block extra_js %}{% endblock %}
+{% include 'partials/cookie_consent.html' %}
+
+<!-- Initialize Feather Icons -->
+<script>
+  feather.replace();
+</script>
+</body>
+</html>
