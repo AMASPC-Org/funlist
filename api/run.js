@@ -99,9 +99,10 @@ app.get('/events', async (req, res) => {
     // Date range filter
     if (start || end) {
       whereClause.start_date = {};
+      let startDate, endDate;
       
       if (start) {
-        const startDate = new Date(start);
+        startDate = new Date(start + 'T00:00:00.000Z'); // Ensure UTC
         if (isNaN(startDate.getTime())) {
           return res.status(400).json({
             success: false,
@@ -112,16 +113,22 @@ app.get('/events', async (req, res) => {
       }
       
       if (end) {
-        const endDate = new Date(end);
+        endDate = new Date(end + 'T23:59:59.999Z'); // Ensure UTC end of day
         if (isNaN(endDate.getTime())) {
           return res.status(400).json({
             success: false,
             error: 'Invalid end date format. Use YYYY-MM-DD'
           });
         }
-        // Set to end of day
-        endDate.setHours(23, 59, 59, 999);
         whereClause.start_date.lte = endDate;
+      }
+      
+      // Validate date range if both provided
+      if (startDate && endDate && startDate > endDate) {
+        return res.status(400).json({
+          success: false,
+          error: 'Start date must be before or equal to end date'
+        });
       }
     }
     
@@ -148,17 +155,21 @@ app.get('/events', async (req, res) => {
         },
         {
           venue: {
-            city: {
-              contains: location,
-              mode: 'insensitive'
+            is: {
+              city: {
+                contains: location,
+                mode: 'insensitive'
+              }
             }
           }
         },
         {
           venue: {
-            state: {
-              contains: location,
-              mode: 'insensitive'
+            is: {
+              state: {
+                contains: location,
+                mode: 'insensitive'
+              }
             }
           }
         }

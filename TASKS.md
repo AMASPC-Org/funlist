@@ -11,8 +11,10 @@
 
 ---
 
+## ✅ Completed
+- Event search + filter functionality (title, date range, location filters with validation)
+
 ## 🔄 In Progress
-- Event search + filter functionality
 - Fun Score system (transition from static → AI-powered)
 
 ---
