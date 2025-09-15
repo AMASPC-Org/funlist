@@ -1,5 +1,6 @@
 import os
 import logging
+import requests
 from flask import render_template, flash, redirect, url_for, request, session, jsonify, current_app
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -28,21 +29,17 @@ def get_funalytics_scores(event_ids=None):
         api_base_url = os.environ.get('EXPRESS_API_URL', 'http://localhost:3001')
         
         if event_ids:
-            # For specific events, use individual API calls
-            scores = {}
-            for event_id in event_ids:
-                try:
-                    response = requests.get(f"{api_base_url}/events?id={event_id}", timeout=3)
-                    if response.status_code == 200:
-                        data = response.json()
-                        if data.get('success') and data.get('events'):
-                            event = data['events'][0]
-                            if 'funalytics' in event:
-                                scores[event_id] = event['funalytics']
-                except requests.RequestException:
-                    logger.warning(f"Failed to fetch Funalytics for event {event_id}")
-                    scores[event_id] = None
-            return scores
+            # For specific events, fetch all and filter
+            response = requests.get(f"{api_base_url}/events", timeout=5)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('success') and data.get('events'):
+                    scores = {}
+                    for event in data['events']:
+                        if event['id'] in event_ids and 'funalytics' in event:
+                            scores[event['id']] = event['funalytics']
+                    return scores
+            return {}
         else:
             # For all events, get from events endpoint
             response = requests.get(f"{api_base_url}/events", timeout=5)

@@ -33,8 +33,8 @@ def find_available_port(start_port=3000, max_attempts=15):
 def run_flask_app():
     """Run the Flask application."""
     try:
-        # Try to use PORT env variable, but find an available port if busy
-        preferred_port = int(os.environ.get("PORT", 5000))
+        # Force port 5000 to match workflow expectations
+        preferred_port = 5000
         port = None
         
         # First check if preferred port is available

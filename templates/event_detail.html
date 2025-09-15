@@ -39,12 +39,7 @@
                             <div class="card-body">
                                 <p class="mb-2"><strong>Analysis:</strong> {{ event.funalytics.reasoning }}</p>
                                 <small class="text-muted">
-                                    <i class="fas fa-clock"></i> Last computed: 
-                                    {% if event.funalytics.computedAt %}
-                                        {{ moment(event.funalytics.computedAt).format('MMMM Do YYYY, h:mm a') }}
-                                    {% else %}
-                                        Recently
-                                    {% endif %}
+                                    <i class="fas fa-clock"></i> Last computed: Recently
                                 </small>
                             </div>
                         </div>
