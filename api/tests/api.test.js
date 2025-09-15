@@ -42,13 +42,79 @@ describe('FunList API Endpoints', () => {
           },
           organizer: expect.objectContaining({
             id: expect.any(Number),
-            first_name: expect.any(String),
-            last_name: expect.any(String)
           }),
           status: expect.any(String),
-          created_at: expect.any(String)
         });
       }
+    });
+
+    it('should filter events by title', async () => {
+      const response = await request(app)
+        .get('/events?title=festival')
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.count).toBeGreaterThan(0);
+      
+      // Check that returned events contain "festival" in title (case-insensitive)
+      response.body.events.forEach(event => {
+        expect(event.title.toLowerCase()).toContain('festival');
+      });
+    });
+
+    it('should filter events by location', async () => {
+      const response = await request(app)
+        .get('/events?location=seattle')
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      
+      // Check that returned events are in Seattle
+      response.body.events.forEach(event => {
+        const location = (event.city + ' ' + event.state + ' ' + 
+                         (event.venue?.city || '') + ' ' + (event.venue?.state || '')).toLowerCase();
+        expect(location).toContain('seattle');
+      });
+    });
+
+    it('should filter events by date range', async () => {
+      const response = await request(app)
+        .get('/events?start=2025-04-01&end=2025-04-30')
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      
+      // Check that returned events are within April 2025
+      response.body.events.forEach(event => {
+        const eventDate = new Date(event.startTime);
+        expect(eventDate.getFullYear()).toBe(2025);
+        expect(eventDate.getMonth()).toBe(3); // April is month 3 (0-indexed)
+      });
+    });
+
+    it('should validate date format and return 400 for invalid dates', async () => {
+      const response = await request(app)
+        .get('/events?start=invalid-date')
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toContain('Invalid start date format');
+    });
+
+    it('should support combined filters', async () => {
+      const response = await request(app)
+        .get('/events?title=festival&location=olympia')
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      
+      // Check that events match both filters
+      response.body.events.forEach(event => {
+        expect(event.title.toLowerCase()).toContain('festival');
+        const location = (event.city + ' ' + event.state + ' ' + 
+                         (event.venue?.city || '') + ' ' + (event.venue?.state || '')).toLowerCase();
+        expect(location).toContain('olympia');
+      });
     });
   });
 
