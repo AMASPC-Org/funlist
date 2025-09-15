@@ -8,87 +8,28 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Event {
-  id          Int       @id @default(autoincrement())
-  title       String
-  description String?
-  startTime   DateTime
-  endTime     DateTime?
-  location    String?
-  city        String?
-  state       String?
-  zipCode     String?
-  latitude    Float?
-  longitude   Float?
-  category    String?
-  organizerId Int?
-  venueId     Int?
-  status      String?   @default("pending")
-  created_at  DateTime? @default(now())
-  updated_at  DateTime? @default(now())
-
-  // Relations
-  organizer  User?             @relation(fields: [organizerId], references: [id])
-  venue      Venue?            @relation(fields: [venueId], references: [id])
-  funalytics FunalyticsScore[]
-
-  @@map("events")
+model health_check {
+  id         Int       @id @default(autoincrement())
+  updated_at DateTime? @default(now()) @db.Timestamptz(6)
 }
 
-model User {
-  id            Int       @id @default(autoincrement())
-  first_name    String?
-  last_name     String?
-  company_name  String?
-  email         String    @unique
-  password_hash String?
-  phone         String?
-  is_organizer  Boolean?  @default(false)
-  is_sponsor    Boolean?  @default(false)
-  is_vendor     Boolean?  @default(false)
-  is_admin      Boolean?  @default(false)
-  is_active     Boolean?  @default(true)
-  created_at    DateTime? @default(now())
-  updated_at    DateTime? @default(now())
+// Generic scores table for multi-brand scoring systems
+model Score {
+  id           String   @id @default(uuid())
+  brand        String // funlist, businesscalendar
+  system       String // Funalytics, ConnectScore, Elevate
+  entityType   String   @map("entity_type") // event, venue, experience
+  entityId     Int      @map("entity_id")
+  overallScore Float    @map("overall_score") @db.Real
+  dimensions   Json // JSON object with dynamic dimension scores
+  reasoning    String?  @db.VarChar(500)
+  status       String   @default("completed") // pending, computing, completed, failed
+  computedAt   DateTime @default(now()) @map("computed_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
-  // Relations
-  events Event[]
-
-  @@map("users")
-}
-
-model Venue {
-  id            Int       @id @default(autoincrement())
-  name          String?
-  address       String?
-  city          String?
-  state         String?
-  zip_code      String?
-  latitude      Float?
-  longitude     Float?
-  capacity      Int?
-  venue_type_id Int?
-  created_at    DateTime? @default(now())
-  updated_at    DateTime? @default(now())
-
-  // Relations
-  events Event[]
-
-  @@map("venues")
-}
-
-model FunalyticsScore {
-  id            String   @id @default(dbgenerated("gen_random_uuid()"))
-  eventId       Int      @map("event_id")
-  communityVibe Int?     @map("community_vibe")
-  familyFun     Int?     @map("family_fun")
-  overallScore  Int?     @map("overall_score")
-  reasoning     String?
-  computedAt    DateTime @default(now()) @map("computed_at")
-
-  // Relations
-  event Event @relation(fields: [eventId], references: [id])
-
-  @@index([eventId, computedAt(sort: Desc)])
-  @@map("funalytics_scores")
+  @@unique([brand, system, entityType, entityId, computedAt])
+  @@index([brand, system, entityType, entityId])
+  @@index([computedAt(sort: Desc)])
+  @@map("scores")
 }

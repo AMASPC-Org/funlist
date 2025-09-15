@@ -1,5 +1,5 @@
-// Simple API runner with better port handling
-require('dotenv').config({ override: true });
+// Simple API runner with better port handling  
+require('dotenv').config();
 
 const express = require('express');
 const { PrismaClient } = require('./generated/prisma');
@@ -560,6 +560,13 @@ app.post('/events', async (req, res) => {
   }
 });
 
+// Add generic scores routes BEFORE 404 handler
+const scoresRouter = require('./src/routes/scores');
+app.use('/scores', scoresRouter);
+
+// Add backward compatibility for /funalytics routes
+app.use('/funalytics', scoresRouter); // Proxy to scores for compatibility
+
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({ 
@@ -575,6 +582,8 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`   GET /health - Health check`);
   console.log(`   GET /events - Get all events`);
   console.log(`   POST /events - Create a new event`);
+  console.log(`   GET /scores/latest - Get latest scores (multi-brand)`);
+  console.log(`   POST /scores/compute - Compute new scores (multi-brand)`);
 });
 
 // Graceful shutdown

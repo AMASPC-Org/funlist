@@ -232,6 +232,13 @@ app.post('/events', async (req, res) => {
   }
 });
 
+// Add generic scores routes BEFORE error handlers
+const scoresRouter = require('./src/routes/scores');
+app.use('/scores', scoresRouter);
+
+// Add backward compatibility for /funalytics routes
+app.use('/funalytics', scoresRouter); // Proxy to scores for compatibility
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -260,6 +267,8 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`   GET /health - Health check`);
   console.log(`   GET /events - Get all events with pagination`);
   console.log(`   POST /events - Create a new event`);
+  console.log(`   GET /scores/latest - Get latest scores (multi-brand)`);
+  console.log(`   POST /scores/compute - Compute new scores (multi-brand)`);
 });
 
 module.exports = app;
