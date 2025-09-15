@@ -69,13 +69,104 @@ const validateEventData = (data) => {
 // GET /events - returns all events with venue, organizer, and funalytics scores
 app.get('/events', async (req, res) => {
   try {
-    console.log('GET /events requested');
+    console.log('GET /events requested with query:', req.query);
     
+    // Parse pagination parameters
     const page = parseInt(req.query.page) || 1;
     const limit = Math.min(parseInt(req.query.limit) || 20, 100);
     const offset = (page - 1) * limit;
 
+    // Parse and validate filter parameters
+    const { title, start, end, location } = req.query;
+    
+    // Build where clause for filtering
+    const whereClause = {};
+    
+    // Title filter (partial match, case-insensitive)
+    if (title) {
+      if (typeof title !== 'string') {
+        return res.status(400).json({
+          success: false,
+          error: 'Title filter must be a string'
+        });
+      }
+      whereClause.title = {
+        contains: title,
+        mode: 'insensitive'
+      };
+    }
+    
+    // Date range filter
+    if (start || end) {
+      whereClause.start_date = {};
+      
+      if (start) {
+        const startDate = new Date(start);
+        if (isNaN(startDate.getTime())) {
+          return res.status(400).json({
+            success: false,
+            error: 'Invalid start date format. Use YYYY-MM-DD'
+          });
+        }
+        whereClause.start_date.gte = startDate;
+      }
+      
+      if (end) {
+        const endDate = new Date(end);
+        if (isNaN(endDate.getTime())) {
+          return res.status(400).json({
+            success: false,
+            error: 'Invalid end date format. Use YYYY-MM-DD'
+          });
+        }
+        // Set to end of day
+        endDate.setHours(23, 59, 59, 999);
+        whereClause.start_date.lte = endDate;
+      }
+    }
+    
+    // Location filter (search in city or state)
+    if (location) {
+      if (typeof location !== 'string') {
+        return res.status(400).json({
+          success: false,
+          error: 'Location filter must be a string'
+        });
+      }
+      whereClause.OR = [
+        {
+          city: {
+            contains: location,
+            mode: 'insensitive'
+          }
+        },
+        {
+          state: {
+            contains: location,
+            mode: 'insensitive'
+          }
+        },
+        {
+          venue: {
+            city: {
+              contains: location,
+              mode: 'insensitive'
+            }
+          }
+        },
+        {
+          venue: {
+            state: {
+              contains: location,
+              mode: 'insensitive'
+            }
+          }
+        }
+      ];
+    }
+
     const events = await prisma.events.findMany({
+      where: whereClause,
       skip: offset,
       take: limit,
       include: {
@@ -104,7 +195,9 @@ app.get('/events', async (req, res) => {
       }
     });
 
-    const totalEvents = await prisma.events.count();
+    const totalEvents = await prisma.events.count({
+      where: whereClause
+    });
     
     console.log(`Found ${events.length} real events from database`);
 
