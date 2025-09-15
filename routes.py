@@ -18,6 +18,60 @@ from flask_wtf.csrf import CSRFProtect # Use only CSRFProtect
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
+# --- Funalytics API Helper ---
+def get_funalytics_scores(event_ids=None):
+    """
+    Fetch Funalytics scores from Express API.
+    Returns a dictionary mapping event_id to funalytics data.
+    """
+    try:
+        api_base_url = os.environ.get('EXPRESS_API_URL', 'http://localhost:3001')
+        
+        if event_ids:
+            # For specific events, use individual API calls
+            scores = {}
+            for event_id in event_ids:
+                try:
+                    response = requests.get(f"{api_base_url}/events?id={event_id}", timeout=3)
+                    if response.status_code == 200:
+                        data = response.json()
+                        if data.get('success') and data.get('events'):
+                            event = data['events'][0]
+                            if 'funalytics' in event:
+                                scores[event_id] = event['funalytics']
+                except requests.RequestException:
+                    logger.warning(f"Failed to fetch Funalytics for event {event_id}")
+                    scores[event_id] = None
+            return scores
+        else:
+            # For all events, get from events endpoint
+            response = requests.get(f"{api_base_url}/events", timeout=5)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('success') and data.get('events'):
+                    scores = {}
+                    for event in data['events']:
+                        if 'funalytics' in event:
+                            scores[event['id']] = event['funalytics']
+                    return scores
+    except requests.RequestException as e:
+        logger.warning(f"Failed to fetch Funalytics scores: {e}")
+    
+    return {}
+
+def recompute_funalytics_score(event_id):
+    """
+    Call Express API to recompute Funalytics score for a specific event.
+    Returns True if successful, False otherwise.
+    """
+    try:
+        api_base_url = os.environ.get('EXPRESS_API_URL', 'http://localhost:3001')
+        response = requests.post(f"{api_base_url}/funalytics/recompute/{event_id}", timeout=10)
+        return response.status_code == 201
+    except requests.RequestException as e:
+        logger.error(f"Failed to recompute Funalytics for event {event_id}: {e}")
+        return False
+
 # --- Helper Decorators ---
 def admin_required(f):
     @wraps(f)
@@ -86,6 +140,14 @@ def events():
         # Implement filtering logic here later based on request args
         events = Event.query.order_by(Event.start_date.desc()).all()
         chapters = Chapter.query.all() # Pass chapters if needed in base.html
+        
+        # Fetch Funalytics scores for all events
+        funalytics_scores = get_funalytics_scores()
+        
+        # Attach Funalytics scores to events
+        for event in events:
+            event.funalytics = funalytics_scores.get(event.id, None)
+        
         return render_template("events.html", events=events, chapters=chapters)
     except Exception as e:
         logger.error(f"Error in events route: {str(e)}")
@@ -97,10 +159,37 @@ def event_detail(event_id):
     try:
         event = Event.query.get_or_404(event_id)
         chapters = Chapter.query.all() # Pass chapters for base template
+        
+        # Fetch Funalytics scores for this specific event
+        funalytics_scores = get_funalytics_scores([event_id])
+        event.funalytics = funalytics_scores.get(event_id, None)
+        
         return render_template("event_detail.html", event=event, chapters=chapters)
     except Exception as e:
         logger.error(f"Error in event_detail route: {str(e)}")
         return render_template("500.html", error=str(e)), 500
+
+@login_required
+@admin_required
+def admin_recompute_funalytics(event_id):
+    """Admin action to recompute Funalytics score for an event."""
+    try:
+        # Verify event exists
+        event = Event.query.get_or_404(event_id)
+        
+        # Call Express API to recompute score
+        success = recompute_funalytics_score(event_id)
+        
+        if success:
+            flash(f"Funalytics score recomputed successfully for '{event.title}'!", "success")
+        else:
+            flash("Failed to recompute Funalytics score. Please try again.", "error")
+            
+    except Exception as e:
+        logger.error(f"Error recomputing Funalytics for event {event_id}: {str(e)}")
+        flash("An error occurred while recomputing the score.", "error")
+    
+    return redirect(url_for('event_detail', event_id=event_id))
 
 @login_required
 def submit_event():
@@ -534,6 +623,7 @@ def init_routes(app):
     app.route("/map")(map)
     app.route("/events")(events)
     app.route("/events/<int:event_id>")(event_detail)
+    app.route("/admin/recompute-funalytics/<int:event_id>", methods=["POST"])(admin_recompute_funalytics)
     app.route("/submit-event", methods=["GET", "POST"])(submit_event)
     app.route('/login', methods=['GET', 'POST'])(login)
     app.route('/logout')(logout)

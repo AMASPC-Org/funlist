@@ -10,12 +10,46 @@
                     <div class="event-meta mb-3">
                         <span class="badge bg-primary">{{ event.category|capitalize }}</span>
                         <span class="badge bg-info">{{ event.target_audience|capitalize }}</span>
-                        <span class="badge bg-warning">Fun Rating: {{ "⭐" * event.fun_meter }}</span>
+                        
+                        {% if event.funalytics %}
+                            <!-- Funalytics Scores -->
+                            <span class="badge bg-warning">
+                                <i class="fas fa-brain"></i> Funalytics: {{ event.funalytics.overallScore }}/10
+                            </span>
+                            <span class="badge bg-info">
+                                <i class="fas fa-users"></i> Community: {{ event.funalytics.communityVibe }}/10
+                            </span>
+                            <span class="badge bg-success">
+                                <i class="fas fa-child"></i> Family: {{ event.funalytics.familyFun }}/10
+                            </span>
+                        {% else %}
+                            <!-- Fallback to old fun rating -->
+                            <span class="badge bg-warning">Fun Rating: {{ "⭐" * event.fun_meter }}</span>
+                        {% endif %}
                     </div>
 
                     <div class="event-description mb-4">
                         {{ event.description }}
                     </div>
+
+                    {% if event.funalytics %}
+                    <div class="funalytics-reasoning mb-4">
+                        <h5><i class="fas fa-lightbulb"></i> Funalytics Analysis</h5>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <p class="mb-2"><strong>Analysis:</strong> {{ event.funalytics.reasoning }}</p>
+                                <small class="text-muted">
+                                    <i class="fas fa-clock"></i> Last computed: 
+                                    {% if event.funalytics.computedAt %}
+                                        {{ moment(event.funalytics.computedAt).format('MMMM Do YYYY, h:mm a') }}
+                                    {% else %}
+                                        Recently
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
 
                     <div class="event-details">
                         <h4>Event Details</h4>
@@ -93,9 +127,18 @@
                         <button class="btn btn-primary btn-block mb-2">
                             <i class="far fa-star"></i> Express Interest
                         </button>
-                        <button class="btn btn-success btn-block">
+                        <button class="btn btn-success btn-block mb-2">
                             <i class="far fa-check-circle"></i> Mark as Attended
                         </button>
+                        
+                        {% if current_user.is_admin %}
+                        <form method="POST" action="{{ url_for('admin_recompute_funalytics', event_id=event.id) }}" class="mt-2">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <button type="submit" class="btn btn-outline-secondary btn-block">
+                                <i class="fas fa-sync-alt"></i> Recompute Funalytics Score
+                            </button>
+                        </form>
+                        {% endif %}
                     </div>
                 </div>
             </div>

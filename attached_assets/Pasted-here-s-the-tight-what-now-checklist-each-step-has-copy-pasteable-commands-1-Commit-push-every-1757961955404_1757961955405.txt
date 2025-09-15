@@ -1,0 +1,90 @@
+here’s the tight “what now” checklist—each step has copy-pasteable commands.
+
+1) Commit & push everything that changed
+
+From ~/funlist
+
+git add FUNALYTICS_DOCS api/prisma/schema.prisma api/run.js api/tests api/README.md TASKS.md PROJECT_PLAN.md
+git commit -m "Funalytics MVP: model, heuristics, GET /events with latest score, POST /funalytics/recompute/:eventId, tests (22/22)"
+git push origin main
+
+2) Fix future drift (turn the manual table into a real migration)
+
+If the table was created manually at any point, codify it so others get it automatically.
+
+cd api
+# Ensure schema reflects funalytics_scores and relations
+npx prisma migrate dev --name add_funalytics_scores
+git add prisma/migrations
+git commit -m "Add Prisma migration for Funalytics tables"
+git push origin main
+
+
+If migrate dev complains about an already-existing table, run:
+npx prisma db pull && npx prisma migrate dev --name baseline_funalytics
+(so Prisma treats current DB as the baseline).
+
+3) Quick smoke test (local)
+# Start the API if not running
+cd api
+node run.js & sleep 2
+
+# Health
+curl -s http://localhost:3001/health | jq
+
+# List events with latest score
+curl -s "http://localhost:3001/events?limit=2" | jq
+
+# Recompute a real event (replace 22 with a real ID you saw)
+curl -s -X POST http://localhost:3001/funalytics/recompute/22 | jq
+
+4) Sync docs & tasks (mark work done, set next bites)
+# Mark Funalytics items done & add follow-ups
+awk '1; /## 2\. Core Features/ {print "- [x] Attach latest Funalytics to GET /events"; print("- [x] POST /funalytics/recompute/:eventId"); print("- [x] Tests for scoring, recompute, clamps, reasoning"); print("- [ ] Flask UI: show Overall + facet badges on cards/detail"); print("- [ ] Admin: “Recompute score” action (calls API)"); print("- [ ] Add DB indexes for title, venue.city, venue.state (later)"); print("- [ ] Rate limit recompute endpoint (basic)")} ' TASKS.md > /tmp/TASKS.md && mv /tmp/TASKS.md TASKS.md
+
+# Note completion in plan
+awk '1; END{print "\n---\n**Update**: Funalytics MVP implemented (API + tests). Next up: surface in Flask UI, admin action, and small hardening."}' PROJECT_PLAN.md > /tmp/PROJECT_PLAN.md && mv /tmp/PROJECT_PLAN.md PROJECT_PLAN.md
+
+git add TASKS.md PROJECT_PLAN.md
+git commit -m "Docs: mark Funalytics complete; queue UI & hardening tasks"
+git push origin main
+
+5) Hand Replit the next single prompt (copy/paste)
+Before coding, read PROJECT_PLAN.md, TASKS.md, and FUNALYTICS_DOCS/*.
+
+Goal: Surface Funalytics in the Flask UI (no cloud deploy yet).
+
+Tasks:
+1) Event Cards (list page):
+   - Show Overall (0–10) as a badge and facet chips (CommunityVibe, FamilyFun) when available.
+   - If no score on first view, call the Express API list endpoint (which auto-computes) and render returned scores.
+
+2) Event Detail Page:
+   - Show Overall + both facets + 1–2 sentence reasoning (<=240 chars).
+   - Add a small “Updated at” timestamp (latest computedAt).
+
+3) Admin-only Action:
+   - If current user is admin, show “Recompute Score” button that POSTs to /funalytics/recompute/:eventId on the API and refreshes the page.
+
+4) Tests:
+   - Add a simple Flask test that verifies template renders Overall/facets when API returns scores.
+   - Mock API in tests.
+
+Constraints:
+- Keep changes minimal and incremental.
+- Don’t break existing Flask routes.
+- Use graceful fallbacks when API is unreachable (hide badges).
+
+When done:
+- Mark the three UI tasks complete in TASKS.md.
+- Add a note in FUNALYTICS_TECH.md (UI display section) if any naming or shape changed.
+
+6) (Optional small hardening next)
+
+Add simple rate limiting to POST /funalytics/recompute/:eventId.
+
+Add indexes later (once schema stabilizes).
+
+Generate a short OpenAPI spec for the Express API endpoints.
+
+If you hit any Prisma migrate weirdness, tell me the exact error text and I’ll give the one-liner to reconcile it.

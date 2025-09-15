@@ -65,3 +65,7 @@
 - Database operations stable
 - At least one full end-to-end flow (create → discover → save event) works without errors
 - Static Fun Rating System working, Funalytics AI scoring planned
+
+---
+
+**Update**: Funalytics MVP implemented (API + tests). Next up: surface in Flask UI, admin action, and small hardening.
