@@ -36,9 +36,11 @@ describe('FunList API Endpoints', () => {
           id: expect.any(Number),
           title: expect.any(String),
           startTime: expect.any(String),
-          funalyticsScore: {
-            fun_rating: expect.any(Number),
-            fun_meter: expect.any(Number)
+          funalytics: {
+            overallScore: expect.any(Number),
+            communityVibe: expect.any(Number),
+            familyFun: expect.any(Number),
+            reasoning: expect.any(String)
           },
           organizer: expect.objectContaining({
             id: expect.any(Number),
@@ -115,6 +117,144 @@ describe('FunList API Endpoints', () => {
                          (event.venue?.city || '') + ' ' + (event.venue?.state || '')).toLowerCase();
         expect(location).toContain('olympia');
       });
+    });
+  });
+
+  describe('Funalytics Integration', () => {
+    it('should include Funalytics scores in GET /events response', async () => {
+      const response = await request(app)
+        .get('/events?limit=1')
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.events.length).toBeGreaterThan(0);
+      
+      const event = response.body.events[0];
+      expect(event).toHaveProperty('funalytics');
+      expect(event.funalytics).toHaveProperty('overallScore');
+      expect(event.funalytics).toHaveProperty('communityVibe');
+      expect(event.funalytics).toHaveProperty('familyFun');
+      expect(event.funalytics).toHaveProperty('reasoning');
+      
+      // Validate score ranges (0-10)
+      expect(event.funalytics.overallScore).toBeGreaterThanOrEqual(0);
+      expect(event.funalytics.overallScore).toBeLessThanOrEqual(10);
+      expect(event.funalytics.communityVibe).toBeGreaterThanOrEqual(0);
+      expect(event.funalytics.communityVibe).toBeLessThanOrEqual(10);
+      expect(event.funalytics.familyFun).toBeGreaterThanOrEqual(0);
+      expect(event.funalytics.familyFun).toBeLessThanOrEqual(10);
+      
+      // Validate reasoning length
+      expect(event.funalytics.reasoning.length).toBeLessThanOrEqual(240);
+    });
+
+    it('should compute scores intelligently based on keywords', async () => {
+      const response = await request(app)
+        .get('/events?title=youth')
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      
+      if (response.body.events.length > 0) {
+        const youthEvent = response.body.events[0];
+        // Youth events should score high on family fun
+        expect(youthEvent.funalytics.familyFun).toBeGreaterThan(5);
+      }
+    });
+
+    it('should compute scores for events with community keywords', async () => {
+      const response = await request(app)
+        .get('/events?title=community')
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      
+      if (response.body.events.length > 0) {
+        const communityEvent = response.body.events[0];
+        // Community events should score well on community vibe
+        expect(communityEvent.funalytics.communityVibe).toBeGreaterThan(4);
+      }
+    });
+  });
+
+  describe('POST /funalytics/recompute/:eventId', () => {
+    it('should recompute score for valid event ID', async () => {
+      // First get an event ID
+      const eventsResponse = await request(app)
+        .get('/events?limit=1')
+        .expect(200);
+      
+      expect(eventsResponse.body.events.length).toBeGreaterThan(0);
+      const eventId = eventsResponse.body.events[0].id;
+      
+      const response = await request(app)
+        .post(`/funalytics/recompute/${eventId}`)
+        .expect(201);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.message).toContain('recomputed successfully');
+      expect(response.body.score).toHaveProperty('id');
+      expect(response.body.score).toHaveProperty('eventId', eventId);
+      expect(response.body.score).toHaveProperty('overallScore');
+      expect(response.body.score).toHaveProperty('communityVibe');
+      expect(response.body.score).toHaveProperty('familyFun');
+      expect(response.body.score).toHaveProperty('reasoning');
+      expect(response.body.score).toHaveProperty('computedAt');
+      
+      // Validate score ranges
+      expect(response.body.score.overallScore).toBeGreaterThanOrEqual(0);
+      expect(response.body.score.overallScore).toBeLessThanOrEqual(10);
+      expect(response.body.score.communityVibe).toBeGreaterThanOrEqual(0);
+      expect(response.body.score.communityVibe).toBeLessThanOrEqual(10);
+      expect(response.body.score.familyFun).toBeGreaterThanOrEqual(0);
+      expect(response.body.score.familyFun).toBeLessThanOrEqual(10);
+      
+      // Validate reasoning length
+      expect(response.body.score.reasoning.length).toBeLessThanOrEqual(240);
+    });
+
+    it('should return 404 for non-existent event ID', async () => {
+      const response = await request(app)
+        .post('/funalytics/recompute/999999')
+        .expect(404);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toBe('Event not found');
+    });
+
+    it('should return 400 for invalid event ID format', async () => {
+      const response = await request(app)
+        .post('/funalytics/recompute/invalid')
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toBe('Invalid event ID');
+    });
+
+    it('should create new score history row on recompute', async () => {
+      // Get an event and recompute twice to test history
+      const eventsResponse = await request(app)
+        .get('/events?limit=1')
+        .expect(200);
+      
+      const eventId = eventsResponse.body.events[0].id;
+      
+      // First recompute
+      const firstResponse = await request(app)
+        .post(`/funalytics/recompute/${eventId}`)
+        .expect(201);
+      
+      const firstScoreId = firstResponse.body.score.id;
+      
+      // Second recompute (should create new row, not update existing)
+      const secondResponse = await request(app)
+        .post(`/funalytics/recompute/${eventId}`)
+        .expect(201);
+      
+      const secondScoreId = secondResponse.body.score.id;
+      
+      // Should have different UUIDs (new rows)
+      expect(firstScoreId).not.toBe(secondScoreId);
     });
   });
 
