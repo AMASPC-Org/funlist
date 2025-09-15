@@ -288,6 +288,12 @@ app.get('/events', async (req, res) => {
             state: true,
             zip_code: true,
           }
+        },
+        funalytics_scores: {
+          orderBy: {
+            computed_at: 'desc'
+          },
+          take: 1
         }
       },
       orderBy: {
@@ -301,10 +307,27 @@ app.get('/events', async (req, res) => {
     
     console.log(`Found ${events.length} real events from database`);
 
-    res.json({
-      success: true,
-      count: events.length,
-      events: events.map(event => ({
+    // Process events and ensure Funalytics scores exist
+    const processedEvents = await Promise.all(events.map(async (event) => {
+      let latestScore = event.funalytics_scores?.[0];
+      
+      // If no score exists, compute and store one
+      if (!latestScore) {
+        console.log(`Computing Funalytics score for event ${event.id}: ${event.title}`);
+        const scoreData = computeFunalyticsScore(event);
+        
+        latestScore = await prisma.funalytics_scores.create({
+          data: {
+            event_id: event.id,
+            community_vibe: scoreData.communityVibe,
+            family_fun: scoreData.familyFun,
+            overall_score: scoreData.overallScore,
+            reasoning: scoreData.reasoning
+          }
+        });
+      }
+      
+      return {
         id: event.id,
         title: event.title,
         description: event.description,
@@ -314,15 +337,23 @@ app.get('/events', async (req, res) => {
         city: event.city,
         state: event.state,
         category: event.category,
-        funalyticsScore: {
-          fun_rating: event.fun_rating,
-          fun_meter: event.fun_meter
+        funalytics: {
+          overallScore: latestScore.overall_score,
+          communityVibe: latestScore.community_vibe,
+          familyFun: latestScore.family_fun,
+          reasoning: latestScore.reasoning
         },
         organizer: event.user,
         venue: event.venue,
         status: event.status,
         created_at: event.created_at
-      })),
+      };
+    }));
+
+    res.json({
+      success: true,
+      count: processedEvents.length,
+      events: processedEvents,
       pagination: {
         page,
         limit,
@@ -336,6 +367,80 @@ app.get('/events', async (req, res) => {
       success: false,
       error: 'Failed to fetch events',
       message: error.message 
+    });
+  }
+});
+
+// POST /funalytics/recompute/:eventId - recompute score for a single event
+app.post('/funalytics/recompute/:eventId', async (req, res) => {
+  try {
+    const eventId = parseInt(req.params.eventId);
+    
+    if (isNaN(eventId)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid event ID'
+      });
+    }
+    
+    // Check if event exists
+    const event = await prisma.events.findUnique({
+      where: { id: eventId },
+      include: {
+        venue: true
+      }
+    });
+    
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        error: 'Event not found'
+      });
+    }
+    
+    console.log(`Recomputing Funalytics score for event ${eventId}: ${event.title}`);
+    
+    // Compute new score
+    const scoreData = computeFunalyticsScore(event);
+    
+    // Validation: clamp facets [0..10] and reasoning <= 240 chars
+    const communityVibe = Math.max(0, Math.min(scoreData.communityVibe, 10));
+    const familyFun = Math.max(0, Math.min(scoreData.familyFun, 10));
+    const overallScore = Math.max(0, Math.min(scoreData.overallScore, 10));
+    const reasoning = scoreData.reasoning.length > 240 
+      ? scoreData.reasoning.substring(0, 237) + '...'
+      : scoreData.reasoning;
+    
+    // Append new row (history preserved)
+    const newScore = await prisma.funalytics_scores.create({
+      data: {
+        event_id: eventId,
+        community_vibe: communityVibe,
+        family_fun: familyFun,
+        overall_score: overallScore,
+        reasoning: reasoning
+      }
+    });
+    
+    res.status(201).json({
+      success: true,
+      message: 'Funalytics score recomputed successfully',
+      score: {
+        id: newScore.id,
+        eventId: newScore.event_id,
+        communityVibe: newScore.community_vibe,
+        familyFun: newScore.family_fun,
+        overallScore: newScore.overall_score,
+        reasoning: newScore.reasoning,
+        computedAt: newScore.computed_at
+      }
+    });
+  } catch (error) {
+    console.error('Error recomputing Funalytics score:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to recompute Funalytics score',
+      message: error.message
     });
   }
 });
