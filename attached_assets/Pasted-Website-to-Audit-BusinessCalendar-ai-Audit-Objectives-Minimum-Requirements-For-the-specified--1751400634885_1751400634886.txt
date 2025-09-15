@@ -1,0 +1,83 @@
+Website to Audit:
+BusinessCalendar.ai
+Audit Objectives (Minimum Requirements):
+For the specified website, the Replit agent is to perform the following:
+Identify Core Technical Stack:
+Programming Languages: Determine all programming languages used (e.g., Python, Node.js, HTML, CSS, JavaScript, TypeScript, PHP, Ruby, Java, Go). Specify versions if discernible.
+Frameworks: Identify any web frameworks (e.g., Flask, Django, Express.js, React, Angular, Vue.js, Next.js, FastAPI, Spring Boot, Ruby on Rails) and their versions.
+Database Solutions: Identify any in-use database systems (e.g., SQLite, PostgreSQL, MongoDB, MySQL, Redis) and how they are accessed or configured within the Replit environment. Note if an ORM (Object-Relational Mapper) is used.
+Package Managers: Identify package managers in use (e.g., npm, yarn, pip, poetry, bundler).
+Environment Configuration: Identify any .env files or other environment variable configurations.
+Document Feature Implementations:
+Maps Feature:
+How is the map displayed (e.g., Google Maps API, Leaflet, OpenLayers)?
+What data source does it use for locations?
+Is it interactive (e.g., markers, search, routing)?
+How is map data stored or generated (e.g., KML files, direct database query)?
+FAQ Pages:
+How are FAQ content and structure managed (e.g., static HTML, markdown, database-driven)?
+Are they dynamic or static?
+About Pages:
+How is the content managed (e.g., static HTML, markdown, CMS)?
+Login/Authentication Process:
+What authentication methods are used (e.g., username/password, OAuth, social login)?
+How are user credentials stored and managed (e.g., hashed passwords, session management)?
+What libraries or frameworks facilitate authentication?
+Newsletter Subscriptions:
+How are email addresses collected?
+Is there an integration with an external email service provider (ESP) or an internal storage mechanism?
+What validation rules are applied?
+Identify AI Assistant Integrations:
+Presence: For the specified site, confirm if an AI assistant (e.g., Buyer's Agent, Seller's Agent, Personal Fun Assistant, Dating Assistant, Calendar Assistant) is present.
+Underlying Mechanism: If an AI assistant exists, describe its mechanism:
+Does it use a direct API call to an LLM (e.g., Gemini API)?
+Is there an intermediary framework or library (e.g., LangChain, LlamaIndex, custom Genkit-like implementation)?
+How is user input processed and responses generated?
+How is "memory" or context maintained for the AI assistant?
+Identify any configuration files or code snippets related to AI model selection or prompting.
+Output Format:
+For the specified website, provide a detailed markdown summary adhering to the following structure:
+Markdown
+### Website: [Website Name, e.g., businesscalendar.ai]
+
+#### 1. Core Technical Stack:
+* **Programming Languages:** [Language 1 (Version), Language 2 (Version), ...]
+* **Frameworks:** [Framework 1 (Version), Framework 2 (Version), ...]
+* **Database Solutions:** [Database Type (e.g., SQLite), Access Method (e.g., direct, ORM), Configuration details (e.g., file path, connection string if visible)]
+* **Package Managers:** [Package Manager 1, Package Manager 2, ...]
+* **Environment Configuration:** [Description of .env or other configurations]
+
+#### 2. Feature Implementations:
+* **Maps Feature:**
+    * **Technology:** [e.g., Google Maps JavaScript API]
+    * **Data Source:** [e.g., hardcoded, local JSON, direct database query, KML file]
+    * **Interactivity:** [e.g., interactive with markers, static image]
+    * **Implementation Notes:** [e.g., specific libraries used, code structure]
+* **FAQ Pages:**
+    * **Content Management:** [e.g., static HTML file, Flask template pulling from Markdown files]
+    * **Dynamic/Static:** [Dynamic/Static]
+    * **Implementation Notes:** [Relevant file paths, structural details]
+* **About Pages:**
+    * **Content Management:** [e.g., static HTML, database field]
+    * **Implementation Notes:** [Relevant file paths, structural details]
+* **Login/Authentication Process:**
+    * **Methods Used:** [e.g., Username/Password, Google OAuth]
+    * **Credential Storage:** [e.g., Hashed in local DB, relies on external service]
+    * **Libraries/Frameworks:** [e.g., Flask-Login, Passport.js]
+    * **Implementation Notes:** [Relevant file paths, code snippets if illustrative]
+* **Newsletter Subscriptions:**
+    * **Collection Method:** [e.g., HTML form POST]
+    * **Storage/Integration:** [e.g., local CSV, Mailchimp API, custom database table]
+    * **Validation:** [e.g., client-side JS, server-side regex]
+    * **Implementation Notes:** [Relevant file paths, structural details]
+
+#### 3. AI Assistant Integrations:
+* **Presence:** [Yes/No]
+* **Assistant Name (if identified):** [e.g., Calendar Assistant]
+* **Underlying Mechanism:** [e.g., Direct call to Gemini API, uses a custom Python script that wraps an LLM, Genkit flow]
+* **Input/Output Processing:** [Describe how user input is sent to AI and how AI response is displayed]
+* **Context/Memory:** [How is conversational history or user data maintained?]
+* **Configuration Notes:** [Mention any relevant files (e.g., `ai_config.py`, `.env` variables for API keys)]
+
+---
+

@@ -1,0 +1,82 @@
+Website: LocalMarketingTool.ai
+1. Core Technical Stack:
+Programming Languages:
+TypeScript (5.6.3)
+JavaScript (ES2020+)
+Python (3.x for AI agents)
+HTML5, CSS3
+Frameworks:
+React (18.3.1) - Frontend SPA framework
+Express.js (4.21.2) - Backend web framework
+Vite (5.4.14) - Build tool and dev server
+Tailwind CSS (3.4.14) - Utility-first CSS framework
+Wouter (3.3.5) - Client-side routing
+Database Solutions:
+In-memory storage (MemStorage) - No persistent database currently
+Drizzle ORM (0.39.1) with PostgreSQL schema definitions
+Configuration for @neondatabase/serverless (0.10.4)
+Package Managers:
+npm (Node.js package manager)
+uv (Python package manager for AI components)
+Environment Configuration:
+.env file with basic configuration
+.env.local containing Google Maps API key and development settings
+Vite environment variable handling with VITE_ prefix
+2. Feature Implementations:
+Maps Feature:
+Technology: Google Maps JavaScript API (@googlemaps/js-api-loader v1.16.8)
+Data Source: In-memory listings with hardcoded coordinates for Seattle-area locations
+Interactivity: Interactive markers, map/list view toggle, location-based filtering
+Implementation Notes: GoogleMapsContext provider, fallback to BasicMapView, API key managed through backend endpoint
+FAQ Pages:
+Content Management: Static React components with structured help categories
+Dynamic/Static: Dynamic React components with routing via Wouter
+Implementation Notes: Located in /client/src/pages/help/ with category-based organization
+About Pages:
+Content Management: Static React components with TypeScript
+Implementation Notes: Individual page components in /client/src/pages/
+Login/Authentication Process:
+Methods Used: Username/Password with session-based authentication
+Credential Storage: Hashed passwords using Node.js crypto module, in-memory user storage
+Libraries/Frameworks: Express-session for session management, custom middleware for auth checks
+Implementation Notes: Located in server/auth.ts with role-based access control (user/admin)
+Newsletter Subscriptions:
+Collection Method: Not currently implemented in the codebase
+Storage/Integration: No newsletter functionality found
+Validation: N/A - Feature not present
+Implementation Notes: No newsletter subscription components or endpoints identified
+3. AI Assistant Integrations:
+Presence: Yes - Multiple AI assistants implemented
+Assistant Names:
+Buyer's Agent (find advertising opportunities)
+Seller's Agent (optimize listings)
+Content generation and audience analysis tools
+Underlying Mechanism:
+Direct OpenAI API integration using GPT-4o model
+Python-based agent logic in server/ai/ directory
+TypeScript wrapper functions for frontend integration
+Input/Output Processing:
+RESTful API endpoints (/api/ai/suggest) accept user queries
+Python scripts process requests and return structured responses
+Frontend components display AI suggestions in chat-like interfaces
+Context/Memory:
+Stateless AI interactions (no conversation memory)
+User context maintained through session data
+Search criteria and listing data passed as context to AI calls
+Configuration Notes:
+OpenAI API key stored in environment variables
+AI agents configured in server/ai/openai.ts and Python modules
+Multi-language integration (TypeScript ↔ Python) for AI functionality
+
+Additional Technical Notes:
+The application uses Radix UI components for accessibility and consistent design
+Sentry integration for error tracking and monitoring
+Jest testing framework with React Testing Library
+TypeScript for type safety across the entire stack
+Session-based authentication with role-based access control
+Cross-posting capabilities to network sites (BusinessCalendar.ai, FunList.ai, etc.)
+Responsive design with mobile-first approach using Tailwind CSS
+Google Maps integration currently experiencing loading issues (as seen in console logs)
+The application represents a sophisticated full-stack TypeScript platform with AI-powered features, though it currently uses in-memory storage rather than a persistent database solution.
+
+

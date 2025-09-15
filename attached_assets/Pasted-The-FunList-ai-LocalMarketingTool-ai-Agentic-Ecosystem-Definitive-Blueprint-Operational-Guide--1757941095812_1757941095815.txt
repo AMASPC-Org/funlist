@@ -1,0 +1,167 @@
+The FunList.ai & LocalMarketingTool.ai Agentic Ecosystem: Definitive Blueprint & Operational Guide (v10.0 - Ultimate Comprehensive Compilation)
+Document Purpose: This document is the single, ultimate, canonical source of truth for the FunList.ai event discovery platform and the LocalMarketingTool.ai (LMT) advertising marketplace. It synthesizes all strategic discussions, architectural decisions, operational workflows, data schemas (including the FunList.ai - Master Taxonomy & Schema.xlsx - Help me create the Master Taxon.csv), agent configurations, legal frameworks (including Terms of Use for LocalMarketingTool.ai), technical specifications, and all supporting materials (like Sheets_EventData_Functions.md, Anatomy of a FunList.ai Social Media Post, Optimizing Duplicate Check Logic, Typical Workflows Relevant to AMA/FunList/LMT, FunList System Design: Enhanced Data Acquisition, Validation, and Communication Framework, and all linked Google Docs/Sheets) from our entire collaborative process into one cohesive and exhaustive master plan. This document supersedes all previous versions and is intended to guide all phases of development, operations, and strategic evolution.
+
+Part 0: Strategic Vision & Architectural Philosophy
+(Synthesized from Architecting FunList.ai's Enhanced Event Ecosystem, FunList System Design: Enhanced Data Acquisition, Validation, and Communication Framework, user prompts, and the Business Glossary for “Prompt Creator” Gemini Gem)
+A. Strategic Vision:
+FunList.ai: To be the premier, most reliable, comprehensive, and engaging aggregator and curator of local community events in target regions (starting with Thurston County, WA, and built for rapid expansion to Pierce, King, Snohomish, etc.). Its core mission is to help users discover enjoyable and relevant experiences, significantly enhanced by its unique, persona-based "Fun Rating" system (drawing criteria from the FunList Qualitative Rating Adjustments sheet).
+LocalMarketingTool.ai (LMT): To function as a dynamic, trusted, and efficient two-sided marketplace. It will be the primary public platform connecting "Sellers" (event organizers, venues, local businesses with advertising inventory – drawing from sources like Master List of Places to Advertise) with "Buyers" (local businesses seeking targeted hyperlocal promotion). LMT will integrate AI functionalities like the Buyer Agent and Seller Agent (which includes the AI Sponsorship Packager) to facilitate seamless search, discovery, and transaction initiation, governed by the Terms of Use for LocalMarketingTool.ai.
+American Marketing Alliance SPC (AMA): The Washington State Social Purpose Corporation (as defined in the Business Glossary) developing and overseeing this localized marketing ecosystem. AMA serves as the primary platform and member interface, facilitated through local chapters, providing members access to the AI Agent Suite.
+Synergy & Ecosystem Value: FunList.ai acts as a powerful lead generation and content engine for LMT.ai. The system discovers and validates events for FunList.ai, then proactively invites organizers (using specific Email Templates) to list and monetize their event-associated advertising and sponsorship opportunities via LMT.ai (populating the Advertising_Opportunities_List and RFP_Opportunities_List from the linked Google Form). This creates a self-reinforcing data and commercial flywheel.
+Core Value Proposition: To become an indispensable resource for community members (event discovery tailored by Target Markets & Customer Personas documents), event organizers (event promotion and monetization), and local businesses (targeted advertising), thereby fostering greater local engagement and economic activity.
+Central AMA Database/API: This is the foundational data repository and the primary source of truth, storing all event, advertising, sponsorship, user, entity (venue, organization defined in Master Taxonomy & Schema), and vendor data. It enables the critical "enter once, distribute everywhere" paradigm across the AMA network.
+B. Architectural Philosophy:
+Cloud-Native & Microservices (GCP): The system is architected as a series of specialized AI agents ("Gems") built as independently deployable microservices on Google Cloud Platform (GCP).
+Google Cloud First & Full Ecosystem Integration: Deeply leverages GCP for AI/ML (Vertex AI, Gemini), scalable data tools (Cloud SQL, BigQuery, Firestore), serverless infrastructure (Cloud Run, Cloud Functions), Google Workspace APIs (Gmail, Calendar, Sheets, Drive), and comprehensive DevOps tooling.
+Automation & Intelligence: The system prioritizes automating every possible step of the data pipeline. AI, specifically Large Language Models like Gemini, is used for complex natural language understanding, classification (against the Master Taxonomy & Schema), data extraction (from websites, emails, images/screenshots with OCR), content generation, decision-making, and image analysis.
+Ethical, Legal & Compliant Operations: Strict adherence to data sourcing ethics (guided by AMA - Data Sourcing & Ethics Guidelines), robots.txt directives, website Terms of Service (ToS), and data privacy regulations (GDPR, CCPA) is paramount. This includes a proactive, multi-step permission-seeking workflow and meticulous handling of Personally Identifiable Information (PII).
+Modularity & Scalability for Regional Expansion: The entire system is designed with templated configurations and modular components to allow for rapid and efficient expansion to new geographical regions.
+
+Part 1: Foundational Technology Stack
+(Drawn from Tech Stack, Systems, Processes, and Tools for FunList.ai & AMA Infrastructure)
+Primary Cloud Provider: Google Cloud Platform (GCP).
+Compute Infrastructure: Google Cloud Run (containerized Gems), Google Cloud Functions (2nd Gen), Vertex AI Pipelines.
+AI/ML Platform: Google AI Studio (prompt engineering), Vertex AI (Gemini Models, Agent Builder (conceptual), Training & Prediction).
+Data Tier:
+Initial Prototyping & Human-Editable Data: Google Sheets (for Known_Event_Sources_Venues, Event_Classification_Rules, initial Taxonomy_Directory versions, Ad_Types_List, Master List of Places to Advertise, Thurston County Events Calendar Links), accessed via Google Sheets API and potentially manipulated using Google Apps Script or functions outlined in Sheets_EventData_Functions.md.
+Primary Structured Database: Cloud SQL (PostgreSQL with PostGIS extension) for the relational core (housing Master_Events_List, the operational Master Taxonomy & Schema, Venues, Organizations, Tags, SponsorshipInfo, Advertising_Opportunities_List, etc.).
+Flexible/Scalable NoSQL Database: Firestore (for LMT.ai user profiles, or specific high-throughput needs).
+Data Warehouse & Analytics: Google BigQuery.
+Object Storage: Google Cloud Storage (GCS) for raw data, ML artifacts, media assets, logs, exported files (e.g., KML for My Maps).
+Search Index: Vertex AI Search.
+System Orchestration & Integration: Google Cloud Pub/Sub (messaging), Google Cloud Workflows (process automation), Google Workspace APIs (Gmail, Calendar, Drive), Google Maps Platform APIs (JavaScript, Geocoding, Places - noting pricing implications from FunList System Design doc), Third-Party APIs, internal Gem RESTful/gRPC APIs.
+Web Scraping Technology: Python libraries (Scrapy, BeautifulSoup, Playwright/Puppeteer) on Cloud Run. User-Agent: FunListBot/1.0 (+http://funlist.example.com/botinfo).
+Frontend & User Interfaces: Modern JavaScript frameworks (React/Next.js) on Firebase Hosting or Cloud Run. Internal admin/curation tools.
+DevOps & Security: Git, Google Cloud Build/Deploy (CI/CD), Terraform (IaC), Google Cloud IAM, Google Workspace Admin Console (DWD), Cloud's Operations Suite (Logging, Monitoring, Trace), Google Cloud API Gateway/Apigee, Secret Manager, DLP API (conceptual).
+
+Part 2: The Information Architecture (The System's "Brain")
+(Integrating the FunList.ai - Master Taxonomy & Schema.xlsx - Help me create the Master Taxon.csv, List of Information Sets for Gems, database schema from FunList System Design, and references to supporting documents like Ad_Types_List, Master List of Places to Advertise, Club Types, Team Types, Master List of Event Types, and various Persona documents)
+2.1. The Master Taxonomy & Schema: The Central Entity Directory
+This is the "Rosetta Stone" providing a unified structure for classifying all non-event entities (Venues, Places, Organizations, Categories, Attributes, Audiences, Personas). It is the primary reference for AI Gems.
+Purpose: To create a single, highly-structured record or a set of interrelated tables defining every key entity and label, detailing types, sub-types, attributes, amenities, typical events, associated audiences, and keywords for AI. This allows for hyper-specific filtering and a deep contextual understanding by the system.
+Core Schema (based on the user-provided FunList.ai - Master Taxonomy & Schema.xlsx - Help me create the Master Taxon.csv which serves as the definitive source for these fields):
+Identification & Naming: Entity_ID (PK), Entity_Name, Alternate_Names, Acronyms.
+Hierarchical Typing: Primary_Type (e.g., Business, Place, Organization, Event Category, Ad Type, Persona), Secondary_Type (e.g., Venue, Park, Non-Profit, Music Event, Banner Ad, Family Fun Seeker), Tertiary_Type (e.g., Restaurant, Bar/Pub, Stadium, Festival, Billboard, Active Senior), Quaternary_Type (more specific, if needed).
+Descriptive Details: Description, Long_Description, Keywords, Tags.
+Location Specific (for Places/Venues): Street_Address, City, State, Zip_Code, County, Country, Latitude, Longitude, Neighborhood, Service_Area_Radius.
+Operational Details (for Places/Venues/Organizations): Website_URL, Contact_Email, Phone_Number, Social_Media_Handles (JSONB: {facebook, instagram, X, etc.}), Hours_of_Operation (JSONB), Year_Established.
+Entity Relationships & Associations: Parent_Entity_ID (for hierarchies like Place -> Sub-Space), Associated_Event_Type_IDs (FKs to event type labels in this taxonomy), Associated_Audience_Segment_IDs (FKs), Associated_Persona_IDs (FKs), Associated_Amenity_Feature_IDs (FKs), Affiliated_Organization_IDs (FKs).
+Features & Attributes: Amenity_Features (multi-select list, e.g., Pool Table, Stage, Patio, Playground, Serves Food, Wheelchair Accessible, Pet-Friendly), Attribute_Keywords (general descriptive attributes).
+Business/Organizational Attributes: Organization_Type (Non-Profit, For-Profit, Governmental, Community Group, Club, Team - drawing from Club Types and Team Types sheets), Industry_Classification (NAICS/SIC if applicable).
+Event Hosting Capabilities (for Venues/Places): Event_Types_Hosted_SuitedFor (list), Max_Capacity, Has_Rental_Space (Boolean), Rental_Contact_Info.
+System Metadata: Date_Added, Last_Updated, Source_of_Record, Verification_Status.
+Hierarchical Places (Place -> Sub-Space): A core concept. A Place (e.g., "O'Blarney's Irish Pub") can have multiple Sub-Spaces ("Main Bar," "Dining Room," "Patio"), each a distinct record in the Master Taxonomy & Schema linked via Parent_Entity_ID, and each having its own specific Age_Restriction, Capacity, and Amenity_Features.
+2.2. Core Operational Database Schema (Cloud SQL - PostgreSQL)
+Table: Entities (The Master Taxonomy & Schema operational instance)
+All fields from section 2.1 will be columns in this master table or related normalized tables (e.g., a separate Amenities table linked by Entity_ID and Amenity_ID if Amenity_Features becomes very extensive). This is the central repository.
+Table: Events (Master_Events_List)
+EventID (PK), Name, Standardized_Description, Raw_Description, StartDate, EndDate, Price, AgeLimits, TicketURL, Primary_Venue_EntityID (FK to Entities), Primary_SubSpace_EntityID (FK to Entities, nullable), Primary_Organizer_EntityID (FK to Entities).
+Metadata: Canonical_Source_URL, SourceURLs_Array (JSONB: {url, priority_score, source_name, reliability_score}), SourceType (e.g., 'Website', 'Newsletter', 'Partner', 'Manual'), TCCheckDate_Source, TCStatus_Source (Allowed, Prohibited, Unknown, etc.), PermissionStatus_Source (NotRequired, Requested, Granted, Denied, etc.).
+Processing & Classification: ValidationDate, ValidatorID, AIConfidenceScore, Primary_Event_Category_EntityID (FK to Entities), Is_Sales_Promotion (Boolean), Is_Public_Event (Boolean), List_of_Extracted_Features_FunList (Array/JSONB), Associated_Event_Type_EntityIDs (Array FKs to Entities), Associated_Attribute_EntityIDs (Array FKs to Entities), Associated_Audience_Segment_EntityIDs (Array FKs to Entities).
+Platform Specific: FunRating_[AudienceType] (multiple numeric columns, e.g., FunRating_Families, FunRating_Adults21Plus), Broad_Appeal_FunList (Boolean), Is_FunList_Qualified (Boolean), Is_BusinessCalendar_Candidate (Boolean), BusinessValueRating_BCal (Future).
+Integration IDs: FunList_Calendar_Event_ID, FunList_Email_Draft_ID.
+Status_FunList_Processing, Date_Added_to_Master, Last_Updated_Master.
+Table: SponsorshipInfo (for LMT.ai integration)
+SponsorshipInfoID (PK), EventID (FK, Unique), HasSponsorshipOps, LMT_ListingID, LMT_TermsAccepted, NeedsAssistance.
+Table: AdvertisingOpportunities
+OpportunityID (PK), Seller_Org_EntityID (FK to Entities), Linked_EventID (FK, nullable), Linked_Venue_EntityID (FK, nullable), Linked_SubSpace_EntityID (FK, nullable), Ad_Type_EntityID (FK to Entities - from Ad_Types_List.csv), Target_Placement_EntityID (FK to Entities - from Master List of Places to Advertise.csv), Description, Price, Availability_Dates, Creative_Specs_URL, Status.
+2.3. Supporting Configuration Data & Knowledge Bases (Managed in Google Sheets, Docs, or specific DB tables)
+Known_Event_Sources_Venues: Live database of source metadata, TCStatus, PermissionStatus, Reliability_Score, scrape rules.
+Thurston County Events Calendar Links: Seed list for regional source discovery.
+Event_Classification_Rules: Defines global exclusions, sales promo identifiers, public/private event heuristics, definitions for "Attraction," "Activity," "Entertainment."
+Event Discovery Navigation Terms: Keyword list for scraper site navigation (from user doc "List of Terms for Finding Event Sections").
+Email_Event_Discovery_Terms: Keywords for email harvester.
+FunList Qualitative Rating Logic: From FunList Qualitative Rating Adjustments sheet.
+BusinessCalendar_Qualification_Rating_Logic.
+Email Templates (FunList.ai & BusinessCalendar.ai): From FunList System Design doc.
+Ad_Types_List.csv & Master List of Places to Advertise.csv.
+Target Markets & Customer Personas documents & Thurston County Audience Persona Expansion.
+AMA - Data Sourcing & Ethics Guidelines.
+Google Form: Host Sponsorship/RFP Info and linked Master_List_of_Advertising_Opportunities / RFP_Opportunities_List sheets.
+Social Media Content Guidelines: Based on Anatomy of a FunList.ai Social Media Post.
+Sheets_EventData_Functions.md: Guide for human data handling and AI logic inspiration.
+All other linked supporting documents like Categories & Types of Events, Club Types, Team Types, etc., serve as primary inputs for populating the Master Taxonomy & Schema and related configurations.
+
+Part 3: The Master Operational Workflow (The System's "Assembly Line")
+(Based on the detailed 40-step Multi-Agent AI Workflow: Event Processing Operational Plan, integrating logic from FunList System Design, Optimizing Duplicate Check Logic, and Typical Workflows Relevant to AMA/FunList/LMT)
+Phase 1: Scope & Source Discovery (Steps 1-8): Defines geographical scope, relevant event types (using Master List of Event Types), generates/refines search keywords. Discovers sources, consolidates, and de-duplicates against Known_Event_Sources_Venues.
+
+
+Phase 2: Source Vetting & Compliance (Steps 9-15): T&C Compliance Agent (AI) checks robots.txt and uses Gemini to analyze ToS (guided by AMA - Data Sourcing & Ethics Guidelines), updating TCStatus in Known_Event_Sources_Venues. If restrictive, an automated Permission Request Workflow (using Email Templates from FunList System Design) is triggered by the Permission Request Agent (AI).
+
+
+Phase 3: Event Data Extraction & Structuring (Steps 16-19):
+
+
+Intelligent Web Scraping (Step 16): Scraping Agent (AI) uses Event Discovery Navigation Terms to find calendar pages. Extracts core event details as defined in the Master List of Events with Descriptions document. Captures SourceURL.
+Email Newsletter Extraction (Step 17): Email Processing Agent (AI) uses Gmail API and Gemini.
+Initial Validation, Cleaning & Geocoding (Steps 18-19): Validation Agent (AI) performs schema/format checks, text cleaning (applying logic from Sheets_EventData_Functions.md), and geocodes addresses.
+Phase 4: Multi-Layered Validation & Enrichment (Steps 20-28):
+
+
+AI Cross-Referencing & Fact-Checking (Step 20).
+Advanced Duplicate Detection & Source Prioritization (Step 22 - per Optimizing Duplicate Check Logic): Implements Conditional Duplicate Check Logic ("First List" vs. "Subsequent List") using State Management and optimized strategies (e.g., Cached Subset Check). Designates Canonical_Source_URL based on Reliability_Score (e.g., RutledgeFamilyFarm.com preferred over ExperienceOlympia.com).
+AI Entity & Event Classification & Enrichment (Step 23): Validation Agent (AI) uses Gemini and the Master Taxonomy & Schema to classify new entities and assign all relevant IDs (Event_Type_EntityIDs, Attribute_EntityIDs, Audience_Segment_EntityIDs, List_of_Extracted_Features_FunList) to events in Master_Events_List. Uses Event_Classification_Rules.
+AI Social Media Handle Extraction (Step 24).
+AI Confidence Scoring & Routing (Steps 21 & 25): Assigns confidence score. Routes events to automated approval, MTurk validation (using MTurk Validation Task Design Guidelines from FunList System Design), or internal human review (Human Validation Procedures from FunList System Design).
+Human Validation (Steps 27-28).
+Phase 5: Finalization & Storage (Steps 29-30): Data Structuring Agent (AI) formats records. Database Storage Agent (AI) commits to Cloud SQL.
+
+
+Phase 6: Downstream Integration & Outreach (Steps 31-35): Outreach Agent (AI) sends email (using Event Organizer Notification Email template) to organizer, inviting them to list opportunities on LMT.ai (link passes EventID). LMT.ai confirms listing via API. A Sponsorship Assistance Workflow (per Typical Workflows) is triggered if organizer requests help.
+
+
+Phase 7: Ongoing Monitoring & Maintenance (Steps 36-41): Periodic source re-checking, event update handling, AI agent performance monitoring, centralized logging, alerting.
+
+
+
+Part 4: The Agent (Gem) Configuration Layer (The Agents' "Minds")
+(Based on List of Information Sets for Gems and Business Glossary for "Prompt Creator" Gemini Gem)
+Gem 1 (Ingestion - Scraper & Email Harvester):
+Configuration: Target URLs/Gmail labels, Event Discovery Navigation Terms, Email_Event_Discovery_Terms.
+Gem 2 (Enrichment, Classification, Feature & Label Extraction):
+Knowledge Base: Master Taxonomy & Schema (core directive), Known_Event_Sources_Venues, Event_Classification_Rules, Target Markets & Customer Personas.
+Gem 3/3b (FunList/Business Content & Rating Agent):
+Knowledge Base: FunList Qualitative Rating Logic, BusinessCalendar_Qualification_Rating_Logic.
+"Prompt Creator" Gemini Gem (Dedicated or part of Gem 3/3b or Gem 6/6b):
+Knowledge Base: The comprehensive "Master Glossary of System & Business Terminology" (see Part 6), Social Media Content Guidelines.
+AI Agent Suite (for AMA Members):
+AI Sponsorship Packager (within LMT.ai Seller Agent): Assists sellers in creating sponsorship packages. Knowledge base includes sponsorship templates.
+Buyer Agent (AI Tool on LMT.ai): Helps buyers find ad opportunities.
+Seller Agent (AI Tool on LMT.ai): Guides sellers through listing, including using AI Sponsorship Packager.
+Other Gems (4/4b - Calendar/Comm., 5/5b - Email Dispatch, 6/6b - Social/Output Prep): Use their specific templates (e.g., Anatomy of a FunList.ai Social Media Post for Gem 6) and configurations.
+
+Part 5: Commercial & Legal Framework Integration
+(Based on Terms of Use for LocalMarketingTool.ai)
+User Roles: Distinct "Buyer" and "Seller" accounts.
+Transactional Logic: Listing management, order acceptance/rejection by Sellers (within timeframes like 48 hours as per ToU Section 5), fulfillment tracking.
+Payment Processing: Secure payment gateway integration, handling payments, payouts, and platform fees per ToU Section 5.
+Intellectual Property & Content Licensing: System stores and displays Seller-licensed content per ToU Section 6.
+Dispute Resolution: Comprehensive logging supports ToU Section 9 (Arbitration).
+Refunds & Cancellations: System allows Sellers to define policies and process refunds per ToU Section 5.
+Termination & Amendments: Account management features and mechanism for ToU updates per ToU Sections 10 & 11.
+
+Part 6: Master Glossary of System & Business Terminology (v4.0)
+(Merged from all previous glossaries, including the Business Glossary for "Prompt Creator" Gemini Gem)
+(Key Categories & Example Terms - This would be the exhaustive, merged list)
+Platforms & Organizations: American Marketing Alliance SPC (AMA), LocalMarketingTool.ai (LMT), FunList.ai, Social Purpose Corporation (SPC).
+Core Data Concepts: Entity, Event, Place, Sub-Space, Master Taxonomy & Schema, Master_Events_List, Canonical Source, Central AMA Database/API.
+AI Agents & Roles: Gem, AI Agent Suite, AI Sponsorship Packager, Buyer Agent, Seller Agent, T&C Compliance Agent, Scraping Agent, Validation Agent, Human Operator.
+Key Processes: Data Acquisition, Data Validation and Enrichment, Source Vetting, Conditional Duplicate Check Logic, Sponsorship Outreach.
+Operational Metrics & Statuses: Fun Rating, TCStatus, PermissionStatus, Confidence Score.
+General Business Terms (for Prompt Creator Gem): ROI, KPI, CRM, P&L, Market Share, CAC, Churn, EBITDA, Value Proposition, Benchmark.
+And all other system-specific and general business terms previously defined from all source documents.
+
+Part 7: Supporting Documentation & Operational Guidelines
+(Consolidates all procedural documents, templates, and guides referenced from all provided materials)
+Google Sheets Functions for Event Data Management (Sheets_EventData_Functions.md): Guide for initial data handling and AI logic (e.g., TRIM, VLOOKUP, IFERROR, ARRAYFORMULA).
+Data Sourcing & Ethics Guidelines (AMA - Data Sourcing & Ethics Guidelines).
+Human Validation Procedures (from FunList System Design).
+MTurk Validation Task Design Guidelines (from FunList System Design).
+All Email Templates (Permission Request Suite, Organizer Notifications - from FunList System Design).
+Social Media Content Guidelines (based on Anatomy of a FunList.ai Social Media Post).
+Full "Master Inventory of System Configuration & Knowledge Base Documents" (the detailed table you provided, mapping each config file to its purpose and Gem – this table itself becomes a key part of this section).
+All other linked/provided support documents (e.g., Ad_Types_List, Master List of Places to Advertise, specific Persona documents, Categories & Types of Events, Club Types, Team Types, Thurston County - Illustrative Data Examples, Strategic Blueprint for Data Taxonomy, etc.) serve as primary inputs for populating the relevant configuration files and knowledge bases listed in Part 2.3 and for guiding the overall system logic.
+
+
+

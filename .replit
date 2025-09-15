@@ -152,3 +152,6 @@ task = "packager.installForAll"
 task = "shell.exec"
 args = "python main.py"
 waitForPort = 8080
+
+[agent]
+expertMode = true
