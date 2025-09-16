@@ -38,6 +38,7 @@ app.get('/health', (req, res) => {
   });
 });
 
+
 // Input validation helper
 const validateEventData = (data) => {
   const errors = [];
@@ -265,7 +266,7 @@ app.get('/events', async (req, res) => {
       ];
     }
 
-    const events = await prisma.events.findMany({
+    const events = await prisma.event.findMany({
       where: whereClause,
       skip: offset,
       take: limit,
@@ -301,7 +302,7 @@ app.get('/events', async (req, res) => {
       }
     });
 
-    const totalEvents = await prisma.events.count({
+    const totalEvents = await prisma.event.count({
       where: whereClause
     });
     
@@ -316,7 +317,7 @@ app.get('/events', async (req, res) => {
         console.log(`Computing Funalytics score for event ${event.id}: ${event.title}`);
         const scoreData = computeFunalyticsScore(event);
         
-        latestScore = await prisma.funalytics_scores.create({
+        latestScore = await prisma.funalyticsScore.create({
           data: {
             event_id: event.id,
             community_vibe: scoreData.communityVibe,
@@ -384,7 +385,7 @@ app.post('/funalytics/recompute/:eventId', async (req, res) => {
     }
     
     // Check if event exists
-    const event = await prisma.events.findUnique({
+    const event = await prisma.event.findUnique({
       where: { id: eventId },
       include: {
         venue: true
@@ -412,7 +413,7 @@ app.post('/funalytics/recompute/:eventId', async (req, res) => {
       : scoreData.reasoning;
     
     // Append new row (history preserved)
-    const newScore = await prisma.funalytics_scores.create({
+    const newScore = await prisma.funalyticsScore.create({
       data: {
         event_id: eventId,
         community_vibe: communityVibe,
@@ -463,7 +464,7 @@ app.post('/events', async (req, res) => {
     }
 
     // Check if organizer exists
-    const organizer = await prisma.users.findUnique({
+    const organizer = await prisma.user.findUnique({
       where: { id: parseInt(organizerId) }
     });
 
@@ -479,7 +480,7 @@ app.post('/events', async (req, res) => {
       venueId = venue.id;
     } else if (venue && venue.name) {
       // Create new venue if provided
-      const newVenue = await prisma.venues.create({
+      const newVenue = await prisma.venue.create({
         data: {
           name: venue.name,
           street: venue.street || null,
@@ -493,7 +494,7 @@ app.post('/events', async (req, res) => {
     }
 
     // Create the event
-    const newEvent = await prisma.events.create({
+    const newEvent = await prisma.event.create({
       data: {
         title: title.trim(),
         description: description || 'Event created via API',  // Required field

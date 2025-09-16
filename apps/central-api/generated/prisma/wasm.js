@@ -142,6 +142,71 @@ exports.Prisma.ScoreScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.EventScalarFieldEnum = {
+  id: 'id',
+  status: 'status',
+  title: 'title',
+  description: 'description',
+  start_date: 'start_date',
+  end_date: 'end_date',
+  start_time: 'start_time',
+  end_time: 'end_time',
+  all_day: 'all_day',
+  street: 'street',
+  city: 'city',
+  state: 'state',
+  zip_code: 'zip_code',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  created_at: 'created_at',
+  category: 'category',
+  target_audience: 'target_audience',
+  fun_meter: 'fun_meter',
+  user_id: 'user_id',
+  venue_id: 'venue_id',
+  location: 'location',
+  fun_rating: 'fun_rating'
+};
+
+exports.Prisma.UserScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  password_hash: 'password_hash',
+  created_at: 'created_at',
+  account_active: 'account_active',
+  username: 'username',
+  first_name: 'first_name',
+  last_name: 'last_name',
+  is_admin: 'is_admin',
+  company_name: 'company_name'
+};
+
+exports.Prisma.VenueScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  street: 'street',
+  city: 'city',
+  state: 'state',
+  zip_code: 'zip_code',
+  phone: 'phone',
+  email: 'email',
+  website: 'website',
+  created_at: 'created_at',
+  user_id: 'user_id',
+  latitude: 'latitude',
+  longitude: 'longitude'
+};
+
+exports.Prisma.FunalyticsScoreScalarFieldEnum = {
+  id: 'id',
+  event_id: 'event_id',
+  community_vibe: 'community_vibe',
+  family_fun: 'family_fun',
+  overall_score: 'overall_score',
+  reasoning: 'reasoning',
+  computed_at: 'computed_at'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -170,7 +235,11 @@ exports.Prisma.JsonNullValueFilter = {
 
 exports.Prisma.ModelName = {
   health_check: 'health_check',
-  Score: 'Score'
+  Score: 'Score',
+  Event: 'Event',
+  User: 'User',
+  Venue: 'Venue',
+  FunalyticsScore: 'FunalyticsScore'
 };
 
 /**
