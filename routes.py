@@ -681,14 +681,17 @@ Focus on actionable, specific suggestions that would improve the event's appeal 
                 family_score = analysis_result['familyFun'].get('score', 5)
                 analysis_result['overallScore'] = round((community_score + family_score) / 2)
             
+            # Enhance with contextual intelligence
+            enhanced_analysis = enhance_with_contextual_intelligence(analysis_result, event_data)
+            
             return jsonify({
                 "success": True,
-                "analysis": analysis_result,
+                "analysis": enhanced_analysis,
                 "funalytics": {
-                    "communityVibe": analysis_result['communityVibe']['score'],
-                    "familyFun": analysis_result['familyFun']['score'],
-                    "overallScore": analysis_result['overallScore'],
-                    "reasoning": f"Community: {analysis_result['communityVibe']['reasoning']} | Family: {analysis_result['familyFun']['reasoning']}"
+                    "communityVibe": enhanced_analysis['communityVibe']['score'],
+                    "familyFun": enhanced_analysis['familyFun']['score'],
+                    "overallScore": enhanced_analysis['overallScore'],
+                    "reasoning": f"Community: {enhanced_analysis['communityVibe']['reasoning']} | Family: {enhanced_analysis['familyFun']['reasoning']}"
                 }
             })
             
@@ -786,3 +789,215 @@ def init_routes(app):
 
     # Return the app instance
     return app
+
+
+def enhance_with_contextual_intelligence(analysis_result, event_data):
+    """
+    Enhance AI analysis with contextual intelligence and success predictions
+    """
+    try:
+        # Get contextual recommendations
+        contextual_recommendations = get_contextual_recommendations(event_data)
+        
+        # Calculate success prediction score
+        success_prediction = calculate_success_prediction(event_data, analysis_result)
+        
+        # Add smart suggestions for missing details
+        smart_suggestions = get_smart_suggestions(event_data)
+        
+        # Enhance the analysis with additional intelligence - ensure defaults
+        analysis_result.update({
+            "contextualRecommendations": contextual_recommendations or [],
+            "successPrediction": success_prediction or {"score": 50, "confidence": 60, "factors": {"overallReadiness": "analyzing"}},
+            "smartSuggestions": smart_suggestions or [],
+            "marketingTips": generate_marketing_tips(event_data, analysis_result) or []
+        })
+        
+        return analysis_result
+        
+    except Exception as e:
+        current_app.logger.error(f"Error enhancing with contextual intelligence: {str(e)}")
+        # Return original analysis if enhancement fails
+        return analysis_result
+
+
+def get_contextual_recommendations(event_data):
+    """
+    Generate contextual recommendations based on event type and content
+    """
+    recommendations = []
+    
+    title = event_data.get('title', '').lower()
+    description = event_data.get('description', '').lower()
+    
+    # Time-based recommendations
+    if 'evening' in title or 'night' in title:
+        recommendations.append({
+            "type": "timing",
+            "suggestion": "Evening events often benefit from mentioning lighting or atmosphere details",
+            "priority": "medium"
+        })
+    
+    # Family-focused recommendations
+    if any(word in title + description for word in ['family', 'kids', 'children']):
+        recommendations.append({
+            "type": "family",
+            "suggestion": "Consider mentioning age ranges and safety features to boost family appeal",
+            "priority": "high"
+        })
+    
+    # Music/Entertainment recommendations
+    if any(word in title + description for word in ['music', 'concert', 'band', 'performance']):
+        recommendations.append({
+            "type": "entertainment",
+            "suggestion": "Mention the music genre or performance style to attract the right audience",
+            "priority": "medium"
+        })
+    
+    # Food-related recommendations
+    if any(word in title + description for word in ['food', 'dinner', 'lunch', 'restaurant']):
+        recommendations.append({
+            "type": "food",
+            "suggestion": "Highlight dietary options (vegetarian, gluten-free) to increase accessibility",
+            "priority": "high"
+        })
+    
+    return recommendations[:3]  # Return top 3 recommendations
+
+
+def calculate_success_prediction(event_data, analysis_result):
+    """
+    Calculate event success prediction based on various factors
+    """
+    score = 50  # Base score
+    confidence = 60  # Base confidence
+    
+    # Title quality impact
+    title_length = len(event_data.get('title', ''))
+    if 20 <= title_length <= 60:
+        score += 15
+        confidence += 10
+    elif title_length < 10:
+        score -= 10
+        confidence -= 5
+    
+    # Description quality impact
+    description_length = len(event_data.get('description', ''))
+    if description_length > 100:
+        score += 20
+        confidence += 15
+    elif description_length < 50:
+        score -= 15
+        confidence -= 10
+    
+    # Use AI analysis scores if available
+    if analysis_result.get('overallScore'):
+        ai_score = int(analysis_result['overallScore'])
+        score = int(score * 0.4 + ai_score * 12)  # Weight AI score heavily
+        confidence = min(95, confidence + (ai_score * 2))
+    
+    # Ensure realistic bounds
+    score = max(10, min(95, score))
+    confidence = max(30, min(95, confidence))
+    
+    return {
+        "score": score,
+        "confidence": confidence,
+        "factors": {
+            "contentQuality": "high" if description_length > 100 else "medium" if description_length > 50 else "low",
+            "titleOptimization": "good" if 20 <= title_length <= 60 else "needs_work",
+            "overallReadiness": "ready" if score >= 70 else "needs_improvement" if score >= 50 else "major_revisions_needed"
+        }
+    }
+
+
+def get_smart_suggestions(event_data):
+    """
+    Generate smart suggestions for missing or incomplete event details
+    """
+    suggestions = []
+    
+    title = event_data.get('title', '')
+    description = event_data.get('description', '')
+    
+    # Check for missing key details
+    if not any(word in description.lower() for word in ['time', 'when', 'start', 'begins']):
+        suggestions.append({
+            "type": "timing",
+            "suggestion": "Add specific start time information to help attendees plan",
+            "impact": "high"
+        })
+    
+    if not any(word in description.lower() for word in ['location', 'where', 'address', 'venue']):
+        suggestions.append({
+            "type": "location",
+            "suggestion": "Include specific venue or location details for better discoverability",
+            "impact": "high"
+        })
+    
+    if not any(word in description.lower() for word in ['free', 'cost', 'price', 'ticket', '$']):
+        suggestions.append({
+            "type": "pricing",
+            "suggestion": "Mention if the event is free or include pricing information",
+            "impact": "medium"
+        })
+    
+    if len(description) < 100:
+        suggestions.append({
+            "type": "content",
+            "suggestion": "Add more descriptive details about what attendees can expect",
+            "impact": "high"
+        })
+    
+    if not any(word in description.lower() for word in ['contact', 'info', 'questions', 'email']):
+        suggestions.append({
+            "type": "contact",
+            "suggestion": "Include contact information for questions or more details",
+            "impact": "medium"
+        })
+    
+    return suggestions[:4]  # Return top 4 suggestions
+
+
+def generate_marketing_tips(event_data, analysis_result):
+    """
+    Generate specific marketing tips based on event analysis
+    """
+    tips = []
+    
+    # Get scores from analysis
+    community_score = analysis_result.get('communityVibe', {}).get('score', 3)
+    family_score = analysis_result.get('familyFun', {}).get('score', 3)
+    
+    if community_score < 4:
+        tips.append({
+            "category": "community",
+            "tip": "Emphasize social aspects like networking opportunities or group activities",
+            "reason": "To boost your CommunityVibe™ score"
+        })
+    
+    if family_score < 4:
+        tips.append({
+            "category": "family",
+            "tip": "Highlight kid-friendly features, safety measures, or educational value",
+            "reason": "To increase your FamilyFun™ appeal"
+        })
+    
+    # General marketing tips
+    title_length = len(event_data.get('title', ''))
+    if title_length > 50:
+        tips.append({
+            "category": "title",
+            "tip": "Consider shortening your title for better mobile readability",
+            "reason": "Shorter titles perform better on social media"
+        })
+    
+    description = event_data.get('description', '').lower()
+    if 'fun' not in description and 'enjoy' not in description:
+        tips.append({
+            "category": "engagement",
+            "tip": "Use engaging words like 'fun', 'exciting', or 'memorable' in your description",
+            "reason": "Emotional language increases event appeal"
+        })
+    
+    return tips[:3]  # Return top 3 tips

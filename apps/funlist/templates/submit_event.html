@@ -457,6 +457,52 @@
             </ul>
         </div>
         
+        <!-- Phase 2: Advanced Intelligence Features -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div id="successPrediction" style="display: none;">
+                    <h6><i class="fas fa-chart-line text-success me-2"></i>Success Prediction</h6>
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between">
+                            <span>Event Success Score</span>
+                            <span id="successScore" class="fw-bold text-success">--</span>
+                        </div>
+                        <div class="progress">
+                            <div id="successBar" class="progress-bar" style="width: 0%"></div>
+                        </div>
+                        <small id="readinessStatus" class="text-muted"></small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div id="marketingTips" style="display: none;">
+                    <h6><i class="fas fa-bullhorn text-warning me-2"></i>Marketing Tips</h6>
+                    <ul id="marketingTipsList" class="list-unstyled">
+                        <!-- Marketing tips will be populated here -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <div id="contextualRecommendations" style="display: none;">
+                    <h6><i class="fas fa-lightbulb text-primary me-2"></i>Smart Recommendations</h6>
+                    <ul id="contextualRecommendationsList" class="list-unstyled">
+                        <!-- Contextual recommendations will be populated here -->
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div id="smartSuggestions" style="display: none;">
+                    <h6><i class="fas fa-magic text-purple me-2"></i>Smart Suggestions</h6>
+                    <ul id="smartSuggestionsList" class="list-unstyled">
+                        <!-- Smart suggestions will be populated here -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
         <div class="mt-3 text-center">
             <button type="button" class="btn btn-outline-primary btn-sm" id="refreshAnalysis">
                 <i class="fas fa-sync-alt me-1"></i>Re-analyze Event
@@ -778,6 +824,9 @@ function displayAnalysisResults(analysis) {
         missingDetailsDiv.style.display = 'none';
     }
 
+    // Display Phase 2: Advanced Intelligence Features
+    displayAdvancedFeatures(analysis);
+
     // Show scores section
     const scoresDiv = document.getElementById('funalyticsScores');
     if (scoresDiv) scoresDiv.style.display = 'block';
@@ -786,6 +835,88 @@ function displayAnalysisResults(analysis) {
 function updateElement(id, content) {
     const element = document.getElementById(id);
     if (element) element.textContent = content;
+}
+
+function displayAdvancedFeatures(analysis) {
+    // Display Success Prediction with null guards
+    if (analysis.successPrediction && typeof analysis.successPrediction.score === 'number') {
+        const successDiv = document.getElementById('successPrediction');
+        const successScore = document.getElementById('successScore');
+        const successBar = document.getElementById('successBar');
+        const readinessStatus = document.getElementById('readinessStatus');
+        
+        if (successDiv && successScore && successBar && readinessStatus) {
+            successScore.textContent = `${analysis.successPrediction.score}%`;
+            successBar.style.width = `${analysis.successPrediction.score}%`;
+            
+            // Safely handle readiness status
+            const overallReadiness = analysis.successPrediction.factors?.overallReadiness || 'analyzing';
+            readinessStatus.textContent = overallReadiness.replace('_', ' ');
+            
+            // Color code the success bar
+            successBar.className = 'progress-bar';
+            if (analysis.successPrediction.score >= 70) {
+                successBar.classList.add('bg-success');
+            } else if (analysis.successPrediction.score >= 50) {
+                successBar.classList.add('bg-warning');
+            } else {
+                successBar.classList.add('bg-danger');
+            }
+            
+            successDiv.style.display = 'block';
+        }
+    }
+    
+    // Display Marketing Tips
+    if (analysis.marketingTips?.length > 0) {
+        const marketingTipsList = document.getElementById('marketingTipsList');
+        const marketingTipsDiv = document.getElementById('marketingTips');
+        
+        if (marketingTipsList && marketingTipsDiv) {
+            marketingTipsList.innerHTML = analysis.marketingTips
+                .map(tip => `<li class="mb-2">
+                    <i class="fas fa-arrow-right text-warning me-2"></i>
+                    <strong>${tip.tip}</strong>
+                    <br><small class="text-muted">${tip.reason}</small>
+                </li>`)
+                .join('');
+            marketingTipsDiv.style.display = 'block';
+        }
+    }
+    
+    // Display Contextual Recommendations
+    if (analysis.contextualRecommendations?.length > 0) {
+        const contextualList = document.getElementById('contextualRecommendationsList');
+        const contextualDiv = document.getElementById('contextualRecommendations');
+        
+        if (contextualList && contextualDiv) {
+            contextualList.innerHTML = analysis.contextualRecommendations
+                .map(rec => `<li class="mb-2">
+                    <i class="fas fa-star ${rec.priority === 'high' ? 'text-danger' : 'text-primary'} me-2"></i>
+                    ${rec.suggestion}
+                    <small class="badge badge-sm ms-2 ${rec.priority === 'high' ? 'bg-danger' : 'bg-primary'}">${rec.priority}</small>
+                </li>`)
+                .join('');
+            contextualDiv.style.display = 'block';
+        }
+    }
+    
+    // Display Smart Suggestions
+    if (analysis.smartSuggestions?.length > 0) {
+        const smartList = document.getElementById('smartSuggestionsList');
+        const smartDiv = document.getElementById('smartSuggestions');
+        
+        if (smartList && smartDiv) {
+            smartList.innerHTML = analysis.smartSuggestions
+                .map(suggestion => `<li class="mb-2">
+                    <i class="fas fa-chevron-right ${suggestion.impact === 'high' ? 'text-danger' : 'text-info'} me-2"></i>
+                    ${suggestion.suggestion}
+                    <small class="badge badge-sm ms-2 ${suggestion.impact === 'high' ? 'bg-danger' : 'bg-info'}">${suggestion.impact}</small>
+                </li>`)
+                .join('');
+            smartDiv.style.display = 'block';
+        }
+    }
 }
 
 {% block extra_js %}
