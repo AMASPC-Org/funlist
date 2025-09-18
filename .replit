@@ -2,6 +2,7 @@ modules = ["python-3.11", "nodejs-20"]
 
 [nix]
 channel = "stable-24_05"
+packages = ["cacert", "glibcLocales", "libxcrypt", "pkg-config", "xsimd"]
 
 [deployment]
 run = ["sh", "-c", "python main.py"]
@@ -67,6 +68,10 @@ externalPort = 8081
 [[ports]]
 localPort = 8082
 externalPort = 3000
+
+[[ports]]
+localPort = 38997
+externalPort = 3002
 
 [workflows]
 runButton = "Project"
@@ -163,3 +168,4 @@ waitForPort = 5000
 
 [agent]
 expertMode = true
+integrations = ["python_openai:1.0.0"]

@@ -1,6 +1,88 @@
 {% extends "base.html" %}
 {% from "macros/_form_helpers.html" import render_field %}
 
+{% block extra_css %}
+<style>
+/* AI Coaching Panel Styles */
+.funalytics-score {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.score-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin: 10px auto;
+    position: relative;
+}
+
+.score-circle.score-overall {
+    width: 100px;
+    height: 100px;
+    font-size: 1.5rem;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.score-circle small {
+    font-size: 0.7rem;
+    font-weight: normal;
+}
+
+#aiCoachingPanel .card-body {
+    padding: 1.5rem;
+}
+
+#aiSuggestions ul, #missingDetails ul {
+    margin: 0;
+}
+
+#aiSuggestions li, #missingDetails li {
+    padding: 8px 0;
+    border-bottom: 1px solid #f8f9fa;
+}
+
+#aiSuggestions li:last-child, #missingDetails li:last-child {
+    border-bottom: none;
+}
+
+.progress {
+    height: 6px;
+    background-color: #e9ecef;
+}
+
+/* Animation for panel appearance */
+#aiCoachingPanel {
+    animation: slideInUp 0.5s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Spinner animation */
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+    border-width: 0.1rem;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container py-4">
     <h1 class="mb-4">Submit a New Event</h1>
@@ -317,6 +399,72 @@
     </div>
 </form>
 
+<!-- AI Coaching Panel -->
+<div id="aiCoachingPanel" class="card mt-4 border-primary" style="display: none;">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-robot me-2"></i>AI Event Assistant
+            <div class="spinner-border spinner-border-sm float-end" id="analysisSpinner" style="display: none;"></div>
+        </h5>
+    </div>
+    <div class="card-body">
+        <div id="funalyticsScores" class="mb-3" style="display: none;">
+            <div class="row text-center">
+                <div class="col-md-4">
+                    <div class="funalytics-score">
+                        <h6>Community Vibe™</h6>
+                        <div class="score-circle">
+                            <span id="communityVibeScore">--</span><small>/10</small>
+                        </div>
+                        <small id="communityVibeReason" class="text-muted"></small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="funalytics-score">
+                        <h6>Family Fun™</h6>
+                        <div class="score-circle">
+                            <span id="familyFunScore">--</span><small>/10</small>
+                        </div>
+                        <small id="familyFunReason" class="text-muted"></small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="funalytics-score">
+                        <h6>Overall Score</h6>
+                        <div class="score-circle score-overall">
+                            <span id="overallScore">--</span><small>/10</small>
+                        </div>
+                        <div class="progress mt-2">
+                            <div id="confidenceBar" class="progress-bar bg-info" style="width: 0%"></div>
+                        </div>
+                        <small class="text-muted">Confidence: <span id="confidenceLevel">0</span>%</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="aiSuggestions" style="display: none;">
+            <h6><i class="fas fa-lightbulb text-warning me-2"></i>Suggestions to Improve Your Event:</h6>
+            <ul id="suggestionsList" class="list-unstyled">
+                <!-- Suggestions will be populated here -->
+            </ul>
+        </div>
+        
+        <div id="missingDetails" style="display: none;">
+            <h6><i class="fas fa-exclamation-triangle text-info me-2"></i>Consider Adding:</h6>
+            <ul id="missingDetailsList" class="list-unstyled">
+                <!-- Missing details will be populated here -->
+            </ul>
+        </div>
+        
+        <div class="mt-3 text-center">
+            <button type="button" class="btn btn-outline-primary btn-sm" id="refreshAnalysis">
+                <i class="fas fa-sync-alt me-1"></i>Re-analyze Event
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- Preview Modal -->
 <div class="modal fade" id="previewModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
@@ -389,6 +537,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize character counts
     updateCharCount(document.getElementById('title'), 'titleCount', 150);
     updateCharCount(document.getElementById('description'), 'descriptionCount', 500);
+    
+    // Initialize AI coaching functionality
+    initializeAICoaching();
     const form = document.querySelector('form');
     const previewBtn = document.getElementById('previewBtn');
     const saveAsDraftBtn = document.getElementById('saveAsDraftBtn');
@@ -443,9 +594,199 @@ document.addEventListener('DOMContentLoaded', function() {
     clearFormBtn.addEventListener('click', function() {
         if (confirm('Are you sure you want to clear the form?')) {
             form.reset();
+            hideAICoachingPanel();
         }
     });
 });
+
+// AI Coaching functionality
+let analysisTimeout;
+let lastAnalysisData = {};
+
+function initializeAICoaching() {
+    const titleField = document.getElementById('title');
+    const descriptionField = document.getElementById('description');
+    const categoryField = document.getElementById('category');
+    const targetAudienceField = document.getElementById('target_audience');
+    const cityField = document.getElementById('city');
+    const stateField = document.getElementById('state');
+    const refreshBtn = document.getElementById('refreshAnalysis');
+
+    // Debounced analysis on form field changes
+    const triggerAnalysis = debounce(performEventAnalysis, 1000);
+
+    [titleField, descriptionField, categoryField, targetAudienceField, cityField, stateField].forEach(field => {
+        if (field) {
+            field.addEventListener('input', triggerAnalysis);
+        }
+    });
+
+    // Manual refresh analysis
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', performEventAnalysis);
+    }
+}
+
+function debounce(func, wait) {
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(analysisTimeout);
+            func(...args);
+        };
+        clearTimeout(analysisTimeout);
+        analysisTimeout = setTimeout(later, wait);
+    };
+}
+
+async function performEventAnalysis() {
+    const titleField = document.getElementById('title');
+    const descriptionField = document.getElementById('description');
+    const categoryField = document.getElementById('category');
+    const targetAudienceField = document.getElementById('target_audience');
+    const cityField = document.getElementById('city');
+    const stateField = document.getElementById('state');
+
+    // Check if we have minimum required data
+    const title = titleField?.value?.trim() || '';
+    const description = descriptionField?.value?.trim() || '';
+
+    if (title.length < 5 || description.length < 20) {
+        hideAICoachingPanel();
+        return;
+    }
+
+    // Prepare event data
+    const eventData = {
+        title: title,
+        description: description,
+        category: categoryField?.value || '',
+        target_audience: targetAudienceField?.value || '',
+        city: cityField?.value || '',
+        state: stateField?.value || ''
+    };
+
+    // Check if data has changed significantly to avoid unnecessary API calls
+    if (JSON.stringify(eventData) === JSON.stringify(lastAnalysisData)) {
+        return;
+    }
+
+    lastAnalysisData = { ...eventData };
+
+    try {
+        showAnalysisSpinner();
+        
+        // Get CSRF token
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+        
+        const response = await fetch('/api/analyze-event', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify(eventData)
+        });
+
+        const result = await response.json();
+
+        hideAnalysisSpinner();
+
+        if (result.success && result.analysis) {
+            displayAnalysisResults(result.analysis);
+            showAICoachingPanel();
+        } else {
+            console.error('Analysis failed:', result.error);
+            hideAICoachingPanel();
+        }
+
+    } catch (error) {
+        hideAnalysisSpinner();
+        console.error('Error performing analysis:', error);
+        hideAICoachingPanel();
+    }
+}
+
+function showAnalysisSpinner() {
+    const spinner = document.getElementById('analysisSpinner');
+    if (spinner) spinner.style.display = 'block';
+}
+
+function hideAnalysisSpinner() {
+    const spinner = document.getElementById('analysisSpinner');
+    if (spinner) spinner.style.display = 'none';
+}
+
+function showAICoachingPanel() {
+    const panel = document.getElementById('aiCoachingPanel');
+    if (panel) {
+        panel.style.display = 'block';
+        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+function hideAICoachingPanel() {
+    const panel = document.getElementById('aiCoachingPanel');
+    if (panel) panel.style.display = 'none';
+}
+
+function displayAnalysisResults(analysis) {
+    // Update Funalytics scores
+    updateElement('communityVibeScore', analysis.communityVibe.score);
+    updateElement('communityVibeReason', analysis.communityVibe.reasoning);
+    updateElement('familyFunScore', analysis.familyFun.score);
+    updateElement('familyFunReason', analysis.familyFun.reasoning);
+    updateElement('overallScore', analysis.overallScore);
+    updateElement('confidenceLevel', analysis.confidenceLevel);
+
+    // Update confidence bar
+    const confidenceBar = document.getElementById('confidenceBar');
+    if (confidenceBar) {
+        confidenceBar.style.width = `${analysis.confidenceLevel}%`;
+        
+        // Color code confidence
+        confidenceBar.className = 'progress-bar';
+        if (analysis.confidenceLevel >= 80) {
+            confidenceBar.classList.add('bg-success');
+        } else if (analysis.confidenceLevel >= 60) {
+            confidenceBar.classList.add('bg-warning');
+        } else {
+            confidenceBar.classList.add('bg-danger');
+        }
+    }
+
+    // Display suggestions
+    const suggestionsList = document.getElementById('suggestionsList');
+    const suggestionsDiv = document.getElementById('aiSuggestions');
+    if (suggestionsList && analysis.suggestions?.length > 0) {
+        suggestionsList.innerHTML = analysis.suggestions
+            .map(suggestion => `<li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>${suggestion}</li>`)
+            .join('');
+        suggestionsDiv.style.display = 'block';
+    } else {
+        suggestionsDiv.style.display = 'none';
+    }
+
+    // Display missing details
+    const missingDetailsList = document.getElementById('missingDetailsList');
+    const missingDetailsDiv = document.getElementById('missingDetails');
+    if (missingDetailsList && analysis.missingDetails?.length > 0) {
+        missingDetailsList.innerHTML = analysis.missingDetails
+            .map(detail => `<li class="mb-2"><i class="fas fa-plus-circle text-info me-2"></i>${detail}</li>`)
+            .join('');
+        missingDetailsDiv.style.display = 'block';
+    } else {
+        missingDetailsDiv.style.display = 'none';
+    }
+
+    // Show scores section
+    const scoresDiv = document.getElementById('funalyticsScores');
+    if (scoresDiv) scoresDiv.style.display = 'block';
+}
+
+function updateElement(id, content) {
+    const element = document.getElementById(id);
+    if (element) element.textContent = content;
+}
 
 {% block extra_js %}
 <script>
