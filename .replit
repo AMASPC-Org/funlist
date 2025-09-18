@@ -70,7 +70,7 @@ localPort = 8082
 externalPort = 3000
 
 [[ports]]
-localPort = 34211
+localPort = 34503
 externalPort = 3002
 
 [workflows]
@@ -168,4 +168,4 @@ waitForPort = 5000
 
 [agent]
 expertMode = true
-integrations = ["python_openai:1.0.0"]
+integrations = ["python_openai:1.0.0", "python_anthropic:1.0.0", "python_gemini:1.0.0"]
