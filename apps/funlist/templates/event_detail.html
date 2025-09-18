@@ -1,5 +1,66 @@
 {% extends "base.html" %}
 
+{% block title %}{{ event.title }} - {{ event.city }}, {{ event.state }} | FunList.ai{% endblock %}
+
+{% block description %}Join {{ event.title }} in {{ event.city }}, {{ event.state }} on {{ event.start_date.strftime('%B %d, %Y') }}. {{ event.description[:150] }}...{% endblock %}
+
+{% block keywords %}{{ event.title }}, {{ event.city }} events, {{ event.state }} events, {{ event.category }} events, local events, community events{% endblock %}
+
+{% block og_type %}article{% endblock %}
+{% block og_title %}{{ event.title }} - {{ event.city }}, {{ event.state }}{% endblock %}
+{% block og_description %}{{ event.description[:200] }}{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Event",
+  "name": "{{ event.title }}",
+  "description": "{{ event.description }}",
+  "startDate": "{{ event.start_date.isoformat() }}",
+  {% if event.end_date %}"endDate": "{{ event.end_date.isoformat() }}",{% endif %}
+  "eventStatus": "https://schema.org/EventScheduled",
+  "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+  "location": {
+    "@type": "Place",
+    "name": "{{ event.location or (event.city + ', ' + event.state) }}",
+    "address": {
+      "@type": "PostalAddress",
+      {% if event.street %}"streetAddress": "{{ event.street }}",{% endif %}
+      "addressLocality": "{{ event.city }}",
+      "addressRegion": "{{ event.state }}",
+      {% if event.zip_code %}"postalCode": "{{ event.zip_code }}"{% endif %}
+      "addressCountry": "US"
+    }
+    {% if event.latitude and event.longitude %},
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": {{ event.latitude }},
+      "longitude": {{ event.longitude }}
+    }
+    {% endif %}
+  },
+  "organizer": {
+    "@type": "Organization",
+    "name": "{{ event.user.company_name or event.user.first_name or 'Event Organizer' }}"
+  },
+  {% if event.website %}"url": "{{ event.website }}",{% endif %}
+  "offers": {
+    "@type": "Offer",
+    "availability": "https://schema.org/InStock",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "{{ event.fun_meter }}",
+    "bestRating": "5",
+    "worstRating": "1"
+  }
+}
+</script>
+{% endblock %}
+
 {% block content %}
 <div class="container my-4">
     <div class="row">

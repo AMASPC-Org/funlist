@@ -609,6 +609,21 @@ def search():
      chapters = Chapter.query.all()
      return render_template("search.html", form=form, results=[], query=None, chapters=chapters)
 
+def sitemap():
+    """Generate XML sitemap for SEO"""
+    from flask import Response
+    events = Event.query.filter_by(status='approved').limit(1000).all()
+    sitemap_xml = render_template('sitemap.xml', events=events)
+    response = Response(sitemap_xml, mimetype='application/xml')
+    return response
+
+def robots():
+    """Serve robots.txt"""
+    from flask import Response
+    robots_txt = render_template('robots.txt')
+    response = Response(robots_txt, mimetype='text/plain')
+    return response
+
 # Ensure all template paths use the 'main/' prefix where appropriate
 # Example: render_template('main/about.html') instead of render_template('about.html')
 
@@ -643,6 +658,8 @@ def init_routes(app):
     app.route('/admin/dashboard')(admin_dashboard)
     app.route("/api/feedback", methods=['POST'])(submit_feedback)
     app.route("/search", methods=["GET", "POST"])(search)
+    app.route('/sitemap.xml')(sitemap)
+    app.route('/robots.txt')(robots)
 
     # Return the app instance
     return app

@@ -1,5 +1,41 @@
 {% extends "base.html" %}
 
+{% block title %}Local Events Near You - Community Festivals, Concerts & Activities | FunList.ai{% endblock %}
+
+{% block description %}Browse amazing local events including festivals, concerts, food events, and community activities. Find fun things to do near you with AI-powered recommendations and fun ratings.{% endblock %}
+
+{% block keywords %}local events, community events, festivals, concerts, activities near me, event listings, Washington events, fun events{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": "Local Events",
+  "description": "Curated list of local community events",
+  "numberOfItems": {{ events|length }},
+  "itemListElement": [
+    {% for event in events[:10] %}
+    {
+      "@type": "ListItem",
+      "position": {{ loop.index }},
+      "item": {
+        "@type": "Event",
+        "name": "{{ event.title }}",
+        "startDate": "{{ event.start_date.isoformat() }}",
+        "location": {
+          "@type": "Place",
+          "name": "{{ event.city }}, {{ event.state }}"
+        },
+        "url": "{{ url_for('event_detail', event_id=event.id, _external=True) }}"
+      }
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endblock %}
+
 {% block title %}Events - FunList.ai{% endblock %}
 
 {% block content %}

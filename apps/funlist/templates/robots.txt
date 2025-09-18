@@ -1,0 +1,16 @@
+
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /flask_session/
+Disallow: /login
+Disallow: /signup
+Disallow: /profile/
+Disallow: /edit-profile
+
+# Sitemap
+Sitemap: {{ url_for('sitemap', _external=True) }}
+
+# Crawl delay
+Crawl-delay: 1

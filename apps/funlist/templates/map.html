@@ -1,5 +1,39 @@
 {% extends "base.html" %}
 
+{% block title %}Interactive Event Map - Find Local Events Near You | FunList.ai{% endblock %}
+
+{% block description %}Explore local events on our interactive map. Discover festivals, concerts, food events, and community activities happening near you with precise locations and fun ratings.{% endblock %}
+
+{% block keywords %}event map, local events map, events near me, community events, festival map, concert locations, activity finder{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Interactive Event Map",
+  "description": "Interactive map showing local events and activities",
+  "breadcrumb": {
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "{{ url_for('index', _external=True) }}"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Event Map",
+        "item": "{{ url_for('map', _external=True) }}"
+      }
+    ]
+  }
+}
+</script>
+{% endblock %}
+
 {% block title %}Find Events Near You - Map | FunList.ai{% endblock %}
 
 {% block head %}

@@ -1,5 +1,43 @@
 {% extends "base.html" %}
-{% block title %}Welcome to FunList.ai{% endblock %}
+
+{% block title %}FunList.ai - AI-Powered Community Event Discovery | Find Fun Events Near You{% endblock %}
+
+{% block description %}Discover amazing local events with FunList.ai! Our AI-powered platform helps you find festivals, concerts, food events, and community activities near you with fun ratings and personalized recommendations.{% endblock %}
+
+{% block keywords %}event discovery, local events, AI events, community events, festivals near me, concerts, food events, fun activities, event finder, Washington events{% endblock %}
+
+{% block og_title %}FunList.ai - Discover Fun Community Events Near You{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "FunList.ai",
+  "url": "{{ url_for('index', _external=True) }}",
+  "logo": "{{ url_for('static', filename='images/logo.png', _external=True) }}",
+  "description": "AI-powered community event discovery platform helping people find fun local events",
+  "foundingDate": "2024",
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "telephone": "+1-XXX-XXX-XXXX",
+    "contactType": "customer service",
+    "availableLanguage": "English"
+  },
+  "sameAs": [
+    "https://www.facebook.com/funlistai",
+    "https://www.instagram.com/funlistai",
+    "https://www.tiktok.com/@funlistai"
+  ],
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Olympia",
+    "addressRegion": "WA",
+    "addressCountry": "US"
+  }
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <!-- Site Header and Main navigation are included from base.html -->
@@ -30,15 +68,18 @@
 
 <section class="content-section text-center py-5">
     <div class="container">
-        <h1>Find the Best Events Near You – Rated for Fun!</h1>
-        <p class="lead">Discover fun-rated events in your area</p>
+        <h1>Find the Best Community Events Near You – AI-Powered & Fun-Rated!</h1>
+        <p class="lead">Discover amazing local festivals, concerts, food events, and activities in your area with our intelligent fun rating system</p>
 
         <div class="search-container mb-4">
-            <form action="{{ url_for('map') }}" method="GET" class="search-form">
+            <form action="{{ url_for('map') }}" method="GET" class="search-form" role="search">
                 <div class="input-group">
-                    <input type="text" name="location" class="form-control form-control-lg" placeholder="Enter any location...">
-                    <button type="submit" class="btn btn-primary btn-lg">
-                        <i class="fas fa-search"></i> Find Events
+                    <label for="location-search" class="visually-hidden">Enter location to find events</label>
+                    <input type="text" id="location-search" name="location" class="form-control form-control-lg" 
+                           placeholder="Enter city, state, or zip code..." 
+                           aria-label="Location search">
+                    <button type="submit" class="btn btn-primary btn-lg" aria-label="Search for events">
+                        <i class="fas fa-search" aria-hidden="true"></i> Find Events
                     </button>
                 </div>
             </form>

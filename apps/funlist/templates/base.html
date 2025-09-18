@@ -4,9 +4,65 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="description" content="FunList.ai - Your AI-powered guide to fun events and activities in your area">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: data:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https: blob:; font-src 'self' https:; connect-src 'self' https: wss:; frame-src 'self' https:;">
+
+    <!-- Primary SEO Meta Tags -->
+    <title>{% block title %}FunList.ai - Discover Fun Events Near You{% endblock %}</title>
+    <meta name="description" content="{% block description %}Discover fun community events near you with FunList.ai. AI-powered event discovery platform featuring local festivals, concerts, food events, and activities with fun ratings.{% endblock %}">
+    <meta name="keywords" content="{% block keywords %}events near me, local events, community events, festivals, concerts, activities, event discovery, fun events, {{ 'Olympia events' if request.endpoint == 'map' else 'Washington events' }}{% endblock %}">
+    <meta name="author" content="FunList.ai">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:title" content="{% block og_title %}{{ self.title() }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{{ self.description() }}{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{{ url_for('static', filename='images/Have-Fun-FunList.ai-home.jpeg', _external=True) }}{% endblock %}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:site_name" content="FunList.ai">
+    <meta property="og:locale" content="en_US">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="{{ request.url }}">
+    <meta name="twitter:title" content="{% block twitter_title %}{{ self.og_title() }}{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}{{ self.og_description() }}{% endblock %}">
+    <meta name="twitter:image" content="{% block twitter_image %}{{ self.og_image() }}{% endblock %}">
+    <meta name="twitter:site" content="@funlistai">
+    <meta name="twitter:creator" content="@funlistai">
+
+    <!-- Additional SEO -->
+    <meta name="theme-color" content="#007bff">
+    <link rel="canonical" href="{% block canonical %}{{ request.url }}{% endblock %}">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "FunList.ai",
+      "url": "{{ url_for('index', _external=True) }}",
+      "description": "AI-powered community event discovery platform",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "{{ url_for('map', _external=True) }}?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      },
+      "sameAs": [
+        "https://www.facebook.com/funlistai",
+        "https://www.instagram.com/funlistai",
+        "https://www.tiktok.com/@funlistai"
+      ]
+    }
+    </script>
+
+    {% block structured_data %}{% endblock %}
+
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: data:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https: blob:; font-src 'self' https:; connect-src 'self' https: wss:; frame-src 'self' https:; worker-src 'self' blob:;">
 
     <title>{% block title %}FunList.ai{% endblock %}</title>
     <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
