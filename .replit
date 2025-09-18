@@ -164,4 +164,4 @@ waitForPort = 5000
 
 [agent]
 expertMode = true
-integrations = ["python_openai:1.0.0", "python_anthropic:1.0.0", "python_gemini:1.0.0"]
+integrations = ["python_openai:1.0.0", "python_anthropic:1.0.0", "python_gemini:1.0.0", "flask_google_oauth:1.0.0"]

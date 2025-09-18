@@ -1,0 +1,126 @@
+# Use this Flask blueprint for Google authentication. Do not use flask-dance.
+# Reference: flask_google_oauth integration
+
+import json
+import os
+
+import requests
+from app import db
+from flask import Blueprint, redirect, request, url_for, flash
+from flask_login import login_required, login_user, logout_user
+from models import User
+from oauthlib.oauth2 import WebApplicationClient
+
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_OAUTH_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET")
+GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
+
+# Make sure to use this redirect URL. It has to match the one in the whitelist
+DEV_REDIRECT_URL = f'https://{os.environ.get("REPLIT_DEV_DOMAIN", "localhost")}/google_login/callback'
+
+# Check if Google OAuth is configured
+if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET:
+    client = WebApplicationClient(GOOGLE_CLIENT_ID)
+    print(f"""✅ Google OAuth configured successfully!
+Redirect URL: {DEV_REDIRECT_URL}
+Make sure this URL is added to your Google OAuth configuration.""")
+else:
+    print(f"""⚠️  Google OAuth not configured. To set up:
+1. Go to https://console.cloud.google.com/apis/credentials
+2. Create a new OAuth 2.0 Client ID
+3. Add {DEV_REDIRECT_URL} to Authorized redirect URIs
+4. Add GOOGLE_OAUTH_CLIENT_ID and GOOGLE_OAUTH_CLIENT_SECRET to secrets""")
+
+google_auth = Blueprint("google_auth", __name__)
+
+
+@google_auth.route("/google_login")
+def login():
+    if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET:
+        flash('Google OAuth is not configured. Please contact support.', 'error')
+        return redirect(url_for('login'))
+        
+    try:
+        google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
+        authorization_endpoint = google_provider_cfg["authorization_endpoint"]
+
+        request_uri = client.prepare_request_uri(
+            authorization_endpoint,
+            # Replacing http:// with https:// is important as the external
+            # protocol must be https to match the URI whitelisted
+            redirect_uri=request.base_url.replace("http://", "https://") + "/callback",
+            scope=["openid", "email", "profile"],
+        )
+        return redirect(request_uri)
+    except Exception as e:
+        flash('Google sign-in temporarily unavailable. Please try email login.', 'error')
+        return redirect(url_for('login'))
+
+
+@google_auth.route("/google_login/callback")
+def callback():
+    if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET:
+        flash('Google OAuth is not configured.', 'error')
+        return redirect(url_for('login'))
+        
+    try:
+        code = request.args.get("code")
+        google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
+        token_endpoint = google_provider_cfg["token_endpoint"]
+
+        token_url, headers, body = client.prepare_token_request(
+            token_endpoint,
+            # Replacing http:// with https:// is important as the external
+            # protocol must be https to match the URI whitelisted
+            authorization_response=request.url.replace("http://", "https://"),
+            redirect_url=request.base_url.replace("http://", "https://"),
+            code=code,
+        )
+        token_response = requests.post(
+            token_url,
+            headers=headers,
+            data=body,
+            auth=(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET),
+        )
+
+        client.parse_request_body_response(json.dumps(token_response.json()))
+
+        userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
+        uri, headers, body = client.add_token(userinfo_endpoint)
+        userinfo_response = requests.get(uri, headers=headers, data=body)
+
+        userinfo = userinfo_response.json()
+        if userinfo.get("email_verified"):
+            users_email = userinfo["email"]
+            users_name = userinfo["given_name"]
+        else:
+            flash("Google account email not verified. Please use email login.", 'error')
+            return redirect(url_for('login'))
+
+        user = User.query.filter_by(email=users_email).first()
+        if not user:
+            # Create new user from Google account
+            user = User(username=users_name, email=users_email)
+            # Set default organizer role for Google sign-ups
+            user.is_organizer = True
+            db.session.add(user)
+            db.session.commit()
+            flash(f'Welcome {users_name}! Your account has been created.', 'success')
+
+        login_user(user)
+        
+        # Redirect to the page they were trying to access, or home
+        next_page = request.args.get('next')
+        return redirect(next_page) if next_page else redirect(url_for('index'))
+        
+    except Exception as e:
+        flash('Google sign-in failed. Please try email login.', 'error')
+        return redirect(url_for('login'))
+
+
+@google_auth.route("/google_logout")
+@login_required
+def google_logout():
+    logout_user()
+    flash('You have been logged out successfully.', 'success')
+    return redirect(url_for('index'))
