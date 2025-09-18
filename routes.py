@@ -456,10 +456,7 @@ def fun_assistant_chat():
                     "reply": "You've reached your free usage limit for the Fun Assistant this month. Sign up for a free account to continue using this feature and get personalized recommendations!"
                 }), 200
 
-        openai.api_key = os.environ.get("OPENAI_API_KEY")
-        if not openai.api_key:
-             current_app.logger.error("OpenAI API Key not found in environment variables.")
-             return jsonify({"error": "AI Assistant configuration error."}), 500
+        # Smart AI fallback handles all API key configuration internally
 
         try:
             data = request.get_json()
@@ -651,8 +648,12 @@ Focus on actionable, specific suggestions that would improve the event's appeal 
                 response_format="json"
             )
             
-            # Parse AI response
-            analysis_result = json.loads(ai_response)
+            # Parse AI response with error handling
+            try:
+                analysis_result = json.loads(ai_response)
+            except json.JSONDecodeError as e:
+                current_app.logger.error(f"Failed to parse AI response as JSON: {str(e)}")
+                return jsonify({"success": False, "error": "AI response format error"}), 500
             
             # Ensure required fields exist and add defaults if missing
             analysis_result.setdefault('communityVibe', {'score': 5, 'reasoning': 'Analysis pending'})
@@ -683,7 +684,7 @@ Focus on actionable, specific suggestions that would improve the event's appeal 
             })
             
         except Exception as ai_error:
-            current_app.logger.error(f"OpenAI Analysis Error: {str(ai_error)}")
+            current_app.logger.error(f"AI Analysis Error: {str(ai_error)}")
             # Provide fallback analysis
             return jsonify({
                 "success": True,
