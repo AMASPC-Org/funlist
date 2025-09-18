@@ -71,18 +71,16 @@
             return;
         }
 
-        // Check multiple storage methods for consent
+        // Check if consent already exists in localStorage (most reliable)
         const hasLocalConsent = localStorage.getItem('cookieConsent');
-        const hasCookieConsent = getCookie('cookieConsentAccepted');
         const hasSessionConsent = {{ 'true' if session.get('cookies_accepted') else 'false' }};
 
         console.log('Cookie consent check:', {
             localStorage: !!hasLocalConsent,
-            cookie: !!hasCookieConsent,
             session: hasSessionConsent
         });
 
-        // Check localStorage first (most reliable)
+        // Check localStorage first
         if (hasLocalConsent) {
             try {
                 const consentData = JSON.parse(hasLocalConsent);
@@ -100,8 +98,7 @@
                 
                 // Valid consent found
                 console.log('Valid localStorage consent found, hiding banner');
-                cookieConsent.style.display = 'none';
-                document.body.classList.remove('cookie-consent-visible');
+                hideCookieBanner();
                 
                 if (consentData.preferences) {
                     applyCookieSettings(consentData.preferences);
@@ -114,23 +111,14 @@
             }
         }
 
-        // Check regular cookie as fallback
-        if (hasCookieConsent) {
-            console.log('Cookie consent found, hiding banner');
-            cookieConsent.style.display = 'none';
-            document.body.classList.remove('cookie-consent-visible');
-            return;
-        }
-
-        // Check session as last resort
+        // Check session consent
         if (hasSessionConsent) {
             console.log('Session consent found, hiding banner');
-            cookieConsent.style.display = 'none';
-            document.body.classList.remove('cookie-consent-visible');
+            hideCookieBanner();
             return;
         }
 
-        // No consent found anywhere, show the banner
+        // No consent found, show the banner
         console.log('No cookie consent found, showing banner');
         showCookieBanner();
         setupCookieButtons();
@@ -150,29 +138,53 @@
         const acceptAllBtn = document.getElementById('accept-all-cookies');
         if (acceptAllBtn) {
             acceptAllBtn.addEventListener('click', function() {
+                console.log('Accept All button clicked');
+                
                 const preferences = {
                     essential: true,
                     analytics: true,
                     advertising: true
                 };
                 
+                // Get CSRF token from meta tag
+                const csrfToken = document.querySelector('meta[name=csrf-token]')?.getAttribute('content');
+                const headers = {
+                    'Content-Type': 'application/json',
+                };
+                
+                if (csrfToken) {
+                    headers['X-CSRFToken'] = csrfToken;
+                }
+                
+                console.log('Sending cookie acceptance request to server...');
+                
                 // Send to server
                 fetch('/accept-cookies', { 
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
+                    headers: headers,
+                    credentials: 'same-origin'
                 })
-                .then(response => response.json())
+                .then(response => {
+                    console.log('Server response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
+                    console.log('Server response data:', data);
                     if (data.status === 'success') {
                         saveCookiePreferences(preferences);
                         hideCookieBanner();
+                        console.log('Cookie acceptance successful');
+                    } else {
+                        throw new Error(data.message || 'Server returned error status');
                     }
                 })
                 .catch(error => {
                     console.error('Error accepting cookies:', error);
                     // Still save locally if server fails
+                    console.log('Falling back to local storage only');
                     saveCookiePreferences(preferences);
                     hideCookieBanner();
                 });
@@ -183,25 +195,44 @@
         const rejectBtn = document.getElementById('reject-non-essential-cookies');
         if (rejectBtn) {
             rejectBtn.addEventListener('click', function() {
+                console.log('Reject Non-Essential button clicked');
+                
                 const preferences = {
                     essential: true,
                     analytics: false,
                     advertising: false
                 };
                 
+                // Get CSRF token from meta tag
+                const csrfToken = document.querySelector('meta[name=csrf-token]')?.getAttribute('content');
+                const headers = {
+                    'Content-Type': 'application/json',
+                };
+                
+                if (csrfToken) {
+                    headers['X-CSRFToken'] = csrfToken;
+                }
+                
                 // Send to server
                 fetch('/save-cookie-preferences', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: headers,
+                    credentials: 'same-origin',
                     body: JSON.stringify({ preferences: preferences })
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
+                    console.log('Cookie preferences saved:', data);
                     if (data.status === 'success') {
                         saveCookiePreferences(preferences);
                         hideCookieBanner();
+                    } else {
+                        throw new Error(data.message || 'Server returned error status');
                     }
                 })
                 .catch(error => {

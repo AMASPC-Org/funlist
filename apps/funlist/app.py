@@ -222,25 +222,33 @@ def create_app():
     # Add route to accept cookies
     @app.route('/accept-cookies', methods=['POST'])
     def accept_cookies():
-        session['cookies_accepted'] = True
-        session['cookie_timestamp'] = time.time()
-        session.permanent = True  # Make session persistent
-        
-        # Return preferences to be saved client-side
-        preferences = {
-            'essential': True,
-            'analytics': True,
-            'advertising': True
-        }
-        
-        logger.info("Cookies accepted via server route")
-        return jsonify({'status': 'success', 'preferences': preferences}), 200
+        try:
+            session['cookies_accepted'] = True
+            session['cookie_timestamp'] = time.time()
+            session.permanent = True  # Make session persistent
+            
+            # Return preferences to be saved client-side
+            preferences = {
+                'essential': True,
+                'analytics': True,
+                'advertising': True
+            }
+            
+            logger.info("Cookies accepted via server route")
+            return jsonify({'status': 'success', 'preferences': preferences}), 200
+            
+        except Exception as e:
+            logger.error(f"Error in accept_cookies route: {str(e)}")
+            return jsonify({'status': 'error', 'message': 'Failed to accept cookies'}), 500
 
     # Add route to save cookie preferences
     @app.route('/save-cookie-preferences', methods=['POST'])
     def save_cookie_preferences():
         try:
             data = request.get_json()
+            if not data:
+                return jsonify({'status': 'error', 'message': 'No data provided'}), 400
+                
             preferences = data.get('preferences', {})
             
             session['cookies_accepted'] = True
