@@ -654,6 +654,16 @@ Focus on actionable, specific suggestions that would improve the event's appeal 
             except json.JSONDecodeError as e:
                 current_app.logger.error(f"Failed to parse AI response as JSON: {str(e)}")
                 return jsonify({"success": False, "error": "AI response format error"}), 500
+                
+            # Define event_data for contextual intelligence
+            event_data = {
+                'title': title,
+                'description': description,
+                'category': category,
+                'target_audience': target_audience,
+                'city': city,
+                'state': state
+            }
             
             # Ensure required fields exist and add defaults if missing
             analysis_result.setdefault('communityVibe', {'score': 5, 'reasoning': 'Analysis pending'})
@@ -1052,7 +1062,11 @@ def call_ai_with_fallback(system_message, user_message, max_tokens=500, response
                     max_tokens=max_tokens
                 )
             
-            result = response.choices[0].message.content.strip()
+            result = response.choices[0].message.content
+            if result:
+                result = result.strip()
+            else:
+                result = "No response generated"
             current_app.logger.info("✅ OpenAI API call successful")
             return result
             
