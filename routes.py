@@ -760,9 +760,11 @@ def init_routes(app):
     try:
         from google_auth import google_auth
         app.register_blueprint(google_auth)
-        current_app.logger.info("Google OAuth blueprint registered successfully")
+        print("✅ Google OAuth blueprint registered successfully")
+    except ImportError as e:
+        print(f"⚠️ Google OAuth blueprint not available: {str(e)}")
     except Exception as e:
-        current_app.logger.warning(f"Google OAuth blueprint registration failed: {str(e)}")
+        print(f"⚠️ Google OAuth blueprint registration failed: {str(e)}")
     
     # Register all routes with the app instance
     app.route("/")(index)
