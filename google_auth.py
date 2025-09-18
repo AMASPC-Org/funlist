@@ -3,10 +3,11 @@
 
 import json
 import os
+import secrets
 
 import requests
 from app import db
-from flask import Blueprint, redirect, request, url_for, flash
+from flask import Blueprint, redirect, request, url_for, flash, session
 from flask_login import login_required, login_user, logout_user
 from models import User
 from oauthlib.oauth2 import WebApplicationClient
@@ -44,12 +45,17 @@ def login():
         google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
         authorization_endpoint = google_provider_cfg["authorization_endpoint"]
 
+        # Generate and store state for CSRF protection
+        state = secrets.token_urlsafe(32)
+        session['oauth_state'] = state
+        
         request_uri = client.prepare_request_uri(
             authorization_endpoint,
             # Replacing http:// with https:// is important as the external
             # protocol must be https to match the URI whitelisted
             redirect_uri=request.base_url.replace("http://", "https://") + "/callback",
             scope=["openid", "email", "profile"],
+            state=state,
         )
         return redirect(request_uri)
     except Exception as e:
@@ -64,6 +70,15 @@ def callback():
         return redirect(url_for('login'))
         
     try:
+        # Verify state parameter for CSRF protection
+        state = request.args.get("state")
+        if not state or state != session.get('oauth_state'):
+            flash('Invalid authentication request. Please try again.', 'error')
+            return redirect(url_for('login'))
+        
+        # Clear the state from session
+        session.pop('oauth_state', None)
+        
         code = request.args.get("code")
         google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
         token_endpoint = google_provider_cfg["token_endpoint"]
