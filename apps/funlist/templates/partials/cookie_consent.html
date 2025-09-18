@@ -1,3 +1,4 @@
+
 {% if not session.get('cookies_accepted') %}
 <div id="cookie-consent-banner" class="cookie-banner" style="display: none;" role="alert" aria-live="polite">
     <div class="cookie-content">
@@ -60,66 +61,72 @@
         // Add a small delay to ensure all DOM elements are loaded
         setTimeout(() => {
             initCookieConsent();
-        }, 500);
+        }, 100);
     });
 
     function initCookieConsent() {
         const cookieConsent = document.getElementById('cookie-consent-banner');
-        const cookieForm = document.getElementById('cookie-preferences-form');
-        const savePrefsBtn = document.getElementById('save-cookie-preferences');
-
         if (!cookieConsent) {
             console.log('Cookie banner element not found');
             return;
         }
 
-        // Check if user has already set preferences (using both localStorage and cookies)
+        // Check if user has already set preferences (prioritize localStorage, then cookies, then session)
         const hasLocalConsent = localStorage.getItem('cookieConsent');
         const hasCookieConsent = getCookie('cookieConsentAccepted');
         const hasSessionConsent = {{ 'true' if session.get('cookies_accepted') else 'false' }};
 
-        // Show the banner if no consent is found in any storage
-        if (!hasLocalConsent && !hasCookieConsent && !hasSessionConsent) {
-            console.log('No cookie consent found, showing banner');
-            cookieConsent.style.display = 'block';
-            document.body.classList.add('cookie-consent-visible');
-        } else {
-            console.log('Cookie consent found, applying preferences');
-            try {
-                if (hasLocalConsent) {
-                    const consentData = JSON.parse(hasLocalConsent || '{}');
+        console.log('Cookie consent check:', {
+            localStorage: !!hasLocalConsent,
+            cookie: !!hasCookieConsent,
+            session: hasSessionConsent
+        });
+
+        // If we have any form of consent, don't show the banner
+        if (hasLocalConsent || hasCookieConsent || hasSessionConsent) {
+            console.log('Cookie consent found, hiding banner');
+            
+            // Apply saved preferences if available
+            if (hasLocalConsent) {
+                try {
+                    const consentData = JSON.parse(hasLocalConsent);
                     const now = new Date().getTime();
+                    
+                    // Check if consent has expired (6 months)
                     if (consentData.expires && now > consentData.expires) {
                         console.log('Cookie consent expired, showing banner again');
                         localStorage.removeItem('cookieConsent');
                         deleteCookie('cookieConsentAccepted');
-                        cookieConsent.style.display = 'block';
-                        document.body.classList.add('cookie-consent-visible');
-                    } else if (consentData && consentData.preferences) {
+                        showCookieBanner();
+                        return;
+                    }
+                    
+                    if (consentData.preferences) {
                         applyCookieSettings(consentData.preferences);
                     }
+                } catch (error) {
+                    console.error("Error parsing cookie preferences:", error);
                 }
-            } catch (error) {
-                console.error("Error parsing cookie preferences:", error);
             }
+            
+            // Ensure banner is hidden
+            cookieConsent.style.display = 'none';
+            document.body.classList.remove('cookie-consent-visible');
+            return;
         }
 
-        // Handle form submission if form exists
-        if (cookieForm) {
-            cookieForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const preferences = {
-                    essential: true,
-                    analytics: document.getElementById('analytics-cookies').checked,
-                    advertising: document.getElementById('advertising-cookies').checked
-                };
-                saveCookiePreferences(preferences);
-                hideCookieBanner();
-            });
-        }
-
-        // Setup button listeners
+        // No consent found, show the banner
+        showCookieBanner();
         setupCookieButtons();
+    }
+
+    function showCookieBanner() {
+        const cookieConsent = document.getElementById('cookie-consent-banner');
+        if (cookieConsent) {
+            console.log('Showing cookie consent banner');
+            cookieConsent.style.display = 'block';
+            document.body.classList.add('cookie-consent-visible');
+        }
     }
 
     function setupCookieButtons() {
@@ -127,15 +134,32 @@
         const acceptAllBtn = document.getElementById('accept-all-cookies');
         if (acceptAllBtn) {
             acceptAllBtn.addEventListener('click', function() {
-                fetch('/accept-cookies', { method: 'POST' })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === 'success') {
-                            saveCookiePreferences(data.preferences);
-                            hideCookieBanner();
-                        }
-                    })
-                    .catch(error => console.error('Error accepting cookies:', error));
+                const preferences = {
+                    essential: true,
+                    analytics: true,
+                    advertising: true
+                };
+                
+                // Send to server
+                fetch('/accept-cookies', { 
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        saveCookiePreferences(preferences);
+                        hideCookieBanner();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error accepting cookies:', error);
+                    // Still save locally if server fails
+                    saveCookiePreferences(preferences);
+                    hideCookieBanner();
+                });
             });
         }
 
@@ -148,8 +172,28 @@
                     analytics: false,
                     advertising: false
                 };
-                saveCookiePreferences(preferences);
-                hideCookieBanner();
+                
+                // Send to server
+                fetch('/save-cookie-preferences', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ preferences: preferences })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        saveCookiePreferences(preferences);
+                        hideCookieBanner();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error saving cookie preferences:', error);
+                    // Still save locally if server fails
+                    saveCookiePreferences(preferences);
+                    hideCookieBanner();
+                });
             });
         }
         
@@ -173,7 +217,7 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === 'success') {
-                        saveCookiePreferences(data.preferences);
+                        saveCookiePreferences(preferences);
                         hideCookieBanner();
                         const cookieModal = bootstrap.Modal.getInstance(document.getElementById('cookieModal'));
                         if (cookieModal) {
@@ -181,7 +225,12 @@
                         }
                     }
                 })
-                .catch(error => console.error('Error saving cookie preferences:', error));
+                .catch(error => {
+                    console.error('Error saving cookie preferences:', error);
+                    // Still save locally if server fails
+                    saveCookiePreferences(preferences);
+                    hideCookieBanner();
+                });
             });
         }
     }
@@ -194,10 +243,11 @@
 
             localStorage.setItem('cookieConsent', JSON.stringify({
                 preferences: preferences,
-                expires: expirationDate
+                expires: expirationDate,
+                timestamp: new Date().getTime()
             }));
             
-            // Also set a regular cookie as backup
+            // Also set a regular cookie as backup (expires in 6 months)
             setCookie('cookieConsentAccepted', 'true', 180);
 
             // Apply cookie settings
@@ -234,17 +284,19 @@
 
     // Helper function to delete cookies
     function deleteCookie(name) {
-        document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax';
     }
 
     function applyCookieSettings(preferences) {
         try {
             if (preferences && preferences.analytics) {
                 console.log('Analytics tracking enabled');
+                // Enable analytics code here
             }
 
             if (preferences && preferences.advertising) {
                 console.log('Advertising cookies enabled');
+                // Enable advertising code here
             }
         } catch (error) {
             console.error("Error applying cookie settings:", error);
@@ -257,6 +309,7 @@
             if (cookieBanner) {
                 cookieBanner.style.display = 'none';
                 document.body.classList.remove('cookie-consent-visible');
+                console.log('Cookie banner hidden');
             }
         } catch (error) {
             console.error("Error hiding cookie banner:", error);

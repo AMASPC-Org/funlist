@@ -222,6 +222,7 @@ def create_app():
     @app.route('/accept-cookies', methods=['POST'])
     def accept_cookies():
         session['cookies_accepted'] = True
+        session.permanent = True  # Make session persistent
         # Return preferences to be saved client-side
         preferences = {
             'essential': True,
@@ -236,6 +237,7 @@ def create_app():
         data = request.get_json()
         preferences = data.get('preferences', {})
         session['cookies_accepted'] = True
+        session.permanent = True  # Make session persistent
         return jsonify({'status': 'success', 'preferences': preferences}), 200
 
     # Add route to clear cookies for testing
