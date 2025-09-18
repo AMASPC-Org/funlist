@@ -131,7 +131,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const chatForm = document.getElementById('chatForm');
         const userInput = document.getElementById('chatInput');
         const chatLog = document.getElementById('chatMessages');
         const sendButton = document.getElementById('sendMessage');
@@ -152,9 +151,9 @@
             chatLog.scrollTop = chatLog.scrollHeight;
         }
 
-        // Handle form submission
+        // Handle message sending
         async function sendMessage(e) {
-            e.preventDefault();
+            if (e && e.preventDefault) e.preventDefault();
 
             const message = userInput.value.trim();
             if (!message) return;
@@ -232,8 +231,13 @@
             });
         });
 
-        // Add event listener for form submission
-        chatForm.addEventListener('submit', sendMessage);
+        // Add event listeners for sending messages
+        sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage(e);
+            }
+        });
 
         // Focus the input on load
         userInput.focus();
