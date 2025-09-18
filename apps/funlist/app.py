@@ -46,15 +46,16 @@ def create_app():
 
     # Enhanced session configuration
     app.config['SESSION_TYPE'] = 'filesystem'
-    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)  # Extend to 30 days
     app.config['SESSION_COOKIE_SECURE'] = False
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-    app.config['SESSION_USE_SIGNER'] = False
+    app.config['SESSION_USE_SIGNER'] = True  # Enable signing for security
     app.config['SESSION_FILE_DIR'] = './flask_session'
     app.config['SESSION_FILE_THRESHOLD'] = 500
     app.config['SESSION_REFRESH_EACH_REQUEST'] = True
     app.config['SESSION_COOKIE_NAME'] = 'funlist_session'
+    app.config['SESSION_COOKIE_MAX_SIZE'] = 4096
 
     try:
         logger.info("Initializing database...")
@@ -222,23 +223,36 @@ def create_app():
     @app.route('/accept-cookies', methods=['POST'])
     def accept_cookies():
         session['cookies_accepted'] = True
+        session['cookie_timestamp'] = time.time()
         session.permanent = True  # Make session persistent
+        
         # Return preferences to be saved client-side
         preferences = {
             'essential': True,
             'analytics': True,
             'advertising': True
         }
+        
+        logger.info("Cookies accepted via server route")
         return jsonify({'status': 'success', 'preferences': preferences}), 200
 
     # Add route to save cookie preferences
     @app.route('/save-cookie-preferences', methods=['POST'])
     def save_cookie_preferences():
-        data = request.get_json()
-        preferences = data.get('preferences', {})
-        session['cookies_accepted'] = True
-        session.permanent = True  # Make session persistent
-        return jsonify({'status': 'success', 'preferences': preferences}), 200
+        try:
+            data = request.get_json()
+            preferences = data.get('preferences', {})
+            
+            session['cookies_accepted'] = True
+            session['cookie_preferences'] = preferences
+            session['cookie_timestamp'] = time.time()
+            session.permanent = True  # Make session persistent
+            
+            logger.info(f"Cookie preferences saved: {preferences}")
+            return jsonify({'status': 'success', 'preferences': preferences}), 200
+        except Exception as e:
+            logger.error(f"Error saving cookie preferences: {str(e)}")
+            return jsonify({'status': 'error', 'message': 'Failed to save preferences'}), 500
 
     # Add route to clear cookies for testing
     @app.route('/clear-cookies')

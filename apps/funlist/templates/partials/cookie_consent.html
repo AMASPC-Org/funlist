@@ -71,7 +71,7 @@
             return;
         }
 
-        // Check if user has already set preferences (prioritize localStorage, then cookies, then session)
+        // Check multiple storage methods for consent
         const hasLocalConsent = localStorage.getItem('cookieConsent');
         const hasCookieConsent = getCookie('cookieConsentAccepted');
         const hasSessionConsent = {{ 'true' if session.get('cookies_accepted') else 'false' }};
@@ -82,40 +82,56 @@
             session: hasSessionConsent
         });
 
-        // If we have any form of consent, don't show the banner
-        if (hasLocalConsent || hasCookieConsent || hasSessionConsent) {
-            console.log('Cookie consent found, hiding banner');
-            
-            // Apply saved preferences if available
-            if (hasLocalConsent) {
-                try {
-                    const consentData = JSON.parse(hasLocalConsent);
-                    const now = new Date().getTime();
-                    
-                    // Check if consent has expired (6 months)
-                    if (consentData.expires && now > consentData.expires) {
-                        console.log('Cookie consent expired, showing banner again');
-                        localStorage.removeItem('cookieConsent');
-                        deleteCookie('cookieConsentAccepted');
-                        showCookieBanner();
-                        return;
-                    }
-                    
-                    if (consentData.preferences) {
-                        applyCookieSettings(consentData.preferences);
-                    }
-                } catch (error) {
-                    console.error("Error parsing cookie preferences:", error);
+        // Check localStorage first (most reliable)
+        if (hasLocalConsent) {
+            try {
+                const consentData = JSON.parse(hasLocalConsent);
+                const now = new Date().getTime();
+                
+                // Check if consent has expired (6 months)
+                if (consentData.expires && now > consentData.expires) {
+                    console.log('Cookie consent expired, clearing and showing banner');
+                    localStorage.removeItem('cookieConsent');
+                    deleteCookie('cookieConsentAccepted');
+                    showCookieBanner();
+                    setupCookieButtons();
+                    return;
                 }
+                
+                // Valid consent found
+                console.log('Valid localStorage consent found, hiding banner');
+                cookieConsent.style.display = 'none';
+                document.body.classList.remove('cookie-consent-visible');
+                
+                if (consentData.preferences) {
+                    applyCookieSettings(consentData.preferences);
+                }
+                return;
+                
+            } catch (error) {
+                console.error("Error parsing localStorage consent:", error);
+                localStorage.removeItem('cookieConsent');
             }
-            
-            // Ensure banner is hidden
+        }
+
+        // Check regular cookie as fallback
+        if (hasCookieConsent) {
+            console.log('Cookie consent found, hiding banner');
             cookieConsent.style.display = 'none';
             document.body.classList.remove('cookie-consent-visible');
             return;
         }
 
-        // No consent found, show the banner
+        // Check session as last resort
+        if (hasSessionConsent) {
+            console.log('Session consent found, hiding banner');
+            cookieConsent.style.display = 'none';
+            document.body.classList.remove('cookie-consent-visible');
+            return;
+        }
+
+        // No consent found anywhere, show the banner
+        console.log('No cookie consent found, showing banner');
         showCookieBanner();
         setupCookieButtons();
     }
@@ -241,21 +257,27 @@
             const sixMonths = 180 * 24 * 60 * 60 * 1000;
             const expirationDate = new Date().getTime() + sixMonths;
 
-            localStorage.setItem('cookieConsent', JSON.stringify({
+            const consentData = {
                 preferences: preferences,
                 expires: expirationDate,
-                timestamp: new Date().getTime()
-            }));
-            
-            // Also set a regular cookie as backup (expires in 6 months)
-            setCookie('cookieConsentAccepted', 'true', 180);
+                timestamp: new Date().getTime(),
+                version: '1.0'
+            };
 
-            // Apply cookie settings
+            localStorage.setItem('cookieConsent', JSON.stringify(consentData));
+            
+            // Also set regular cookies as backup (expires in 6 months)
+            setCookie('cookieConsentAccepted', 'true', 180);
+            setCookie('cookiePreferences', JSON.stringify(preferences), 180);
+
+            // Apply cookie settings immediately
             applyCookieSettings(preferences);
             
-            console.log('Cookie preferences saved:', preferences);
+            console.log('Cookie preferences saved successfully:', preferences);
         } catch (error) {
             console.error("Error saving cookie preferences:", error);
+            // Fallback to just setting basic cookie if localStorage fails
+            setCookie('cookieConsentAccepted', 'true', 180);
         }
     }
     
@@ -267,7 +289,9 @@
             date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
             expires = '; expires=' + date.toUTCString();
         }
-        document.cookie = name + '=' + (value || '') + expires + '; path=/; SameSite=Lax';
+        // Use Lax for better compatibility, ensure path is set
+        document.cookie = name + '=' + encodeURIComponent(value || '') + expires + '; path=/; SameSite=Lax';
+        console.log('Cookie set:', name, '=', value);
     }
     
     // Helper function to get cookie values
