@@ -663,3 +663,54 @@ def init_routes(app):
 
     # Return the app instance
     return app
+def api_documentation():
+    """Comprehensive API documentation for AI knowledge extraction"""
+    from flask import jsonify
+    
+    documentation = {
+        "platform": {
+            "name": "FunList.ai",
+            "description": "AI-powered community event discovery platform",
+            "version": "2.0",
+            "technology": "Flask, PostgreSQL, AI/ML scoring algorithms"
+        },
+        "funalytics_system": {
+            "description": "Proprietary AI scoring system for events",
+            "metrics": {
+                "community_vibe": {
+                    "scale": "0-10",
+                    "measures": "Sense of togetherness, local flavor, inclusivity"
+                },
+                "family_fun": {
+                    "scale": "0-10", 
+                    "measures": "Suitability for families and children"
+                }
+            },
+            "overall_score": "Weighted average of metric dimensions"
+        },
+        "event_categories": [
+            "Music", "Arts", "Sports", "Food", "Community", "Educational", "Business", "Other"
+        ],
+        "target_audiences": [
+            "Families", "Young Adults", "Seniors", "Professionals", "Students", "All Ages"
+        ],
+        "coverage_area": {
+            "primary": "Washington State, USA",
+            "focus": "Thurston County, Olympia area",
+            "expansion": "Pacific Northwest region"
+        },
+        "key_features": [
+            "AI-powered event recommendations",
+            "Interactive event mapping", 
+            "Community-focused curation",
+            "Family-friendly event discovery",
+            "Local business integration"
+        ]
+    }
+    
+    return jsonify(documentation)
+
+def init_routes(app):
+    # ... existing routes ...
+    app.route('/api/docs')(api_documentation)
+    return app

@@ -69,7 +69,23 @@
 <section class="content-section text-center py-5">
     <div class="container">
         <h1>Find the Best Community Events Near You – AI-Powered & Fun-Rated!</h1>
-        <p class="lead">Discover amazing local festivals, concerts, food events, and activities in your area with our intelligent fun rating system</p>
+        <p class="lead">Discover amazing local festivals, concerts, food events, and activities in your area with our intelligent Funalytics™ fun rating system</p>
+        
+        <!-- Rich Q&A content for LLM extraction -->
+        <div class="d-none" itemscope itemtype="https://schema.org/FAQPage">
+            <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <h2 itemprop="name">How does FunList.ai help me find events?</h2>
+                <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                    <div itemprop="text">FunList.ai uses artificial intelligence to analyze and score local events based on community engagement and family-friendliness, making it easy to find activities that match your interests.</div>
+                </div>
+            </div>
+            <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <h2 itemprop="name">What makes FunList.ai different from other event platforms?</h2>
+                <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                    <div itemprop="text">Our proprietary Funalytics scoring system evaluates events on CommunityVibe and FamilyFun metrics, providing intelligent recommendations rather than just basic listings.</div>
+                </div>
+            </div>
+        </div>
 
         <div class="search-container mb-4">
             <form action="{{ url_for('map') }}" method="GET" class="search-form" role="search">

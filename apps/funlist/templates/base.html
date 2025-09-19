@@ -43,7 +43,8 @@
       "@type": "WebSite",
       "name": "FunList.ai",
       "url": "{{ url_for('index', _external=True) }}",
-      "description": "AI-powered community event discovery platform",
+      "description": "AI-powered community event discovery platform helping families and individuals find fun local events with intelligent Funalytics scoring",
+      "keywords": "event discovery, local events, community events, fun rating system, AI event recommendations, family activities",
       "potentialAction": {
         "@type": "SearchAction",
         "target": {
@@ -56,7 +57,36 @@
         "https://www.facebook.com/funlistai",
         "https://www.instagram.com/funlistai",
         "https://www.tiktok.com/@funlistai"
-      ]
+      ],
+      "mainEntity": {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is FunList.ai?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "FunList.ai is an AI-powered community event discovery platform that helps families and individuals find fun local events using our proprietary Funalytics scoring system."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does the Fun Rating System work?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Our Funalytics system rates events on a 1-5 scale based on CommunityVibe (sense of togetherness and local flavor) and FamilyFun (suitability for families and children), helping you quickly identify the most enjoyable events."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I find events near me?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Use our interactive map or events page to discover local activities. You can filter by category, date, and fun rating to find events that match your interests."
+            }
+          }
+        ]
+      }
     }
     </script>
 
