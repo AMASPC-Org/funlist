@@ -150,6 +150,7 @@
                                 document.querySelector('input[name="csrf_token"]')?.value;
                 const headers = {
                     'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 };
 
                 if (csrfToken) {
@@ -210,6 +211,7 @@
                                 document.querySelector('input[name="csrf_token"]')?.value;
                 const headers = {
                     'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 };
 
                 if (csrfToken) {
