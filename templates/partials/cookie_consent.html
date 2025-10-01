@@ -152,7 +152,7 @@
                 hideCookieBanner();
             });
         }
-        
+
         // Save preferences button in the modal
         const savePrefsBtn = document.getElementById('save-cookie-preferences');
         if (savePrefsBtn) {
@@ -162,26 +162,51 @@
                     analytics: document.getElementById('analytics-cookies').checked,
                     advertising: document.getElementById('advertising-cookies').checked
                 };
-                
+
+                // Get CSRF token from meta tag or form
+                const csrfToken = document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || 
+                                document.querySelector('input[name="csrf_token"]')?.value;
+
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                };
+
+                if (csrfToken) {
+                    headers['X-CSRFToken'] = csrfToken;
+                }
+
                 fetch('/save-cookie-preferences', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: headers,
+                    credentials: 'same-origin',
                     body: JSON.stringify({ preferences: preferences })
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
+                    console.log('Cookie preferences saved:', data);
                     if (data.status === 'success') {
-                        saveCookiePreferences(data.preferences);
+                        saveCookiePreferences(preferences);
                         hideCookieBanner();
                         const cookieModal = bootstrap.Modal.getInstance(document.getElementById('cookieModal'));
                         if (cookieModal) {
                             cookieModal.hide();
                         }
+                    } else {
+                        throw new Error(data.message || 'Server returned error status');
                     }
                 })
-                .catch(error => console.error('Error saving cookie preferences:', error));
+                .catch(error => {
+                    console.error('Error saving cookie preferences:', error);
+                    // Still save locally if server fails
+                    saveCookiePreferences(preferences);
+                    hideCookieBanner();
+                });
             });
         }
     }
@@ -196,19 +221,19 @@
                 preferences: preferences,
                 expires: expirationDate
             }));
-            
+
             // Also set a regular cookie as backup
             setCookie('cookieConsentAccepted', 'true', 180);
 
             // Apply cookie settings
             applyCookieSettings(preferences);
-            
+
             console.log('Cookie preferences saved:', preferences);
         } catch (error) {
             console.error("Error saving cookie preferences:", error);
         }
     }
-    
+
     // Helper function to set cookies
     function setCookie(name, value, days) {
         let expires = '';
@@ -219,7 +244,7 @@
         }
         document.cookie = name + '=' + (value || '') + expires + '; path=/; SameSite=Lax';
     }
-    
+
     // Helper function to get cookie values
     function getCookie(name) {
         const nameEQ = name + '=';

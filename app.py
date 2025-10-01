@@ -223,22 +223,30 @@ def create_app():
     # Add route to accept cookies
     @app.route('/accept-cookies', methods=['POST'])
     def accept_cookies():
-        session['cookies_accepted'] = True
-        # Return preferences to be saved client-side
-        preferences = {
-            'essential': True,
-            'analytics': True,
-            'advertising': True
-        }
-        return jsonify({'status': 'success', 'preferences': preferences}), 200
+        try:
+            session['cookies_accepted'] = True
+            # Return preferences to be saved client-side
+            preferences = {
+                'essential': True,
+                'analytics': True,
+                'advertising': True
+            }
+            return jsonify({'status': 'success', 'preferences': preferences}), 200
+        except Exception as e:
+            logger.error(f"Error accepting cookies: {str(e)}")
+            return jsonify({'status': 'error', 'message': 'Failed to accept cookies'}), 500
 
     # Add route to save cookie preferences
     @app.route('/save-cookie-preferences', methods=['POST'])
     def save_cookie_preferences():
-        data = request.get_json()
-        preferences = data.get('preferences', {})
-        session['cookies_accepted'] = True
-        return jsonify({'status': 'success', 'preferences': preferences}), 200
+        try:
+            data = request.get_json() or {}
+            preferences = data.get('preferences', {})
+            session['cookies_accepted'] = True
+            return jsonify({'status': 'success', 'preferences': preferences}), 200
+        except Exception as e:
+            logger.error(f"Error saving cookie preferences: {str(e)}")
+            return jsonify({'status': 'error', 'message': 'Failed to save preferences'}), 500
 
     # Add route to clear cookies for testing
     @app.route('/clear-cookies')
