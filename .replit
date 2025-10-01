@@ -19,11 +19,7 @@ localPort = 3001
 
 [[ports]]
 localPort = 5000
-externalPort = 3001
-
-[[ports]]
-localPort = 5001
-externalPort = 3002
+externalPort = 80
 
 [[ports]]
 localPort = 5003
@@ -136,23 +132,7 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Central API"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
 args = "Web Server"
-
-[[workflows.workflow]]
-name = "Central API"
-author = "agent"
-
-[workflows.workflow.metadata]
-outputType = "console"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "cd apps/central-api && export DATABASE_URL=\"${DATABASE_URL}/neondb?sslmode=require\" && node run.js"
-waitForPort = 3001
 
 [[workflows.workflow]]
 name = "Web Server"

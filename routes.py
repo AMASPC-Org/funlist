@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 import json
 import openai # Import OpenAI library
 import anthropic # Import Anthropic library - using python_anthropic integration
-from google import genai # Import Gemini library - using python_gemini integration
+# Note: genai import removed - using python_gemini integration instead
 from flask_wtf.csrf import CSRFProtect # Use only CSRFProtect
 
 logger = logging.getLogger(__name__)
@@ -739,6 +739,11 @@ def admin_dashboard():
 # Add other routes from your previous routes.py here, ensuring imports are correct
 # ... e.g., /marketplace, /admin/users, /api/feedback, /search, etc. ...
 
+# API Health Check Endpoint - Ultra lightweight to handle flooding
+def api_health_check():
+    """Ultra lightweight health check to handle monitoring floods"""
+    return "", 200
+
 def submit_feedback():
      # Implement feedback submission logic
      return jsonify({"status": "success"}), 200
@@ -790,6 +795,7 @@ def init_routes(app):
     app.route('/chapters')(chapters_page)
     app.route('/chapter/<string:slug>')(chapter)
     app.route('/fun-assistant')(fun_assistant_page)
+    app.route('/api', methods=['GET', 'HEAD'])(api_health_check)
     app.route('/api/fun-assistant/chat', methods=['POST'])(fun_assistant_chat)
     app.route('/api/analyze-event', methods=['POST'])(analyze_event)
     app.route('/admin/dashboard')(admin_dashboard)

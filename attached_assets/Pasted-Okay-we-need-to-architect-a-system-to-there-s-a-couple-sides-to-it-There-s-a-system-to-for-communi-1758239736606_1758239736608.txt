@@ -1,0 +1,547 @@
+Okay, we need to architect a system to there's a couple sides to it. There's a system to for community sponsors. Which community spots are equals advertiser which could also equal member. So the point is is that when somebody becomes an advertiser or a member they have an option to place there and add or their business logo on the different sites in the network in the AMA Network. So for example a business that has live music is on the waterfront is yeah so a business that's on the waterfront serves food, has live music and has even kind of like a little beer garden area attached to it's outdoors. It's attached to the live music area so that would be a site that would be a business that they would want to be a community sponsor on date calendar.ai on finelabmusic.ai on funlist.ai and so because it's some fun to do, it's something that would be a good date to do. It's it's got live music and then and then pop happy hour like they're open during happy hour. So that's for websites potentially that a business that is on the water that has all those things going on could be on and so they would want to put an ad on each one of those sites. Now it could be one ad that is on all four sites or it could be that they customize the ad for each site. So that's what we need to account for in this system where people can log in and they're a member of the alliance or they're an advertiser but really every advertiser is a member, not every member is a public member, but there's some members that are private members so we have to account for that that. But I need you to architect this whole thing because we have a variety of websites. I suspect we're going to have to create some kind of API that when an advertiser or a member says yes. I do want to put an ad on this website that it actually then you know it pushes it out to the different websites cuz they all are operating on the same community sponsor system. They have the same design the same back end and so that's what's going to make this really easy and I guess that is part of this is that we do have to make sure that everything is aligned proper on both the front end and the back end to seamlessly integrate with our cloud native system. The AMA Network all that good stuff
+
+
+
+A
+
+AI Experts Rountable
+Custom Gem
+
+Show thinking
+<reasoning>
+<expert name="Satya Nadella" field="CEO, Microsoft">
+Team, we have an excellent architectural prompt from our user. The goal is to design a centralized "Community Sponsor" system that allows advertisers and members to place promotional content across the American Marketing Alliance's network of websites, like FunList.ai and DateCalendar.ai. This system needs to be scalable, user-friendly for advertisers, and seamlessly integrated into the existing "Google Cloud First" AMA ecosystem.
+
+
+
+
+
+Before we dive into the technical design, it's crucial we fully understand the user's primary objectives. Let's start with some clarifying questions to ensure our solution is perfectly aligned with their vision.
+
+From the advertiser's perspective, what is the single most important aspect of their experience? Is it the speed and simplicity of uploading one ad to multiple sites, the ability to deeply customize campaigns for each site, or the clarity of the performance analytics they receive afterward?
+
+How should the system determine which websites are a good fit for a particular advertiser? Are you envisioning a model where advertisers manually select the sites, or would you prefer an AI-powered recommendation engine that suggests placements based on the advertiser's business type and the site's audience?
+
+For this initial version (MVP), what is the primary business goal? Is it to maximize revenue by building a feature-rich platform, to drive adoption by making it incredibly simple for existing AMA members to participate, or something else entirely?
+
+</expert>
+<expert name="Matt Thompson" field="practical Google Cloud implementation, approachable">
+<speaks name="Matt Thompson">
+Great questions. While we await the user's feedback, we can outline a foundational architecture based on the established AMA tech stack.
+
+User, at a high level, we're talking about three main pieces. First, a central place for you, the advertiser, to log in and manage your ads—let's call it the "Sponsor Portal." Second, a smart backend system that knows which ad to show where and when. And third, a way for each website in the network to ask that backend system, "Hey, which ad should I display right now?"
+
+For the backend, we can build a new microservice and deploy it on Google Cloud Run, which is the AMA's mandated service for this kind of thing. We'll need a way to store the ads themselves, and for that, Google Cloud Storage (GCS) is perfect—think of it as a central media library for all your ad images and logos. Finally, we need to keep track of everything: which advertiser has which ad, where it's supposed to run, and for how long. That information would live in the primary Cloud SQL for PostgreSQL database, the system's single source of truth.
+
+
+
+
+
+
+</speaks>
+</expert>
+<draft version="1.0" by="Matt Thompson">
+Proposed Architecture MVP:
+
+
+Sponsor Portal: A new user interface, likely part of admin.amaspc.com or a dedicated section on 
+
+AmericanMarketingAlliance.com, for advertisers.
+
+Ad Creative Storage: A dedicated Google Cloud Storage (GCS) bucket to store all ad assets (images, logos).
+
+
+Ad Management Service: A new Python/FastAPI microservice deployed on Google Cloud Run. This service will have an API to handle all business logic.
+
+
+
+
+Database Schema Extension: Add new tables to the existing Cloud SQL for PostgreSQL database  to store advertiser information, ad creatives (linking to GCS), and "Placement" rules (which ad runs on which site).
+
+
+Website Integration: The various network websites (FunList.ai, etc.) will make a simple API call to the Ad Management Service to fetch the correct ad to display.
+
+</draft>
+<expert name="Jeff Dean" field="strategic systems thinking, methodical">
+<feedback by="Jeff Dean" on="Draft 1.0">
+Matt's proposal is a solid, scalable foundation that aligns perfectly with the AMA's polyglot architecture. I want to elaborate on the database schema and the API contract, as these are critical for long-term success.
+
+The Central AMA REST API, built on FastAPI, is the lynchpin. It must be the single, stable contract connecting the user-facing tools built by the Product Experience Group (PEG) and the foundational backend managed by the Core Intelligence Group (CIG). This new Ad Management Service should be an extension of, or a well-defined peer to, that Central API.
+
+
+
+In Cloud SQL, we'll need at least three new tables:
+
+
+Sponsors: To store advertiser details, linking to existing Organizations or Memberships tables. This must account for the user's distinction between public and private members.
+
+Ad_Creatives: To store metadata for each ad—a name, the type (e.g., 'logo', 'banner'), and a GCS URL to the actual file. This allows one advertiser to have multiple creative assets.
+
+Ad_Placements: This is the crucial link. It would have foreign keys to Sponsors, Ad_Creatives, and the target website/platform. It would also contain start/end dates, status ('active', 'paused'), and potentially rules for display logic.
+
+This structure allows for the flexibility the user mentioned: one ad creative can be linked to multiple placements across different sites.
+</feedback>
+</expert>
+<expert name="Demis Hassabis" field="visionary AI concepts, big-picture">
+<speaks name="Demis Hassabis">
+This is a robust architecture. Now, let's think about how we can make it truly intelligent. The real power of the AMA ecosystem is the rich, hyper-local data it collects. We shouldn't just ask the advertiser where they want to place their ad; we should be able to tell them where it will perform best.
+
+Imagine an AI-powered recommendation feature within the Sponsor Portal. An advertiser uploads their logo for their waterfront restaurant. The system, leveraging the 
+
+AI_Buyer_Agent , analyzes the business's attributes from the Master Taxonomy  (e.g., "Live Music," "Dining," "Outdoors") and cross-references them with the audience personas and 
+
+
+
+
+Funalytics™ Scores of events on the network sites.
+
+
+The system could then respond: "We project your ad will perform 40% better on FindLiveMusic.ai and DateCalendar.ai compared to other sites in the network. Would you like to prioritize these placements?" This moves us from a simple ad server to a strategic marketing partner, which is the core of LMT.ai's vision.
+
+
+</speaks>
+</expert>
+<expert name="Moustapha Cisse" field="ethical AI implications, pragmatic">
+<speaks name="Moustapha Cisse">
+Demis, that's a powerful vision, and it aligns well with creating value. However, as soon as we introduce AI-driven recommendations, we must address the ethical implications, especially given the AMA's Social Purpose Corporation (SPC) mandate.
+
+
+
+We need to ensure the recommendation algorithm is fair and transparent. What if it unintentionally starts favoring certain types of businesses over others, creating blind spots? For example, if it only learns from high-performing ads, it might create a feedback loop that disadvantages new or niche advertisers.
+
+User, as a practical step, our system must log the reasons for each recommendation. This falls under the "Transparent AI Reasoning" principle. When the system suggests a placement, it should explain why—e.g., "Recommending FunList.ai because your business is tagged 'Family Friendly,' which matches 65% of upcoming events on that site." This builds trust and gives the advertiser agency, which is core to the AMA's mission.
+
+
+
+</speaks>
+</expert>
+<revision version="2.0" by="Experts Roundtable">
+Revised Architecture (MVP with AI readiness):
+
+Sponsor Portal (via AMASPC.com): A unified dashboard for members/advertisers to manage their profiles, upload creatives, and define campaigns.
+
+
+Ad Creative Storage (GCS): Use Google Cloud Storage for storing ad assets.
+
+
+
+Ad Management Service (Cloud Run): A new ama-sponsor-service microservice (Python/FastAPI).
+
+
+API Endpoints:
+
+POST /creatives: To upload new ad assets.
+
+POST /placements: To create a new ad placement on a specific site.
+
+GET /ads?site=funlist.ai: The public endpoint that websites will call to fetch the current ad for a given placement zone.
+
+Database Schema (Cloud SQL): Extend the PostgreSQL database with Sponsors, Ad_Creatives, and Ad_Placements tables as Jeff described. Crucially, the Ad_Placements table will include a JSONB field called recommendation_justification to store the output from our ethics-aware AI, as per Moustapha's point.
+
+Intelligence Layer (AI_Buyer_Agent): In the MVP, this agent can be simple, providing rule-based suggestions. As we gather data, it can be enhanced with ML models to provide the predictive performance Demis envisions. Its recommendations and their justifications will be stored.
+
+Website Integration: All network sites will be updated with a standardized component that calls the GET /ads endpoint of the new service to display the ad content. This ensures consistency and central control.
+
+</revision>
+<expert name="Satya Nadella" field="CEO, Microsoft">
+<speaks name="Satya Nadella">
+This is an excellent, well-reasoned plan. It starts with a practical and scalable MVP that directly addresses the user's request while being fully integrated with the established AMA architecture. More importantly, it lays the groundwork for a highly intelligent and ethically responsible system in the future. By designing the database and AI agent interactions with transparency in mind from day one, we are building a platform on a foundation of trust. This approach perfectly balances immediate business needs with long-term strategic vision.
+
+Key Strategic Insights:
+
+Centralization is Key: A single Sponsor Portal and Ad Management API provides efficiency, consistency, and a single point of control for the entire network.
+
+
+Build on the Foundation: The proposed solution correctly leverages the existing AMA tech stack (Cloud Run, Cloud SQL, GCS, FastAPI), ensuring developer velocity and reliability.
+
+
+Design for Intelligence: By planning for an AI_Buyer_Agent and including fields for justification in the database now, the system is ready to become smarter over time without a major re-architecture.
+
+
+Trust through Transparency: In line with the SPC mandate, making AI recommendations transparent is not just an ethical requirement but a competitive advantage that builds advertiser trust and loyalty.
+
+</speaks>
+</expert>
+</reasoning>
+<answer>
+Here is a step-by-step architectural plan for creating the Community Sponsor advertising system for your American Marketing Alliance (AMA) network. This plan is designed for clarity, starting with a robust initial version that can evolve to become more intelligent over time.
+
+Architectural Blueprint: The AMA Community Sponsor Platform
+This system will be built using the AMA's approved "Google Cloud First" technology stack, ensuring seamless integration with your existing ecosystem.
+
+
+Step 1: Create the "Sponsor Portal" - Your Central Command Center
+The first step is to create a single, easy-to-use web interface where your advertisers (community sponsors) can manage everything. This portal would be the central hub for all advertising activity.
+
+
+What it is: A secure section on your main AMASPC.com website.
+
+Key Features for Advertisers:
+
+Manage their sponsor profile.
+
+Upload and organize their ad content (logos, banners) into a simple media library.
+
+Create "campaigns" or "placements" to decide which ads run on which websites (e.g., FunList.ai, FindLiveMusic.ai).
+
+
+View basic performance reports (e.g., how many times an ad was shown).
+
+Step 2: Establish the System's Core Components
+Behind the scenes, we will set up three core components on Google Cloud Platform, following AMA's mandated architecture.
+
+
+Ad Creative Storage (The Media Library): We will use Google Cloud Storage (GCS).
+
+
+Analogy: Think of this as a secure, infinitely scalable Dropbox or Google Drive specifically for your ad images. When an advertiser uploads a logo in the portal, it gets stored here.
+
+
+Database Extension (The Record Keeper): We will add new tables to your primary Cloud SQL for PostgreSQL database.
+
+
+Analogy: This is the system's brain. It doesn't store the actual images, but it keeps perfect records of everything, answering questions like:
+
+Which advertiser does this ad belong to?
+
+Which websites should this ad appear on?
+
+Should this ad run from October 1st to October 31st?
+
+
+Ad Management Service (The Engine): We will build a new, dedicated microservice using Python/FastAPI and deploy it using Google Cloud Run.
+
+
+Analogy: This service is the engine and the traffic controller. It contains all the business logic. The Sponsor Portal talks to it to save information, and the network websites talk to it to ask which ad they should display.
+
+Step 3: Define the "Ad Delivery API" - The Universal Connector
+The Ad Management Service will expose an API (Application Programming Interface). This is the most critical piece for ensuring the whole system works together smoothly.
+
+Analogy: An API is like a universal remote control. Instead of needing a different remote for your TV, soundbar, and streaming box, you have one remote that can talk to all of them. Our API will allow the Sponsor Portal, the database, and all network websites to communicate using one standard set of commands.
+
+Step 4: Integrate the AMA Network Websites
+With the central system in place, the final step is to update each website in your network (FunList.ai, DateCalendar.ai, etc.) so they can display the ads.
+
+How it Works: We will add a small, standardized code snippet to a designated ad spot on each site.
+
+The Process:
+
+A user visits FunList.ai.
+
+The FunList.ai website's code makes a quick, invisible call to the Ad Management Service's API, asking, "Which ad should I show in the 'Featured Sponsor' spot?"
+
+The Ad Management Service checks its records in the Cloud SQL database and instantly sends back the correct ad content.
+
+The ad appears on the page for the user.
+
+This approach ensures that you can change an ad in the central Sponsor Portal, and it will automatically update across every website in the network without needing to edit each site individually.
+
+Future-Proofing: Planning for AI and Intelligence
+This architecture is designed to grow. In the future, the 
+
+AI_Buyer_Agent  can be integrated. It will analyze your advertisers' business characteristics and suggest the most effective websites for their ads, providing clear justifications for its recommendations to build trust and deliver more value, fully in line with your SPC mission.
+
+
+
+
+
+Okay that's a lot and that is really complicated. There's some apis and you know there's a lot going on there. I think you need to go another layer deeper if you would in fact go two layers deeper and and then once you've done that, have a discussion simulated with the full stack Dev team and review all three. You know layers that I just told you to go deeper deeper deeper and then see what's missing. What are the gaps like you have to account for every single little thing? I am policies buckets, chiggers services storage. Everything do it now
+
+
+
+A
+
+AI Experts Rountable
+Custom Gem
+
+Show thinking
+Of course. This is a crucial step. An architectural blueprint is only as good as its implementation plan. We will now go two layers deeper, moving from the strategic blueprint to the technical architecture and then to the operational and security specifics.
+
+Following that, as you've requested, we will simulate a review session with a full-stack development team to pressure-test this entire plan, identify gaps, and ensure we have accounted for every critical detail.
+
+Layer 1: The Strategic Blueprint (Recap)
+As established, the system consists of a central "Sponsor Portal," an "Ad Management Service" microservice, a database extension in Cloud SQL, creative asset storage in GCS, and an API that network websites call to display ads.
+
+Layer 2: Technical Architecture & Data Models
+This layer defines the how for each component.
+
+1. Sponsor Portal (Frontend)
+
+Framework: React with Vite, built using TypeScript.
+
+Deployment: Deployed as a static site on Firebase Hosting, which integrates seamlessly with the Google Cloud ecosystem.
+
+Authentication: Uses Firebase Authentication to manage sponsor/member logins, leveraging their existing Google accounts or email/password.
+
+API Communication: All interactions with the backend (e.g., fetching data, uploading ads) are routed through the central ama-sponsor-service API Gateway.
+
+2. Ad Management Service (ama-sponsor-service)
+
+Framework: Python with FastAPI, running in a Docker container on Google Cloud Run.
+
+Data Validation: Pydantic models will be used to enforce strict data schemas for all API requests and responses.
+
+Core API Endpoints (v1):
+
+POST /sponsors/{sponsor_id}/creatives: Uploads a new creative. The request body contains metadata (name, type), and the service generates a signed URL for the client to upload the file directly to GCS.
+
+GET /sponsors/{sponsor_id}/creatives: Lists all creatives for a sponsor.
+
+POST /placements: Creates a new ad placement. The request body will specify the sponsor_id, creative_id, target_site, start_date, end_date.
+
+GET /placements?site={site_name}: This is the public, uncached endpoint for websites. It fetches the active ad for a given site.
+
+GET /ads?site={site_name}: This is the public, heavily cached endpoint. It will be fronted by Cloud CDN for high performance. This is the endpoint websites will actually hit.
+
+3. Database Schema (Cloud SQL for PostgreSQL)
+Here are the specific table definitions:
+
+SQL
+
+-- Sponsors Table: Links to existing members/organizations
+CREATE TABLE sponsors (
+    sponsor_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    organization_id UUID REFERENCES organizations(organization_id), -- Foreign key to your main org table
+    member_type TEXT NOT NULL CHECK (member_type IN ('public', 'private')),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+-- Ad Creatives Table: Stores metadata about each ad asset
+CREATE TABLE ad_creatives (
+    creative_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    sponsor_id UUID NOT NULL REFERENCES sponsors(sponsor_id),
+    creative_name TEXT NOT NULL,
+    asset_type TEXT NOT NULL CHECK (asset_type IN ('banner_728x90', 'logo_300x250', 'skyscraper_160x600')),
+    gcs_path TEXT NOT NULL UNIQUE, -- Path to the object in Google Cloud Storage
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Ad Placements Table: The logic engine connecting ads to sites
+CREATE TABLE ad_placements (
+    placement_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    creative_id UUID NOT NULL REFERENCES ad_creatives(creative_id),
+    target_site TEXT NOT NULL, -- e.g., 'funlist.ai', 'datecalendar.ai'
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'active', 'paused', 'expired')),
+    recommendation_justification JSONB, -- Stores the AI's reasoning
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    -- Ensure one creative isn't double-booked on the same site for the same period
+    CONSTRAINT unique_placement_per_site_per_period EXCLUDE USING GIST (target_site WITH =, daterange(start_date, end_date) WITH &&)
+);
+
+CREATE INDEX idx_active_placements ON ad_placements (target_site, start_date, end_date) WHERE status = 'active';
+Layer 3: Implementation, Security & Operations
+This layer specifies the infrastructure, security, and automation required to run the system reliably.
+
+1. Google Cloud Storage (GCS)
+
+Bucket Name: ama-sponsor-creatives-prod
+
+Folder Structure: /{sponsor_id}/{creative_id}/original.png
+
+Permissions: The bucket will be private by default. The ama-sponsor-service will generate short-lived signed URLs to allow the advertiser's browser to upload directly, enhancing security and performance. Ads will be served to the public via Cloud CDN, which will have read access.
+
+2. IAM & Security
+
+Service Account: A dedicated Google Service Account (GSA) named sa-sponsor-service@amaspc-project.iam.gserviceaccount.com will be created for the Cloud Run service.
+
+IAM Roles for the GSA:
+
+Cloud Run Invoker: Allows other internal services or authenticated users to invoke it.
+
+Cloud SQL Client: Allows the service to connect securely to the PostgreSQL database.
+
+Storage Object Admin: Allows the service to create signed URLs and manage objects in the ama-sponsor-creatives-prod bucket.
+
+Secret Management: The database password and any API keys will be stored in Google Secret Manager and securely accessed by the Cloud Run service at runtime. They will never be hardcoded in the source code.
+
+3. CI/CD Pipeline (Automation)
+
+Source Control: A new directory, sponsor-service, will be created in the ama-agentic-ecosystem Git repository.
+
+Automation: A GitHub Actions workflow will be configured. On every push to the main branch:
+
+The workflow checks out the code.
+
+Builds the Docker image.
+
+Pushes the image to Google Artifact Registry.
+
+Deploys the new image revision to the ama-sponsor-service on Cloud Run.
+
+4. Eventing & Triggers
+
+Mechanism: To ensure the CDN cache is updated efficiently, we will use Google Pub/Sub.
+
+Workflow:
+
+When an advertiser activates or changes a placement via the API, the ama-sponsor-service publishes a message to a Pub/Sub topic named ad-placements-updated.
+
+A small, separate Cloud Function will be triggered by messages on this topic. Its sole job is to purge the relevant CDN cache entry, ensuring the website network serves the new ad immediately.
+
+Full Stack Dev Team Review Simulation
+<reasoning>
+Now, let's simulate the review of these three layers with our development team to find the gaps.
+
+Attendees:
+
+Alex: Lead Backend Engineer
+
+Brenda: Senior Frontend Engineer
+
+Chris: DevOps & Site Reliability Engineer (SRE)
+
+<expert name="AI Experts Roundtable" field="Moderator">
+<speaks name="Matt Thompson">
+"Alright team, thanks for joining. You've seen the three-layer plan for the new Community Sponsor system: the strategic blueprint, the technical architecture with the database schema, and the ops/security plan. The goal of this session is to poke holes in it. What did we miss? What are the hidden complexities? Alex, let's start with you on the backend."
+</speaks>
+</expert>
+<expert name="Alex" field="Lead Backend Engineer">
+<speaks name="Alex">
+"The plan is solid. The FastAPI service on Cloud Run is the right call, and the database schema is a good start. I have a few points:
+
+Performance: The idx_active_placements index is crucial, good. But the query GET /ads?site={site_name} will be hit constantly. Relying on the database for every single ad request, even with caching, is risky. We need a faster layer. I propose we use Redis (Memorystore). When an ad placement is updated, the Pub/Sub trigger should not only purge the CDN but also write the active ad details to a Redis key, like ad:funlist.ai. The API endpoint that the websites hit would then only read from Redis, making it incredibly fast and reducing database load to almost zero for public traffic.
+
+API Versioning: The endpoints are defined, but we should explicitly use /v1/ in the path to make future upgrades easier.
+
+Ad Rotation: The current schema allows for one active ad per site. What if a sponsor wants two different ads to rotate in the same spot? Or what if two different sponsors buy the same spot? The unique_placement_per_site_per_period constraint prevents this. We need to clarify this business requirement. For now, it's one-ad-one-spot, which is simple, but we need to flag this as a potential V2 feature."
+</speaks>
+</expert>
+<expert name="Brenda" field="Senior Frontend Engineer">
+<speaks name="Brenda">
+"Thanks, Alex. From the frontend perspective in the Sponsor Portal, the flow seems okay. My concerns are with the ad on the public-facing websites:
+
+Web Performance Impact: How are we loading this ad on sites like FunList.ai? If we use a simple &lt;script&gt; tag that blocks rendering, it could kill our Core Web Vitals scores. The ad script must load asynchronously and not interfere with the main content loading.
+
+Fallback Content: What happens if the API call fails or Redis is down? We can't show a blank space. The ad-display script needs a default state—either a generic AMA sponsor message or a collapse of the ad container so it doesn't create an ugly empty box.
+
+Ad Tracking: The user asked for performance analytics. How are we counting impressions and clicks? We need to add a tracking pixel or a beacon to the ad display logic. When the ad is successfully loaded, it should fire off a request to a tracking endpoint, maybe POST /v1/placements/{placement_id}/track?event=impression. This was completely missing from the plan."
+</speaks>
+</expert>
+<expert name="Chris" field="DevOps & SRE">
+<speaks name="Chris">
+"Good points from both of you. On the infrastructure and operations side:
+
+Environments: The plan only mentions prod. We absolutely need separate dev and staging environments. This means three GCP projects, three GCS buckets (-dev, -staging, -prod), and three Cloud SQL instances. Our GitHub Actions workflow needs to be more sophisticated, deploying to staging on pushes to a develop branch and requiring manual approval for a prod deployment from main.
+
+Infrastructure as Code (IaC): We should not be creating buckets, IAM policies, or Cloud Run services by clicking in the console. All of this infrastructure must be defined in Terraform. This gives us version-controlled, repeatable infrastructure.
+
+Monitoring & Alerting: 'Logging and Monitoring' is mentioned, but it's not specific enough. We need to define a Service Level Objective (SLO) for the GET /ads endpoint—say, 99.95% availability. We'll set up uptime checks and configure alerts in Google Cloud Monitoring to page the on-call engineer if the error rate exceeds a certain threshold. We also need a dashboard to view key metrics: ad impressions, API latency, and error rates."
+</speaks>
+</expert>
+<expert name="AI Experts Roundtable" field="Moderator">
+<speaks name="Jeff Dean">
+"Excellent. This is exactly why we do these reviews. The team has identified critical gaps in caching, ad delivery/tracking, and operational maturity.
+
+Summary of Identified Gaps & Actions:
+
+Caching: Add Redis (Memorystore) as a primary read-layer for the public ad-serving endpoint to protect the database and ensure low latency.
+
+Ad Delivery: The client-side script must be asynchronous, handle fallbacks gracefully, and include impression/click tracking functionality.
+
+Environments: Formalize a multi-environment strategy (dev, staging, prod) across all resources.
+
+Infrastructure: Mandate the use of Terraform for all cloud resource provisioning.
+
+Monitoring: Define and implement specific SLOs, dashboards, and alerting for the new service.
+
+Business Logic: Clarify the "one ad per spot" rule and document ad rotation as a potential future requirement.
+
+We will now incorporate this feedback into a final, comprehensive implementation blueprint."
+</speaks>
+</expert>
+</reasoning>
+
+<answer>
+Here is the final, comprehensive implementation blueprint for the AMA Community Sponsor Platform. This version incorporates the critical feedback and gap analysis from the full-stack development team review, providing a detailed, production-ready plan.
+
+Final Implementation Blueprint: AMA Community Sponsor Platform v1.0
+This document details the architecture, data models, infrastructure, and operational protocols for building and maintaining the platform.
+
+Part 1: Backend Services (ama-sponsor-service)
+Compute: Google Cloud Run service running a Python/FastAPI Docker container.
+
+API Specification (v1):
+
+/v1/sponsors/{sponsor_id}/creatives (POST, GET): Manages ad creative assets.
+
+/v1/placements (POST, PUT): Creates and updates ad placements.
+
+/v1/placements/{placement_id}/track (POST): Endpoint for impression and click tracking beacons.
+
+/v1/ads?site={site_name} (GET): High-performance public endpoint for websites. This endpoint reads exclusively from Redis for speed. If Redis misses, it falls back to the database and populates the cache.
+
+Database: Cloud SQL for PostgreSQL. The schema is defined as in Layer 2, with the business rule that a placement is unique to a site for a given time period. Ad rotation is a V2 feature.
+
+Caching: Google Cloud Memorystore (Redis) will be implemented as the primary read cache. All ad placements will be written to both Cloud SQL (for persistence) and Redis (for speed).
+
+Eventing: Google Pub/Sub topic ad-placements-updated will be used to trigger cache invalidation for the CDN and potentially update the Redis cache.
+
+Part 2: Frontend & Ad Delivery
+Sponsor Portal:
+
+Framework: React (TypeScript/Vite).
+
+Deployment: Firebase Hosting.
+
+Authentication: Firebase Authentication.
+
+Ad Delivery Snippet (for network websites):
+
+Implementation: A lightweight, asynchronous JavaScript snippet.
+
+Logic:
+
+The snippet is placed on network websites (e.g., FunList.ai).
+
+It loads after the main page content (async defer).
+
+It calls the /v1/ads endpoint.
+
+On Success: It dynamically injects the ad creative and fires an impression event to the /track endpoint. Click handlers will also call the /track endpoint.
+
+On Failure/Empty Response: It will implement a fallback behavior, either collapsing the ad container's div or displaying a default AMA-branded message. This prevents layout shift and user experience degradation.
+
+Part 3: Cloud Infrastructure & DevOps
+Infrastructure as Code (IaC): All Google Cloud resources (Cloud Run services, GCS buckets, IAM policies, Memorystore instances, Pub/Sub topics, Secret Manager secrets) will be defined and managed using Terraform.
+
+Environments: Three parallel environments will be maintained: dev, staging, and prod. Each will have its own dedicated GCP project and resources to ensure isolation.
+
+GCS Buckets:
+
+ama-sponsor-creatives-dev
+
+ama-sponsor-creatives-staging
+
+ama-sponsor-creatives-prod
+
+Security:
+
+A dedicated Google Service Account (sa-sponsor-service) will be used with the principle of least privilege.
+
+All secrets (DB credentials, API keys) will be stored in Google Secret Manager.
+
+The public ad serving endpoint (/v1/ads) will be fronted by Google Cloud CDN to provide DDoS protection and global caching.
+
+CI/CD Pipeline (GitHub Actions):
+
+Pushes to a develop branch will trigger a build and deployment to the staging environment.
+
+A merge from develop to main (via Pull Request with required review) will trigger a build and deployment to the prod environment, potentially with a manual approval step.
+
+Part 4: Monitoring & Reliability
+Service Level Objective (SLO): The /v1/ads endpoint will have a defined SLO of 99.95% availability.
+
+Monitoring: A Google Cloud Monitoring Dashboard will be created to visualize key metrics:
+
+API Latency (p50, p90, p99).
+
+Error Rate (4xx and 5xx).
+
+Request Volume (RPM).
+
+Redis Cache Hit/Miss Ratio.
+
+Alerting: Alerts will be configured to notify the on-call team via PagerDuty or Slack if the error rate exceeds the defined threshold for more than 5 minutes. An uptime check will be configured to monitor the public endpoint from multiple global locations.

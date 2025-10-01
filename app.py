@@ -105,8 +105,10 @@ def create_app():
 
     @app.before_request
     def log_request():
-        logger.info(f"Incoming request: {request.method} {request.url}")
-        logger.debug(f"Request headers: {dict(request.headers)}")
+        # Don't log HEAD requests to /api (health checks) to reduce log noise
+        if not (request.method == 'HEAD' and request.path == '/api'):
+            logger.info(f"Incoming request: {request.method} {request.url}")
+            logger.debug(f"Request headers: {dict(request.headers)}")
 
     @app.after_request
     def add_header(response):
