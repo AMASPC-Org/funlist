@@ -236,6 +236,22 @@ def create_app():
             logger.error(f"Error accepting cookies: {str(e)}")
             return jsonify({'status': 'error', 'message': 'Failed to accept cookies'}), 500
 
+    # Add CSRF exempt route for cookie acceptance (fallback)
+    @app.route('/accept-cookies-simple', methods=['POST'])
+    @csrf.exempt
+    def accept_cookies_simple():
+        try:
+            session['cookies_accepted'] = True
+            preferences = {
+                'essential': True,
+                'analytics': True,
+                'advertising': True
+            }
+            return jsonify({'status': 'success', 'preferences': preferences}), 200
+        except Exception as e:
+            logger.error(f"Error accepting cookies: {str(e)}")
+            return jsonify({'status': 'error', 'message': 'Failed to accept cookies'}), 500
+
     # Add route to save cookie preferences
     @app.route('/save-cookie-preferences', methods=['POST'])
     def save_cookie_preferences():

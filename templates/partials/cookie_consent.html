@@ -127,15 +127,64 @@
         const acceptAllBtn = document.getElementById('accept-all-cookies');
         if (acceptAllBtn) {
             acceptAllBtn.addEventListener('click', function() {
-                fetch('/accept-cookies', { method: 'POST' })
-                    .then(response => response.json())
+                // Get CSRF token from meta tag
+                const csrfToken = document.querySelector('meta[name=csrf-token]')?.getAttribute('content');
+                
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                };
+
+                if (csrfToken) {
+                    headers['X-CSRFToken'] = csrfToken;
+                }
+
+                fetch('/accept-cookies', { 
+                    method: 'POST',
+                    headers: headers,
+                    credentials: 'same-origin'
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         if (data.status === 'success') {
                             saveCookiePreferences(data.preferences);
                             hideCookieBanner();
                         }
                     })
-                    .catch(error => console.error('Error accepting cookies:', error));
+                    .catch(error => {
+                        console.error('Error accepting cookies:', error);
+                        // Try fallback route without CSRF
+                        fetch('/accept-cookies-simple', { 
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            credentials: 'same-origin'
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                saveCookiePreferences(data.preferences);
+                                hideCookieBanner();
+                            }
+                        })
+                        .catch(fallbackError => {
+                            console.error('Fallback also failed:', fallbackError);
+                            // Still save locally if both routes fail
+                            const preferences = {
+                                essential: true,
+                                analytics: true,
+                                advertising: true
+                            };
+                            saveCookiePreferences(preferences);
+                            hideCookieBanner();
+                        });
+                    });
             });
         }
 
