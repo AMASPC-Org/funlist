@@ -8,14 +8,7 @@ packages = ["cacert", "glibcLocales", "libxcrypt", "pkg-config", "xsimd"]
 run = ["sh", "-c", "python main.py"]
 
 [env]
-PORT = "3000"
-
-[[ports]]
-localPort = 3000
-externalPort = 80
-
-[[ports]]
-localPort = 3001
+PORT = "5000"
 
 [[ports]]
 localPort = 5000
