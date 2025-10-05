@@ -33,11 +33,16 @@ def find_available_port(start_port=3000, max_attempts=15):
 def run_flask_app():
     """Run the Flask application."""
     try:
-        # Use PORT from environment or default to 5000 (Replit requirement)
+        # Use PORT from environment or default to 5000
         port = int(os.environ.get('PORT', 5000))
-                
+        
+        # Log the effective OAuth callback URL
+        app_url = os.environ.get('APP_URL', 'https://<your-repl>.replit.dev')
+        print(f"\n{'='*60}")
         print(f"Starting Flask server on port {port}")
         print(f"🚀 Server running at: http://0.0.0.0:{port}")
+        print(f"📋 Google OAuth Redirect URI: {app_url}/google_login/callback")
+        print(f"{'='*60}\n")
 
         # Update database schema first (before creating app)
         update_database_schema()

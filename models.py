@@ -7,6 +7,20 @@ from sqlalchemy import Column, Integer, String, Boolean, DateTime, Float, Text, 
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.hybrid import hybrid_property
 
+# Define ProhibitedAdvertiserCategory FIRST
+class ProhibitedAdvertiserCategory(db.Model):
+    __tablename__ = 'prohibited_advertiser_categories'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), unique=True, nullable=False)
+
+# Define the association table BEFORE Event model
+event_prohibited_advertisers = Table(
+    'event_prohibited_advertisers',
+    db.Model.metadata,
+    Column('event_id', Integer, ForeignKey('events.id'), primary_key=True),
+    Column('category_id', Integer, ForeignKey('prohibited_advertiser_categories.id'), primary_key=True)
+)
+
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
 
@@ -118,18 +132,7 @@ class User(db.Model, UserMixin):
         if self.is_vendor and ('vendor_type' in data or 'vendor_description' in data):
             self.vendor_profile_updated_at = datetime.utcnow()
 
-# Define ProhibitedAdvertiserCategory before the association table
-class ProhibitedAdvertiserCategory(db.Model):
-    __tablename__ = 'prohibited_advertiser_categories'
-    id = Column(Integer, primary_key=True)
-    name = Column(String(100), unique=True, nullable=False)
 
-# Define the association table BEFORE the Event model that uses it
-event_prohibited_advertisers = Table('event_prohibited_advertisers',
-    db.Model.metadata,
-    Column('event_id', Integer, ForeignKey('events.id'), primary_key=True),
-    Column('category_id', Integer, ForeignKey('prohibited_advertiser_categories.id'), primary_key=True)
-)
 
 class Event(db.Model):
     __tablename__ = 'events'
@@ -167,9 +170,12 @@ class Event(db.Model):
     fun_meter = Column(Integer, default=3)
     status = Column(String(50), default="pending")
     network_opt_out = Column(Boolean, default=False)
-    prohibited_advertisers = relationship('ProhibitedAdvertiserCategory',
-                                          secondary=event_prohibited_advertisers,
-                                          backref=backref('events', lazy='dynamic'))
+    prohibited_advertisers = relationship(
+        'ProhibitedAdvertiserCategory',
+        secondary=event_prohibited_advertisers,
+        backref=backref('events', lazy='dynamic'),
+        lazy='joined'
+    )
     user = relationship("User", back_populates="events")
     venue = relationship("Venue", back_populates="events")
 
