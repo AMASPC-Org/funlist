@@ -217,7 +217,7 @@
     <div class="container-fluid">
         <div class="modern-login-container">
             <div class="modern-login-card">
-                <h1 class="modern-login-title">Welcome Back</h1>
+                <h1 class="modern-login-title">{% if is_returning_user %}Welcome Back{% else %}Welcome{% endif %}</h1>
                 <p class="modern-login-subtitle">Sign in to your FunList.ai account</p>
                 
                 <!-- Google Sign-In Button -->

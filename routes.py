@@ -221,15 +221,21 @@ def login():
     chapters = Chapter.query.all()
     form = LoginForm() # Ensure form is initialized
     
+    # Check if user is a returning visitor
+    is_returning_user = request.cookies.get('returning_user') == 'true'
+    
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         if user and user.password_hash and check_password_hash(user.password_hash, form.password.data):
             login_user(user, remember=form.remember_me.data)
-            next_page = request.args.get('next')
-            return redirect(next_page) if next_page else redirect(url_for('index'))
+            
+            # Set cookie to mark as returning user
+            response = redirect(request.args.get('next') or url_for('index'))
+            response.set_cookie('returning_user', 'true', max_age=31536000)  # 1 year
+            return response
         flash('Invalid email or password', 'danger')
     
-    return render_template('login.html', form=form, chapters=chapters)
+    return render_template('login.html', form=form, chapters=chapters, is_returning_user=is_returning_user)
 
 @login_required
 def logout():
