@@ -125,7 +125,8 @@ class ProhibitedAdvertiserCategory(db.Model):
     name = Column(String(100), unique=True, nullable=False)
 
 # Define the association table BEFORE the Event model that uses it
-event_prohibited_advertisers = db.Table('event_prohibited_advertisers',
+event_prohibited_advertisers = Table('event_prohibited_advertisers',
+    db.Model.metadata,
     Column('event_id', Integer, ForeignKey('events.id'), primary_key=True),
     Column('category_id', Integer, ForeignKey('prohibited_advertiser_categories.id'), primary_key=True)
 )
@@ -167,7 +168,7 @@ class Event(db.Model):
     status = Column(String(50), default="pending")
     network_opt_out = Column(Boolean, default=False)
     prohibited_advertisers = relationship('ProhibitedAdvertiserCategory',
-                                          secondary='event_prohibited_advertisers',
+                                          secondary=event_prohibited_advertisers,
                                           backref=backref('events', lazy='dynamic'))
     user = relationship("User", back_populates="events")
     venue = relationship("Venue", back_populates="events")
