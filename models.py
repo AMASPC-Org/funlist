@@ -124,8 +124,9 @@ class ProhibitedAdvertiserCategory(db.Model):
     id = Column(Integer, primary_key=True)
     name = Column(String(100), unique=True, nullable=False)
 
-# Define the association table before the Event model that uses it
-event_prohibited_advertisers = db.Table('event_prohibited_advertisers',
+# Define the association table BEFORE the Event model that uses it
+event_prohibited_advertisers = Table('event_prohibited_advertisers',
+    db.metadata,
     Column('event_id', Integer, ForeignKey('events.id'), primary_key=True),
     Column('category_id', Integer, ForeignKey('prohibited_advertiser_categories.id'), primary_key=True)
 )
