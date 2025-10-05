@@ -33,32 +33,17 @@ def find_available_port(start_port=3000, max_attempts=15):
 def run_flask_app():
     """Run the Flask application."""
     try:
-        # Force port 5000 to match workflow expectations
-        preferred_port = 5000
-        port = None
-        
-        # First check if preferred port is available
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            try:
-                s.bind(('0.0.0.0', preferred_port))
-                s.listen(1)
-                s.close()
-                port = preferred_port
-            except OSError:
-                # If preferred port is busy, find another available port
-                port = find_available_port(5000)
+        # Use PORT from environment or default to 8080 (Google Cloud default)
+        port = int(os.environ.get('PORT', 8080))
                 
-        print(f"\033c", flush=True)  # Clear console
         print(f"Starting Flask server on port {port}")
-        print(f"\n🚀 Server running at: http://0.0.0.0:{port}")
-        if "REPL_SLUG" in os.environ and "REPL_OWNER" in os.environ:
-            print(f"🌐 Public URL: https://{os.environ.get('REPL_SLUG')}.{os.environ.get('REPL_OWNER')}.repl.co")
+        print(f"🚀 Server running at: http://0.0.0.0:{port}")
 
         # Create and run the Flask app
         from app import create_app
         app = create_app()
 
-        # Always bind to 0.0.0.0 to ensure the server is accessible externally
+        # Bind to 0.0.0.0 for external access
         app.run(
             host='0.0.0.0',
             port=port,

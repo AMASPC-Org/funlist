@@ -25,13 +25,22 @@ def create_app():
     logger.info("Starting application creation...")
     app = Flask(__name__, static_folder='static')
 
-    # Enhanced configurations for Replit environment
-    app.config["SECRET_KEY"] = os.environ.get("FLASK_SECRET_KEY", "dev_key")
+    # Production configurations
+    app.config["SECRET_KEY"] = os.environ.get("FLASK_SECRET_KEY")
+    if not app.config["SECRET_KEY"]:
+        raise ValueError("FLASK_SECRET_KEY environment variable must be set")
+    
     app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+    if not app.config["SQLALCHEMY_DATABASE_URI"]:
+        raise ValueError("DATABASE_URL environment variable must be set")
+    
     app.config["SERVER_NAME"] = None
     app.config["APPLICATION_ROOT"] = "/"
     app.config["PREFERRED_URL_SCHEME"] = "https"
-    app.config["GOOGLE_MAPS_API_KEY"] = "AIzaSyDRkUhORhaKILaPN0-qi9YndDShVov0DVE"
+    
+    app.config["GOOGLE_MAPS_API_KEY"] = os.environ.get("GOOGLE_MAPS_API_KEY")
+    if not app.config["GOOGLE_MAPS_API_KEY"]:
+        raise ValueError("GOOGLE_MAPS_API_KEY environment variable must be set")
 
     # Database configuration
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
@@ -44,15 +53,14 @@ def create_app():
     }
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    # Enhanced session configuration
-    app.config['SESSION_TYPE'] = 'filesystem'
+    # Production session configuration (database-backed for Cloud Run)
+    app.config['SESSION_TYPE'] = 'sqlalchemy'
+    app.config['SESSION_SQLALCHEMY'] = db
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
-    app.config['SESSION_COOKIE_SECURE'] = False
+    app.config['SESSION_COOKIE_SECURE'] = True  # Enforce HTTPS
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-    app.config['SESSION_USE_SIGNER'] = False
-    app.config['SESSION_FILE_DIR'] = './flask_session'
-    app.config['SESSION_FILE_THRESHOLD'] = 500
+    app.config['SESSION_USE_SIGNER'] = True
     app.config['SESSION_REFRESH_EACH_REQUEST'] = True
     app.config['SESSION_COOKIE_NAME'] = 'funlist_session'
 

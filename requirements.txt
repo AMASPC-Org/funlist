@@ -26,6 +26,9 @@ threadpoolctl==3.5.0
 tqdm==4.67.1
 typing-inspection==0.4.0
 WTForms==3.1.2
+
+gunicorn>=21.2.0
+
 openai
 anthropic
 google-genai
