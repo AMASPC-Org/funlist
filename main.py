@@ -33,8 +33,10 @@ def find_available_port(start_port=3000, max_attempts=15):
 def run_flask_app():
     """Run the Flask application."""
     try:
-        # Use PORT from environment or default to 5000
-        port = int(os.environ.get('PORT', 5000))
+        # Use PORT from environment or find available port
+        port = int(os.environ.get('PORT', 0))
+        if port == 0:
+            port = find_available_port(start_port=5000, max_attempts=10)
         
         # Log the effective OAuth callback URL
         app_url = os.environ.get('APP_URL', 'https://<your-repl>.replit.dev')
