@@ -33,6 +33,22 @@ def find_available_port(start_port=3000, max_attempts=15):
 def run_flask_app():
     """Run the Flask application."""
     try:
+        # Kill any existing processes on common ports first
+        for port_to_check in [8080, 5000, 3000]:
+            try:
+                for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+                    try:
+                        for conn in proc.connections():
+                            if conn.laddr.port == port_to_check:
+                                logger.info(f"Killing process {proc.pid} using port {port_to_check}")
+                                proc.kill()
+                    except (psutil.NoSuchProcess, psutil.AccessDenied):
+                        pass
+            except Exception as e:
+                logger.debug(f"Error checking port {port_to_check}: {e}")
+        
+        time.sleep(1)  # Give processes time to release ports
+        
         # Use PORT from environment or find available port
         port = int(os.environ.get('PORT', 0))
         if port == 0:
