@@ -1,6 +1,8 @@
 # Use this Flask blueprint for Google authentication. Do not use flask-dance.
 # Reference: flask_google_oauth integration
 
+import base64
+import hashlib
 import json
 import os
 import secrets
@@ -51,6 +53,15 @@ def login():
         # Generate and store state for CSRF protection
         state = secrets.token_urlsafe(32)
         session['oauth_state'] = state
+        
+        # Generate PKCE code verifier and challenge
+        code_verifier = base64.urlsafe_b64encode(os.urandom(32)).decode('utf-8').rstrip('=')
+        session['code_verifier'] = code_verifier
+        
+        # Generate code challenge (SHA256 hash of verifier)
+        code_challenge = base64.urlsafe_b64encode(
+            hashlib.sha256(code_verifier.encode('utf-8')).digest()
+        ).decode('utf-8').rstrip('=')
 
         request_uri = client.prepare_request_uri(
             authorization_endpoint,
@@ -59,6 +70,8 @@ def login():
             redirect_uri=request.base_url.replace("http://", "https://") + "/callback",
             scope=["openid", "email", "profile"],
             state=state,
+            code_challenge=code_challenge,
+            code_challenge_method='S256',
         )
         return redirect(request_uri)
     except Exception as e:
@@ -81,6 +94,12 @@ def callback():
 
         # Clear the state from session
         session.pop('oauth_state', None)
+        
+        # Get and clear the code verifier for PKCE
+        code_verifier = session.pop('code_verifier', None)
+        if not code_verifier:
+            flash('Session expired. Please try signing in again.', 'error')
+            return redirect(url_for('routes.login'))
 
         code = request.args.get("code")
         google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
@@ -93,6 +112,7 @@ def callback():
             authorization_response=request.url.replace("http://", "https://"),
             redirect_url=request.base_url.replace("http://", "https://"),
             code=code,
+            code_verifier=code_verifier,  # Include PKCE code verifier
         )
         token_response = requests.post(
             token_url,
