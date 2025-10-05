@@ -38,6 +38,11 @@ class User(db.Model, UserMixin):
     newsletter_opt_in = Column(Boolean, default=True)
     marketing_opt_in = Column(Boolean, default=False)
     user_preferences = Column(Text, nullable=True)
+    
+    # OAuth fields
+    oauth_provider = Column(String(20), nullable=True)  # 'google', 'github', etc.
+    oauth_provider_id = Column(String(255), nullable=True, unique=True)  # Provider's user ID
+    email_verified = Column(Boolean, default=False)
     business_street = Column(String(100), nullable=True)
     business_city = Column(String(50), nullable=True)
     business_state = Column(String(50), nullable=True)

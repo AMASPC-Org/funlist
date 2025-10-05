@@ -792,15 +792,17 @@ def init_routes(app):
     """Initialize all routes with the Flask app instance"""
     csrf = CSRFProtect(app) #Initialize CSRF protection
     
-    # Register Google OAuth blueprint
+    # Register OAuth blueprints
     try:
         from google_auth import google_auth
+        from github_auth import github_auth
         app.register_blueprint(google_auth)
-        print("✅ Google OAuth blueprint registered successfully")
+        app.register_blueprint(github_auth)
+        print("✅ OAuth blueprints registered successfully (Google + GitHub)")
     except ImportError as e:
-        print(f"⚠️ Google OAuth blueprint not available: {str(e)}")
+        print(f"⚠️ OAuth blueprints not available: {str(e)}")
     except Exception as e:
-        print(f"⚠️ Google OAuth blueprint registration failed: {str(e)}")
+        print(f"⚠️ OAuth blueprints registration failed: {str(e)}")
     
     # Register all routes with the app instance
     app.route("/")(index)

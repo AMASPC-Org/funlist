@@ -40,7 +40,7 @@ def login():
     if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET:
         flash('Google OAuth is not configured. Please contact support.', 'error')
         return redirect(url_for('login'))
-        
+
     try:
         google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
         authorization_endpoint = google_provider_cfg["authorization_endpoint"]
@@ -48,7 +48,7 @@ def login():
         # Generate and store state for CSRF protection
         state = secrets.token_urlsafe(32)
         session['oauth_state'] = state
-        
+
         request_uri = client.prepare_request_uri(
             authorization_endpoint,
             # Replacing http:// with https:// is important as the external
@@ -68,17 +68,17 @@ def callback():
     if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET:
         flash('Google OAuth is not configured.', 'error')
         return redirect(url_for('login'))
-        
+
     try:
         # Verify state parameter for CSRF protection
         state = request.args.get("state")
         if not state or state != session.get('oauth_state'):
             flash('Invalid authentication request. Please try again.', 'error')
             return redirect(url_for('login'))
-        
+
         # Clear the state from session
         session.pop('oauth_state', None)
-        
+
         code = request.args.get("code")
         google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
         token_endpoint = google_provider_cfg["token_endpoint"]
@@ -123,11 +123,11 @@ def callback():
             flash(f'Welcome {users_name}! Your account has been created.', 'success')
 
         login_user(user)
-        
+
         # Redirect to the page they were trying to access, or home
         next_page = request.args.get('next')
         return redirect(next_page) if next_page else redirect(url_for('index'))
-        
+
     except Exception as e:
         flash('Google sign-in failed. Please try email login.', 'error')
         return redirect(url_for('login'))

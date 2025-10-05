@@ -284,6 +284,15 @@ def create_app():
         return redirect(url_for('map'))
 
     try:
+        logger.info("Initializing OAuth providers...")
+        from oauth_providers import init_oauth
+        oauth = init_oauth(app)
+        logger.info("OAuth providers initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize OAuth providers: {str(e)}", exc_info=True)
+        raise
+    
+    try:
         logger.info("Initializing routes...")
         # Import routes first, then initialize
         import routes
