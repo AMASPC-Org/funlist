@@ -49,10 +49,8 @@ def run_flask_app():
         
         time.sleep(1)  # Give processes time to release ports
         
-        # Use PORT from environment or find available port
-        port = int(os.environ.get('PORT', 0))
-        if port == 0:
-            port = find_available_port(start_port=5000, max_attempts=10)
+        # Always use port 5000 for Replit
+        port = 5000
         
         # Log the effective OAuth callback URL
         app_url = os.environ.get('APP_URL', 'https://<your-repl>.replit.dev')

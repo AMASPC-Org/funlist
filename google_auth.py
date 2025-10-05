@@ -6,7 +6,7 @@ import os
 import secrets
 
 import requests
-from app import db
+from db_init import db
 from flask import Blueprint, redirect, request, url_for, flash, session
 from flask_login import login_required, login_user, logout_user
 from models import User
@@ -18,6 +18,9 @@ GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configura
 
 # Make sure to use this redirect URL. It has to match the one in the whitelist
 DEV_REDIRECT_URL = f'https://{os.environ.get("REPLIT_DEV_DOMAIN", "localhost")}/google_login/callback'
+
+# Initialize client globally if configured
+client = None
 
 # Check if Google OAuth is configured
 if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET:
@@ -37,9 +40,9 @@ google_auth = Blueprint("google_auth", __name__)
 
 @google_auth.route("/google_login")
 def login():
-    if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET:
+    if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET or not client:
         flash('Google OAuth is not configured. Please contact support.', 'error')
-        return redirect(url_for('login'))
+        return redirect(url_for('routes.login'))
 
     try:
         google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
@@ -60,21 +63,21 @@ def login():
         return redirect(request_uri)
     except Exception as e:
         flash('Google sign-in temporarily unavailable. Please try email login.', 'error')
-        return redirect(url_for('login'))
+        return redirect(url_for('routes.login'))
 
 
 @google_auth.route("/google_login/callback")
 def callback():
-    if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET:
+    if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET or not client:
         flash('Google OAuth is not configured.', 'error')
-        return redirect(url_for('login'))
+        return redirect(url_for('routes.login'))
 
     try:
         # Verify state parameter for CSRF protection
         state = request.args.get("state")
         if not state or state != session.get('oauth_state'):
             flash('Invalid authentication request. Please try again.', 'error')
-            return redirect(url_for('login'))
+            return redirect(url_for('routes.login'))
 
         # Clear the state from session
         session.pop('oauth_state', None)
@@ -110,14 +113,21 @@ def callback():
             users_name = userinfo["given_name"]
         else:
             flash("Google account email not verified. Please use email login.", 'error')
-            return redirect(url_for('login'))
+            return redirect(url_for('routes.login'))
 
         user = User.query.filter_by(email=users_email).first()
         if not user:
             # Create new user from Google account
-            user = User(username=users_name, email=users_email)
-            # Set default organizer role for Google sign-ups
-            user.is_organizer = True
+            from werkzeug.security import generate_password_hash
+            user = User(
+                email=users_email,
+                first_name=users_name,
+                last_name="",
+                password_hash=generate_password_hash(os.urandom(32).hex()),  # Random password for OAuth users
+                oauth_provider='google',
+                oauth_provider_id=userinfo.get('sub', ''),
+                email_verified=True
+            )
             db.session.add(user)
             db.session.commit()
             flash(f'Welcome {users_name}! Your account has been created.', 'success')
@@ -126,11 +136,11 @@ def callback():
 
         # Redirect to the page they were trying to access, or home
         next_page = request.args.get('next')
-        return redirect(next_page) if next_page else redirect(url_for('index'))
+        return redirect(next_page) if next_page else redirect(url_for('routes.index'))
 
     except Exception as e:
         flash('Google sign-in failed. Please try email login.', 'error')
-        return redirect(url_for('login'))
+        return redirect(url_for('routes.login'))
 
 
 @google_auth.route("/google_logout")
@@ -138,4 +148,4 @@ def callback():
 def google_logout():
     logout_user()
     flash('You have been logged out successfully.', 'success')
-    return redirect(url_for('index'))
+    return redirect(url_for('routes.index'))
