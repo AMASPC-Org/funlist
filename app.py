@@ -56,6 +56,7 @@ def create_app():
     # Production session configuration (database-backed for Cloud Run)
     app.config['SESSION_TYPE'] = 'sqlalchemy'
     app.config['SESSION_SQLALCHEMY'] = db
+    app.config['SESSION_SQLALCHEMY_TABLE'] = 'flask_sessions'  # Use unique table name
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
     app.config['SESSION_COOKIE_SECURE'] = True  # Enforce HTTPS
     app.config['SESSION_COOKIE_HTTPONLY'] = True
