@@ -747,6 +747,34 @@ def api_health_check():
     """Ultra lightweight health check to handle monitoring floods"""
     return "", 200
 
+def health_check():
+    """
+    Health check endpoint for Google Cloud Run monitoring.
+    Returns JSON with application status and database connectivity.
+    """
+    health_status = {
+        "status": "healthy",
+        "timestamp": datetime.utcnow().isoformat(),
+        "service": "funlist-app",
+        "checks": {
+            "application": "ok"
+        }
+    }
+    
+    # Check database connectivity
+    try:
+        # Execute a simple query to verify database connection
+        db.session.execute('SELECT 1')
+        health_status["checks"]["database"] = "ok"
+    except Exception as e:
+        health_status["status"] = "degraded"
+        health_status["checks"]["database"] = f"error: {str(e)[:100]}"
+        logger.error(f"Database health check failed: {str(e)}")
+    
+    # Return appropriate status code
+    status_code = 200 if health_status["status"] == "healthy" else 503
+    return jsonify(health_status), status_code
+
 def submit_feedback():
      # Implement feedback submission logic
      return jsonify({"status": "success"}), 200
@@ -799,6 +827,7 @@ def init_routes(app):
     app.route('/chapter/<string:slug>')(chapter)
     app.route('/fun-assistant')(fun_assistant_page)
     app.route('/api', methods=['GET', 'HEAD'])(api_health_check)
+    app.route('/health', methods=['GET'])(health_check)
     app.route('/api/fun-assistant/chat', methods=['POST'])(fun_assistant_chat)
     app.route('/api/analyze-event', methods=['POST'])(analyze_event)
     app.route('/admin/dashboard')(admin_dashboard)
