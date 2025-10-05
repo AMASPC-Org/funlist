@@ -33,8 +33,8 @@ def find_available_port(start_port=3000, max_attempts=15):
 def run_flask_app():
     """Run the Flask application."""
     try:
-        # Use PORT from environment or default to 8080 (Google Cloud default)
-        port = int(os.environ.get('PORT', 8080))
+        # Use PORT from environment or default to 5000 (Replit requirement)
+        port = int(os.environ.get('PORT', 5000))
                 
         print(f"Starting Flask server on port {port}")
         print(f"🚀 Server running at: http://0.0.0.0:{port}")
@@ -77,7 +77,7 @@ def update_database_schema():
 # Don't create app globally - do it in run_flask_app() only
 app = None
 
-    if __name__ == "__main__":
+if __name__ == "__main__":
     # Register signal handlers for graceful shutdown
     def signal_handler(sig, frame):
         logger.info(f"Received signal {sig}, shutting down")

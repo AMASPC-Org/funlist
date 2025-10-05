@@ -113,6 +113,12 @@ class User(db.Model, UserMixin):
         if self.is_vendor and ('vendor_type' in data or 'vendor_description' in data):
             self.vendor_profile_updated_at = datetime.utcnow()
 
+# Define the association table before the models that use it
+event_prohibited_advertisers = db.Table('event_prohibited_advertisers',
+    Column('event_id', Integer, ForeignKey('events.id'), primary_key=True),
+    Column('category_id', Integer, ForeignKey('prohibited_advertiser_categories.id'), primary_key=True)
+)
+
 class Event(db.Model):
     __tablename__ = 'events'
 
@@ -187,11 +193,6 @@ class ProhibitedAdvertiserCategory(db.Model):
     __tablename__ = 'prohibited_advertiser_categories'
     id = Column(Integer, primary_key=True)
     name = Column(String(100), unique=True, nullable=False)
-
-event_prohibited_advertisers = db.Table('event_prohibited_advertisers',
-    Column('event_id', Integer, ForeignKey('events.id'), primary_key=True),
-    Column('category_id', Integer, ForeignKey('prohibited_advertiser_categories.id'), primary_key=True)
-)
 
 class Subscriber(db.Model):
     __tablename__ = 'subscribers'
