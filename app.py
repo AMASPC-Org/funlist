@@ -57,6 +57,7 @@ def create_app():
     app.config['SESSION_TYPE'] = 'sqlalchemy'
     app.config['SESSION_SQLALCHEMY'] = db
     app.config['SESSION_SQLALCHEMY_TABLE'] = 'flask_sessions'  # Use unique table name
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
     app.config['SESSION_COOKIE_SECURE'] = True  # Enforce HTTPS
     app.config['SESSION_COOKIE_HTTPONLY'] = True
@@ -64,6 +65,9 @@ def create_app():
     app.config['SESSION_USE_SIGNER'] = True
     app.config['SESSION_REFRESH_EACH_REQUEST'] = True
     app.config['SESSION_COOKIE_NAME'] = 'funlist_session'
+    
+    # Prevent table redefinition errors
+    db.metadata.clear()  # Clear any existing metadata
 
     try:
         logger.info("Initializing database...")

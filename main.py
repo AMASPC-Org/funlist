@@ -39,6 +39,9 @@ def run_flask_app():
         print(f"Starting Flask server on port {port}")
         print(f"🚀 Server running at: http://0.0.0.0:{port}")
 
+        # Update database schema first (before creating app)
+        update_database_schema()
+
         # Create and run the Flask app
         from app import create_app
         app = create_app()
@@ -71,14 +74,10 @@ def update_database_schema():
         logger.error(f"Error updating database schema: {str(e)}")
         return False
 
-# Create the Flask app
-try:
-    from app import create_app
-    app = create_app()
+# Don't create app globally - do it in run_flask_app() only
+app = None
 
-    # Update database schema before starting
-    update_database_schema()
-
+    if __name__ == "__main__":
     # Register signal handlers for graceful shutdown
     def signal_handler(sig, frame):
         logger.info(f"Received signal {sig}, shutting down")
@@ -86,16 +85,7 @@ try:
 
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
-except Exception as e:
-    logger.error(f"Error creating Flask app: {str(e)}", exc_info=True)
-    sys.exit(1)
-
-# Route definitions are handled in routes.py through init_routes
-# Don't define routes here to avoid conflicts
-
-
-
-if __name__ == "__main__":
+    
     try:
         run_flask_app()
     except Exception as e:
