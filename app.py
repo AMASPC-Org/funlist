@@ -59,12 +59,13 @@ def create_app():
     app.config['SESSION_SQLALCHEMY_TABLE'] = 'flask_sessions'  # Use unique table name
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
-    app.config['SESSION_COOKIE_SECURE'] = True  # Enforce HTTPS
+    app.config['SESSION_COOKIE_SECURE'] = False  # Set to True only in production with HTTPS
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-    app.config['SESSION_USE_SIGNER'] = True
+    app.config['SESSION_USE_SIGNER'] = False  # Disable signer to avoid bytes issue
     app.config['SESSION_REFRESH_EACH_REQUEST'] = True
     app.config['SESSION_COOKIE_NAME'] = 'funlist_session'
+    app.config['SESSION_KEY_PREFIX'] = 'session:'
     
     # Prevent table redefinition errors
     db.metadata.clear()  # Clear any existing metadata
