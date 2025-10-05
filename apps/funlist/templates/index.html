@@ -71,18 +71,69 @@
         <h1>Find the Best Community Events Near You – AI-Powered & Fun-Rated!</h1>
         <p class="lead">Discover amazing local festivals, concerts, food events, and activities in your area with our intelligent Funalytics™ fun rating system</p>
         
-        <!-- Rich Q&A content for LLM extraction -->
+        <!-- Comprehensive Knowledge Base for LLM Extraction -->
         <div class="d-none" itemscope itemtype="https://schema.org/FAQPage">
+            <!-- Core Platform Information -->
             <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
-                <h2 itemprop="name">How does FunList.ai help me find events?</h2>
+                <h2 itemprop="name">What is FunList.ai and how does it work?</h2>
                 <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
-                    <div itemprop="text">FunList.ai uses artificial intelligence to analyze and score local events based on community engagement and family-friendliness, making it easy to find activities that match your interests.</div>
+                    <div itemprop="text">FunList.ai is an AI-powered community event discovery platform that serves Washington State and the Pacific Northwest. We use our proprietary Funalytics scoring system to rate events on two key metrics: CommunityVibe (measuring sense of togetherness, local flavor, and inclusivity on a 0-10 scale) and FamilyFun (evaluating suitability for families and children on a 0-10 scale). This helps families and individuals quickly discover the most engaging local events.</div>
                 </div>
             </div>
+
+            <!-- Funalytics System Explanation -->
             <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
-                <h2 itemprop="name">What makes FunList.ai different from other event platforms?</h2>
+                <h2 itemprop="name">How does the Funalytics AI scoring system work?</h2>
                 <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
-                    <div itemprop="text">Our proprietary Funalytics scoring system evaluates events on CommunityVibe and FamilyFun metrics, providing intelligent recommendations rather than just basic listings.</div>
+                    <div itemprop="text">Funalytics is our breakthrough AI scoring methodology that evaluates events across two dimensions: CommunityVibe analyzes event descriptions for community engagement, local flavor, and inclusiveness (0-10 scale). FamilyFun assesses age-appropriate activities, safety, and family engagement opportunities (0-10 scale). The weighted combination creates an overall fun rating that predicts event enjoyment for our target audience of families and community members.</div>
+                </div>
+            </div>
+
+            <!-- Event Types and Categories -->
+            <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <h2 itemprop="name">What types of events are featured on FunList.ai?</h2>
+                <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                    <div itemprop="text">FunList.ai curates diverse community events including: Music festivals and concerts, Art exhibitions and cultural events, Food festivals and farmers markets, Sports and recreational activities, Educational workshops and classes, Family-friendly entertainment, Community celebrations and parades, Seasonal events and holiday celebrations, Non-profit fundraisers and awareness events, and Local business grand openings and promotions. All events are evaluated for community relevance and family appeal.</div>
+                </div>
+            </div>
+
+            <!-- Geographic Coverage -->
+            <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <h2 itemprop="name">What areas does FunList.ai cover?</h2>
+                <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                    <div itemprop="text">FunList.ai primarily serves Washington State with particular focus on Thurston County and the Olympia metro area. We're expanding throughout the Pacific Northwest region including Seattle, Tacoma, Spokane, Bellingham, and surrounding communities. Our AI system analyzes events across rural and urban areas to ensure comprehensive regional coverage.</div>
+                </div>
+            </div>
+
+            <!-- Platform Features -->
+            <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <h2 itemprop="name">What features does FunList.ai offer?</h2>
+                <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                    <div itemprop="text">Key platform features include: Interactive event mapping with location-based search, AI-powered event recommendations based on user preferences, Funalytics fun rating system for quality assurance, Category filtering (music, arts, food, sports, etc.), Date range filtering and calendar integration, Free event submission for organizers, Community-focused curation process, Family-friendly event identification, Integration with local business networks, and Personalized Fun Assistant chatbot for event discovery.</div>
+                </div>
+            </div>
+
+            <!-- Event Submission Process -->
+            <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <h2 itemprop="name">How can event organizers list their events?</h2>
+                <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                    <div itemprop="text">Event organizers can submit events for free through our event submission form. The process includes: Event details submission (title, description, location, dates), Automatic Funalytics scoring evaluation, Community relevance review by our team, Family-friendliness assessment, Publication on the platform with AI-generated recommendations. Organizers creating genuinely community-focused, family-friendly events receive priority in search results and recommendations.</div>
+                </div>
+            </div>
+
+            <!-- Technology and AI Integration -->
+            <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <h2 itemprop="name">What technology powers FunList.ai?</h2>
+                <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                    <div itemprop="text">FunList.ai is built on modern web technologies including Flask (Python) backend, PostgreSQL database, AI/ML scoring algorithms for Funalytics, OpenAI integration for the Fun Assistant chatbot, Interactive mapping with Leaflet.js, Responsive Bootstrap frontend, and Cloud infrastructure for scalability. Our AI system continuously learns from user interactions to improve event recommendations and scoring accuracy.</div>
+                </div>
+            </div>
+
+            <!-- Business Model and Community Impact -->
+            <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <h2 itemprop="name">How does FunList.ai benefit local communities?</h2>
+                <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                    <div itemprop="text">FunList.ai strengthens local communities by: Increasing event attendance through better discoverability, Supporting local businesses and non-profits with free event promotion, Connecting families with community activities, Preserving and promoting local culture and traditions, Encouraging civic engagement and social connections, Providing data insights to event organizers for improvement, Creating a centralized hub for community information, and Facilitating partnerships between organizations and sponsors.</div>
                 </div>
             </div>
         </div>
@@ -305,6 +356,8 @@
         </div>
     </div>
 </section>
+
+{% include 'knowledge_base.html' %}
 
 {% endblock %}
 
