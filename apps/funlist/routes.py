@@ -627,6 +627,248 @@ def robots():
 # Ensure all template paths use the 'main/' prefix where appropriate
 # Example: render_template('main/about.html') instead of render_template('about.html')
 
+def api_documentation():
+    """Comprehensive API documentation for AI knowledge extraction"""
+    from flask import jsonify
+    
+    documentation = {
+        "platform": {
+            "name": "FunList.ai",
+            "alternate_names": ["FunList", "Fun List AI"],
+            "description": "AI-powered community event discovery platform using proprietary Funalytics scoring",
+            "version": "2.0",
+            "launch_year": "2024",
+            "technology_stack": "Flask (Python), PostgreSQL, AI/ML algorithms, OpenAI integration",
+            "mission": "Strengthen local communities by connecting families and individuals with engaging events"
+        },
+        "funalytics_system": {
+            "name": "Funalytics™",
+            "description": "Breakthrough AI scoring methodology for community event evaluation",
+            "methodology": "Dual-metric evaluation system with weighted scoring algorithm",
+            "metrics": {
+                "community_vibe": {
+                    "scale": "0-10",
+                    "description": "Measures sense of togetherness, local flavor, and inclusivity",
+                    "factors": [
+                        "Community organization involvement",
+                        "Local cultural significance", 
+                        "Social interaction opportunities",
+                        "Accessibility and inclusiveness",
+                        "Community building potential"
+                    ]
+                },
+                "family_fun": {
+                    "scale": "0-10",
+                    "description": "Evaluates suitability for families and children",
+                    "factors": [
+                        "Age-appropriate activities",
+                        "Child safety considerations",
+                        "Multi-generational appeal",
+                        "Educational value",
+                        "Family bonding opportunities"
+                    ]
+                }
+            },
+            "overall_rating": {
+                "scale": "1-5 stars",
+                "calculation": "Weighted combination of CommunityVibe and FamilyFun scores",
+                "purpose": "Quick identification of most enjoyable events for families"
+            }
+        },
+        "geographic_coverage": {
+            "primary_region": "Washington State, USA",
+            "focus_areas": [
+                "Thurston County (Olympia, Lacey, Tumwater)",
+                "Pierce County (Tacoma area)",
+                "King County (Seattle metro)",
+                "Spokane County",
+                "Whatcom County (Bellingham area)"
+            ],
+            "expansion_regions": [
+                "Pacific Northwest",
+                "Oregon communities", 
+                "Northern California"
+            ],
+            "service_types": ["Urban areas", "Rural communities", "Suburban regions"]
+        },
+        "event_categories": {
+            "music": "Concerts, festivals, live performances",
+            "arts_culture": "Exhibitions, theater, cultural celebrations", 
+            "food_drink": "Food festivals, farmers markets, tastings",
+            "sports_recreation": "Tournaments, fun runs, outdoor activities",
+            "educational": "Workshops, classes, seminars",
+            "community": "Parades, town halls, civic gatherings",
+            "family": "Kid-friendly events, family fun days",
+            "business": "Networking, grand openings, professional development",
+            "seasonal": "Holiday events, seasonal celebrations",
+            "nonprofit": "Fundraisers, awareness campaigns, volunteer opportunities"
+        },
+        "platform_features": {
+            "core_features": [
+                "Interactive event mapping with location-based search",
+                "AI-powered personalized event recommendations", 
+                "Funalytics quality scoring system",
+                "Advanced filtering by category, date, location, rating",
+                "Fun Assistant AI chatbot for event discovery",
+                "Free event submission portal for organizers",
+                "Community integration with local businesses"
+            ],
+            "user_experience": [
+                "Responsive mobile-first design",
+                "Social media sharing integration",
+                "Email newsletter subscriptions",
+                "Accessibility-compliant interface",
+                "Multi-device synchronization"
+            ],
+            "organizer_tools": [
+                "Free event listing submission",
+                "Automatic Funalytics scoring",
+                "Community relevance evaluation",
+                "Event performance analytics",
+                "Promotional support for quality events"
+            ]
+        },
+        "target_audiences": {
+            "primary": [
+                "Families with children",
+                "Community-minded individuals",
+                "Local event organizers",
+                "Small businesses and nonprofits"
+            ],
+            "demographics": [
+                "Age ranges: All ages with family focus",
+                "Geographic: Washington State residents and visitors",
+                "Interests: Community engagement, local culture, family activities",
+                "Values: Community connection, family time, local support"
+            ]
+        },
+        "business_model": {
+            "revenue_streams": [
+                "Sponsored event listings and premium placement",
+                "Local business advertising partnerships",
+                "Premium organizer features and analytics",
+                "Data insights and community analytics services",
+                "White-label platform licensing"
+            ],
+            "community_benefits": [
+                "Increased event attendance through better discoverability",
+                "Free promotion for local businesses and nonprofits",
+                "Strengthened community connections and engagement",
+                "Support for local culture and traditions",
+                "Economic impact through increased local spending"
+            ]
+        },
+        "technology_infrastructure": {
+            "backend": [
+                "Python Flask framework",
+                "PostgreSQL database with advanced indexing",
+                "AI/ML algorithms for Funalytics scoring",
+                "OpenAI API integration for chatbot",
+                "RESTful API architecture",
+                "Cloud hosting with auto-scaling"
+            ],
+            "frontend": [
+                "Bootstrap 5 responsive framework",
+                "Leaflet.js interactive mapping",
+                "JavaScript ES6+ for dynamic functionality",
+                "Progressive Web App (PWA) capabilities",
+                "Font Awesome iconography"
+            ],
+            "ai_integration": [
+                "OpenAI GPT for Fun Assistant chatbot",
+                "Custom ML models for event scoring",
+                "Natural language processing for event analysis",
+                "Machine learning for recommendation engine",
+                "Predictive analytics for event success"
+            ]
+        },
+        "api_endpoints": {
+            "public_apis": {
+                "/api/events": "Retrieve event listings with filtering options",
+                "/api/scores/latest": "Access current Funalytics scores",
+                "/api/recommendations": "Get personalized event recommendations", 
+                "/sitemap.xml": "SEO sitemap for search engines",
+                "/robots.txt": "Search engine crawling guidelines",
+                "/api/docs": "This comprehensive API documentation"
+            },
+            "parameters": {
+                "location": "Filter events by city, state, or coordinates",
+                "category": "Filter by event type (music, arts, food, etc.)",
+                "date_range": "Specify start and end date filters",
+                "fun_rating": "Minimum Funalytics score threshold",
+                "radius": "Distance-based search radius in miles"
+            }
+        },
+        "data_privacy": {
+            "compliance": ["GDPR", "CCPA", "SOC 2"],
+            "security_measures": [
+                "SSL/TLS encryption for all data transmission",
+                "Regular security audits and penetration testing",
+                "User consent management system",
+                "Secure data storage with encryption at rest",
+                "Privacy-by-design architecture"
+            ],
+            "user_rights": [
+                "Data access and portability",
+                "Deletion and rectification rights", 
+                "Consent withdrawal options",
+                "Transparent privacy policies",
+                "Opt-out mechanisms for data processing"
+            ]
+        },
+        "performance_metrics": {
+            "key_indicators": [
+                "Monthly Active Users (MAU)",
+                "Event discovery and engagement rates",
+                "Funalytics scoring accuracy",
+                "Community event attendance attribution",
+                "User retention and satisfaction scores",
+                "Local business partnership growth"
+            ],
+            "success_criteria": [
+                "Increased local event attendance",
+                "Higher community engagement metrics",
+                "Positive user feedback and ratings",
+                "Growth in event organizer adoption",
+                "Expansion of geographic coverage"
+            ]
+        },
+        "integration_capabilities": {
+            "current_integrations": [
+                "Local government event calendars",
+                "Community organization databases",
+                "Social media platforms for sharing",
+                "Email marketing systems",
+                "Local news outlets and blogs"
+            ],
+            "planned_integrations": [
+                "Major event management platforms",
+                "Ticketing system partnerships",
+                "Calendar application syncing",
+                "Tourism board collaborations",
+                "Corporate event planning services"
+            ]
+        },
+        "competitive_advantages": {
+            "unique_features": [
+                "Proprietary Funalytics AI scoring system",
+                "Community-focused curation approach",
+                "Family-friendly event specialization",
+                "Local business integration and support",
+                "Pacific Northwest regional expertise"
+            ],
+            "differentiators": [
+                "Quality-over-quantity event curation",
+                "AI-powered rather than user-generated ratings",
+                "Strong community impact focus",
+                "Free platform for local organizers",
+                "Emphasis on authentic local experiences"
+            ]
+        }
+    }
+    
+    return jsonify(documentation)
+
 def init_routes(app):
     """Initialize all routes with the Flask app instance"""
     csrf = CSRFProtect(app) #Initialize CSRF protection
@@ -660,6 +902,7 @@ def init_routes(app):
     app.route("/search", methods=["GET", "POST"])(search)
     app.route('/sitemap.xml')(sitemap)
     app.route('/robots.txt')(robots)
+    app.route('/api/docs')(api_documentation)
 
     # Return the app instance
     return app
