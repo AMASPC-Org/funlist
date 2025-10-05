@@ -1,24 +1,80 @@
 
+# Google Cloud Build configuration for FunList.ai
+# This file defines the CI/CD pipeline for deploying to Cloud Run
+
+substitutions:
+  _REGION: us-central1
+  _SERVICE_NAME: funlist-app
+  _MIN_INSTANCES: '1'
+  _MAX_INSTANCES: '100'
+  _MEMORY: '1Gi'
+  _CPU: '1'
+  _CONCURRENCY: '80'
+  _REQUEST_TIMEOUT: '300'
+
 steps:
-  # Build the container image
+  # Step 1: Build the container image
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/funlist-app:$COMMIT_SHA', '.']
+    id: 'build-image'
+    args: 
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$COMMIT_SHA'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest'
+      - '-f'
+      - 'Dockerfile'
+      - '.'
   
-  # Push the container image
+  # Step 2: Push the container image to Container Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/$PROJECT_ID/funlist-app:$COMMIT_SHA']
+    id: 'push-image'
+    args: 
+      - 'push'
+      - '--all-tags'
+      - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}'
   
-  # Deploy to Cloud Run
+  # Step 3: Deploy to Cloud Run
   - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'deploy-cloud-run'
     args:
       - 'run'
       - 'deploy'
-      - 'funlist-app'
-      - '--image=gcr.io/$PROJECT_ID/funlist-app:$COMMIT_SHA'
-      - '--region=us-central1'
+      - '${_SERVICE_NAME}'
+      - '--image=gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$COMMIT_SHA'
+      - '--region=${_REGION}'
       - '--platform=managed'
       - '--allow-unauthenticated'
+      - '--min-instances=${_MIN_INSTANCES}'
+      - '--max-instances=${_MAX_INSTANCES}'
+      - '--memory=${_MEMORY}'
+      - '--cpu=${_CPU}'
+      - '--concurrency=${_CONCURRENCY}'
+      - '--timeout=${_REQUEST_TIMEOUT}'
+      - '--port=8080'
       - '--set-env-vars=FLASK_ENV=production'
+      - '--set-env-vars=PORT=8080'
+      - '--set-env-vars=FLASK_SECRET_KEY=$$FLASK_SECRET_KEY'
+      - '--set-env-vars=DATABASE_URL=$$DATABASE_URL'
+      - '--set-env-vars=GOOGLE_MAPS_API_KEY=$$GOOGLE_MAPS_API_KEY'
+      - '--set-env-vars=GOOGLE_OAUTH_CLIENT_ID=$$GOOGLE_OAUTH_CLIENT_ID'
+      - '--set-env-vars=GOOGLE_OAUTH_CLIENT_SECRET=$$GOOGLE_OAUTH_CLIENT_SECRET'
+      - '--set-env-vars=ANTHROPIC_API_KEY=$$ANTHROPIC_API_KEY'
+      - '--set-env-vars=OPENAI_API_KEY=$$OPENAI_API_KEY'
+      - '--set-env-vars=GEMINI_API_KEY=$$GEMINI_API_KEY'
+      - '--set-env-vars=EXPRESS_API_URL=$$EXPRESS_API_URL'
+      - '--add-cloudsql-instances=$$CLOUD_SQL_INSTANCE'
+      - '--service-account=$$SERVICE_ACCOUNT_EMAIL'
 
+# Specify images to be pushed to Container Registry
 images:
-  - 'gcr.io/$PROJECT_ID/funlist-app:$COMMIT_SHA'
+  - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$COMMIT_SHA'
+  - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest'
+
+# Build timeout (45 minutes)
+timeout: '2700s'
+
+# Use Cloud Build machine type for faster builds
+options:
+  machineType: 'E2_HIGHCPU_8'
+  logging: CLOUD_LOGGING_ONLY
