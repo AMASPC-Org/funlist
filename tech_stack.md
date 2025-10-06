@@ -124,5 +124,5 @@ POST /funalytics/recompute   # Legacy score recomputation
 
 ---
 
-**Last Updated**: January 2025  
+**Last Updated**: October 2025  
 **Architecture Version**: 2.0 (Multi-Brand Scoring System)
