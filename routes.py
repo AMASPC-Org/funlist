@@ -731,9 +731,26 @@ Focus on actionable, specific suggestions that would improve the event's appeal 
         current_app.logger.error(f"Error in event analysis: {str(e)}")
         return jsonify({"error": "Analysis service temporarily unavailable", "success": False}), 500
 
+@login_required
+@admin_required
+def add_venue():
+    """Route for adding a new venue"""
+    from forms import VenueForm  # Import if exists, or create placeholder
+    chapters = Chapter.query.all()
+    # TODO: Implement venue creation logic
+    return render_template('add_venue.html', chapters=chapters)
+
+@login_required
+def venues():
+    """Route for viewing venues"""
+    chapters = Chapter.query.all()
+    # TODO: Fetch venues from database
+    venues = []
+    return render_template('venues.html', venues=venues, chapters=chapters)
+
 # --- Other Routes (Placeholder/Keep Existing) ---
 @login_required
-#@admin_required # Add decorator back once roles are solid
+@admin_required
 def admin_dashboard():
      # ... (Keep existing logic) ...
      chapters = Chapter.query.all()
@@ -743,7 +760,7 @@ def admin_dashboard():
      users = [] # Placeholder
      events_by_category = {"labels": [], "datasets": [{"data":[]}]} # Placeholder
      user_growth_data = {"labels": [], "datasets": [{"label": "New Users", "data":[]}]} # Placeholder
-     return render_template('admin/dashboard.html', chapters=chapters, stats=stats, events=events, users=users, status='pending', events_by_category=events_by_category, user_growth_data=user_growth_data)
+     return render_template('admin_dashboard.html', chapters=chapters, stats=stats, events=events, users=users, status='pending', events_by_category=events_by_category, user_growth_data=user_growth_data)
 
 # Add other routes from your previous routes.py here, ensuring imports are correct
 # ... e.g., /marketplace, /admin/users, /api/feedback, /search, etc. ...
@@ -839,6 +856,8 @@ def init_routes(app):
     app.route('/api/fun-assistant/chat', methods=['POST'])(fun_assistant_chat)
     app.route('/api/analyze-event', methods=['POST'])(analyze_event)
     app.route('/admin/dashboard')(admin_dashboard)
+    app.route('/add-venue', methods=['GET', 'POST'])(add_venue)
+    app.route('/venues')(venues)
     app.route("/api/feedback", methods=['POST'])(submit_feedback)
     app.route("/search", methods=["GET", "POST"])(search)
 
