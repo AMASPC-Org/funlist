@@ -12,6 +12,11 @@ from flask_migrate import Migrate
 from werkzeug.exceptions import RequestTimeout
 from functools import wraps
 import time
+from firebase_service import (
+    FirebaseAuthError,
+    get_firebase_client_config,
+    initialize_firebase,
+)
 
 # Configure logging
 logging.basicConfig(
@@ -59,6 +64,18 @@ def create_app():
     app.config['SESSION_REFRESH_EACH_REQUEST'] = True
     app.config['SESSION_COOKIE_NAME'] = 'funlist_session'
 
+    admin_emails = os.environ.get("FIREBASE_ADMIN_EMAILS")
+    if admin_emails:
+        app.config["ADMIN_EMAILS"] = {
+            email.strip().lower()
+            for email in admin_emails.split(",")
+            if email.strip()
+        }
+    else:
+        app.config["ADMIN_EMAILS"] = {"ryan@funlist.ai"}
+
+    app.config["FIREBASE_CLIENT_CONFIG"] = get_firebase_client_config()
+
     try:
         logger.info("Initializing database...")
         db.init_app(app)
@@ -94,6 +111,14 @@ def create_app():
         raise
 
     try:
+        initialize_firebase()
+        logger.info("Firebase Admin initialized successfully")
+    except FirebaseAuthError as exc:
+        logger.warning("Firebase Admin not fully configured: %s", exc)
+    except Exception as exc:
+        logger.error("Unexpected Firebase initialization error: %s", exc, exc_info=True)
+
+    try:
         logger.info("Setting up login manager...")
         login_manager = LoginManager()
         login_manager.init_app(app)
@@ -115,11 +140,11 @@ def create_app():
     def add_header(response):
         csp = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.jsdelivr.net https://*.googleapis.com https://*.cdnjs.cloudflare.com https://unpkg.com; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.jsdelivr.net https://*.googleapis.com https://*.cdnjs.cloudflare.com https://unpkg.com https://*.gstatic.com https://www.gstatic.com; "
             "style-src 'self' 'unsafe-inline' https://*.jsdelivr.net https://*.googleapis.com https://*.fontawesome.com https://*.cdnjs.cloudflare.com https://unpkg.com; "
             "img-src 'self' data: blob: https://*.googleapis.com https://*.gstatic.com https://*.google.com; "
             "font-src 'self' data: https://*.jsdelivr.net https://*.gstatic.com https://*.fontawesome.com https://*.bootstrapcdn.com https://*.cdnjs.cloudflare.com; "
-            "connect-src 'self' https://*.googleapis.com https://*.google.com; "
+            "connect-src 'self' https://*.googleapis.com https://*.google.com https://*.firebaseio.com https://*.gstatic.com; "
             "frame-src 'self' https://*.google.com; "
             "worker-src 'self' blob:; "
         )
@@ -128,8 +153,14 @@ def create_app():
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['Access-Control-Allow-Origin'] = '*'
         response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
-        response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, X-CSRFToken'
         return response
+
+    @app.context_processor
+    def inject_client_config():
+        return {
+            "firebase_client_config": app.config.get("FIREBASE_CLIENT_CONFIG", {}),
+        }
 
     try:
         logger.info("Importing User model...")

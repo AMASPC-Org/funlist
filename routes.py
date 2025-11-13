@@ -1,22 +1,38 @@
 from flask import render_template, flash, redirect, url_for, request, session, jsonify
-from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user, login_required, login_user, logout_user
-from forms import SignupForm, LoginForm, ProfileForm, EventForm, ResetPasswordRequestForm, ResetPasswordForm, ContactForm, VenueForm
+from forms import ProfileForm, EventForm, ContactForm, VenueForm
 from models import User, Event, Subscriber, ProhibitedAdvertiserCategory
 from db_init import db
-from utils import geocode_address, send_password_reset_email
+from utils import geocode_address
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 import logging
 from datetime import datetime, timedelta
 import json
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import func, inspect
+import secrets
+from urllib.parse import urljoin, urlparse
+from firebase_service import FirebaseAuthError, verify_firebase_token
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
 def init_routes(app):
+    def _safe_redirect_target(target):
+        """Ensure redirect targets stay within this application."""
+        if not target:
+            return url_for("index")
+        ref_url = urlparse(request.host_url)
+        test_url = urlparse(urljoin(request.host_url, target))
+        if (test_url.scheme in ("http", "https") and
+                test_url.netloc == ref_url.netloc):
+            redirect_path = test_url.path or "/"
+            if test_url.query:
+                redirect_path = f"{redirect_path}?{test_url.query}"
+            return redirect_path
+        return url_for("index")
+
     # Add CSP report endpoint (exempt from CSRF protection)
     @app.route('/csp-report', methods=['POST'])
     def csp_report():
@@ -51,6 +67,81 @@ def init_routes(app):
         app.logger.info(f"New subscription: {email} with preferences: {preferences}")
 
         return jsonify({'success': True, 'message': 'Subscription successful'})
+
+    @app.route("/auth/session", methods=["POST"])
+    def establish_session_from_firebase():
+        payload = request.get_json(silent=True) or {}
+        id_token = payload.get("idToken") or payload.get("id_token")
+        intent = (payload.get("intent") or "user").lower()
+        redirect_target = payload.get("redirect") or request.args.get("next")
+
+        if not id_token:
+            return jsonify({"success": False, "message": "Missing Firebase token."}), 400
+
+        try:
+            decoded_token = verify_firebase_token(id_token)
+        except FirebaseAuthError as exc:
+            logger.warning("Firebase token verification failed: %s", exc)
+            return jsonify({"success": False, "message": str(exc)}), 401
+
+        raw_email = (decoded_token.get("email") or "").strip()
+        if not raw_email:
+            return jsonify({"success": False, "message": "Your Firebase account is missing an email address."}), 400
+        normalized_email = raw_email.lower()
+
+        display_name = decoded_token.get("name") or ""
+        first_name = decoded_token.get("given_name") or (display_name.split(" ")[0] if display_name else None)
+        last_name = decoded_token.get("family_name")
+
+        try:
+            user = User.query.filter(func.lower(User.email) == normalized_email).first()
+            is_new_user = False
+
+            if not user:
+                user = User(
+                    email=raw_email,
+                    first_name=first_name,
+                    last_name=last_name,
+                    account_active=True,
+                )
+                # Store a random password placeholder to satisfy non-null constraint
+                user.set_password(secrets.token_urlsafe(32))
+                is_new_user = True
+                db.session.add(user)
+            else:
+                if first_name and not user.first_name:
+                    user.first_name = first_name
+                if last_name and not user.last_name:
+                    user.last_name = last_name
+
+            admin_emails = app.config.get("ADMIN_EMAILS", {"ryan@funlist.ai"})
+            if intent == "admin":
+                if normalized_email not in admin_emails and not user.is_admin:
+                    return jsonify({"success": False, "message": "Admin access denied."}), 403
+                user.is_admin = True
+
+            user.last_login = datetime.utcnow()
+            db.session.commit()
+        except SQLAlchemyError as exc:
+            db.session.rollback()
+            logger.error("Database error establishing Firebase session: %s", exc, exc_info=True)
+            return jsonify({"success": False, "message": "Unable to update your account."}), 500
+
+        login_user(user)
+        session["user_id"] = user.id
+        session["login_time"] = datetime.utcnow().isoformat()
+        session["last_activity"] = datetime.utcnow().isoformat()
+
+        if is_new_user:
+            session['new_registration'] = True
+            flash("Welcome to FunList.ai! Let's get your profile set up.", "success")
+
+        safe_redirect = _safe_redirect_target(redirect_target)
+        return jsonify({
+            "success": True,
+            "redirect": safe_redirect,
+            "isNewUser": is_new_user
+        })
 
     @app.route('/submit-feedback', methods=['POST'])
     def submit_feedback():
@@ -141,171 +232,31 @@ def init_routes(app):
             logger.error(f"Error saving preferences: {str(e)}")
             return jsonify({"success": False, "message": str(e)}), 500
 
-    @app.route("/signup", methods=["GET", "POST"])
+    @app.route("/signup", methods=["GET"])
     def signup():
         if current_user.is_authenticated:
             return redirect(url_for("index"))
-        form = SignupForm()
 
-        # Pre-select organizer option if specified in URL
-        if request.args.get('as') == 'organizer':
-            form.is_organizer.data = True
-            form.is_event_creator.data = True
+        redirect_target = request.args.get("next") or request.args.get("redirect")
+        safe_redirect = _safe_redirect_target(redirect_target)
 
-        if form.validate_on_submit():
-            try:
-                # Check if user already exists
-                existing_user = User.query.filter_by(email=form.email.data).first()
-                if existing_user:
-                    flash("This email address is already registered. Please use a different email or try logging in.", "danger")
-                    form.email.errors = list(form.email.errors) + ["Email already registered"]
-                    return render_template("signup.html", form=form)
+        return render_template(
+            "signup.html",
+            auth_screen="signup",
+            auth_redirect=safe_redirect,
+        )
 
-                user = User()
-                user.email = form.email.data
-                user.set_password(form.password.data)
-                user.account_active = True
-
-                # Process user intentions (can select multiple)
-                try:
-                    user_intentions = request.form.getlist('user_intention[]')
-                    if not user_intentions:
-                        user_intentions = ['find_events']  # Default
-
-                    if 'create_events' in user_intentions:
-                        user.is_event_creator = True
-                    if 'represent_organization' in user_intentions:
-                        user.is_organizer = True
-                        user.is_event_creator = True  # Organizers can also create events
-                except Exception as e:
-                    logger.warning(f"Error processing user intentions: {str(e)}")
-                    # Fallback to form fields if available
-                    if hasattr(form, 'is_event_creator') and form.is_event_creator.data:
-                        user.is_event_creator = True
-                    if hasattr(form, 'is_organizer') and form.is_organizer.data:
-                        user.is_organizer = True
-                        user.is_event_creator = True  # Organizers can also create events
-                    if hasattr(form, 'is_vendor') and form.is_vendor.data:
-                        user.is_vendor = True
-                        if hasattr(form, 'vendor_type') and form.vendor_type.data:
-                            user.vendor_type = form.vendor_type.data
-
-                # Store user preferences from registration
-                profile_data = {}
-                if hasattr(form, 'event_focus') and request.form.getlist('event_focus'):
-                    event_focus = request.form.getlist('event_focus')
-                    preferences = user.get_preferences()
-                    preferences['event_focus'] = event_focus
-                    user.set_preferences(preferences)
-
-                if hasattr(form, 'preferred_locations') and form.preferred_locations.data:
-                    profile_data['location'] = form.preferred_locations.data
-
-                if hasattr(form, 'event_interests') and form.event_interests.data:
-                    profile_data['interests'] = form.event_interests.data
-
-                if profile_data:
-                    for key, value in profile_data.items():
-                        setattr(user, key, value)
-
-
-                db.session.add(user)
-                db.session.commit()
-
-                # Auto-login the user
-                login_user(user)
-                session["user_id"] = user.id
-                session["login_time"] = datetime.utcnow().isoformat()
-                session["last_activity"] = datetime.utcnow().isoformat()
-
-                # Verify terms acceptance
-                if not form.terms_accepted.data:
-                    flash("You must accept the Terms and Conditions and Privacy Policy to register.", "danger")
-                    return render_template("signup.html", form=form)
-
-                # Set welcome message and indicate this is a new registration
-                flash("Welcome to FunList.ai! Let's set up your profile.", "success")
-
-                # Set session flag for new registration to trigger wizard
-                session['new_registration'] = True
-
-                # Redirect to index which will show the wizard
-                return redirect(url_for("index"))
-            except IntegrityError as e:
-                db.session.rollback()
-                logger.error(f"Database integrity error during sign up: {str(e)}")
-                error_msg = str(e).lower()
-
-                if "email" in error_msg and "unique constraint" in error_msg:
-                    flash(
-                        "This email address is already registered. Please use a different email or try logging in.",
-                        "danger",
-                    )
-                    form.email.errors = list(form.email.errors) + [
-                        "Email already registered"
-                    ]
-                else:
-                    flash(
-                        "There was a problem with your sign up. Please verify your information and try again.",
-                        "danger",
-                    )
-            except SQLAlchemyError as e:
-                db.session.rollback()
-                logger.error(f"Database error during sign up: {str(e)}")
-                flash(
-                    "We encountered a technical issue. Please try again later.",
-                    "danger",
-                )
-            except Exception as e:
-                db.session.rollback()
-                logger.error(f"Unexpected error during sign up: {str(e)}")
-                flash(
-                    "An unexpected error occurred. Please try again. If the problem persists, contact support.",
-                    "danger",
-                )
-        return render_template("signup.html", form=form)
-
-    @app.route("/login", methods=["GET", "POST"])
+    @app.route("/login", methods=["GET"])
     def login():
         if current_user.is_authenticated:
             return redirect(url_for("index"))
-        form = LoginForm()
-        if form.validate_on_submit():
-            try:
-                email = form.email.data
-                logger.info(f"Attempting login for: {email}")
+        safe_redirect = _safe_redirect_target(request.args.get("next"))
 
-                user = User.query.filter_by(email=email).first()
-
-                if user and user.check_password(form.password.data):
-                    if form.remember_me.data:
-                        session.permanent = True
-                    session["user_id"] = user.id
-                    session["login_time"] = datetime.utcnow().isoformat()
-                    session["last_activity"] = datetime.utcnow().isoformat()
-
-                    login_user(user, remember=form.remember_me.data)
-                    user.last_login = datetime.utcnow()
-                    db.session.commit()
-
-                    logger.info(f"Login successful for user: {user.id}")
-                    flash("Logged in successfully!", "success")
-                    next_page = request.args.get("next")
-                    return redirect(next_page or url_for("index"))
-                else:
-                    logger.warning(f"Failed login attempt for email: {email}")
-                    flash("Invalid email or password. Please try again.", "danger")
-            except SQLAlchemyError as e:
-                db.session.rollback()
-                logger.error(f"Database error during login: {str(e)}", exc_info=True)
-                flash(
-                    "We encountered a technical issue. Please try again later.",
-                    "danger",
-                )
-            except Exception as e:
-                logger.error(f"Unexpected error during login: {str(e)}", exc_info=True)
-                flash("An unexpected error occurred. Please try again.", "danger")
-        return render_template("login.html", form=form)
+        return render_template(
+            "login.html",
+            auth_screen="login",
+            auth_redirect=safe_redirect,
+        )
 
     @app.route("/logout")
     @login_required
@@ -717,48 +668,22 @@ def init_routes(app):
         db.session.rollback()
         return render_template("500.html"), 500
 
-    @app.route("/admin/login", methods=["GET", "POST"])
-    @app.route("/admin_login", methods=["GET", "POST"])  # Add alternative URL route
+    @app.route("/admin/login", methods=["GET"])
+    @app.route("/admin_login", methods=["GET"])  # Add alternative URL route
     def admin_login():
-        if current_user.is_authenticated and current_user.email == 'ryan@funlist.ai':
+        admin_emails = app.config.get("ADMIN_EMAILS", {"ryan@funlist.ai"})
+        if current_user.is_authenticated and current_user.email.lower() in admin_emails:
             return redirect(url_for("admin_dashboard"))
-        form = LoginForm()
-        if form.validate_on_submit():
-            try:
-                email = form.email.data
-                password = form.password.data
-                logger.info(f"Admin login attempt: {email}")
 
-                # Only ryan@funlist.ai should have admin access
-                admin_email = 'ryan@funlist.ai'
+        redirect_target = request.args.get("next") or url_for("admin_dashboard")
+        safe_redirect = _safe_redirect_target(redirect_target)
 
-                # Standard login check
-                try:
-                    user = User.query.filter_by(email=email).first()
-                    if user and user.check_password(password) and user.email == admin_email:
-                        # Ensure admin privileges for the correct admin
-                        user.is_admin = True
-                        db.session.commit()
-
-                        # Login the user
-                        login_user(user)
-                        session["user_id"] = user.id
-                        session["login_time"] = datetime.utcnow().isoformat()
-                        session["last_activity"] = datetime.utcnow().isoformat()
-
-                        logger.info(f"Admin login successful: {admin_email}")
-                        return redirect(url_for("admin_dashboard"))
-                    else:
-                        flash("Invalid credentials or insufficient privileges.", "danger")
-                except Exception as e:
-                    logger.error(f"Standard login check failed: {str(e)}")
-                    flash("Login check failed. Database may need maintenance.", "danger")
-
-            except Exception as e:
-                logger.error(f"Unexpected error in admin login: {str(e)}", exc_info=True)
-                flash("We encountered a technical issue. Please try again later.", "danger")
-
-        return render_template("admin_login.html", form=form)
+        return render_template(
+            "admin_login.html",
+            auth_screen="login",
+            auth_redirect=safe_redirect,
+            auth_intent="admin",
+        )
 
     @app.route("/admin/events")
     @login_required
@@ -897,49 +822,19 @@ def init_routes(app):
     def help_center():
         return render_template("help_center.html")
 
-    @app.route("/reset-password-request", methods=["GET", "POST"])
+    @app.route("/reset-password-request", methods=["GET"])
+    @app.route("/reset_password_request", methods=["GET"])
     def reset_password_request():
-        if current_user.is_authenticated:
-            return redirect(url_for("index"))
-        form = ResetPasswordRequestForm()
-        if form.validate_on_submit():
-            user = User.query.filter_by(email=form.email.data).first()
-            if user:
-                token = user.get_reset_token()
-                # In a real production environment, you'd send an email with a reset link
-                # For development, we'll just redirect to the reset page with the token
-                flash(f'Password reset link has been sent to {form.email.data}. Please check your email.', 'info')
-
-                # For demo purposes, we'll provide a direct link as well
-                reset_url = url_for('reset_password', token=token, _external=True)
-                flash(f'For demo purposes, you can also <a href="{reset_url}">click here</a> to reset your password.', 'info')
-
-                return redirect(url_for('login'))
-            else:
-                # Don't reveal that the user doesn't exist
-                flash('If an account with this email exists, a password reset link has been sent.', 'info')
-                return redirect(url_for('login'))
-        return render_template('reset_password_request.html', form=form)
+        return render_template(
+            'reset_password_request.html',
+            auth_screen="reset-password",
+        )
 
     @app.route("/reset-password/<token>", methods=["GET", "POST"])
+    @app.route("/reset_password/<token>", methods=["GET", "POST"])
     def reset_password(token):
-        if current_user.is_authenticated:
-            return redirect(url_for("index"))
-
-        user = User.verify_reset_token(token)
-        if not user:
-            flash('Invalid or expired reset token. Please try again.', 'danger')
-            return redirect(url_for('reset_password_request'))
-
-        form = ResetPasswordForm()
-        if form.validate_on_submit():
-            user.set_password(form.password.data)
-            user.clear_reset_token()
-            db.session.commit()
-            flash('Your password has been reset successfully. You can now log in with your new password.', 'success')
-            return redirect(url_for('login'))
-
-        return render_template('reset_password.html', form=form, token=token)
+        flash('Password reset links are now handled directly by Firebase. Please request a new link below.', 'info')
+        return redirect(url_for('reset_password_request'))
         
     @app.route("/contact", methods=["GET", "POST"])
     def contact():
@@ -1096,17 +991,14 @@ def init_routes(app):
         flash("Your organizer profile can now be managed from your main profile page.", "info")
         return redirect(url_for("edit_profile"))
         
-    @app.route("/change-password", methods=["GET", "POST"])
+    @app.route("/change-password", methods=["GET"])
     @login_required
     def change_password():
-        from forms import ResetPasswordForm
-        form = ResetPasswordForm()
-        if form.validate_on_submit():
-            current_user.set_password(form.password.data)
-            db.session.commit()
-            flash("Your password has been updated successfully!", "success")
-            return redirect(url_for("profile"))
-        return render_template("change_password.html", form=form)
+        return render_template(
+            "change_password.html",
+            auth_screen="reset-password",
+            prefill_email=current_user.email,
+        )
 
     @app.route("/venues", methods=["GET"])
     def venues():

@@ -29,6 +29,23 @@ uv pip sync pyproject.toml uv.lock
    ```
 3. (Optional) Add the `source env.local.sh` line to your shell profile for convenience.
 
+#### Firebase Authentication configuration
+Firebase now powers all login, signup, and password-reset flows. Set the following variables (either in `env.local.sh` or your hosting provider) before running the app:
+
+| Variable | Purpose |
+| --- | --- |
+| `FIREBASE_CREDENTIALS_PATH` **or** `FIREBASE_CREDENTIALS_JSON` | Service-account credentials used by the backend to verify ID tokens. Use exactly one of these. |
+| `FIREBASE_API_KEY` | Client SDK key for the web app. |
+| `FIREBASE_AUTH_DOMAIN` | Typically `<project>.firebaseapp.com`. |
+| `FIREBASE_PROJECT_ID` | Firebase project ID. |
+| `FIREBASE_APP_ID` | App ID from the Firebase console. |
+| `FIREBASE_MESSAGING_SENDER_ID` | Sender ID (needed for Firebase Auth). |
+| `FIREBASE_STORAGE_BUCKET` | Optional, but keeps the config consistent across environments. |
+| `FIREBASE_MEASUREMENT_ID` | Optional (only used if you set up analytics). |
+| `FIREBASE_ADMIN_EMAILS` | Comma-separated list of admin accounts (defaults to `ryan@funlist.ai`). |
+
+The login pages automatically load the Firebase Web SDK with these values. When a user signs in, the frontend obtains a Firebase ID token and exchanges it with `/auth/session`, which creates the Flask session and ensures `login_required` routes continue to work.
+
 ### 3. Prepare the database
 - The default `DATABASE_URL` uses `instance/funlist.db`. Ensure the directory exists:
   ```bash

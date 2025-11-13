@@ -20,6 +20,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
+    <script>
+        window.firebaseConfig = {{ (firebase_client_config or {}) | tojson | safe }};
+    </script>
+
     <style>
         .cookie-banner {
             position: fixed;
@@ -52,14 +56,13 @@
         }
     </style>
 </head>
-<body {% if current_user.is_authenticated %}
-    data-user-id="{{ current_user.id if current_user.is_authenticated else 0 }}"
-    data-user-is-organizer="{{ current_user.is_organizer|lower }}"
-    data-user-is-event-creator="{{ current_user.is_event_creator|lower }}"
-    data-user-is-vendor="{{ current_user.is_vendor|lower }}"
-{% endif %}
-      data-user-is-organizer="{{ 'true' if current_user.is_authenticated and current_user.is_organizer else 'false' }}"
-      data-user-is-event-creator="{{ 'true' if current_user.is_authenticated and current_user.is_event_creator else 'false' }}">
+<body
+    data-auth-screen="{{ auth_screen|default('') }}"
+    data-user-id="{{ current_user.id if current_user.is_authenticated else '' }}"
+    data-user-is-organizer="{{ 'true' if current_user.is_authenticated and current_user.is_organizer else 'false' }}"
+    data-user-is-event-creator="{{ 'true' if current_user.is_authenticated and current_user.is_event_creator else 'false' }}"
+    data-user-is-vendor="{{ 'true' if current_user.is_authenticated and current_user.is_vendor else 'false' }}"
+>
   {% include 'partials/navbar.html' %}
 
 <main role="main" class="mt-2">
@@ -195,6 +198,8 @@
         return null;
     };
 </script>
+
+<script type="module" src="{{ url_for('static', filename='js/firebase-auth.js') }}"></script>
 
 {% block scripts %}{% endblock %}
 {% if current_user.is_authenticated and current_user.email == 'ryan@funlist.ai' %}

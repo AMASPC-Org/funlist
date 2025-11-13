@@ -5,31 +5,44 @@
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-6">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">Admin Sign In</h3>
-                </div>
-                <div class="card-body">
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                        {% if messages %}
-                            {% for category, message in messages %}
-                                <div class="alert alert-{{ category }}">{{ message }}</div>
-                            {% endfor %}
-                        {% endif %}
-                    {% endwith %}
-                    
-                    <form method="POST">
-                        {{ form.csrf_token }}
+            <div class="card shadow-sm" id="authContainer"
+                 data-auth-mode="login"
+                 data-auth-intent="admin"
+                 data-auth-redirect="{{ auth_redirect or url_for('admin_dashboard') }}">
+                <div class="card-body p-4">
+                    <h3 class="mb-3 text-center">Admin Sign In</h3>
+                    <p class="text-muted text-center">
+                        Use your Firebase credentials to access the admin dashboard. Only approved admin accounts may sign in.
+                    </p>
+
+                    <div class="alert alert-warning d-flex align-items-center" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Admin access is limited. Use the authorized Google account or email/password configured in Firebase.
+                    </div>
+
+                    <div id="authMessage" class="alert d-none" role="alert"></div>
+
+                    <button type="button" class="btn btn-outline-danger w-100 mb-3" id="googleSignInBtn">
+                        <i class="fab fa-google me-2"></i> Continue with Google
+                    </button>
+
+                    <div class="d-flex align-items-center my-3">
+                        <span class="flex-grow-1 border-top"></span>
+                        <span class="px-3 text-muted small text-uppercase">or</span>
+                        <span class="flex-grow-1 border-top"></span>
+                    </div>
+
+                    <form id="emailSignInForm" novalidate>
                         <div class="mb-3">
-                            {{ form.email.label(class="form-label") }}
-                            {{ form.email(class="form-control", placeholder="Enter your admin email") }}
+                            <label class="form-label" for="signinEmail">Email</label>
+                            <input type="email" class="form-control" id="signinEmail" placeholder="admin@funlist.ai" required>
                         </div>
                         <div class="mb-3">
-                            {{ form.password.label(class="form-label") }}
-                            {{ form.password(class="form-control", placeholder="Enter your password") }}
+                            <label class="form-label" for="signinPassword">Password</label>
+                            <input type="password" class="form-control" id="signinPassword" placeholder="Your password" required>
                         </div>
                         <div class="d-grid">
-                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                            <button type="submit" class="btn btn-primary btn-lg">Sign In</button>
                         </div>
                     </form>
                 </div>
