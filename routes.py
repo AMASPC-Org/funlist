@@ -494,10 +494,20 @@ def init_routes(app):
 
             # Log the number of events found for debugging
             app.logger.info(f"Map page loaded with {len(events)} events")
-            return render_template("map.html", events=events)
+            google_maps_api_key = app.config.get("GOOGLE_MAPS_API_KEY", "")
+            return render_template(
+                "map.html",
+                events=events,
+                google_maps_api_key=google_maps_api_key
+            )
         except Exception as e:
             app.logger.error(f"Error in map route: {str(e)}")
-            return render_template("map.html", events=[], error_message="Could not load events for the map. Please try again later.")
+            return render_template(
+                "map.html",
+                events=[],
+                error_message="Could not load events for the map. Please try again later.",
+                google_maps_api_key=app.config.get("GOOGLE_MAPS_API_KEY", "")
+            )
 
     @app.route("/event/<int:event_id>")
     def event_detail(event_id):

@@ -6,16 +6,20 @@
 <!-- Google Maps API with callback -->
 <script>
     function initMapCallback() {
-        if (typeof FunlistMap !== 'undefined') {
-            FunlistMap.init('map');
+        if (typeof FunlistMap === 'undefined') {
+            console.error('FunlistMap not loaded');
+            return;
+        }
 
-            // Setup location search
-            if (FunlistMap.initializeLocationSearch) {
-                FunlistMap.initializeLocationSearch('locationSearch');
-            }
+        const map = FunlistMap.init('map');
 
-            // Setup filter buttons
-            document.getElementById('applyFilters').addEventListener('click', function() {
+        if (FunlistMap.initializeLocationSearch) {
+            FunlistMap.initializeLocationSearch(map, 'locationSearch');
+        }
+
+        const applyFiltersBtn = document.getElementById('applyFilters');
+        if (applyFiltersBtn) {
+            applyFiltersBtn.addEventListener('click', function () {
                 const category = document.getElementById('categoryFilter').value;
                 const date = document.getElementById('dateFilter').value;
                 const funRating = document.getElementById('funFilter').value;
@@ -24,19 +28,19 @@
                     FunlistMap.filterMarkers(category, date, funRating);
                 }
             });
-
-            // Update visible events when map changes
-            if (FunlistMap.updateVisibleEvents) {
-                google.maps.event.addListener(FunlistMap.init('map'), 'idle', function() {
-                    FunlistMap.updateVisibleEvents(FunlistMap.init('map'));
-                });
-            }
-        } else {
-            console.error('FunlistMap not loaded');
         }
     }
 </script>
-<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places&callback=initMapCallback" async></script>
+{% if google_maps_api_key %}
+<script
+    src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places,geometry&callback=initMapCallback"
+    async defer></script>
+{% else %}
+<div class="alert alert-warning mt-2">
+    Google Maps API key is missing. Add <code>GOOGLE_MAPS_API_KEY</code> to your environment to enable the interactive
+    map.
+</div>
+{% endif %}
 
 <style>
     #map {
@@ -45,7 +49,7 @@
         border-radius: 8px;
         z-index: 1;
         border: 1px solid #ddd;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
 
     .filter-bar {
@@ -58,6 +62,8 @@
 
     .map-container {
         position: relative;
+        border-radius: 12px;
+        overflow: hidden;
     }
 
     .user-location-button {
@@ -69,15 +75,15 @@
         border: 1px solid #ccc;
         border-radius: 4px;
         padding: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
-    
+
     .event-cards-container {
         max-height: 600px;
         overflow-y: auto;
         padding-right: 5px;
     }
-    
+
     .event-card {
         transition: all 0.3s ease;
         border-left: 3px solid transparent;
@@ -85,14 +91,14 @@
         border-radius: 8px;
         background-color: white;
     }
-    
+
     .event-card:hover {
         background-color: #f8f9fa;
         transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         cursor: pointer;
     }
-    
+
     .event-card.highlighted {
         background-color: #e9ecef;
         border-left-color: var(--primary-color);
@@ -105,99 +111,149 @@
         border-radius: 8px;
         margin-bottom: 15px;
     }
+
     .advertisement-card .ad-label {
         font-size: 0.9em;
         color: #6c757d;
         margin-bottom: 5px;
+    }
+
+    .map-draw-controls {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        display: flex;
+        gap: 12px;
+        z-index: 5;
+        pointer-events: none;
+    }
+
+    .draw-control-btn {
+        pointer-events: auto;
+        border: none;
+        border-radius: 999px;
+        padding: 10px 18px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 6px 20px rgba(10, 45, 94, 0.2);
+    }
+
+    .draw-control-btn.primary {
+        background-color: #0a2d5e;
+        color: #fff;
+    }
+
+    .draw-control-btn.primary.active {
+        background-color: #0d47a1;
+        box-shadow: 0 10px 25px rgba(13, 71, 161, 0.35);
+    }
+
+    .draw-control-btn.secondary {
+        background-color: #ffffff;
+        color: #0a2d5e;
+        border: 2px solid rgba(10, 45, 94, 0.2);
+    }
+
+    .draw-control-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        box-shadow: none;
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid mt-3">
-  <h1 class="text-center mb-3">Map Events</h1>
+    <h1 class="text-center mb-3">Map Events</h1>
 
-  <div class="filter-bar mb-3">
-    <div class="row g-2 justify-content-center">
-        <div class="col-md-3">
-            <input type="text" class="form-control" id="locationSearch" placeholder="Search location...">
-        </div>
-        <div class="col-md-2">
-            <select class="form-select" id="categoryFilter">
-                <option selected>All Categories</option>
-                <option>Sports</option>
-                <option>Music</option>
-                <option>Arts</option>
-                <option>Food</option>
-                <option>Other</option>
-            </select>
-        </div>
-        <div class="col-md-2">
-            <select class="form-select" id="dateFilter">
-                <option selected>Any Date</option>
-                <option>Today</option>
-                <option>Tomorrow</option>
-                <option>This Weekend</option>
-                <option>Next Week</option>
-            </select>
-        </div>
-        <div class="col-md-2">
-            <select class="form-select" id="funFilter">
-                <option selected>All Fun Ratings</option>
-                <option value="5">⭐⭐⭐⭐⭐ (5)</option>
-                <option value="4">⭐⭐⭐⭐ (4+)</option>
-                <option value="3">⭐⭐⭐ (3+)</option>
-            </select>
-        </div>
-        <div class="col-md-2">
-            <button id="applyFilters" class="btn btn-primary w-100">Apply Filters</button>
-        </div>
+    <div class="filter-bar mb-3">
+        <div class="row g-2 justify-content-center">
+            <div class="col-md-3">
+                <input type="text" class="form-control" id="locationSearch" placeholder="Search location...">
+            </div>
+            <div class="col-md-2">
+                <select class="form-select" id="categoryFilter">
+                    <option selected>All Categories</option>
+                    <option>Sports</option>
+                    <option>Music</option>
+                    <option>Arts</option>
+                    <option>Food</option>
+                    <option>Other</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select class="form-select" id="dateFilter">
+                    <option selected>Any Date</option>
+                    <option>Today</option>
+                    <option>Tomorrow</option>
+                    <option>This Weekend</option>
+                    <option>Next Week</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select class="form-select" id="funFilter">
+                    <option selected>All Fun Ratings</option>
+                    <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+                    <option value="4">⭐⭐⭐⭐ (4+)</option>
+                    <option value="3">⭐⭐⭐ (3+)</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button id="applyFilters" class="btn btn-primary w-100">Apply Filters</button>
+            </div>
     </div>
   </div>
 
   <div class="row">
     <div class="col-lg-8">
-        <div id="map" class="map-container shadow"></div>
+        <div class="map-container shadow">
+            <div class="map-draw-controls">
+                <button type="button" id="drawAreaButton" class="draw-control-btn primary">
+                    <span class="default-label">Draw Search Area</span>
+                    <span class="active-label d-none">Cancel Drawing</span>
+                </button>
+                <button type="button" id="clearDrawAreaButton" class="draw-control-btn secondary" disabled>Clear Drawing</button>
+            </div>
+            <div id="map"></div>
+        </div>
     </div>
-    
-    <div class="col-lg-4">
-        <div class="event-cards-container">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h4>Map Events</h4>
-                <div>
-                    <span class="badge bg-primary" id="event-count">0 Events</span>
+
+        <div class="col-lg-4">
+            <div class="event-cards-container">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4>Map Events</h4>
+                    <div>
+                        <span class="badge bg-primary" id="event-count">0 Events</span>
+                    </div>
                 </div>
-            </div>
-            
-            <div id="visible-events-container">
-                <div class="text-center text-muted py-4" id="no-events-message">
-                    <i class="fas fa-map-marker-alt fa-3x mb-3"></i>
-                    <p>No events currently visible on map.<br>Try adjusting your filters or zoom level.</p>
+
+                <div id="visible-events-container">
+                    <div class="text-center text-muted py-4" id="no-events-message">
+                        <i class="fas fa-map-marker-alt fa-3x mb-3"></i>
+                        <p>No events currently visible on map.<br>Try adjusting your filters or zoom level.</p>
+                    </div>
                 </div>
-            </div>
-            
-            <div id="all-events-container" style="display: none;">
-                {% set next_ad_index = 2 %}
-                {% set next_gap = 4 %}
-                
-                {% for event in events %}
-                    <div class="card mb-3 event-card" 
-                         data-event-id="{{ event.id }}"
-                         data-lat="{{ event.latitude }}"
-                         data-lng="{{ event.longitude }}"
-                         data-category="{{ event.category }}"
-                         data-date="{{ event.start_date }}"
-                         data-fun-rating="{{ event.fun_rating }}">
+
+                <div id="all-events-container" style="display: none;">
+                    {% set next_ad_index = 2 %}
+                    {% set next_gap = 4 %}
+
+                    {% for event in events %}
+                    <div class="card mb-3 event-card" data-event-id="{{ event.id }}" data-lat="{{ event.latitude }}"
+                        data-lng="{{ event.longitude }}" data-category="{{ event.category }}"
+                        data-date="{{ event.start_date }}" data-fun-rating="{{ event.fun_rating }}">
                         <div class="card-body">
                             <h5 class="card-title">{{ event.title }}</h5>
                             <p class="card-text small">{{ event.description|truncate(100) }}</p>
                             <div class="d-flex justify-content-between">
                                 <small class="text-muted">{{ event.start_date }}</small>
-                                <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                                <a href="{{ url_for('event_detail', event_id=event.id) }}"
+                                    class="btn btn-sm btn-outline-primary">View</a>
                             </div>
                         </div>
                     </div>
-                    
+
                     {% if loop.index0 == next_ad_index %}
                     <div class="card mb-3 advertisement-card" data-ad-position="{{ loop.index }}">
                         <div class="card-body text-center">
@@ -205,15 +261,15 @@
                             <p>Sponsored Content - Advertisement space available</p>
                         </div>
                     </div>
-                    
+
                     {% set next_ad_index = next_ad_index + next_gap %}
                     {% set next_gap = next_gap + 1 %}
                     {% endif %}
-                {% endfor %}
+                    {% endfor %}
+                </div>
             </div>
         </div>
     </div>
-  </div>
 </div>
 {% endblock %}
 
@@ -221,21 +277,24 @@
 <script src="{{ url_for('static', filename='js/map.js') }}"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.event-card').forEach(card => {
-        card.addEventListener('click', function() {
-            const lat = parseFloat(this.dataset.lat);
-            const lng = parseFloat(this.dataset.lng);
-            const eventId = this.dataset.eventId;
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.event-card').forEach(card => {
+            card.addEventListener('click', function () {
+                const lat = parseFloat(this.dataset.lat);
+                const lng = parseFloat(this.dataset.lng);
+                const eventId = this.dataset.eventId;
 
-            document.querySelectorAll('.event-card').forEach(c => c.classList.remove('highlighted'));
-            this.classList.add('highlighted');
+                document.querySelectorAll('.event-card').forEach(c => c.classList.remove('highlighted'));
+                this.classList.add('highlighted');
 
-            if (FunlistMap.highlightMarker) {
-                FunlistMap.highlightMarker(FunlistMap.init('map'), eventId);
-            }
+                if (FunlistMap.highlightMarker) {
+                    const mapInstance = FunlistMap.getMapInstance
+                        ? FunlistMap.getMapInstance()
+                        : FunlistMap.init('map');
+                    FunlistMap.highlightMarker(mapInstance, eventId);
+                }
+            });
         });
     });
-});
 </script>
 {% endblock %}

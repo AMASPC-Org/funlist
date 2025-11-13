@@ -31,7 +31,10 @@ def create_app():
     app.config["SERVER_NAME"] = None
     app.config["APPLICATION_ROOT"] = "/"
     app.config["PREFERRED_URL_SCHEME"] = "https"
-    app.config["GOOGLE_MAPS_API_KEY"] = "AIzaSyDRkUhORhaKILaPN0-qi9YndDShVov0DVE"
+    app.config["GOOGLE_MAPS_API_KEY"] = os.environ.get(
+        "GOOGLE_MAPS_API_KEY",
+        "AIzaSyDRkUhORhaKILaPN0-qi9YndDShVov0DVE"
+    )
 
     # Database configuration
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {

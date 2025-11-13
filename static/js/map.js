@@ -1,73 +1,69 @@
 window.FunlistMap = (function() {
     'use strict';
 
+    const defaultLocation = { lat: 47.0379, lng: -122.9007 };
+    const defaultZoom = 13;
+
     let mapInstance = null;
-    const defaultLocation = {lat: 47.0379, lng: -122.9007};
-    let defaultZoom = 13;
-    let markersList = [];
-    let userMarker = null;
     let infoWindow = null;
+    let markersList = [];
     let eventMarkers = {};
+    let userMarker = null;
+    let drawnPolygon = null;
+    let polygonListeners = [];
+    let drawButton = null;
+    let clearButton = null;
+    let isDrawingActive = false;
+    let freehandPolyline = null;
+    let freehandListeners = [];
+    let isFreehandDrawing = false;
+    let mapInteractionDefaults = null;
+    let drawingInteractionActive = false;
+
+    const currentFilters = {
+        category: 'All Categories',
+        date: 'Any Date',
+        funRating: 'All Fun Ratings'
+    };
 
     function initMap(elementId) {
-        console.log("Initializing map in element:", elementId);
+        if (mapInstance) {
+            return mapInstance;
+        }
 
         if (typeof google === 'undefined' || typeof google.maps === 'undefined') {
-            console.error("Google Maps API not loaded yet. Cannot initialize map.");
+            console.error('Google Maps API not available');
             return null;
         }
 
         const mapElement = document.getElementById(elementId);
         if (!mapElement) {
-            console.error("Map container element not found:", elementId);
+            console.error('Map element not found:', elementId);
             return null;
         }
 
-        try {
-            mapInstance = new google.maps.Map(mapElement, {
-                center: defaultLocation,
-                zoom: defaultZoom,
-                mapTypeControl: true,
-                mapTypeControlOptions: {
-                    style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
-                    position: google.maps.ControlPosition.TOP_RIGHT
-                },
-                fullscreenControl: true,
-                streetViewControl: true,
-                zoomControl: true,
-                mapTypeId: google.maps.MapTypeId.ROADMAP
-            });
+        mapInstance = new google.maps.Map(mapElement, {
+            center: defaultLocation,
+            zoom: defaultZoom,
+            mapTypeControl: true,
+            streetViewControl: true,
+            fullscreenControl: true,
+            zoomControl: true,
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+        });
 
-            infoWindow = new google.maps.InfoWindow();
-            setupMapEventListeners(mapInstance);
-            initializeLocationSearch(mapInstance);
+        infoWindow = new google.maps.InfoWindow();
 
-            // Add markers for all events
-            const eventCards = document.querySelectorAll('#all-events-container .event-card');
-            eventCards.forEach(function(card) {
-                const eventId = card.getAttribute('data-event-id');
-                const lat = parseFloat(card.getAttribute('data-lat'));
-                const lng = parseFloat(card.getAttribute('data-lng'));
+        setupMapEventListeners(mapInstance);
+        initializeLocationSearch(mapInstance, 'locationSearch');
+        setupDrawingTools(mapInstance);
+        renderMarkers();
 
-                if (!isNaN(lat) && !isNaN(lng)) {
-                    const title = card.querySelector('.card-title').textContent;
-                    const description = card.querySelector('.card-text').textContent;
-                    const popupContent = `
-                        <div class="event-popup">
-                            <h5>${title}</h5>
-                            <p>${description}</p>
-                            <a href="/event/${eventId}" class="btn btn-sm btn-primary">View Details</a>
-                        </div>
-                    `;
-                    addMarker(mapInstance, lat, lng, popupContent, eventId);
-                }
-            });
+        return mapInstance;
+    }
 
-            return mapInstance;
-        } catch (error) {
-            console.error("Error initializing map:", error);
-            return null;
-        }
+    function getMapInstance() {
+        return mapInstance;
     }
 
     function setupMapEventListeners(map) {
@@ -82,23 +78,34 @@ window.FunlistMap = (function() {
         });
     }
 
-    function initializeLocationSearch(map) {
-        const locationSearch = document.getElementById('locationSearch');
-        if (!locationSearch) return;
+    function initializeLocationSearch(map, inputOrId) {
+        if (!map || !google.maps.places) return;
 
-        const searchBox = new google.maps.places.SearchBox(locationSearch);
+        const inputElement = typeof inputOrId === 'string'
+            ? document.getElementById(inputOrId)
+            : inputOrId;
+
+        if (!inputElement) return;
+
+        const searchBox = new google.maps.places.SearchBox(inputElement);
 
         map.addListener('bounds_changed', () => {
-            searchBox.setBounds(map.getBounds());
+            const bounds = map.getBounds();
+            if (bounds) {
+                searchBox.setBounds(bounds);
+            }
         });
 
         searchBox.addListener('places_changed', () => {
             const places = searchBox.getPlaces();
-            if (places.length === 0) return;
+            if (!places || places.length === 0) return;
 
             const bounds = new google.maps.LatLngBounds();
+
             places.forEach(place => {
-                if (!place.geometry || !place.geometry.location) return;
+                if (!place.geometry || !place.geometry.location) {
+                    return;
+                }
 
                 if (place.geometry.viewport) {
                     bounds.union(place.geometry.viewport);
@@ -112,13 +119,455 @@ window.FunlistMap = (function() {
         });
     }
 
-    function updateVisibleEvents(map) {
-        const bounds = map.getBounds();
-        const visibleEventIds = [];
+    function ensureInteractionDefaults() {
+        if (!mapInstance || mapInteractionDefaults) {
+            return;
+        }
 
+        mapInteractionDefaults = {
+            draggable: mapInstance.get('draggable') !== false,
+            gestureHandling: mapInstance.get('gestureHandling') || 'auto',
+            disableDoubleClickZoom: !!mapInstance.get('disableDoubleClickZoom'),
+            scrollwheel: mapInstance.get('scrollwheel') !== false,
+            draggableCursor: mapInstance.get('draggableCursor') || null
+        };
+    }
+
+    function setMapInteractionForDrawing(active) {
+        if (!mapInstance) return;
+
+        if (active) {
+            ensureInteractionDefaults();
+            mapInstance.setOptions({
+                draggable: false,
+                gestureHandling: 'none',
+                disableDoubleClickZoom: true,
+                scrollwheel: false,
+                draggableCursor: 'crosshair'
+            });
+            drawingInteractionActive = true;
+        } else if (drawingInteractionActive && mapInteractionDefaults) {
+            mapInstance.setOptions({
+                draggable: mapInteractionDefaults.draggable,
+                gestureHandling: mapInteractionDefaults.gestureHandling,
+                disableDoubleClickZoom: mapInteractionDefaults.disableDoubleClickZoom,
+                scrollwheel: mapInteractionDefaults.scrollwheel,
+                draggableCursor: mapInteractionDefaults.draggableCursor
+            });
+            drawingInteractionActive = false;
+        }
+    }
+
+    function setupDrawingTools(map) {
+        if (!map) return;
+
+        drawButton = document.getElementById('drawAreaButton');
+        clearButton = document.getElementById('clearDrawAreaButton');
+
+        if (drawButton) {
+            drawButton.addEventListener('click', function() {
+                toggleDrawingMode();
+            });
+        }
+
+        if (clearButton) {
+            clearButton.addEventListener('click', function() {
+                clearPolygonFilter();
+            });
+        }
+
+        setDrawButtonState(false);
+        updateClearButtonState(!!drawnPolygon);
+    }
+
+    function toggleDrawingMode() {
+        if (isDrawingActive) {
+            cancelFreehandDrawing();
+            return;
+        }
+
+        isDrawingActive = true;
+        setDrawButtonState(true);
+        startFreehandDrawing();
+    }
+
+    function setDrawButtonState(active) {
+        if (!drawButton) return;
+
+        const defaultLabel = drawButton.querySelector('.default-label');
+        const activeLabel = drawButton.querySelector('.active-label');
+
+        if (active) {
+            drawButton.classList.add('active');
+            if (defaultLabel) defaultLabel.classList.add('d-none');
+            if (activeLabel) activeLabel.classList.remove('d-none');
+        } else {
+            drawButton.classList.remove('active');
+            if (defaultLabel) defaultLabel.classList.remove('d-none');
+            if (activeLabel) activeLabel.classList.add('d-none');
+        }
+    }
+
+    function updateClearButtonState(enabled) {
+        if (!clearButton) return;
+        clearButton.disabled = !enabled;
+    }
+
+    function startFreehandDrawing() {
+        if (!mapInstance || !google || !google.maps) return;
+
+        cleanupFreehandDrawing();
+        setMapInteractionForDrawing(true);
+
+        const handleMouseDown = google.maps.event.addListener(mapInstance, 'mousedown', function(event) {
+            isFreehandDrawing = true;
+
+            if (freehandPolyline) {
+                freehandPolyline.setMap(null);
+            }
+
+            freehandPolyline = new google.maps.Polyline({
+                map: mapInstance,
+                clickable: false,
+                strokeColor: '#1E90FF',
+                strokeOpacity: 0.8,
+                strokeWeight: 2
+            });
+
+            freehandPolyline.getPath().push(event.latLng);
+        });
+
+        const handleMouseMove = google.maps.event.addListener(mapInstance, 'mousemove', function(event) {
+            if (!isFreehandDrawing || !freehandPolyline) return;
+            freehandPolyline.getPath().push(event.latLng);
+        });
+
+        const handleMouseUp = google.maps.event.addListener(mapInstance, 'mouseup', finalizeFreehandPolygon);
+        const handleMouseOut = google.maps.event.addListener(mapInstance, 'mouseout', function() {
+            if (!isFreehandDrawing) return;
+            finalizeFreehandPolygon();
+        });
+
+        freehandListeners.push(handleMouseDown, handleMouseMove, handleMouseUp, handleMouseOut);
+    }
+
+    function finalizeFreehandPolygon() {
+        if (!isFreehandDrawing || !freehandPolyline) {
+            cleanupFreehandDrawing();
+            return;
+        }
+
+        isFreehandDrawing = false;
+
+        const path = freehandPolyline.getPath();
+        const coordinates = [];
+        for (let i = 0; i < path.getLength(); i++) {
+            coordinates.push(path.getAt(i));
+        }
+
+        cleanupFreehandDrawing();
+
+        if (coordinates.length < 3) {
+            cancelFreehandDrawing();
+            return;
+        }
+
+        const polygon = new google.maps.Polygon({
+            paths: coordinates,
+            fillColor: '#1E90FF',
+            fillOpacity: 0.2,
+            strokeColor: '#1E90FF',
+            strokeOpacity: 1,
+            strokeWeight: 2,
+            editable: true,
+            clickable: false
+        });
+
+        polygon.setMap(mapInstance);
+        handlePolygonComplete(polygon);
+    }
+
+    function cleanupFreehandDrawing() {
+        setMapInteractionForDrawing(false);
+
+        freehandListeners.forEach(listener => {
+            if (listener) {
+                google.maps.event.removeListener(listener);
+            }
+        });
+        freehandListeners = [];
+
+        if (freehandPolyline) {
+            freehandPolyline.setMap(null);
+            freehandPolyline = null;
+        }
+
+        isFreehandDrawing = false;
+    }
+
+    function cancelFreehandDrawing() {
+        cleanupFreehandDrawing();
+        isDrawingActive = false;
+        setDrawButtonState(false);
+    }
+
+    function handlePolygonComplete(polygon) {
+        cleanupFreehandDrawing();
+        isDrawingActive = false;
+        setDrawButtonState(false);
+
+        if (drawnPolygon) {
+            drawnPolygon.setMap(null);
+        }
+
+        detachPolygonListeners();
+        drawnPolygon = polygon;
+        polygon.setEditable(true);
+        polygon.setOptions({ clickable: false });
+
+        attachPolygonEditListeners(polygon);
+        updateClearButtonState(true);
+        renderMarkers();
+    }
+
+    function attachPolygonEditListeners(polygon) {
+        if (!polygon) return;
+
+        const path = polygon.getPath();
+        const refresh = () => renderMarkers();
+
+        polygonListeners.push(google.maps.event.addListener(path, 'insert_at', refresh));
+        polygonListeners.push(google.maps.event.addListener(path, 'set_at', refresh));
+        polygonListeners.push(google.maps.event.addListener(path, 'remove_at', refresh));
+    }
+
+    function detachPolygonListeners() {
+        polygonListeners.forEach(listener => {
+            if (listener) {
+                google.maps.event.removeListener(listener);
+            }
+        });
+        polygonListeners = [];
+    }
+
+    function clearPolygonFilter() {
+        if (!drawnPolygon) {
+            updateClearButtonState(false);
+            return;
+        }
+
+        drawnPolygon.setMap(null);
+        drawnPolygon = null;
+
+        detachPolygonListeners();
+        updateClearButtonState(false);
+        renderMarkers();
+    }
+
+    function renderMarkers() {
+        if (!mapInstance) return;
+
+        clearMarkers();
+
+        const eventCards = document.querySelectorAll('#all-events-container .event-card');
+        eventCards.forEach(card => {
+            const lat = parseFloat(card.getAttribute('data-lat'));
+            const lng = parseFloat(card.getAttribute('data-lng'));
+
+            if (Number.isNaN(lat) || Number.isNaN(lng)) {
+                return;
+            }
+
+            if (!shouldIncludeEvent(card, lat, lng)) {
+                return;
+            }
+
+            const eventId = card.getAttribute('data-event-id');
+            const titleElement = card.querySelector('.card-title');
+            const descriptionElement = card.querySelector('.card-text');
+            const title = titleElement ? titleElement.textContent : 'Untitled Event';
+            const description = descriptionElement ? descriptionElement.textContent : '';
+
+            const popupContent = `
+                <div class="event-popup">
+                    <h5>${title}</h5>
+                    <p>${description}</p>
+                    <a href="/event/${eventId}" class="btn btn-sm btn-primary">View Details</a>
+                </div>
+            `;
+
+            addMarker(mapInstance, lat, lng, popupContent, eventId);
+        });
+
+        updateVisibleEvents(mapInstance);
+    }
+
+    function shouldIncludeEvent(card, lat, lng) {
+        if (!card) return false;
+
+        if (!passesCategoryFilter(card)) return false;
+        if (!passesFunRatingFilter(card)) return false;
+        if (!passesDateFilter(card)) return false;
+        if (!isWithinDrawnPolygon(lat, lng)) return false;
+
+        return true;
+    }
+
+    function passesCategoryFilter(card) {
+        const categoryFilter = currentFilters.category;
+        if (!categoryFilter || categoryFilter === 'All Categories') {
+            return true;
+        }
+
+        const category = (card.getAttribute('data-category') || '').toLowerCase();
+        return category === categoryFilter.toLowerCase();
+    }
+
+    function passesFunRatingFilter(card) {
+        const funRatingFilter = currentFilters.funRating;
+        if (!funRatingFilter || funRatingFilter === 'All Fun Ratings') {
+            return true;
+        }
+
+        const currentRating = parseInt(card.getAttribute('data-fun-rating'), 10) || 0;
+        const requiredRating = parseInt(funRatingFilter, 10) || 0;
+        return currentRating >= requiredRating;
+    }
+
+    function passesDateFilter(card) {
+        const dateFilter = currentFilters.date;
+        if (!dateFilter || dateFilter === 'Any Date') {
+            return true;
+        }
+
+        const dateValue = card.getAttribute('data-date');
+        if (!dateValue) return true;
+
+        const eventDate = new Date(dateValue);
+        if (isNaN(eventDate.getTime())) return true;
+
+        const today = new Date();
+
+        if (dateFilter === 'Today') {
+            return eventDate.toDateString() === today.toDateString();
+        }
+
+        if (dateFilter === 'Tomorrow') {
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            return eventDate.toDateString() === tomorrow.toDateString();
+        }
+
+        if (dateFilter === 'This Weekend') {
+            const dayOfWeek = today.getDay();
+            const saturday = new Date(today);
+            saturday.setDate(today.getDate() + ((6 - dayOfWeek + 7) % 7));
+            const sunday = new Date(saturday);
+            sunday.setDate(saturday.getDate() + 1);
+
+            return eventDate >= saturday && eventDate <= sunday;
+        }
+
+        return true;
+    }
+
+    function isWithinDrawnPolygon(lat, lng) {
+        if (!drawnPolygon || !google.maps.geometry || !google.maps.geometry.poly) {
+            return true;
+        }
+
+        const position = new google.maps.LatLng(lat, lng);
+        return google.maps.geometry.poly.containsLocation(position, drawnPolygon);
+    }
+
+    function clearMarkers() {
+        markersList.forEach(marker => marker.setMap(null));
+        markersList = [];
+        eventMarkers = {};
+    }
+
+    function addMarker(map, lat, lng, popupContent, eventId) {
+        if (!map) return null;
+
+        const marker = new google.maps.Marker({
+            position: { lat, lng },
+            map: map,
+            animation: google.maps.Animation.DROP
+        });
+
+        if (eventId) {
+            marker.eventId = eventId;
+            eventMarkers[eventId] = marker;
+        }
+
+        if (popupContent) {
+            marker.addListener('click', function() {
+                infoWindow.setContent(popupContent);
+                infoWindow.open(map, marker);
+                if (eventId) {
+                    highlightEventCard(eventId);
+                }
+            });
+        }
+
+        markersList.push(marker);
+        return marker;
+    }
+
+    function highlightMarker(map, eventId) {
+        const mapToUse = map || mapInstance;
+        if (!mapToUse || !eventId) return;
+
+        const marker = eventMarkers[eventId];
+        if (!marker) return;
+
+        mapToUse.panTo(marker.getPosition());
+
+        if (infoWindow) {
+            const card = document.querySelector(`#all-events-container .event-card[data-event-id="${eventId}"]`);
+            if (card) {
+                const titleElement = card.querySelector('.card-title');
+                const descriptionElement = card.querySelector('.card-text');
+                const title = titleElement ? titleElement.textContent : 'Untitled Event';
+                const description = descriptionElement ? descriptionElement.textContent : '';
+                const contentString = `
+                    <div class="event-popup">
+                        <h5>${title}</h5>
+                        <p>${description}</p>
+                        <a href="/event/${eventId}" class="btn btn-sm btn-primary">View Details</a>
+                    </div>
+                `;
+                infoWindow.setContent(contentString);
+                infoWindow.open(mapToUse, marker);
+            }
+        }
+
+        marker.setAnimation(google.maps.Animation.BOUNCE);
+        setTimeout(() => marker.setAnimation(null), 1500);
+        highlightEventCard(eventId);
+    }
+
+    function highlightEventCard(eventId) {
+        if (!eventId) return;
+        document.querySelectorAll('.event-card').forEach(card => card.classList.remove('highlighted'));
+
+        const visibleCard = document.querySelector(`#visible-events-container .event-card[data-event-id="${eventId}"]`);
+        if (visibleCard) {
+            visibleCard.classList.add('highlighted');
+            visibleCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+
+    function updateVisibleEvents(map) {
+        const mapToUse = map || mapInstance;
+        if (!mapToUse) return;
+
+        const bounds = mapToUse.getBounds();
         if (!bounds) return;
 
-        markersList.forEach(function(marker) {
+        const visibleEventIds = [];
+
+        markersList.forEach(marker => {
             if (marker && marker.eventId && bounds.contains(marker.getPosition())) {
                 visibleEventIds.push(marker.eventId);
             }
@@ -128,7 +577,7 @@ window.FunlistMap = (function() {
 
         const countElement = document.getElementById('event-count');
         if (countElement) {
-            countElement.textContent = visibleEventIds.length + ' Events';
+            countElement.textContent = `${visibleEventIds.length} Events`;
         }
 
         const noEventsMessage = document.getElementById('no-events-message');
@@ -143,237 +592,56 @@ window.FunlistMap = (function() {
 
         if (!allEventsContainer || !visibleEventsContainer) return;
 
-        while (visibleEventsContainer.firstChild) {
-            if (visibleEventsContainer.firstChild.id !== 'no-events-message') {
-                visibleEventsContainer.removeChild(visibleEventsContainer.firstChild);
-            } else {
-                break;
+        Array.from(visibleEventsContainer.children).forEach(child => {
+            if (child.id !== 'no-events-message') {
+                visibleEventsContainer.removeChild(child);
             }
-        }
+        });
 
         if (visibleEventIds.length === 0) {
             return;
         }
 
         const eventCards = allEventsContainer.querySelectorAll('.event-card, .advertisement-card');
-
         let visibleIndex = 0;
-        eventCards.forEach(function(card) {
+
+        eventCards.forEach(card => {
             if (card.classList.contains('event-card')) {
                 const eventId = card.getAttribute('data-event-id');
                 if (visibleEventIds.includes(eventId)) {
-                    const cardClone = card.cloneNode(true);
-                    cardClone.addEventListener('click', function(e) {
+                    const clone = card.cloneNode(true);
+                    clone.addEventListener('click', function(e) {
                         if (e.target.tagName !== 'A') {
                             highlightMarker(mapInstance, eventId);
                         }
                     });
-                    visibleEventsContainer.appendChild(cardClone);
+                    visibleEventsContainer.appendChild(clone);
                     visibleIndex++;
                 }
             } else if (card.classList.contains('advertisement-card')) {
-                const adPosition = parseInt(card.getAttribute('data-ad-position'));
-                if (visibleIndex + 1 === adPosition && visibleIndex < visibleEventIds.length) {
-                    const adClone = card.cloneNode(true);
-                    visibleEventsContainer.appendChild(adClone);
+                const adPosition = parseInt(card.getAttribute('data-ad-position'), 10);
+                if (!Number.isNaN(adPosition) && visibleIndex + 1 === adPosition && visibleIndex < visibleEventIds.length) {
+                    visibleEventsContainer.appendChild(card.cloneNode(true));
                 }
             }
         });
-    }
-
-    function addMarker(map, lat, lng, popupContent, eventId) {
-        if (!map) {
-            console.error("Map instance is null or undefined");
-            return null;
-        }
-
-        try {
-            const marker = new google.maps.Marker({
-                position: {lat: parseFloat(lat), lng: parseFloat(lng)},
-                map: map,
-                animation: google.maps.Animation.DROP
-            });
-
-            if (eventId) {
-                marker.eventId = eventId;
-                eventMarkers[eventId] = marker;
-            }
-
-            if (popupContent) {
-                marker.addListener('click', function() {
-                    infoWindow.setContent(popupContent);
-                    infoWindow.open(map, marker);
-
-                    if (eventId) {
-                        highlightEventCard(eventId);
-                    }
-                });
-            }
-
-            markersList.push(marker);
-
-            return marker;
-        } catch (error) {
-            console.error("Error adding marker:", error);
-            return null;
-        }
-    }
-
-    function highlightMarker(map, eventId) {
-        if (!map || !eventId) return;
-
-        const marker = eventMarkers[eventId];
-        if (marker) {
-            map.panTo(marker.getPosition());
-
-            if (infoWindow) {
-                const popupContent = document.querySelector(`#all-events-container .event-card[data-event-id="${eventId}"]`);
-                if (popupContent) {
-                    const title = popupContent.querySelector('.card-title').textContent;
-                    const description = popupContent.querySelector('.card-text').textContent;
-
-                    const contentString = `
-                        <div class="event-popup">
-                            <h5>${title}</h5>
-                            <p>${description}</p>
-                            <a href="/event/${eventId}" class="btn btn-sm btn-primary">View Details</a>
-                        </div>
-                    `;
-
-                    infoWindow.setContent(contentString);
-                    infoWindow.open(map, marker);
-                }
-            }
-
-            if (marker.getAnimation() !== null) {
-                marker.setAnimation(null);
-            } else {
-                marker.setAnimation(google.maps.Animation.BOUNCE);
-                setTimeout(function() {
-                    marker.setAnimation(null);
-                }, 1500);
-            }
-        }
-    }
-
-    function highlightEventCard(eventId) {
-        if (!eventId) return;
-
-        document.querySelectorAll('.event-card').forEach(function(card) {
-            card.classList.remove('highlighted');
-        });
-
-        const visibleCard = document.querySelector(`#visible-events-container .event-card[data-event-id="${eventId}"]`);
-        if (visibleCard) {
-            visibleCard.classList.add('highlighted');
-            visibleCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-    }
-
-    function clearMarkers() {
-        markersList.forEach(function(marker) {
-            marker.setMap(null);
-        });
-        markersList = [];
-        eventMarkers = {};
-
-        if (userMarker) {
-            userMarker.setMap(null);
-            userMarker = null;
-        }
     }
 
     function filterMarkers(categoryFilter, dateFilter, funRatingFilter) {
-        if (!mapInstance) return;
+        currentFilters.category = categoryFilter || 'All Categories';
+        currentFilters.date = dateFilter || 'Any Date';
+        currentFilters.funRating = funRatingFilter || 'All Fun Ratings';
 
-        clearMarkers();
-
-        const eventCards = document.querySelectorAll('#all-events-container .event-card');
-
-        eventCards.forEach(function(card) {
-            const eventId = card.getAttribute('data-event-id');
-            const lat = parseFloat(card.getAttribute('data-lat'));
-            const lng = parseFloat(card.getAttribute('data-lng'));
-            const category = card.getAttribute('data-category');
-            const date = card.getAttribute('data-date');
-            const funRating = parseInt(card.getAttribute('data-fun-rating'));
-
-            let passesFilter = true;
-
-            if (categoryFilter && categoryFilter !== 'All Categories') {
-                if (category.toLowerCase() !== categoryFilter.toLowerCase()) {
-                    passesFilter = false;
-                }
-            }
-
-            if (funRatingFilter && funRatingFilter !== 'All Fun Ratings') {
-                const minRating = parseInt(funRatingFilter);
-                if (funRating < minRating) {
-                    passesFilter = false;
-                }
-            }
-
-            if (dateFilter && dateFilter !== 'Any Date') {
-                const eventDate = new Date(date);
-                const today = new Date();
-
-                if (dateFilter === 'Today') {
-                    if (eventDate.toDateString() !== today.toDateString()) {
-                        passesFilter = false;
-                    }
-                } else if (dateFilter === 'Tomorrow') {
-                    const tomorrow = new Date(today);
-                    tomorrow.setDate(tomorrow.getDate() + 1);
-                    if (eventDate.toDateString() !== tomorrow.toDateString()) {
-                        passesFilter = false;
-                    }
-                } else if (dateFilter === 'This Weekend') {
-                    const dayOfWeek = today.getDay();
-                    const saturday = new Date(today);
-                    saturday.setDate(today.getDate() + (6 - dayOfWeek) % 7);
-                    const sunday = new Date(saturday);
-                    sunday.setDate(saturday.getDate() + 1);
-
-                    if (!(eventDate >= saturday && eventDate <= sunday)) {
-                        passesFilter = false;
-                    }
-                }
-            }
-
-            if (passesFilter && !isNaN(lat) && !isNaN(lng)) {
-                const title = card.querySelector('.card-title').textContent;
-                const description = card.querySelector('.card-text').textContent;
-
-                const popupContent = `
-                    <div class="event-popup">
-                        <h5>${title}</h5>
-                        <p>${description}</p>
-                        <a href="/event/${eventId}" class="btn btn-sm btn-primary">View Details</a>
-                    </div>
-                `;
-
-                addMarker(mapInstance, lat, lng, popupContent, eventId);
-            }
-        });
-
-        updateVisibleEvents(mapInstance);
+        renderMarkers();
     }
 
     function getUserLocation(map, callback) {
-        if (!map) {
-            console.error("Map instance is null or undefined");
+        const mapToUse = map || mapInstance;
+        if (!mapToUse) {
+            console.error('Map instance not ready');
             if (callback) callback(false, null);
             return;
         }
-
-        setTimeout(function() {
-            console.log("Forcing map resize");
-            try {
-                google.maps.event.trigger(map, 'resize');
-            } catch (e) {
-                console.error("Error resizing map:", e);
-            }
-        }, 500);
 
         const dispatchLocation = (success, lat, lng) => {
             try {
@@ -381,83 +649,77 @@ window.FunlistMap = (function() {
                     detail: { success, lat, lng }
                 });
                 document.dispatchEvent(event);
-                console.log("Dispatched user-location-ready event");
-            } catch (e) {
-                console.error("Error dispatching location event:", e);
+            } catch (err) {
+                console.error('Failed to dispatch user-location-ready', err);
             }
 
-            try {
-                map.setCenter({lat: lat, lng: lng});
-                map.setZoom(defaultZoom);
-                console.log("Map centered on user location");
-            } catch (e) {
-                console.error("Error setting map center:", e);
-            }
+            mapToUse.setCenter({ lat, lng });
+            mapToUse.setZoom(defaultZoom);
         };
 
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                function(position) {
-                    const userLat = position.coords.latitude;
-                    const userLng = position.coords.longitude;
-
-                    console.log("User location obtained:", userLat, userLng);
-
-                    if (userMarker) {
-                        userMarker.setMap(null);
-                    }
-
-                    try {
-                        userMarker = new google.maps.Marker({
-                            position: {lat: userLat, lng: userLng},
-                            map: map,
-                            title: "Your Location",
-                            icon: {
-                                path: google.maps.SymbolPath.CIRCLE,
-                                scale: 10,
-                                fillColor: "#4285F4",
-                                fillOpacity: 0.7,
-                                strokeColor: "#FFFFFF",
-                                strokeWeight: 2
-                            },
-                            zIndex: 1000
-                        });
-
-                        const userInfoWindow = new google.maps.InfoWindow({
-                            content: "<div><strong>You are here</strong></div>"
-                        });
-
-                        userMarker.addListener('click', function() {
-                            userInfoWindow.open(map, userMarker);
-                        });
-                    } catch (e) {
-                        console.error("Error adding user location marker:", e);
-                    }
-
-                    map.setCenter({lat: userLat, lng: userLng});
-                    map.setZoom(defaultZoom);
-
-                    console.log("User location found:", userLat, userLng);
-
-                    if (callback) callback(true, { lat: userLat, lng: userLng });
-
-                    dispatchLocation(true, userLat, userLng);
-                },
-                function(error) {
-                    console.warn("Error getting user location:", error.message);
-
-                    if (callback) callback(false, null);
-
-                    dispatchLocation(false, defaultLocation.lat, defaultLocation.lng);
-                },
-                {
-                    enableHighAccuracy: true,
-                    timeout: 10000,
-                    maximumAge: 60000
-                }
-            );
-        } else {
-            console.warn("Geolocation is not supported by this browser");
+        if (!navigator.geolocation) {
+            console.warn('Geolocation unsupported');
             if (callback) callback(false, null);
+            dispatchLocation(false, defaultLocation.lat, defaultLocation.lng);
+            return;
+        }
 
-            dispatch
+        navigator.geolocation.getCurrentPosition(
+            position => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+
+                if (userMarker) {
+                    userMarker.setMap(null);
+                }
+
+                userMarker = new google.maps.Marker({
+                    position: { lat, lng },
+                    map: mapToUse,
+                    title: 'Your Location',
+                    icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        scale: 10,
+                        fillColor: '#4285F4',
+                        fillOpacity: 0.7,
+                        strokeColor: '#FFFFFF',
+                        strokeWeight: 2
+                    },
+                    zIndex: 1000
+                });
+
+                const userInfo = new google.maps.InfoWindow({
+                    content: '<div><strong>You are here</strong></div>'
+                });
+
+                userMarker.addListener('click', function() {
+                    userInfo.open(mapToUse, userMarker);
+                });
+
+                if (callback) callback(true, { lat, lng });
+                dispatchLocation(true, lat, lng);
+            },
+            error => {
+                console.warn('Unable to fetch user location:', error.message);
+                if (callback) callback(false, null);
+                dispatchLocation(false, defaultLocation.lat, defaultLocation.lng);
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 60000
+            }
+        );
+    }
+
+    return {
+        init: initMap,
+        getMapInstance,
+        initializeLocationSearch,
+        highlightMarker,
+        updateVisibleEvents,
+        filterMarkers,
+        getUserLocation,
+        clearDrawnArea: clearPolygonFilter
+    };
+})();
