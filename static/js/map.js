@@ -15,10 +15,14 @@ window.FunlistMap = (function() {
     let clearButton = null;
     let isDrawingActive = false;
     let freehandPolyline = null;
-    let freehandListeners = [];
+    let freehandPreviewPolygon = null;
     let isFreehandDrawing = false;
     let mapInteractionDefaults = null;
     let drawingInteractionActive = false;
+    let drawingOverlayElement = null;
+    let activePointerId = null;
+    let projectionOverlay = null;
+    let overlayProjection = null;
 
     const currentFilters = {
         category: 'All Categories',
@@ -53,7 +57,7 @@ window.FunlistMap = (function() {
         });
 
         infoWindow = new google.maps.InfoWindow();
-
+        createProjectionOverlay(mapInstance);
         setupMapEventListeners(mapInstance);
         initializeLocationSearch(mapInstance, 'locationSearch');
         setupDrawingTools(mapInstance);
@@ -119,6 +123,62 @@ window.FunlistMap = (function() {
         });
     }
 
+    function createProjectionOverlay(map) {
+        if (!map || projectionOverlay || !google.maps.OverlayView) {
+            return;
+        }
+
+        projectionOverlay = new google.maps.OverlayView();
+        projectionOverlay.onAdd = function() {};
+        projectionOverlay.draw = function() {
+            const projection = this.getProjection();
+            if (projection) {
+                overlayProjection = projection;
+            }
+        };
+        projectionOverlay.onRemove = function() {
+            overlayProjection = null;
+        };
+        projectionOverlay.setMap(map);
+    }
+
+    function initializeDrawingOverlay() {
+        if (drawingOverlayElement) return;
+
+        drawingOverlayElement = document.getElementById('mapDrawingOverlay');
+        if (!drawingOverlayElement) {
+            return;
+        }
+
+        drawingOverlayElement.addEventListener('pointerdown', handlePointerDown);
+        drawingOverlayElement.addEventListener('pointermove', handlePointerMove);
+        drawingOverlayElement.addEventListener('pointerup', handlePointerUp);
+        drawingOverlayElement.addEventListener('pointerleave', handlePointerCancel);
+        drawingOverlayElement.addEventListener('pointercancel', handlePointerCancel);
+        drawingOverlayElement.addEventListener('wheel', function(event) {
+            if (drawingInteractionActive) {
+                event.preventDefault();
+            }
+        }, { passive: false });
+    }
+
+    function getLatLngFromPointerEvent(event) {
+        if (!mapInstance || !overlayProjection) {
+            return null;
+        }
+
+        const mapDiv = mapInstance.getDiv();
+        if (!mapDiv) return null;
+
+        const rect = mapDiv.getBoundingClientRect();
+        const point = new google.maps.Point(
+            event.clientX - rect.left,
+            event.clientY - rect.top
+        );
+
+        return overlayProjection.fromDivPixelToLatLng(point);
+    }
+
     function ensureInteractionDefaults() {
         if (!mapInstance || mapInteractionDefaults) {
             return;
@@ -135,7 +195,7 @@ window.FunlistMap = (function() {
 
     function setMapInteractionForDrawing(active) {
         if (!mapInstance) return;
-
+    
         if (active) {
             ensureInteractionDefaults();
             mapInstance.setOptions({
@@ -156,6 +216,134 @@ window.FunlistMap = (function() {
             });
             drawingInteractionActive = false;
         }
+    
+        if (drawingOverlayElement) {
+            if (active) {
+                drawingOverlayElement.classList.add('active');
+                drawingOverlayElement.setAttribute('aria-hidden', 'false');
+            } else {
+                drawingOverlayElement.classList.remove('active');
+                drawingOverlayElement.setAttribute('aria-hidden', 'true');
+            }
+        }
+    }
+    function handlePointerDown(event) {
+        if (!drawingInteractionActive) return;
+        if (event.pointerType === 'mouse' && event.button !== 0) return;
+
+        event.preventDefault();
+
+        if (!overlayProjection) {
+            console.warn('Drawing tools not ready yet. Please wait for the map to finish loading.');
+            return;
+        }
+
+        const latLng = getLatLngFromPointerEvent(event);
+        if (!latLng) return;
+
+        activePointerId = event.pointerId;
+        isFreehandDrawing = true;
+
+        if (drawingOverlayElement && drawingOverlayElement.setPointerCapture) {
+            drawingOverlayElement.setPointerCapture(event.pointerId);
+        }
+
+        if (freehandPolyline) {
+            freehandPolyline.setMap(null);
+        }
+
+        freehandPolyline = new google.maps.Polyline({
+            map: mapInstance,
+            clickable: false,
+            strokeColor: '#1E90FF',
+            strokeOpacity: 0.8,
+            strokeWeight: 3,
+            zIndex: 1000
+        });
+
+        freehandPolyline.getPath().push(latLng);
+        ensureFreehandPreviewPolygon();
+        updateFreehandPreviewPolygon();
+    }
+
+    function handlePointerMove(event) {
+        if (!drawingInteractionActive || !isFreehandDrawing) return;
+        if (activePointerId !== null && event.pointerId !== activePointerId) return;
+
+        event.preventDefault();
+
+        const latLng = getLatLngFromPointerEvent(event);
+        if (!latLng || !freehandPolyline) return;
+
+        freehandPolyline.getPath().push(latLng);
+        updateFreehandPreviewPolygon();
+    }
+
+    function handlePointerUp(event) {
+        if (activePointerId === null || event.pointerId !== activePointerId) return;
+
+        event.preventDefault();
+        releasePointerCapture();
+        finalizeFreehandPolygon();
+    }
+
+    function handlePointerCancel(event) {
+        if (activePointerId === null || event.pointerId !== activePointerId) return;
+
+        event.preventDefault();
+        releasePointerCapture();
+        finalizeFreehandPolygon();
+    }
+
+    function releasePointerCapture() {
+        if (drawingOverlayElement && activePointerId !== null && drawingOverlayElement.releasePointerCapture) {
+            drawingOverlayElement.releasePointerCapture(activePointerId);
+        }
+        activePointerId = null;
+    }
+
+    function resetFreehandPath() {
+        if (freehandPolyline) {
+            freehandPolyline.setMap(null);
+            freehandPolyline = null;
+        }
+
+        if (freehandPreviewPolygon) {
+            freehandPreviewPolygon.setMap(null);
+            freehandPreviewPolygon = null;
+        }
+
+        isFreehandDrawing = false;
+    }
+
+    function ensureFreehandPreviewPolygon() {
+        if (!mapInstance || freehandPreviewPolygon) return;
+
+        freehandPreviewPolygon = new google.maps.Polygon({
+            map: mapInstance,
+            paths: [],
+            fillColor: '#1E90FF',
+            fillOpacity: 0.15,
+            strokeColor: '#1E90FF',
+            strokeOpacity: 0.5,
+            strokeWeight: 1,
+            clickable: false,
+            zIndex: 999
+        });
+    }
+
+    function updateFreehandPreviewPolygon() {
+        if (!freehandPolyline || !freehandPreviewPolygon) return;
+        const pathArray = freehandPolyline.getPath().getArray();
+
+        if (pathArray.length < 2) {
+            freehandPreviewPolygon.setPaths([]);
+            return;
+        }
+
+        const closedPath = pathArray.slice();
+        closedPath.push(pathArray[0]);
+        freehandPreviewPolygon.setPaths(closedPath);
     }
 
     function setupDrawingTools(map) {
@@ -163,6 +351,7 @@ window.FunlistMap = (function() {
 
         drawButton = document.getElementById('drawAreaButton');
         clearButton = document.getElementById('clearDrawAreaButton');
+        initializeDrawingOverlay();
 
         if (drawButton) {
             drawButton.addEventListener('click', function() {
@@ -216,44 +405,25 @@ window.FunlistMap = (function() {
     function startFreehandDrawing() {
         if (!mapInstance || !google || !google.maps) return;
 
-        cleanupFreehandDrawing();
+        if (!overlayProjection && projectionOverlay && projectionOverlay.getProjection()) {
+            overlayProjection = projectionOverlay.getProjection();
+        }
+
+        if (!overlayProjection) {
+            console.warn('Map still initializing. Please try drawing again in a moment.');
+            isDrawingActive = false;
+            setDrawButtonState(false);
+            return;
+        }
+
+        resetFreehandPath();
+        clearPolygonFilter();
         setMapInteractionForDrawing(true);
-
-        const handleMouseDown = google.maps.event.addListener(mapInstance, 'mousedown', function(event) {
-            isFreehandDrawing = true;
-
-            if (freehandPolyline) {
-                freehandPolyline.setMap(null);
-            }
-
-            freehandPolyline = new google.maps.Polyline({
-                map: mapInstance,
-                clickable: false,
-                strokeColor: '#1E90FF',
-                strokeOpacity: 0.8,
-                strokeWeight: 2
-            });
-
-            freehandPolyline.getPath().push(event.latLng);
-        });
-
-        const handleMouseMove = google.maps.event.addListener(mapInstance, 'mousemove', function(event) {
-            if (!isFreehandDrawing || !freehandPolyline) return;
-            freehandPolyline.getPath().push(event.latLng);
-        });
-
-        const handleMouseUp = google.maps.event.addListener(mapInstance, 'mouseup', finalizeFreehandPolygon);
-        const handleMouseOut = google.maps.event.addListener(mapInstance, 'mouseout', function() {
-            if (!isFreehandDrawing) return;
-            finalizeFreehandPolygon();
-        });
-
-        freehandListeners.push(handleMouseDown, handleMouseMove, handleMouseUp, handleMouseOut);
     }
 
     function finalizeFreehandPolygon() {
-        if (!isFreehandDrawing || !freehandPolyline) {
-            cleanupFreehandDrawing();
+        if (!freehandPolyline) {
+            cancelFreehandDrawing();
             return;
         }
 
@@ -265,7 +435,7 @@ window.FunlistMap = (function() {
             coordinates.push(path.getAt(i));
         }
 
-        cleanupFreehandDrawing();
+        resetFreehandPath();
 
         if (coordinates.length < 3) {
             cancelFreehandDrawing();
@@ -288,21 +458,9 @@ window.FunlistMap = (function() {
     }
 
     function cleanupFreehandDrawing() {
+        releasePointerCapture();
+        resetFreehandPath();
         setMapInteractionForDrawing(false);
-
-        freehandListeners.forEach(listener => {
-            if (listener) {
-                google.maps.event.removeListener(listener);
-            }
-        });
-        freehandListeners = [];
-
-        if (freehandPolyline) {
-            freehandPolyline.setMap(null);
-            freehandPolyline = null;
-        }
-
-        isFreehandDrawing = false;
     }
 
     function cancelFreehandDrawing() {
