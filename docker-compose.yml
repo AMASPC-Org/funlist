@@ -1,0 +1,35 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: funlist
+      POSTGRES_PASSWORD: funlist
+      POSTGRES_DB: funlist
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U funlist" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  funlist:
+    build: .
+    command: python main.py
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      FLASK_APP: main.py
+      FLASK_ENV: development
+      FLASK_SECRET_KEY: change-me
+      DATABASE_URL: postgresql://funlist:funlist@db:5432/funlist
+      GOOGLE_MAPS_API_KEY: AIzaSyCMEtAgms0HALTBraFW9uM7Yuj6raNfnDs
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    restart: unless-stopped
+
+volumes:
+  pg_data:
