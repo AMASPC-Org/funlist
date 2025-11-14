@@ -1,7 +1,7 @@
 import json
 import logging
 from typing import Any, Dict, Optional
-
+import os
 import firebase_admin
 from firebase_admin import auth, credentials
 from settings import settings
