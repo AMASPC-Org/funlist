@@ -1,9 +1,9 @@
 
 import logging
-import os
 from flask import Flask
 from db_init import db
 from sqlalchemy import text, inspect
+from settings import settings
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -11,9 +11,8 @@ logger = logging.getLogger(__name__)
 def add_network_opt_out_column():
     app = Flask(__name__)
     
-    # Use database URL from environment or default to SQLite
-    database_url = os.environ.get('DATABASE_URL', 'postgresql://postgres:postgres@localhost:5432/funlist')
-    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+    # Use project settings so CLI scripts stay in sync with the app
+    app.config["SQLALCHEMY_DATABASE_URI"] = settings.database_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     
     db.init_app(app)

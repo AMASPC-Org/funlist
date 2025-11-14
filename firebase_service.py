@@ -1,10 +1,10 @@
 import json
 import logging
-import os
 from typing import Any, Dict, Optional
 
 import firebase_admin
 from firebase_admin import auth, credentials
+from settings import settings
 
 logger = logging.getLogger(__name__)
 
@@ -18,8 +18,8 @@ _firebase_app: Optional[firebase_admin.App] = None
 
 def _load_credentials() -> credentials.Certificate:
     """Load Firebase credentials from either a file path or raw JSON."""
-    cred_path = os.environ.get("FIREBASE_CREDENTIALS_PATH")
-    raw_json = os.environ.get("FIREBASE_CREDENTIALS_JSON")
+    cred_path = settings.firebase_credentials_path
+    raw_json = settings.firebase_credentials_json
 
     if cred_path:
         if not os.path.exists(cred_path):
@@ -94,14 +94,13 @@ def verify_firebase_token(id_token: str) -> Dict[str, Any]:
 def get_firebase_client_config() -> Dict[str, str]:
     """Expose the Firebase client configuration for the front-end."""
     keys = {
-        "apiKey": os.environ.get("FIREBASE_API_KEY"),
-        "authDomain": os.environ.get("FIREBASE_AUTH_DOMAIN"),
-        "projectId": os.environ.get("FIREBASE_PROJECT_ID"),
-        "storageBucket": os.environ.get("FIREBASE_STORAGE_BUCKET"),
-        "messagingSenderId": os.environ.get("FIREBASE_MESSAGING_SENDER_ID"),
-        "appId": os.environ.get("FIREBASE_APP_ID"),
-        "measurementId": os.environ.get("FIREBASE_MEASUREMENT_ID"),
+        "apiKey": settings.firebase_api_key,
+        "authDomain": settings.firebase_auth_domain,
+        "projectId": settings.firebase_project_id,
+        "storageBucket": settings.firebase_storage_bucket,
+        "messagingSenderId": settings.firebase_messaging_sender_id,
+        "appId": settings.firebase_app_id,
+        "measurementId": settings.firebase_measurement_id,
     }
     # Remove empty values so the client receives a clean payload
     return {k: v for k, v in keys.items() if v}
-

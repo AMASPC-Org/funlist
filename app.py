@@ -1,4 +1,3 @@
-import os
 import sys
 import logging
 import traceback
@@ -17,6 +16,7 @@ from firebase_service import (
     get_firebase_client_config,
     initialize_firebase,
 )
+from settings import settings
 
 # Configure logging
 logging.basicConfig(
@@ -31,15 +31,12 @@ def create_app():
     app = Flask(__name__, static_folder='static')
 
     # Enhanced configurations for Replit environment
-    app.config["SECRET_KEY"] = os.environ.get("FLASK_SECRET_KEY", "dev_key")
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+    app.config["SECRET_KEY"] = settings.flask_secret_key
+    app.config["SQLALCHEMY_DATABASE_URI"] = settings.database_url
     app.config["SERVER_NAME"] = None
     app.config["APPLICATION_ROOT"] = "/"
     app.config["PREFERRED_URL_SCHEME"] = "https"
-    app.config["GOOGLE_MAPS_API_KEY"] = os.environ.get(
-        "GOOGLE_MAPS_API_KEY",
-        "AIzaSyDRkUhORhaKILaPN0-qi9YndDShVov0DVE"
-    )
+    app.config["GOOGLE_MAPS_API_KEY"] = settings.google_maps_api_key
 
     # Database configuration
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
@@ -64,15 +61,7 @@ def create_app():
     app.config['SESSION_REFRESH_EACH_REQUEST'] = True
     app.config['SESSION_COOKIE_NAME'] = 'funlist_session'
 
-    admin_emails = os.environ.get("FIREBASE_ADMIN_EMAILS")
-    if admin_emails:
-        app.config["ADMIN_EMAILS"] = {
-            email.strip().lower()
-            for email in admin_emails.split(",")
-            if email.strip()
-        }
-    else:
-        app.config["ADMIN_EMAILS"] = {"ryan@funlist.ai"}
+    app.config["ADMIN_EMAILS"] = set(settings.firebase_admin_emails)
 
     app.config["FIREBASE_CLIENT_CONFIG"] = get_firebase_client_config()
 

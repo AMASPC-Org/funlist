@@ -21,16 +21,12 @@ uv pip sync pyproject.toml uv.lock
 ```
 
 ### 2. Configure environment variables
-1. Edit `env.local.sh` and replace `REPLACE_WITH_REAL_KEY` with your Google Maps key.  
-   You can also set a stronger `FLASK_SECRET_KEY` or point `DATABASE_URL` at Postgres.
-2. Source the script so the variables apply to your current shell:
-   ```bash
-   source env.local.sh
-   ```
-3. (Optional) Add the `source env.local.sh` line to your shell profile for convenience.
+1. Edit `.env` and set the values you need (Google Maps key, database URL, Firebase credentials, etc.).
+2. Nothing needs to be sourced—`settings.py` loads `.env` on startup and exposes a shared `settings` object for the entire app.
+3. Environment variables defined outside the file (e.g., shell, Docker, Cloud) still override the values in `.env`.
 
 #### Firebase Authentication configuration
-Firebase now powers all login, signup, and password-reset flows. Set the following variables (either in `env.local.sh` or your hosting provider) before running the app:
+Firebase now powers all login, signup, and password-reset flows. Set the following variables (either in `.env` or your hosting provider) before running the app:
 
 | Variable | Purpose |
 | --- | --- |
@@ -67,7 +63,7 @@ Navigate to `http://localhost:5000/map` to verify that event markers load and th
 
 ## Useful scripts
 - `add_sample_events.py`, `create_admin.py`, etc. populate the database with seed data once the environment variables are set.
-- `env.local.sh` manages the standard runtime configuration and can be sourced in any new shell session.
+- `settings.py` centralizes configuration so CLI scripts and the Flask app share the same values from `.env`.
 
 ## Docker workflow
 You can spin up both the Flask app and a local Postgres instance with Docker Compose:

@@ -1,18 +1,17 @@
-
 from flask import Flask
 from flask_login import LoginManager
 from werkzeug.security import generate_password_hash
-import os
 from db_init import db
 from sqlalchemy import text
 import logging
+from settings import settings
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def create_app():
     app = Flask(__name__)
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///instance/funlist.db")
+    app.config["SQLALCHEMY_DATABASE_URI"] = settings.database_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     db.init_app(app)
     return app
