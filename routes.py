@@ -101,6 +101,10 @@ def init_routes(app):
             return None
         return organization
 
+    def _is_admin_user():
+        admin_emails = app.config.get("ADMIN_EMAILS", set())
+        return current_user.is_authenticated and current_user.email and current_user.email.lower() in admin_emails
+
     # Add CSP report endpoint (exempt from CSRF protection)
     @app.route('/csp-report', methods=['POST'])
     def csp_report():
@@ -829,8 +833,7 @@ def init_routes(app):
     @app.route("/admin/login", methods=["GET"])
     @app.route("/admin_login", methods=["GET"])  # Add alternative URL route
     def admin_login():
-        admin_emails = app.config.get("ADMIN_EMAILS", {"ryan@funlist.ai"})
-        if current_user.is_authenticated and current_user.email.lower() in admin_emails:
+        if _is_admin_user():
             return redirect(url_for("admin_dashboard"))
 
         redirect_target = request.args.get("next") or url_for("admin_dashboard")
@@ -846,7 +849,7 @@ def init_routes(app):
     @app.route("/admin/events")
     @login_required
     def admin_events():
-        if current_user.email != 'ryan@funlist.ai':
+        if not _is_admin_user():
             flash("Access denied. Only authorized administrators can access this page.", "danger")
             return redirect(url_for("index"))
         events = Event.query.order_by(Event.created_at.desc()).all()
@@ -855,7 +858,7 @@ def init_routes(app):
     @app.route("/admin/events/<int:event_id>/edit", methods=['GET', 'POST'])
     @login_required
     def admin_edit_event(event_id):
-        if current_user.email != 'ryan@funlist.ai':
+        if not _is_admin_user():
             flash("Access denied. Admin privileges required.", "danger")
             return redirect(url_for("index"))
         event = Event.query.get_or_404(event_id)
@@ -890,7 +893,7 @@ def init_routes(app):
     @app.route("/admin/users")
     @login_required
     def admin_users():
-        if current_user.email != 'ryan@funlist.ai':
+        if not _is_admin_user():
             flash("Access denied. Only authorized administrators can access this page.", "danger")
             return redirect(url_for("index"))
         users = User.query.order_by(User.created_at.desc()).all()
@@ -1015,7 +1018,7 @@ def init_routes(app):
     @app.route("/admin/analytics")
     @login_required
     def admin_analytics():
-        if current_user.email != 'ryan@funlist.ai':
+        if not _is_admin_user():
             flash("Access denied. Only authorized administrators can access this page.", "danger")
             return redirect(url_for("index"))
         # Get events by category data
@@ -1069,7 +1072,7 @@ def init_routes(app):
     @app.route("/admin/event/<int:event_id>/<action>", methods=["POST"])
     @login_required
     def admin_event_action(event_id, action):
-        if current_user.email != 'ryan@funlist.ai':
+        if not _is_admin_user():
             return jsonify({"success": False, "message": "Unauthorized. Only administrators can perform this action."}), 403
 
         # Exempt this route from CSRF protection for API calls
@@ -1099,7 +1102,7 @@ def init_routes(app):
     @app.route("/admin/event/<int:event_id>/toggle-feature", methods=["POST"])
     @login_required
     def toggle_event_feature(event_id):
-        if current_user.email != 'ryan@funlist.ai':
+        if not _is_admin_user():
             return jsonify({"success": False, "message": "Unauthorized. Only administrators can perform this action."}), 403
 
         try:
@@ -1122,7 +1125,7 @@ def init_routes(app):
     @app.route("/admin/event/<int:event_id>/delete", methods=["POST"])
     @login_required
     def admin_delete_event(event_id):
-        if current_user.email != 'ryan@funlist.ai':
+        if not _is_admin_user():
             return jsonify({"success": False, "message": "Unauthorized. Only administrators can perform this action."}), 403
 
         try:
@@ -1398,7 +1401,7 @@ def init_routes(app):
     @app.route("/admin/dashboard")
     @login_required
     def admin_dashboard():
-        if current_user.email != 'ryan@funlist.ai':
+        if not _is_admin_user():
             flash("Access denied. Only authorized administrators can access this page.", "danger")
             return redirect(url_for("index"))
 
@@ -1494,7 +1497,7 @@ def init_routes(app):
     @app.route("/admin/user/<int:user_id>/deactivate")
     @login_required
     def admin_deactivate_user(user_id):
-        if current_user.email != 'ryan@funlist.ai':
+        if not _is_admin_user():
             return jsonify({"error": "Unauthorized. Only administrators can perform this action."}), 403
         user = User.query.get_or_404(user_id)
         user.account_active = False
@@ -1505,7 +1508,7 @@ def init_routes(app):
     @app.route("/admin/user/<int:user_id>/activate")
     @login_required
     def admin_activate_user(user_id):
-        if current_user.email != 'ryan@funlist.ai':
+        if not _is_admin_user():
             return jsonify({"error": "Unauthorized. Only administrators can perform this action."}), 403
         user = User.query.get_or_404(user_id)
         user.account_active = True
@@ -1516,7 +1519,7 @@ def init_routes(app):
     @app.route("/admin/venues")
     @login_required
     def admin_venues():
-        if current_user.email != 'ryan@funlist.ai':
+        if not _is_admin_user():
             flash("Access denied. Only authorized administrators can access this page.", "danger")
             return redirect(url_for("index"))
             
@@ -1554,7 +1557,7 @@ def init_routes(app):
     @app.route("/admin/venue/<int:venue_id>/verify", methods=["POST"])
     @login_required
     def admin_verify_venue(venue_id):
-        if current_user.email != 'ryan@funlist.ai':
+        if not _is_admin_user():
             return jsonify({"success": False, "message": "Unauthorized. Only administrators can perform this action."}), 403
             
         try:
@@ -1578,7 +1581,7 @@ def init_routes(app):
     @app.route("/admin/venue/<int:venue_id>/reject-claim", methods=["POST"])
     @login_required
     def admin_reject_venue_claim(venue_id):
-        if current_user.email != 'ryan@funlist.ai':
+        if not _is_admin_user():
             return jsonify({"success": False, "message": "Unauthorized. Only administrators can perform this action."}), 403
             
         try:

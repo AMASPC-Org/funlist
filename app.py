@@ -3,7 +3,7 @@ import logging
 import traceback
 from datetime import timedelta
 from flask import Flask, session, request, render_template, redirect, url_for, jsonify
-from flask_login import LoginManager
+from flask_login import LoginManager, current_user
 from flask_wtf.csrf import CSRFProtect
 from flask_session import Session
 from db_init import db
@@ -61,7 +61,7 @@ def create_app():
     app.config['SESSION_REFRESH_EACH_REQUEST'] = True
     app.config['SESSION_COOKIE_NAME'] = 'funlist_session'
 
-    app.config["ADMIN_EMAILS"] = set(settings.firebase_admin_emails)
+    app.config["ADMIN_EMAILS"] = {email.lower() for email in settings.admin_emails}
 
     app.config["FIREBASE_CLIENT_CONFIG"] = get_firebase_client_config()
 
@@ -147,8 +147,15 @@ def create_app():
 
     @app.context_processor
     def inject_client_config():
+        admin_emails = app.config.get("ADMIN_EMAILS", set())
+        user_email = None
+        if current_user.is_authenticated and current_user.email:
+            user_email = current_user.email.lower()
+
         return {
             "firebase_client_config": app.config.get("FIREBASE_CLIENT_CONFIG", {}),
+            "admin_emails": admin_emails,
+            "is_admin_user": bool(user_email and user_email in admin_emails),
         }
 
     try:

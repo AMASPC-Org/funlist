@@ -59,6 +59,7 @@ class Settings:
     flask_env: str = field(default_factory=lambda: os.environ.get("FLASK_ENV", "development"))
     flask_secret_key: str = field(default_factory=lambda: os.environ.get("FLASK_SECRET_KEY", "change-me"))
     database_url: str = field(default_factory=_default_database_url)
+    admin_emails: Set[str] = field(default_factory=_default_admin_emails)
     google_maps_api_key: str = field(default_factory=_default_google_maps_key)
     firebase_credentials_path: str = field(default_factory=lambda: os.environ.get("FIREBASE_CREDENTIALS_PATH", ""))
     firebase_credentials_json: str = field(default_factory=lambda: os.environ.get("FIREBASE_CREDENTIALS_JSON", ""))
@@ -69,7 +70,6 @@ class Settings:
     firebase_messaging_sender_id: str = field(default_factory=lambda: os.environ.get("FIREBASE_MESSAGING_SENDER_ID", ""))
     firebase_storage_bucket: str = field(default_factory=lambda: os.environ.get("FIREBASE_STORAGE_BUCKET", ""))
     firebase_measurement_id: str = field(default_factory=lambda: os.environ.get("FIREBASE_MEASUREMENT_ID", ""))
-    firebase_admin_emails: Set[str] = field(default_factory=_default_admin_emails)
 
 
 settings = Settings()
