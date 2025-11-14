@@ -1,164 +1,239 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h2>Profile</h2>
-                    <a href="{{ url_for('edit_profile') }}" class="btn btn-primary">My Profile</a>
+{% set full_name = (user.first_name ~ " " ~ user.last_name).strip() %}
+{% set display_name = full_name if full_name|trim else user.email %}
+{% set initials = (user.first_name[0] if user.first_name else user.email[0]).upper() %}
+{% set created = user.created_at.strftime('%B %d, %Y') if user.created_at else 'Unknown' %}
+{% set socials = [
+    {'label': 'Facebook', 'url': user.facebook_url, 'icon': 'fab fa-facebook-f'},
+    {'label': 'Instagram', 'url': user.instagram_url, 'icon': 'fab fa-instagram'},
+    {'label': 'X / Twitter', 'url': user.twitter_url, 'icon': 'fab fa-twitter'},
+    {'label': 'LinkedIn', 'url': user.linkedin_url, 'icon': 'fab fa-linkedin-in'},
+    {'label': 'TikTok', 'url': user.tiktok_url, 'icon': 'fab fa-tiktok'},
+] %}
+{% set visible_socials = socials | selectattr('url') | list %}
+
+<div class="container py-4 profile-page">
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body p-4 d-flex flex-column flex-md-row align-items-start align-items-md-center gap-3">
+            <div class="profile-avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center">
+                {% if user.profile_image %}
+                    <img src="{{ user.profile_image }}" alt="{{ display_name }}" class="rounded-circle img-fluid">
+                {% else %}
+                    <span>{{ initials }}</span>
+                {% endif %}
+            </div>
+            <div class="flex-grow-1">
+                <div class="d-flex flex-wrap align-items-center gap-3">
+                    <div>
+                        <h2 class="mb-1">{{ display_name }}</h2>
+                        <p class="text-muted mb-1">{{ user.title or 'FunList Member' }}</p>
+                        <p class="mb-0"><i class="fas fa-envelope me-2 text-muted"></i>{{ user.email }}</p>
+                    </div>
+                    <div class="ms-auto">
+                        <a href="{{ url_for('edit_profile') }}" class="btn btn-primary">
+                            <i class="fas fa-user-edit me-2"></i>Edit Profile
+                        </a>
+                    </div>
+                </div>
+                <div class="d-flex flex-wrap gap-3 mt-3">
+                    <span class="badge text-bg-light">
+                        <i class="fas fa-calendar-day me-2"></i>Member since {{ created }}
+                    </span>
+                    {% if user.is_admin %}
+                    <span class="badge text-bg-warning text-dark">
+                        <i class="fas fa-shield-alt me-1"></i>Admin
+                    </span>
+                    {% endif %}
+                    {% if user.is_organizer %}
+                    <span class="badge text-bg-success">
+                        <i class="fas fa-users me-1"></i>Organizer
+                    </span>
+                    {% endif %}
+                    {% if user.is_event_creator %}
+                    <span class="badge text-bg-info text-dark">
+                        <i class="fas fa-calendar-plus me-1"></i>Event Creator
+                    </span>
+                    {% endif %}
+                    {% if user.is_vendor %}
+                    <span class="badge text-bg-secondary">
+                        <i class="fas fa-store me-1"></i>Vendor
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white border-0">
+                    <h5 class="mb-0">About</h5>
                 </div>
                 <div class="card-body">
-                    <div class="profile-section mb-4">
-                        <h3>{{ user.username or user.email }}</h3>
-                        {% if user.first_name or user.last_name %}
-                            <p class="text-muted">{{ user.first_name }} {{ user.last_name }}</p>
-                        {% endif %}
-                    </div>
-
-                    {% if user.bio %}
-                    <div class="profile-section mb-4">
-                        <h4>About Me</h4>
-                        <p>{{ user.bio }}</p>
-                    </div>
-                    {% endif %}
-
-                    <div class="profile-section mb-4">
-                        <h4>Details</h4>
-                        <ul class="list-unstyled">
-                            {% if user.location %}
-                            <li class="mb-2">
-                                <strong>Location:</strong> {{ user.location }}
-                            </li>
-                            {% endif %}
-                            {% if user.interests %}
-                            <li class="mb-2">
-                                <strong>Interests:</strong> {{ user.interests }}
-                            </li>
-                            {% endif %}
-                            {% if user.audience_type %}
-                            <li class="mb-2">
-                                <strong>Audience Type:</strong> {{ user.audience_type }}
-                            </li>
-                            {% endif %}
-                            {% if user.preferred_locations %}
-                            <li class="mb-2">
-                                <strong>Preferred Locations:</strong> {{ user.preferred_locations }}
-                            </li>
-                            {% endif %}
-                            {% if user.event_interests %}
-                            <li class="mb-2">
-                                <strong>Event Interests:</strong> {{ user.event_interests }}
-                            </li>
-                            {% endif %}
-                            {% if user.is_premium %}
-                            <li class="mb-2">
-                                <span class="badge bg-success">Premium Member</span>
-                            </li>
-                            {% endif %}
-                            {% if user.birth_date %}
-                            <li class="mb-2">
-                                <strong>Birth Date:</strong> {{ user.birth_date.strftime('%B %d, %Y') }}
-                            </li>
-                            {% endif %}
-                            <li class="mb-2">
-                                <strong>Member Since:</strong> {{ user.created_at.strftime('%B %d, %Y') }}
-                            </li>
-                        </ul>
-                    </div>
-
-                    {% if current_user.is_organizer %}
-                    <div class="profile-section mb-4">
-                        <h4>Organizer Profile</h4>
-                        <p><strong>Organization:</strong> {{ current_user.company_name or "Not specified" }}</p>
-                        <p><strong>About:</strong> {{ current_user.organizer_description or "No description provided" }}</p>
-                        {% if current_user.organizer_website %}
-                        <p><strong>Website:</strong> <a href="{{ current_user.organizer_website }}" target="_blank">{{ current_user.organizer_website }}</a></p>
-                        {% endif %}
-                        <div class="mt-3">
-                            <a href="{{ url_for('submit_event') }}" class="btn btn-sm btn-success">
-                                <i class="fas fa-plus"></i> Add New Event
-                            </a>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-2 text-muted">Full Name</p>
+                            <p class="fw-semibold">{{ display_name }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-2 text-muted">Title</p>
+                            <p class="fw-semibold">{{ user.title or '—' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-2 text-muted">Phone</p>
+                            <p class="fw-semibold">{{ user.phone or '—' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-2 text-muted">Company</p>
+                            <p class="fw-semibold">{{ user.company_name or '—' }}</p>
                         </div>
                     </div>
-                    {% else %}
-                    <div class="profile-section mb-4">
-                        <h4>Become an Event Organizer</h4>
-                        <p>Want to create and publish events on FunList.ai?</p>
-                        <a href="{{ url_for('become_organizer') }}" class="btn btn-primary">
-                            <i class="fas fa-user-plus"></i> Become an Event Organizer
-                        </a>
+                    {% if user.organizer_description %}
+                    <div class="mt-3">
+                        <p class="mb-2 text-muted">About</p>
+                        <p class="mb-0">{{ user.organizer_description }}</p>
                     </div>
                     {% endif %}
+                </div>
+            </div>
 
-                            {% if user.location %}
-                            <li class="mb-2">
-                                <strong>Location:</strong> {{ user.location }}
-                            </li>
+            {% if visible_socials %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Social Media</h5>
+                    <small class="text-muted">Share where people can follow you</small>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% for social in socials %}
+                            {% if social.url %}
+                            <div class="col-md-6">
+                                <a href="{{ social.url }}" target="_blank" class="btn w-100 d-flex justify-content-center align-items-center btn-outline-secondary">
+                                    <i class="{{ social.icon }} me-2"></i> {{ social.label }}
+                                </a>
+                            </div>
                             {% endif %}
-                            {% if user.interests %}
-                            <li class="mb-2">
-                                <strong>Interests:</strong> {{ user.interests }}
-                            </li>
-                            {% endif %}
-                            {% if user.audience_type %}
-                            <li class="mb-2">
-                                <strong>Audience Type:</strong> {{ user.audience_type }}
-                            </li>
-                            {% endif %}
-                            {% if user.preferred_locations %}
-                            <li class="mb-2">
-                                <strong>Preferred Locations:</strong> {{ user.preferred_locations }}
-                            </li>
-                            {% endif %}
-                            {% if user.event_interests %}
-                            <li class="mb-2">
-                                <strong>Event Interests:</strong> {{ user.event_interests }}
-                            </li>
-                            {% endif %}
-                            {% if user.is_premium %}
-                            <li class="mb-2">
-                                <span class="badge bg-success">Premium Member</span>
-                            </li>
-                            {% endif %}
-                            {% if user.birth_date %}
-                            <li class="mb-2">
-                                <strong>Birth Date:</strong> {{ user.birth_date.strftime('%B %d, %Y') }}
-                            </li>
-                            {% endif %}
-                            <li class="mb-2">
-                                <strong>Member Since:</strong> {{ user.created_at.strftime('%B %d, %Y') }}
-                            </li>
-                        </ul>
+                        {% endfor %}
                     </div>
+                </div>
+            </div>
+            {% endif %}
 
-                    {% if current_user.is_organizer %}
-                    <div class="profile-section mb-4">
-                        <h4>Organizer Profile</h4>
-                        <p><strong>Organization:</strong> {{ current_user.company_name or "Not specified" }}</p>
-                        <p><strong>About:</strong> {{ current_user.organizer_description or "No description provided" }}</p>
-                        {% if current_user.organizer_website %}
-                        <p><strong>Website:</strong> <a href="{{ current_user.organizer_website }}" target="_blank">{{ current_user.organizer_website }}</a></p>
-                        {% endif %}
-                        <div class="mt-3">
-                            <a href="{{ url_for('submit_event') }}" class="btn btn-sm btn-success">
-                                <i class="fas fa-plus"></i> Add New Event
-                            </a>
+            {% if current_user.is_organizer %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white border-0">
+                    <h5 class="mb-0">Organizer Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-2 text-muted">Organization</p>
+                            <p class="fw-semibold">{{ current_user.company_name or "Not specified" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-2 text-muted">Website</p>
+                            {% if current_user.organizer_website %}
+                            <a href="{{ current_user.organizer_website }}" target="_blank">{{ current_user.organizer_website }}</a>
+                            {% else %}
+                            <span class="fw-semibold">—</span>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-2 text-muted">Business Email</p>
+                            <p class="fw-semibold">{{ current_user.business_email or '—' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-2 text-muted">Business Phone</p>
+                            <p class="fw-semibold">{{ current_user.business_phone or '—' }}</p>
                         </div>
                     </div>
-                    {% else %}
-                    <div class="profile-section mb-4">
-                        <h4>Become an Event Organizer</h4>
-                        <p>Want to create and publish events on FunList.ai?</p>
-                        <a href="{{ url_for('become_organizer') }}" class="btn btn-primary">
-                            <i class="fas fa-user-plus"></i> Become an Event Organizer
+                    {% if current_user.business_street or current_user.business_city %}
+                    <div class="mt-3">
+                        <p class="mb-2 text-muted">Business Address</p>
+                        <p class="mb-0">
+                            {{ current_user.business_street or '' }}<br>
+                            {{ current_user.business_city or '' }}, {{ current_user.business_state or '' }} {{ current_user.business_zip or '' }}
+                        </p>
+                    </div>
+                    {% endif %}
+                    <div class="mt-4">
+                        <a href="{{ url_for('submit_event') }}" class="btn btn-success">
+                            <i class="fas fa-plus me-2"></i>Submit New Event
                         </a>
                     </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white border-0">
+                    <h5 class="mb-0">Account Snapshot</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted">Events Created</span>
+                        <span class="fw-bold">{{ user.events|length }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted">Account Status</span>
+                        <span class="fw-bold">{{ 'Active' if user.account_active else 'Inactive' }}</span>
+                    </div>
+                    {% if user.vendor_type %}
+                    <div class="mb-3">
+                        <span class="text-muted d-block">Vendor Type</span>
+                        <span class="fw-bold">{{ user.vendor_type }}</span>
+                    </div>
+                    {% endif %}
+                    {% if user.vendor_description %}
+                    <div class="mb-3">
+                        <span class="text-muted d-block">Vendor Details</span>
+                        <p class="mb-0">{{ user.vendor_description }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body d-grid gap-2">
+                    <a href="{{ url_for('edit_profile') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-user-cog me-2"></i>Update Profile
+                    </a>
+                    <a href="{{ url_for('change_password') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-lock me-2"></i>Change Password
+                    </a>
+                    {% if current_user.is_organizer %}
+                    <a href="{{ url_for('submit_event') }}" class="btn btn-outline-success">
+                        <i class="fas fa-calendar-plus me-2"></i>Submit Event
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('become_organizer') }}" class="btn btn-outline-success">
+                        <i class="fas fa-user-plus me-2"></i>Become an Organizer
+                    </a>
                     {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .profile-page .profile-avatar {
+        width: 96px;
+        height: 96px;
+        font-size: 1.75rem;
+        font-weight: 600;
+    }
+    .profile-page .badge {
+        font-size: 0.85rem;
+        padding: 0.5rem 0.75rem;
+    }
+</style>
 {% endblock %}

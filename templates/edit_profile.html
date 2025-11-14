@@ -2,121 +2,171 @@
 {% from "macros/_form_helpers.html" import render_field %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-12">
-            <h2>My Profile</h2>
-            <p class="text-muted">Manage your personal information and settings</p>
+<div class="container py-4 profile-edit-page">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="mb-1">Edit Profile</h2>
+            <p class="text-muted mb-0">Keep your account details up to date.</p>
+        </div>
+        <a href="{{ url_for('profile') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Profile
+        </a>
+    </div>
 
-            <form method="POST" enctype="multipart/form-data">
-                {{ form.hidden_tag() }}
+    <form method="POST" enctype="multipart/form-data" class="row g-4">
+        {{ form.hidden_tag() }}
 
-                <!-- Personal Information Section -->
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <h5 class="card-title">Personal Information</h5>
-                        <div class="row">
-                            <div class="col-md-6">
-                                {{ render_field(form.first_name, class="form-control") }}
-                                {{ render_field(form.last_name, class="form-control") }}
-                                {{ render_field(form.title, class="form-control") }}
-                            </div>
-                            <div class="col-md-6">
-
-                                {% if form.profile_image %}
-                                <div class="mb-3">
-                                    <label class="form-label">Profile Image</label>
-                                    {% if current_user.profile_image %}
-                                    <div class="mb-2">
-                                        <img src="{{ current_user.profile_image }}" alt="Current Profile Image" class="img-thumbnail" style="max-width: 150px;">
-                                    </div>
-                                    {% endif %}
-                                    {{ form.profile_image(class="form-control") }}
-                                    {% if form.profile_image.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {% for error in form.profile_image.errors %}
-                                        {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                    {% endif %}
-                                </div>
-                                {% endif %}
-                            </div>
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white border-0">
+                    <h5 class="mb-0">Personal Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            {{ render_field(form.first_name, class="form-control") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ render_field(form.last_name, class="form-control") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ render_field(form.title, class="form-control") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ render_field(form.phone, class="form-control") }}
+                        </div>
+                        <div class="col-md-12">
+                            {{ render_field(form.company_name, class="form-control") }}
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Social Media Links Section -->
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <h5 class="card-title">Social Media Links</h5>
-                        <div class="row">
-                            <div class="col-md-6">
-                                {{ render_field(form.facebook_url, class="form-control") }}
-                                {{ render_field(form.instagram_url, class="form-control") }}
-                                {{ render_field(form.twitter_url, class="form-control") }}
-                            </div>
-                            <div class="col-md-6">
-                                {{ render_field(form.linkedin_url, class="form-control") }}
-                                {{ render_field(form.tiktok_url, class="form-control") }}
-                            </div>
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white border-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Social Media</h5>
+                        <small class="text-muted">Share where people can find you online</small>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            {{ render_field(form.facebook_url, class="form-control") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ render_field(form.instagram_url, class="form-control") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ render_field(form.twitter_url, class="form-control") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ render_field(form.linkedin_url, class="form-control") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ render_field(form.tiktok_url, class="form-control") }}
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Organizer Information Section (conditional) -->
-                {% if current_user.is_organizer %}
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <h5 class="card-title">Organizer Information</h5>
-                        <div class="row">
-                            <div class="col-md-6">
-                                {{ render_field(form.company_name, class="form-control") }}
-                                {{ render_field(form.business_street, class="form-control") }}
-                                {{ render_field(form.business_city, class="form-control") }}
-                            </div>
-                            <div class="col-md-6">
-                                {{ render_field(form.business_state, class="form-control") }}
-                                {{ render_field(form.business_zip, class="form-control") }}
-                                {{ render_field(form.business_phone, class="form-control") }}
-                                {{ render_field(form.business_email, class="form-control") }}
-                                {{ render_field(form.organizer_website, class="form-control") }}
-                            </div>
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white border-0">
+                    <h5 class="mb-0">Interests & Preferences</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            {{ render_field(form.event_focus, class="form-select", multiple=true, size=5) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ render_field(form.preferred_locations, class="form-control") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ render_field(form.event_interests, class="form-control") }}
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Venue Management Section (placeholder) -->
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <h5 class="card-title">Venue Management</h5>
-                        <p><small>Manage venues associated with your organization.</small></p>
-                        <p class="alert alert-info">You can manage your venues in the Venues section.</p>
-
-                        <a href="{{ url_for('add_venue') }}" class="btn btn-primary">Add New Venue</a>
+            {% if current_user.is_organizer %}
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white border-0">
+                    <h5 class="mb-0">Organizer Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            {{ render_field(form.organizer_description, class="form-control", rows="4") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ render_field(form.organizer_website, class="form-control") }}
+                            {{ render_field(form.business_phone, class="form-control") }}
+                            {{ render_field(form.business_email, class="form-control") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ render_field(form.business_street, class="form-control") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ render_field(form.business_city, class="form-control") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ render_field(form.business_state, class="form-control") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ render_field(form.business_zip, class="form-control") }}
+                        </div>
                     </div>
                 </div>
-                {% endif %}
+            </div>
+            {% endif %}
+        </div>
 
-                <!-- Account Settings Section -->
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <h5 class="card-title">Account Settings</h5>
-                        <p><strong>Email:</strong> {{ current_user.email }}</p>
-                        <p><strong>Membership Tier:</strong> {{ current_user.membership_tier.name if current_user.membership_tier else 'N/A' }}
-                           <!-- Membership management coming soon -->
-                        </p>
-                        <a href="{{ url_for('change_password') }}" class="btn btn-secondary mt-2">Change Password</a>
-                        <!-- Placeholder for future settings -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white border-0">
+                    <h5 class="mb-0">Account</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2 text-muted">Email</p>
+                    <p class="fw-semibold">{{ current_user.email }}</p>
+                    <p class="mb-2 text-muted">Membership Tier</p>
+                    <p class="fw-semibold">{{ current_user.membership_tier.name if current_user.membership_tier else 'N/A' }}</p>
+                    <div class="d-grid">
+                        <a href="{{ url_for('change_password') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-lock me-2"></i>Change Password
+                        </a>
                     </div>
                 </div>
+            </div>
 
-                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                    <a href="{{ url_for('profile') }}" class="btn btn-secondary me-md-2">Cancel</a>
+            {% if current_user.is_organizer %}
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white border-0">
+                    <h5 class="mb-0">Venues</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">Manage the venues associated with your organization.</p>
+                    <a href="{{ url_for('add_venue') }}" class="btn btn-success w-100">
+                        <i class="fas fa-map-marker-alt me-2"></i>Add New Venue
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body d-grid gap-2">
+                    <a href="{{ url_for('profile') }}" class="btn btn-outline-secondary">Cancel</a>
                     {{ form.submit(class="btn btn-primary") }}
                 </div>
-            </form>
+            </div>
         </div>
-    </div>
+    </form>
 </div>
+
+<style>
+    .profile-edit-page .card {
+        border-radius: 12px;
+    }
+</style>
 {% endblock %}

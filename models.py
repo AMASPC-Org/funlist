@@ -40,6 +40,11 @@ class User(db.Model, UserMixin):
     business_city = Column(String(50), nullable=True)
     business_state = Column(String(50), nullable=True)
     business_zip = Column(String(20), nullable=True)
+    facebook_url = Column(String(255), nullable=True)
+    instagram_url = Column(String(255), nullable=True)
+    twitter_url = Column(String(255), nullable=True)
+    linkedin_url = Column(String(255), nullable=True)
+    tiktok_url = Column(String(255), nullable=True)
 
 
     def is_active(self):

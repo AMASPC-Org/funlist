@@ -91,6 +91,11 @@ class ProfileForm(FlaskForm):
     first_name = StringField('First Name', validators=[Optional(), Length(max=50)])
     last_name = StringField('Last Name', validators=[Optional(), Length(max=50)])
     title = StringField('Your Title', validators=[Optional(), Length(max=100)])
+    phone = StringField(
+        'Phone Number',
+        validators=[Optional(), Length(max=20)],
+        render_kw={"placeholder": "555-123-4567"}
+    )
     event_focus = SelectMultipleField(
         "Tell Us About Yourself", 
         choices=[
@@ -117,11 +122,31 @@ class ProfileForm(FlaskForm):
     )
 
     # Social Media Links
-    facebook_url = StringField('Facebook URL', validators=[Optional(), URL()])
-    instagram_url = StringField('Instagram URL', validators=[Optional(), URL()])
-    twitter_url = StringField('Twitter URL', validators=[Optional(), URL()])
-    linkedin_url = StringField('LinkedIn URL', validators=[Optional(), URL()])
-    tiktok_url = StringField('TikTok URL', validators=[Optional(), URL()])
+    facebook_url = StringField(
+        'Facebook URL',
+        validators=[Optional(), URL()],
+        render_kw={"placeholder": "https://www.facebook.com/yourpage"}
+    )
+    instagram_url = StringField(
+        'Instagram URL',
+        validators=[Optional(), URL()],
+        render_kw={"placeholder": "https://www.instagram.com/yourhandle"}
+    )
+    twitter_url = StringField(
+        'X / Twitter URL',
+        validators=[Optional(), URL()],
+        render_kw={"placeholder": "https://twitter.com/yourhandle"}
+    )
+    linkedin_url = StringField(
+        'LinkedIn URL',
+        validators=[Optional(), URL()],
+        render_kw={"placeholder": "https://www.linkedin.com/in/your-profile"}
+    )
+    tiktok_url = StringField(
+        'TikTok URL',
+        validators=[Optional(), URL()],
+        render_kw={"placeholder": "https://www.tiktok.com/@yourhandle"}
+    )
 
     # Organizer Information
     company_name = StringField('Organization/Company Name', validators=[Optional(), Length(max=100)])

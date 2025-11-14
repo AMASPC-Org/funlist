@@ -282,6 +282,10 @@ def init_routes(app):
             form.first_name.data = current_user.first_name
             form.last_name.data = current_user.last_name
             form.title.data = current_user.title
+            if hasattr(current_user, 'phone'):
+                form.phone.data = current_user.phone
+            if hasattr(current_user, 'company_name'):
+                form.company_name.data = current_user.company_name
             
             # Social Media Links (if these fields exist in the User model)
             if hasattr(current_user, 'facebook_url'):
@@ -297,7 +301,6 @@ def init_routes(app):
             
             # Organizer Information (if user is an organizer)
             if current_user.is_organizer:
-                form.company_name.data = current_user.company_name
                 form.organizer_description.data = current_user.organizer_description
                 form.organizer_website.data = current_user.organizer_website
                 # Fill additional organizer fields if they exist in the database
@@ -323,6 +326,8 @@ def init_routes(app):
                     "first_name": form.first_name.data,
                     "last_name": form.last_name.data,
                     "title": form.title.data,
+                    "phone": form.phone.data,
+                    "company_name": form.company_name.data,
                 }
                 
                 # Handle social media fields if they exist in the User model
