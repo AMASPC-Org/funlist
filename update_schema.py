@@ -3,7 +3,7 @@ import logging
 from sqlalchemy import inspect, text
 from db_init import db
 from app import create_app
-from models import User, Event, Subscriber
+from models import User, Event, Subscriber, Organization
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -17,6 +17,7 @@ def update_schema():
             inspector = inspect(db.engine)
             event_columns = [column['name'] for column in inspector.get_columns('events')]
             user_columns = [column['name'] for column in inspector.get_columns('users')]
+            existing_tables = inspector.get_table_names()
 
             # Add missing columns if they don't exist
             with db.engine.connect() as conn:
@@ -58,6 +59,24 @@ def update_schema():
                         logger.info(f"Adding {column_name} column to users table...")
                         conn.execute(text(f'ALTER TABLE users ADD COLUMN IF NOT EXISTS {column_name} {column_type}'))
                         conn.commit()
+
+                organizer_columns = {
+                    'organizer_status': "VARCHAR(20) DEFAULT 'none'",
+                    'organizer_applied_at': 'TIMESTAMP',
+                    'organizer_approved_at': 'TIMESTAMP',
+                    'organizer_denied_at': 'TIMESTAMP',
+                    'organizer_terms_accepted': 'BOOLEAN DEFAULT FALSE',
+                }
+
+                for column_name, column_type in organizer_columns.items():
+                    if column_name not in user_columns:
+                        logger.info(f"Adding {column_name} column to users table...")
+                        conn.execute(text(f'ALTER TABLE users ADD COLUMN IF NOT EXISTS {column_name} {column_type}'))
+                        conn.commit()
+
+            if 'organizations' not in existing_tables:
+                logger.info("Creating organizations table...")
+                Organization.__table__.create(db.engine, checkfirst=True)
 
             logger.info("Schema update completed successfully")
             return True

@@ -45,6 +45,11 @@ class User(db.Model, UserMixin):
     twitter_url = Column(String(255), nullable=True)
     linkedin_url = Column(String(255), nullable=True)
     tiktok_url = Column(String(255), nullable=True)
+    organizer_status = Column(String(20), nullable=False, default="none")
+    organizer_applied_at = Column(DateTime, nullable=True)
+    organizer_approved_at = Column(DateTime, nullable=True)
+    organizer_denied_at = Column(DateTime, nullable=True)
+    organizer_terms_accepted = Column(Boolean, default=False)
 
 
     def is_active(self):
@@ -59,6 +64,7 @@ class User(db.Model, UserMixin):
         self._is_event_creator = value
 
     events = relationship("Event", back_populates="user", cascade="all, delete-orphan")
+    organization = relationship("Organization", back_populates="owner", uselist=False)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -75,17 +81,64 @@ class User(db.Model, UserMixin):
         self.user_preferences = json.dumps(preferences_dict)
 
     def update_organizer_profile(self, data):
+        organization = self.organization
+        if not organization:
+            organization = Organization(owner=self)
+            db.session.add(organization)
+
         if 'company_name' in data:
+            organization.name = data['company_name']
             self.company_name = data['company_name']
         if 'organizer_description' in data:
+            organization.description = data['organizer_description']
             self.organizer_description = data['organizer_description']
         if 'organizer_website' in data:
+            organization.website = data['organizer_website']
             self.organizer_website = data['organizer_website']
+        if 'business_street' in data:
+            organization.street = data['business_street']
+        if 'business_city' in data:
+            organization.city = data['business_city']
+        if 'business_state' in data:
+            organization.state = data['business_state']
+        if 'business_zip' in data:
+            organization.zip_code = data['business_zip']
+        if 'business_phone' in data:
+            organization.business_phone = data['business_phone']
+        if 'business_email' in data:
+            organization.business_email = data['business_email']
         if 'advertising_opportunities' in data:
             self.advertising_opportunities = data['advertising_opportunities']
         if 'sponsorship_opportunities' in data:
             self.sponsorship_opportunities = data['sponsorship_opportunities']
+
+        organization.updated_at = datetime.utcnow()
         self.organizer_profile_updated_at = datetime.utcnow()
+
+
+class Organization(db.Model):
+    __tablename__ = 'organizations'
+
+    id = Column(Integer, primary_key=True)
+    owner_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False, unique=True)
+    name = Column(String(120), nullable=True)
+    description = Column(Text, nullable=True)
+    website = Column(String(255), nullable=True)
+    business_email = Column(String(120), nullable=True)
+    business_phone = Column(String(50), nullable=True)
+    street = Column(String(100), nullable=True)
+    city = Column(String(50), nullable=True)
+    state = Column(String(50), nullable=True)
+    zip_code = Column(String(20), nullable=True)
+    status = Column(String(20), nullable=False, default="none")
+    terms_accepted = Column(Boolean, default=False)
+    applied_at = Column(DateTime, nullable=True)
+    approved_at = Column(DateTime, nullable=True)
+    denied_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    owner = relationship("User", back_populates="organization")
 
     def update_profile(self, data):
         # Update user attributes with provided data

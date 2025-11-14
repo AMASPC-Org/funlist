@@ -1,7 +1,7 @@
 
 {% extends "base.html" %}
 
-{% block title %}{{ organizer.company_name or organizer.username or "Organizer" }} | FunList.ai{% endblock %}
+{% block title %}{{ organization.name or organizer.email or "Organizer" }} | FunList.ai{% endblock %}
 
 {% block content %}
 <div class="container py-4">
@@ -9,28 +9,28 @@
         <div class="col-lg-8">
             <div class="card mb-4 shadow-sm">
                 <div class="card-header bg-primary text-white">
-                    <h2 class="mb-0">{{ organizer.company_name or organizer.username or "Organizer" }}</h2>
+                    <h2 class="mb-0">{{ organization.name or organizer.email or "Organizer" }}</h2>
                 </div>
                 <div class="card-body">
-                    {% if organizer.organizer_description %}
+                    {% if organization.description %}
                         <div class="mb-4">
                             <h4 class="mb-3">About</h4>
-                            <p>{{ organizer.organizer_description }}</p>
+                            <p>{{ organization.description }}</p>
                         </div>
                     {% endif %}
                     
-                    {% if organizer.organizer_website %}
+                    {% if organization.website %}
                         <div class="mb-3">
                             <h4 class="mb-2">Website</h4>
-                            <p><a href="{{ organizer.organizer_website }}" target="_blank" class="text-decoration-none">
-                                <i class="fas fa-globe me-2"></i>{{ organizer.organizer_website }}
+                            <p><a href="{{ organization.website }}" target="_blank" class="text-decoration-none">
+                                <i class="fas fa-globe me-2"></i>{{ organization.website }}
                             </a></p>
                         </div>
                     {% endif %}
                     
                     {% if events %}
                         <div class="mt-4">
-                            <h4 class="mb-3">Events by {{ organizer.company_name or organizer.username }}</h4>
+                            <h4 class="mb-3">Events by {{ organization.name or organizer.email }}</h4>
                             <div class="row">
                                 {% for event in events %}
                                     <div class="col-md-6 mb-3">
@@ -65,12 +65,12 @@
                     <h4 class="mb-0">Contact Information</h4>
                 </div>
                 <div class="card-body">
-                    {% if organizer.organizer_website %}
-                        <p><i class="fas fa-globe me-2"></i><a href="{{ organizer.organizer_website }}" target="_blank">{{ organizer.organizer_website }}</a></p>
+                    {% if organization.website %}
+                        <p><i class="fas fa-globe me-2"></i><a href="{{ organization.website }}" target="_blank">{{ organization.website }}</a></p>
                     {% endif %}
                     
-                    {% if organizer.location %}
-                        <p><i class="fas fa-map-marker-alt me-2"></i>{{ organizer.location }}</p>
+                    {% if organization.city or organization.state %}
+                        <p><i class="fas fa-map-marker-alt me-2"></i>{{ organization.city or '' }} {{ organization.state or '' }}</p>
                     {% endif %}
                     
                     {% if organizer.advertising_opportunities or organizer.sponsorship_opportunities %}

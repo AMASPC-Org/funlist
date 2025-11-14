@@ -167,6 +167,22 @@ class ProfileForm(FlaskForm):
             if user and user.id != self.user_id:
                 raise ValidationError('This username is already taken. Please choose another one.')
 
+class OrganizerApplicationForm(FlaskForm):
+    company_name = StringField('Organization / Venue Name', validators=[DataRequired(), Length(max=120)])
+    organizer_description = TextAreaField('Tell Us About Your Organization', validators=[DataRequired(), Length(max=600)])
+    organizer_website = StringField('Website', validators=[Optional(), URL()])
+    business_email = StringField('Business Email', validators=[DataRequired(), Email(), Length(max=120)])
+    business_phone = StringField('Business Phone', validators=[Optional(), Length(max=20)])
+    business_street = StringField('Street Address', validators=[Optional(), Length(max=100)])
+    business_city = StringField('City', validators=[Optional(), Length(max=50)])
+    business_state = StringField('State', validators=[Optional(), Length(max=50)])
+    business_zip = StringField('ZIP / Postal Code', validators=[Optional(), Length(max=20)])
+    terms_accepted = BooleanField(
+        'I confirm I am authorized to publish events on behalf of this organization and agree to the FunList Terms & Policies.',
+        validators=[DataRequired(message="Please accept the terms to continue.")]
+    )
+    submit = SubmitField('Submit Application')
+
 class VenueForm(FlaskForm):
     name = StringField('Venue Name', validators=[DataRequired()])
     street = StringField('Street Address')

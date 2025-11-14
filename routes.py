@@ -1,7 +1,7 @@
 from flask import render_template, flash, redirect, url_for, request, session, jsonify
 from flask_login import current_user, login_required, login_user, logout_user
-from forms import ProfileForm, EventForm, ContactForm, VenueForm
-from models import User, Event, Subscriber, ProhibitedAdvertiserCategory
+from forms import ProfileForm, EventForm, ContactForm, VenueForm, OrganizerApplicationForm
+from models import User, Event, Subscriber, ProhibitedAdvertiserCategory, Organization
 from db_init import db
 from utils import geocode_address
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
@@ -32,6 +32,74 @@ def init_routes(app):
                 redirect_path = f"{redirect_path}?{test_url.query}"
             return redirect_path
         return url_for("index")
+
+    def _organizer_status(user):
+        organization = getattr(user, "organization", None)
+        if organization and organization.status:
+            return organization.status.lower()
+        if user.organizer_status:
+            return user.organizer_status.lower()
+        return "none"
+
+    def _ensure_organization(user):
+        organization = getattr(user, "organization", None)
+        if not organization:
+            organization = Organization(owner=user)
+            db.session.add(organization)
+        return organization
+
+    def _has_event_access(user):
+        if user.is_admin or user.is_event_creator or user.is_organizer:
+            return True
+        organization = getattr(user, "organization", None)
+        return bool(organization and organization.status == "approved")
+
+    def _ensure_legacy_organization(user):
+        organization = getattr(user, "organization", None)
+        if organization:
+            return organization
+
+        legacy_fields = [
+            user.company_name,
+            user.organizer_description,
+            user.organizer_website,
+            getattr(user, "business_street", None),
+            getattr(user, "business_city", None),
+            getattr(user, "business_state", None),
+            getattr(user, "business_zip", None),
+            getattr(user, "business_phone", None),
+            getattr(user, "business_email", None),
+        ]
+
+        status_value = (user.organizer_status or "none").lower()
+        if status_value == "none" and not user.is_organizer:
+            return None
+
+        organization = Organization(
+            owner=user,
+            name=user.company_name,
+            description=user.organizer_description,
+            website=user.organizer_website,
+            street=getattr(user, "business_street", None),
+            city=getattr(user, "business_city", None),
+            state=getattr(user, "business_state", None),
+            zip_code=getattr(user, "business_zip", None),
+            business_phone=getattr(user, "business_phone", None),
+            business_email=getattr(user, "business_email", None),
+            status=status_value if status_value else ("approved" if user.is_organizer else "none"),
+            terms_accepted=user.organizer_terms_accepted,
+            applied_at=user.organizer_applied_at,
+            approved_at=user.organizer_approved_at,
+            denied_at=user.organizer_denied_at,
+        )
+        db.session.add(organization)
+        try:
+            db.session.commit()
+        except SQLAlchemyError as exc:
+            db.session.rollback()
+            logger.error("Failed to bootstrap organization for %s: %s", user.email, exc)
+            return None
+        return organization
 
     # Add CSP report endpoint (exempt from CSRF protection)
     @app.route('/csp-report', methods=['POST'])
@@ -269,13 +337,104 @@ def init_routes(app):
     @app.route("/profile", methods=["GET"])
     @login_required
     def profile():
-        return render_template("profile.html", user=current_user)
+        organization = current_user.organization or _ensure_legacy_organization(current_user)
+        return render_template("profile.html", user=current_user, organization=organization)
+
+    @app.route("/organizer/apply", methods=["GET", "POST"])
+    @login_required
+    def organizer_apply():
+        form = OrganizerApplicationForm()
+        organization = current_user.organization or _ensure_legacy_organization(current_user)
+        status = _organizer_status(current_user)
+
+        if current_user.is_organizer and status == "approved":
+            flash("You are already approved as an organizer.", "info")
+            return redirect(url_for("profile"))
+
+        if request.method == "GET":
+            form.company_name.data = (
+                organization.name if organization and organization.name else current_user.company_name
+            )
+            form.organizer_description.data = (
+                organization.description if organization and organization.description else current_user.organizer_description
+            )
+            form.organizer_website.data = (
+                organization.website if organization and organization.website else current_user.organizer_website
+            )
+            form.business_email.data = (
+                organization.business_email
+                if organization and organization.business_email
+                else getattr(current_user, "business_email", None)
+                or current_user.email
+            )
+            form.business_phone.data = (
+                organization.business_phone
+                if organization and organization.business_phone
+                else getattr(current_user, "business_phone", "")
+            )
+            form.business_street.data = (
+                organization.street if organization and organization.street else getattr(current_user, "business_street", "")
+            )
+            form.business_city.data = (
+                organization.city if organization and organization.city else getattr(current_user, "business_city", "")
+            )
+            form.business_state.data = (
+                organization.state if organization and organization.state else getattr(current_user, "business_state", "")
+            )
+            form.business_zip.data = (
+                organization.zip_code if organization and organization.zip_code else getattr(current_user, "business_zip", "")
+            )
+            form.terms_accepted.data = organization.terms_accepted if organization else False
+
+        if form.validate_on_submit():
+            organization = _ensure_organization(current_user)
+            organization.name = form.company_name.data
+            organization.description = form.organizer_description.data
+            organization.website = form.organizer_website.data
+            organization.business_email = form.business_email.data
+            organization.business_phone = form.business_phone.data
+            organization.street = form.business_street.data
+            organization.city = form.business_city.data
+            organization.state = form.business_state.data
+            organization.zip_code = form.business_zip.data
+            organization.terms_accepted = form.terms_accepted.data
+            organization.status = "pending"
+            organization.applied_at = datetime.utcnow()
+            organization.approved_at = None
+            organization.denied_at = None
+
+            current_user.company_name = form.company_name.data
+            current_user.organizer_description = form.organizer_description.data
+            current_user.organizer_website = form.organizer_website.data
+            current_user.organizer_terms_accepted = form.terms_accepted.data
+            current_user.organizer_status = "pending"
+            current_user.organizer_applied_at = datetime.utcnow()
+            current_user.organizer_denied_at = None
+            current_user.organizer_approved_at = None
+            current_user.is_organizer = False
+
+            try:
+                db.session.commit()
+                flash("Thanks! Your organizer application is under review. We'll email you once it's approved.", "success")
+                return redirect(url_for("profile"))
+            except SQLAlchemyError as exc:
+                db.session.rollback()
+                logger.error("Organizer application failed: %s", exc, exc_info=True)
+                flash("We couldn't submit your application. Please try again.", "danger")
+
+        return render_template(
+            "organizer_apply.html",
+            form=form,
+            status=status,
+        )
 
     @app.route("/profile/edit", methods=["GET", "POST"])
     @login_required
     def edit_profile():
         form = ProfileForm()
         form.user_id = current_user.id
+
+        organization = current_user.organization or _ensure_legacy_organization(current_user)
 
         if request.method == "GET":
             # Personal Information
@@ -284,8 +443,7 @@ def init_routes(app):
             form.title.data = current_user.title
             if hasattr(current_user, 'phone'):
                 form.phone.data = current_user.phone
-            if hasattr(current_user, 'company_name'):
-                form.company_name.data = current_user.company_name
+            # Company name is managed in the organizer section
             
             # Social Media Links (if these fields exist in the User model)
             if hasattr(current_user, 'facebook_url'):
@@ -300,24 +458,16 @@ def init_routes(app):
                 form.tiktok_url.data = current_user.tiktok_url
             
             # Organizer Information (if user is an organizer)
-            if current_user.is_organizer:
-                form.organizer_description.data = current_user.organizer_description
-                form.organizer_website.data = current_user.organizer_website
-                # Fill additional organizer fields if they exist in the database
-                # organizer_title removed, now using title field in personal info
-                # Handle the split business location fields
-                if hasattr(current_user, 'business_street'):
-                    form.business_street.data = current_user.business_street
-                if hasattr(current_user, 'business_city'):
-                    form.business_city.data = current_user.business_city
-                if hasattr(current_user, 'business_state'):
-                    form.business_state.data = current_user.business_state
-                if hasattr(current_user, 'business_zip'):
-                    form.business_zip.data = current_user.business_zip
-                if hasattr(current_user, 'business_phone'):
-                    form.business_phone.data = current_user.business_phone
-                if hasattr(current_user, 'business_email'):
-                    form.business_email.data = current_user.business_email
+            if current_user.is_organizer and organization:
+                form.company_name.data = organization.name
+                form.organizer_description.data = organization.description or current_user.organizer_description
+                form.organizer_website.data = organization.website or current_user.organizer_website
+                form.business_street.data = organization.street
+                form.business_city.data = organization.city
+                form.business_state.data = organization.state
+                form.business_zip.data = organization.zip_code
+                form.business_phone.data = organization.business_phone
+                form.business_email.data = organization.business_email or current_user.email
                 
         if form.validate_on_submit():
             try:
@@ -478,8 +628,11 @@ def init_routes(app):
     @login_required
     def submit_event():
         # Verify user has proper permissions
-        if not (current_user.is_event_creator or current_user.is_admin):
-            return render_template("event_creator_required.html")
+        if not _has_event_access(current_user):
+            return render_template(
+                "event_creator_required.html",
+                organizer_status=_organizer_status(current_user)
+            )
 
         # Create a new form instance
         form = EventForm()
@@ -986,8 +1139,7 @@ def init_routes(app):
     @app.route("/become-organizer")
     @login_required
     def become_organizer():
-        # Redirect user to the organizer profile page to set up their organizer account
-        return redirect(url_for("organizer_profile"))
+        return redirect(url_for("organizer_apply"))
 
     @app.route("/organizer-profile", methods=["GET", "POST"])
     @login_required
@@ -1221,20 +1373,27 @@ def init_routes(app):
 
     @app.route("/organizers")
     def organizers():
-        # Get all users who are organizers
-        organizers = User.query.filter_by(is_organizer=True).all()
-        return render_template("organizers.html", organizers=organizers)
+        missing_org_users = User.query.filter(
+            User.is_organizer.is_(True),
+            ~User.organization.has()
+        ).all()
+        for user in missing_org_users:
+            _ensure_legacy_organization(user)
+
+        organizers = Organization.query.filter_by(status="approved").order_by(Organization.name.asc()).all()
+        return render_template("organizers.html", organizations=organizers)
 
     @app.route("/organizer/<int:user_id>")
     def organizer_detail(user_id):
         organizer = User.query.get_or_404(user_id)
-        if not organizer.is_organizer:
+        organization = organizer.organization or _ensure_legacy_organization(organizer)
+        if not organization or organization.status != "approved":
             flash("This user is not registered as an event organizer.", "warning")
             return redirect(url_for("organizers"))
 
         # Get events by this organizer
         events = Event.query.filter_by(user_id=organizer.id).order_by(Event.start_date.desc()).all()
-        return render_template("organizer_detail.html", organizer=organizer, events=events)
+        return render_template("organizer_detail.html", organizer=organizer, organization=organization, events=events)
 
     @app.route("/admin/dashboard")
     @login_required

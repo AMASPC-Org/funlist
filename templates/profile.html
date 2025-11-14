@@ -1,27 +1,31 @@
 {% extends "base.html" %}
 
 {% block content %}
+{% set organization = organization or user.organization %}
 {% set full_name = (user.first_name ~ " " ~ user.last_name).strip() %}
 {% set display_name = full_name if full_name|trim else user.email %}
 {% set initials = (user.first_name[0] if user.first_name else user.email[0]).upper() %}
 {% set created = user.created_at.strftime('%B %d, %Y') if user.created_at else 'Unknown' %}
 {% set socials = [
-    {'label': 'Facebook', 'url': user.facebook_url, 'icon': 'fab fa-facebook-f'},
-    {'label': 'Instagram', 'url': user.instagram_url, 'icon': 'fab fa-instagram'},
-    {'label': 'X / Twitter', 'url': user.twitter_url, 'icon': 'fab fa-twitter'},
-    {'label': 'LinkedIn', 'url': user.linkedin_url, 'icon': 'fab fa-linkedin-in'},
-    {'label': 'TikTok', 'url': user.tiktok_url, 'icon': 'fab fa-tiktok'},
+{'label': 'Facebook', 'url': user.facebook_url, 'icon': 'fab fa-facebook-f'},
+{'label': 'Instagram', 'url': user.instagram_url, 'icon': 'fab fa-instagram'},
+{'label': 'X / Twitter', 'url': user.twitter_url, 'icon': 'fab fa-twitter'},
+{'label': 'LinkedIn', 'url': user.linkedin_url, 'icon': 'fab fa-linkedin-in'},
+{'label': 'TikTok', 'url': user.tiktok_url, 'icon': 'fab fa-tiktok'},
 ] %}
 {% set visible_socials = socials | selectattr('url') | list %}
+{% set organizer_status = (organization.status if organization and organization.status else user.organizer_status or 'none') | lower %}
+{% set organizer_status_label = 'Not Applied' if organizer_status == 'none' else organizer_status|capitalize %}
 
 <div class="container py-4 profile-page">
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-body p-4 d-flex flex-column flex-md-row align-items-start align-items-md-center gap-3">
-            <div class="profile-avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center">
+            <div
+                class="profile-avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center">
                 {% if user.profile_image %}
-                    <img src="{{ user.profile_image }}" alt="{{ display_name }}" class="rounded-circle img-fluid">
+                <img src="{{ user.profile_image }}" alt="{{ display_name }}" class="rounded-circle img-fluid">
                 {% else %}
-                    <span>{{ initials }}</span>
+                <span>{{ initials }}</span>
                 {% endif %}
             </div>
             <div class="flex-grow-1">
@@ -66,6 +70,25 @@
         </div>
     </div>
 
+    {% if organizer_status == 'pending' %}
+    <div class="alert alert-info d-flex align-items-center gap-2" role="alert">
+        <i class="fas fa-hourglass-half"></i>
+        <div>
+            Your organizer application was submitted on
+            {{ organization.applied_at.strftime('%B %d, %Y') if organization and organization.applied_at else 'recently' }}.
+            We will email you as soon as it is approved.
+        </div>
+    </div>
+    {% elif organizer_status == 'denied' %}
+    <div class="alert alert-warning d-flex align-items-center gap-2" role="alert">
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+            Your previous organizer application was not approved. Update your details and
+            <a href="{{ url_for('organizer_apply') }}" class="alert-link">submit a new request</a>.
+        </div>
+    </div>
+    {% endif %}
+
     <div class="row g-4">
         <div class="col-lg-8">
             <div class="card shadow-sm mb-4">
@@ -88,13 +111,13 @@
                         </div>
                         <div class="col-md-6">
                             <p class="mb-2 text-muted">Company</p>
-                            <p class="fw-semibold">{{ user.company_name or '—' }}</p>
+                            <p class="fw-semibold">{{ organization.name if organization and organization.name else '—' }}</p>
                         </div>
                     </div>
-                    {% if user.organizer_description %}
+                    {% if organization and organization.description %}
                     <div class="mt-3">
                         <p class="mb-2 text-muted">About</p>
-                        <p class="mb-0">{{ user.organizer_description }}</p>
+                        <p class="mb-0">{{ organization.description }}</p>
                     </div>
                     {% endif %}
                 </div>
@@ -109,20 +132,21 @@
                 <div class="card-body">
                     <div class="row g-3">
                         {% for social in socials %}
-                            {% if social.url %}
-                            <div class="col-md-6">
-                                <a href="{{ social.url }}" target="_blank" class="btn w-100 d-flex justify-content-center align-items-center btn-outline-secondary">
-                                    <i class="{{ social.icon }} me-2"></i> {{ social.label }}
-                                </a>
-                            </div>
-                            {% endif %}
+                        {% if social.url %}
+                        <div class="col-md-6">
+                            <a href="{{ social.url }}" target="_blank"
+                                class="btn w-100 d-flex justify-content-center align-items-center btn-outline-secondary">
+                                <i class="{{ social.icon }} me-2"></i> {{ social.label }}
+                            </a>
+                        </div>
+                        {% endif %}
                         {% endfor %}
                     </div>
                 </div>
             </div>
             {% endif %}
 
-            {% if current_user.is_organizer %}
+            {% if organization %}
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-white border-0">
                     <h5 class="mb-0">Organizer Details</h5>
@@ -131,31 +155,32 @@
                     <div class="row">
                         <div class="col-md-6">
                             <p class="mb-2 text-muted">Organization</p>
-                            <p class="fw-semibold">{{ current_user.company_name or "Not specified" }}</p>
+                            <p class="fw-semibold">{{ organization.name or "Not specified" }}</p>
                         </div>
                         <div class="col-md-6">
                             <p class="mb-2 text-muted">Website</p>
-                            {% if current_user.organizer_website %}
-                            <a href="{{ current_user.organizer_website }}" target="_blank">{{ current_user.organizer_website }}</a>
+                            {% if organization.website %}
+                            <a href="{{ organization.website }}" target="_blank">{{ organization.website }}</a>
                             {% else %}
                             <span class="fw-semibold">—</span>
                             {% endif %}
                         </div>
                         <div class="col-md-6">
                             <p class="mb-2 text-muted">Business Email</p>
-                            <p class="fw-semibold">{{ current_user.business_email or '—' }}</p>
+                            <p class="fw-semibold">{{ organization.business_email or user.email }}</p>
                         </div>
                         <div class="col-md-6">
                             <p class="mb-2 text-muted">Business Phone</p>
-                            <p class="fw-semibold">{{ current_user.business_phone or '—' }}</p>
+                            <p class="fw-semibold">{{ organization.business_phone or '—' }}</p>
                         </div>
                     </div>
-                    {% if current_user.business_street or current_user.business_city %}
+                    {% if organization.street or organization.city %}
                     <div class="mt-3">
                         <p class="mb-2 text-muted">Business Address</p>
                         <p class="mb-0">
-                            {{ current_user.business_street or '' }}<br>
-                            {{ current_user.business_city or '' }}, {{ current_user.business_state or '' }} {{ current_user.business_zip or '' }}
+                            {{ organization.street or '' }}<br>
+                            {{ organization.city or '' }}, {{ organization.state or '' }} {{
+                            organization.zip_code or '' }}
                         </p>
                     </div>
                     {% endif %}
@@ -183,6 +208,10 @@
                         <span class="text-muted">Account Status</span>
                         <span class="fw-bold">{{ 'Active' if user.account_active else 'Inactive' }}</span>
                     </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted">Organizer Status</span>
+                        <span class="fw-bold">{{ organizer_status_label }}</span>
+                    </div>
                     {% if user.vendor_type %}
                     <div class="mb-3">
                         <span class="text-muted d-block">Vendor Type</span>
@@ -198,7 +227,8 @@
                 </div>
             </div>
 
-            <div class="card shadow-sm">
+            <div
+                class="card shadow-sm {% if organizer_status == 'pending' %}border-info{% elif organizer_status == 'denied' %}border-warning{% endif %}">
                 <div class="card-header bg-white border-0">
                     <h5 class="mb-0">Quick Actions</h5>
                 </div>
@@ -209,12 +239,20 @@
                     <a href="{{ url_for('change_password') }}" class="btn btn-outline-secondary">
                         <i class="fas fa-lock me-2"></i>Change Password
                     </a>
-                    {% if current_user.is_organizer %}
+                    {% if organizer_status == 'approved' or current_user.is_event_creator %}
                     <a href="{{ url_for('submit_event') }}" class="btn btn-outline-success">
                         <i class="fas fa-calendar-plus me-2"></i>Submit Event
                     </a>
+                    {% elif organizer_status == 'pending' %}
+                    <button class="btn btn-outline-warning text-start" disabled>
+                        <i class="fas fa-hourglass-half me-2"></i>Application Pending Review
+                    </button>
+                    {% elif organizer_status == 'denied' %}
+                    <a href="{{ url_for('organizer_apply') }}" class="btn btn-outline-danger">
+                        <i class="fas fa-redo me-2"></i>Reapply to Become Organizer
+                    </a>
                     {% else %}
-                    <a href="{{ url_for('become_organizer') }}" class="btn btn-outline-success">
+                    <a href="{{ url_for('organizer_apply') }}" class="btn btn-outline-success">
                         <i class="fas fa-user-plus me-2"></i>Become an Organizer
                     </a>
                     {% endif %}
@@ -231,6 +269,7 @@
         font-size: 1.75rem;
         font-weight: 600;
     }
+
     .profile-page .badge {
         font-size: 0.85rem;
         padding: 0.5rem 0.75rem;

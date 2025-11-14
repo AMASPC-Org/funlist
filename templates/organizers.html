@@ -8,24 +8,24 @@
     <h1 class="mb-4">Event Organizers</h1>
     
     <div class="row">
-        {% for organizer in organizers %}
+        {% for organization in organizations %}
         <div class="col-md-6 col-lg-4 mb-4">
             <div class="card h-100 shadow-sm">
                 <div class="card-body">
-                    <h5 class="card-title">{{ organizer.company_name or organizer.username or "Organizer" }}</h5>
-                    {% if organizer.organizer_description %}
-                    <p class="card-text">{{ organizer.organizer_description[:150] ~ '...' if organizer.organizer_description|length > 150 else organizer.organizer_description }}</p>
+                    <h5 class="card-title">{{ organization.name or organization.owner.email }}</h5>
+                    {% if organization.description %}
+                    <p class="card-text">{{ organization.description[:150] ~ '...' if organization.description|length > 150 else organization.description }}</p>
                     {% else %}
                     <p class="card-text text-muted">No description provided</p>
                     {% endif %}
                 </div>
                 <div class="card-footer bg-transparent">
-                    {% if organizer.organizer_website %}
-                    <a href="{{ organizer.organizer_website }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                    {% if organization.website %}
+                    <a href="{{ organization.website }}" target="_blank" class="btn btn-sm btn-outline-primary">
                         <i class="fas fa-globe"></i> Website
                     </a>
                     {% endif %}
-                    <a href="{{ url_for('organizer_detail', user_id=organizer.id) }}" class="btn btn-sm btn-outline-secondary">
+                    <a href="{{ url_for('organizer_detail', user_id=organization.owner.id) }}" class="btn btn-sm btn-outline-secondary">
                         <i class="fas fa-calendar-alt"></i> View Profile
                     </a>
                 </div>

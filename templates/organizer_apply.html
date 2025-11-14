@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% from "macros/_form_helpers.html" import render_field %}
+
+{% block content %}
+{% set status_label = 'Not Applied' if status == 'none' else status|capitalize %}
+<div class="container py-4 organizer-apply-page">
+    <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-9">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+                        <div>
+                            <p class="text-primary fw-semibold text-uppercase mb-1">Organizer Application</p>
+                            <h2 class="mb-2">Publish Events with FunList.ai</h2>
+                            <p class="text-muted mb-0">
+                                Tell us a little bit about your organization so we can verify your access.
+                                Approvals typically take less than one business day.
+                            </p>
+                        </div>
+                        <span class="badge {% if status == 'approved' %}text-bg-success{% elif status == 'pending' %}text-bg-warning text-dark{% elif status == 'denied' %}text-bg-danger{% else %}text-bg-secondary{% endif %}">
+                            Status: {{ status_label }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <form method="POST" class="card shadow-sm border-0">
+                {{ form.hidden_tag() }}
+                <div class="card-body p-4">
+                    <div class="mb-4">
+                        <h5>Organization Details</h5>
+                        <p class="text-muted mb-0">We’ll use this information on your public organizer profile.</p>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            {{ render_field(form.company_name, class="form-control") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ render_field(form.organizer_website, class="form-control") }}
+                        </div>
+                        <div class="col-12">
+                            {{ render_field(form.organizer_description, class="form-control", rows="4") }}
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="mb-4">
+                        <h5>Business Contact</h5>
+                        <p class="text-muted mb-0">Only FunList admins will see this information.</p>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            {{ render_field(form.business_email, class="form-control") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ render_field(form.business_phone, class="form-control") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ render_field(form.business_street, class="form-control") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ render_field(form.business_city, class="form-control") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ render_field(form.business_state, class="form-control") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ render_field(form.business_zip, class="form-control") }}
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            {{ form.terms_accepted(class="form-check-input") }}
+                            <label class="form-check-label" for="{{ form.terms_accepted.id }}">
+                                I confirm I am authorized to publish and promote events on behalf of this organization and agree to the
+                                <a href="{{ url_for('terms') }}">Terms</a> and <a href="{{ url_for('privacy') }}">Privacy Policy</a>.
+                            </label>
+                        </div>
+                        {% for error in form.terms_accepted.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="card-footer bg-white border-0 d-flex flex-wrap gap-2 justify-content-between align-items-center">
+                    <a href="{{ url_for('profile') }}" class="btn btn-link text-decoration-none">Cancel</a>
+                    {{ form.submit(class="btn btn-primary px-4") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .organizer-apply-page .card {
+        border-radius: 16px;
+    }
+</style>
+{% endblock %}
