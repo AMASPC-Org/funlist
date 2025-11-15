@@ -308,6 +308,7 @@ class Chapter(db.Model):
 
 class HelpArticle(db.Model):
     __tablename__ = 'help_articles'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True)
     title = Column(String(255), nullable=False)
