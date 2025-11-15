@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user, login_required, login_user, logout_user
 from forms import (SignupForm, LoginForm, ProfileForm, EventForm,
                    ResetPasswordRequestForm, ResetPasswordForm, ContactForm, SearchForm) # Added ContactForm, SearchForm
-from models import User, Event, Subscriber, Chapter, HelpArticle, CharterMember # Added HelpArticle, CharterMember
+from models import User, Event, Subscriber, Chapter, HelpArticle # Added HelpArticle
 from db_init import db
 # Removed direct import of geocode_address, assume it's in utils.utils now
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
