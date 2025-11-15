@@ -65,7 +65,7 @@ def import_events():
                 continue
 
             # --- Duplicate Check ---
-            existing_event = db.session.query(Event).filter_by(
+            existing_event = Event.query.filter_by(
                 title=event_name,
                 start_date=event_date_obj
             ).first()
