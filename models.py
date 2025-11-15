@@ -10,6 +10,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 # Define ProhibitedAdvertiserCategory FIRST
 class ProhibitedAdvertiserCategory(db.Model):
     __tablename__ = 'prohibited_advertiser_categories'
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True)
     name = Column(String(100), unique=True, nullable=False)
 
