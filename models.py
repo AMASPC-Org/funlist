@@ -324,18 +324,18 @@ class HelpArticle(db.Model):
         return f"<HelpArticle {self.title}>"
 
 
-class CharterMember(db.Model):
-    __tablename__ = 'charter_members'
-
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    chapter_id = Column(Integer, ForeignKey('chapters.id'), nullable=False)
-    role = Column(String(50), default='member')
-    joined_at = Column(DateTime, default=datetime.utcnow)
-    is_active = Column(Boolean, default=True)
-    
-    user = relationship("User", backref="charter_memberships")
-    chapter = relationship("Chapter", backref="charter_members")
-    
-    def __repr__(self):
-        return f"<CharterMember {self.user.email} in {self.chapter.name}>"
+# class CharterMember(db.Model):
+#     __tablename__ = 'charter_members'
+#
+#     id = Column(Integer, primary_key=True)
+#     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+#     chapter_id = Column(Integer, ForeignKey('chapters.id'), nullable=False)
+#     role = Column(String(50), default='member')
+#     joined_at = Column(DateTime, default=datetime.utcnow)
+#     is_active = Column(Boolean, default=True)
+#     
+#     user = relationship("User", backref="charter_memberships")
+#     chapter = relationship("Chapter", backref="charter_members")
+#     
+#     def __repr__(self):
+#         return f"<CharterMember {self.user.email} in {self.chapter.name}>"
