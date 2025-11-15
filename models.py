@@ -249,6 +249,7 @@ class VenueType(db.Model):
 
 class Venue(db.Model):
     __tablename__ = 'venues'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True)
     name = Column(String(100), nullable=False)
