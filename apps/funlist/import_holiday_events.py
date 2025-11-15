@@ -1,0 +1,591 @@
+
+import json
+from datetime import datetime
+from db_init import db
+from models import Event
+from app import create_app
+
+# Event data
+events_data = [
+  {
+    "eventName": "Yelm Christmas in the Park & Tree Lighting",
+    "eventDate": "2025-11-28",
+    "eventTime": "5:00 PM - 7:00 PM",
+    "locationName": "Yelm City Park",
+    "locationAddress": "115 Mosman Ave SE, Yelm, WA 98597",
+    "city": "Yelm",
+    "county": "Thurston",
+    "cost": "Free",
+    "sourceURL": "https://www.yelmwa.gov/visitors/things_to_do/events/christmas_in_the_park.php",
+    "description": "Kick off the holiday season with Santa's arrival, hot cocoa, caroling, and the official tree lighting.",
+    "primaryEventType": "Festival / Fair",
+    "venueType": "Park / Outdoor Space",
+    "initialTags": ["Families", "Kids", "Arts & Culture"]
+  },
+  {
+    "eventName": "Oly on Ice",
+    "eventDate": "2025-11-28",
+    "eventTime": "10:00 AM - 9:00 PM",
+    "locationName": "Isthmus Park",
+    "locationAddress": "529 4th Ave W, Olympia, WA 98501",
+    "city": "Olympia",
+    "county": "Thurston",
+    "cost": "$12 - $15 (includes skate rental)",
+    "sourceURL": "https://www.olyonice.com",
+    "description": "Enjoy festive outdoor ice skating at Olympia's seasonal rink. All-ages fun, skate rentals available.",
+    "primaryEventType": "Sports / Fitness Event",
+    "venueType": "Park / Outdoor Space",
+    "initialTags": ["Families", "Kids", "Teens", "Adults", "Date Night", "Fitness & Active"]
+  },
+  {
+    "eventName": "Winter Wonderland",
+    "eventDate": "2025-11-28",
+    "eventTime": "10:00 AM - 5:00 PM",
+    "locationName": "Hands On Children's Museum",
+    "locationAddress": "414 Jefferson St NE, Olympia, WA 98501",
+    "city": "Olympia",
+    "county": "Thurston",
+    "cost": "Included with admission (approx. $17.95)",
+    "sourceURL": "https://www.hocm.org/winter-wonderland",
+    "description": "Explore a winter-themed museum takeover with special hands-on art and science activities, including indoor 'snowball' fun.",
+    "primaryEventType": "Museum / Exhibit (Interactive or Family-Focused)",
+    "venueType": "Museum / Gallery",
+    "initialTags": ["Kids", "Families"]
+  },
+  {
+    "eventName": "A Christmas Carol",
+    "eventDate": "2025-11-28",
+    "eventTime": "7:30 PM - 9:30 PM",
+    "locationName": "Washington Center for the Performing Arts",
+    "locationAddress": "512 Washington St SE, Olympia, WA 98501",
+    "city": "Olympia",
+    "county": "Thurston",
+    "cost": "$25 - $40",
+    "sourceURL": "https://www.washingtoncenter.org/event/a-christmas-carol",
+    "description": "A beloved holiday classic brought to the stage, following Ebenezer Scrooge's journey of redemption.",
+    "primaryEventType": "Performance / Show",
+    "venueType": "Music Venue / Theater",
+    "initialTags": ["Families", "Adults", "Arts & Culture", "Date Night"]
+  },
+  {
+    "eventName": "A Christmas Story",
+    "eventDate": "2025-11-28",
+    "eventTime": "8:00 PM - 10:00 PM",
+    "locationName": "Harlequin Productions (The State Theater)",
+    "locationAddress": "202 4th Ave E, Olympia, WA 98501",
+    "city": "Olympia",
+    "county": "Thurston",
+    "cost": "$30 - $45",
+    "sourceURL": "https://harlequinproductions.org/show/a-christmas-story",
+    "description": "The hilarious and heartwarming stage play based on the classic holiday film. You'll shoot your eye out!",
+    "primaryEventType": "Performance / Show",
+    "venueType": "Music Venue / Theater",
+    "initialTags": ["Families", "Adults", "Arts & Culture", "Date Night"]
+  },
+  {
+    "eventName": "Karaoke Night",
+    "eventDate": "2025-11-28",
+    "eventTime": "9:00 PM - 1:00 AM",
+    "locationName": "O'Blarney's Irish Pub",
+    "locationAddress": "4411 Martin Way E, Olympia, WA 98516",
+    "city": "Olympia",
+    "county": "Thurston",
+    "cost": "Free (21+)",
+    "sourceURL": "https://www.oblarn.com/olympia-events",
+    "description": "Sing your heart out at O'Blarney's popular weekend karaoke night. 21+ only.",
+    "primaryEventType": "Karaoke",
+    "venueType": "Bar / Pub / Tavern",
+    "initialTags": ["Adults", "21+", "Singles", "Date Night"]
+  },
+  {
+    "eventName": "Live Music: The Rusty Cleavers",
+    "eventDate": "2025-11-28",
+    "eventTime": "8:00 PM - 10:00 PM",
+    "locationName": "McMenamins Spar Cafe",
+    "locationAddress": "114 4th Ave E, Olympia, WA 98501",
+    "city": "Olympia",
+    "county": "Thurston",
+    "cost": "Free",
+    "sourceURL": "https://www.mcmenamins.com/spar-cafe/live-music",
+    "description": "Enjoy live bluegrass and folk music from The Rusty Cleavers in a classic cafe setting.",
+    "primaryEventType": "Live Music",
+    "venueType": "Restaurant",
+    "initialTags": ["Adults", "Date Night", "Singles", "Arts & Culture"]
+  },
+  {
+    "eventName": "Tumwater Christmas Tree Lighting Festival",
+    "eventDate": "2025-11-29",
+    "eventTime": "2:00 PM - 5:00 PM",
+    "locationName": "Tumwater Fire Department Headquarters",
+    "locationAddress": "311 Israel Rd SW, Tumwater, WA 98501",
+    "city": "Tumwater",
+    "county": "Thurston",
+    "cost": "Free",
+    "sourceURL": "https://www.ci.tumwater.wa.us/departments/parks-recreation/events/tree-lighting",
+    "description": "A fun-filled family event with Santa's arrival on a fire truck, live music, kids' crafts, and the lighting of the tree.",
+    "primaryEventType": "Festival / Fair",
+    "venueType": "Other Venue",
+    "initialTags": ["Kids", "Families", "Arts & Culture"]
+  },
+  {
+    "eventName": "Oly on Ice",
+    "eventDate": "2025-11-29",
+    "eventTime": "10:00 AM - 9:00 PM",
+    "locationName": "Isthmus Park",
+    "locationAddress": "529 4th Ave W, Olympia, WA 98501",
+    "city": "Olympia",
+    "county": "Thurston",
+    "cost": "$12 - $15 (includes skate rental)",
+    "sourceURL": "https://www.olyonice.com",
+    "description": "Enjoy festive outdoor ice skating at Olympia's seasonal rink. All-ages fun, skate rentals available.",
+    "primaryEventType": "Sports / Fitness Event",
+    "venueType": "Park / Outdoor Space",
+    "initialTags": ["Families", "Kids", "Teens", "Adults", "Date Night", "Fitness & Active"]
+  },
+  {
+    "eventName": "Winter Wonderland",
+    "eventDate": "2025-11-29",
+    "eventTime": "10:00 AM - 5:00 PM",
+    "locationName": "Hands On Children's Museum",
+    "locationAddress": "414 Jefferson St NE, Olympia, WA 98501",
+    "city": "Olympia",
+    "county": "Thurston",
+    "cost": "Included with admission (approx. $17.95)",
+    "sourceURL": "https://www.hocm.org/winter-wonderland",
+    "description": "Explore a winter-themed museum takeover with special hands-on art and science activities, including indoor 'snowball' fun.",
+    "primaryEventType": "Museum / Exhibit (Interactive or Family-Focused)",
+    "venueType": "Museum / Gallery",
+    "initialTags": ["Kids", "Families"]
+  },
+  {
+    "eventName": "A Christmas Carol",
+    "eventDate": "2025-11-29",
+    "eventTime": "7:30 PM - 9:30 PM",
+    "locationName": "Washington Center for the Performing Arts",
+    "locationAddress": "512 Washington St SE, Olympia, WA 98501",
+    "city": "Olympia",
+    "county": "Thurston",
+    "cost": "$25 - $40",
+    "sourceURL": "https://www.washingtoncenter.org/event/a-christmas-carol",
+    "description": "A beloved holiday classic brought to the stage, following Ebenezer Scrooge's journey of redemption.",
+    "primaryEventType": "Performance / Show",
+    "venueType": "Music Venue / Theater",
+    "initialTags": ["Families", "Adults", "Arts & Culture", "Date Night"]
+  },
+  {
+    "eventName": "A Christmas Story",
+    "eventDate": "2025-11-29",
+    "eventTime": "8:00 PM - 10:00 PM",
+    "locationName": "Harlequin Productions (The State Theater)",
+    "locationAddress": "202 4th Ave E, Olympia, WA 98501",
+    "city": "Olympia",
+    "county": "Thurston",
+    "cost": "$30 - $45",
+    "sourceURL": "https://harlequinproductions.org/show/a-christmas-story",
+    "description": "The hilarious and heartwarming stage play based on the classic holiday film. You'll shoot your eye out!",
+    "primaryEventType": "Performance / Show",
+    "venueType": "Music Venue / Theater",
+    "initialTags": ["Families", "Adults", "Arts & Culture", "Date Night"]
+  },
+  {
+    "eventName": "Karaoke Night",
+    "eventDate": "2025-11-29",
+    "eventTime": "9:00 PM - 1:00 AM",
+    "locationName": "O'Blarney's Irish Pub",
+    "locationAddress": "4411 Martin Way E, Olympia, WA 98516",
+    "city": "Olympia",
+    "county": "Thurston",
+    "cost": "Free (21+)",
+    "sourceURL": "https://www.oblarn.com/olympia-events",
+    "description": "Sing your heart out at O'Blarney's popular weekend karaoke night. 21+ only.",
+    "primaryEventType": "Karaoke",
+    "venueType": "Bar / Pub / Tavern",
+    "initialTags": ["Adults", "21+", "Singles", "Date Night"]
+  },
+  {
+    "eventName": "City of Lacey Parade of Lights & Tree Lighting",
+    "eventDate": "2025-11-30",
+    "eventTime": "6:00 PM - 8:00 PM",
+    "locationName": "Huntamer Park",
+    "locationAddress": "618 Woodland Square Loop SE, Lacey, WA 98503",
+    "city": "Lacey",
+    "county": "Thurston",
+    "cost": "Free",
+    "sourceURL": "https://www.cityoflacey.org/parade-of-lights/",
+    "description": "Watch the annual holiday Parade of Lights followed by the official tree lighting ceremony at Huntamer Park.",
+    "primaryEventType": "Festival / Fair",
+    "venueType": "Park / Outdoor Space",
+    "initialTags": ["Kids", "Families", "Arts & Culture"]
+  },
+  {
+    "eventName": "Downtown for the Holidays",
+    "eventDate": "2025-11-30",
+    "eventTime": "12:00 PM - 5:00 PM",
+    "locationName": "Sylvester Park",
+    "locationAddress": "615 Washington St SE, Olympia, WA 98501",
+    "city": "Olympia",
+    "county": "Thurston",
+    "cost": "Free",
+    "sourceURL": "https://www.olympiadowntown.org/downtown-for-the-holidays",
+    "description": "A festive community celebration featuring a parade, the Jingle Bell Dash, photos with Santa, and the tree lighting.",
+    "primaryEventType": "Festival / Fair",
+    "venueType": "Park / Outdoor Space",
+    "initialTags": ["Kids", "Families", "Arts & Culture"]
+  },
+  {
+    "eventName": "Oly on Ice",
+    "eventDate": "2025-11-30",
+    "eventTime": "10:00 AM - 7:00 PM",
+    "locationName": "Isthmus Park",
+    "locationAddress": "529 4th Ave W, Olympia, WA 98501",
+    "city": "Olympia",
+    "county": "Thurston",
+    "cost": "$12 - $15 (includes skate rental)",
+    "sourceURL": "https://www.olyonice.com",
+    "description": "Enjoy festive outdoor ice skating at Olympia's seasonal rink. All-ages fun, skate rentals available.",
+    "primaryEventType": "Sports / Fitness Event",
+    "venueType": "Park / Outdoor Space",
+    "initialTags": ["Families", "Kids", "Teens", "Adults", "Date Night", "Fitness & Active"]
+  },
+  {
+    "eventName": "Winter Wonderland",
+    "eventDate": "2025-11-30",
+    "eventTime": "10:00 AM - 5:00 PM",
+    "locationName": "Hands On Children's Museum",
+    "locationAddress": "414 Jefferson St NE, Olympia, WA 98501",
+    "city": "Olympia",
+    "county": "Thurston",
+    "cost": "Included with admission (approx. $17.95)",
+    "sourceURL": "https://www.hocm.org/winter-wonderland",
+    "description": "Explore a winter-themed museum takeover with special hands-on art and science activities, including indoor 'snowball' fun.",
+    "primaryEventType": "Museum / Exhibit (Interactive or Family-Focused)",
+    "venueType": "Museum / Gallery",
+    "initialTags": ["Kids", "Families"]
+  },
+  {
+    "eventName": "A Christmas Carol",
+    "eventDate": "2025-11-30",
+    "eventTime": "2:00 PM - 4:00 PM",
+    "locationName": "Washington Center for the Performing Arts",
+    "locationAddress": "512 Washington St SE, Olympia, WA 98501",
+    "city": "Olympia",
+    "county": "Thurston",
+    "cost": "$25 - $40",
+    "sourceURL": "https://www.washingtoncenter.org/event/a-christmas-carol",
+    "description": "A beloved holiday classic brought to the stage, following Ebenezer Scrooge's journey of redemption. Matinee performance.",
+    "primaryEventType": "Performance / Show",
+    "venueType": "Music Venue / Theater",
+    "initialTags": ["Families", "Adults", "Arts & Culture"]
+  },
+  {
+    "eventName": "A Christmas Story",
+    "eventDate": "2025-11-30",
+    "eventTime": "2:30 PM - 4:30 PM",
+    "locationName": "Harlequin Productions (The State Theater)",
+    "locationAddress": "202 4th Ave E, Olympia, WA 98501",
+    "city": "Olympia",
+    "county": "Thurston",
+    "cost": "$30 - $45",
+    "sourceURL": "https://harlequinproductions.org/show/a-christmas-story",
+    "description": "The hilarious and heartwarming stage play based on the classic holiday film. You'll shoot your eye out! Matinee show.",
+    "primaryEventType": "Performance / Show",
+    "venueType": "Music Venue / Theater",
+    "initialTags": ["Families", "Adults", "Arts & Culture"]
+  },
+  {
+    "eventName": "Family Storytime",
+    "eventDate": "2025-12-01",
+    "eventTime": "10:30 AM - 11:00 AM",
+    "locationName": "Olympia Timberland Library",
+    "locationAddress": "313 8th Ave SE, Olympia, WA 98501",
+    "city": "Olympia",
+    "county": "Thurston",
+    "cost": "Free",
+    "sourceURL": "https://events.trl.org/event/family-storytime-olympia",
+    "description": "An all-ages storytime featuring books, songs, and rhymes to build early literacy skills.",
+    "primaryEventType": "Kids & Family Activity",
+    "venueType": "Library",
+    "initialTags": ["Kids", "Families"]
+  },
+  {
+    "eventName": "Oly on Ice",
+    "eventDate": "2025-12-01",
+    "eventTime": "3:00 PM - 9:00 PM",
+    "locationName": "Isthmus Park",
+    "locationAddress": "529 4th Ave W, Olympia, WA 98501",
+    "city": "Olympia",
+    "county": "Thurston",
+    "cost": "$12 - $15 (includes skate rental)",
+    "sourceURL": "https://www.olyonice.com",
+    "description": "Enjoy festive outdoor ice skating at Olympia's seasonal rink. All-ages fun, skate rentals available.",
+    "primaryEventType": "Sports / Fitness Event",
+    "venueType": "Park / Outdoor Space",
+    "initialTags": ["Families", "Kids", "Teens", "Adults", "Date Night", "Fitness & Active"]
+  },
+  {
+    "eventName": "Winter Wonderland",
+    "eventDate": "2025-12-01",
+    "eventTime": "10:00 AM - 5:00 PM",
+    "locationName": "Hands On Children's Museum",
+    "locationAddress": "414 Jefferson St NE, Olympia, WA 98501",
+    "city": "Olympia",
+    "county": "Thurston",
+    "cost": "Included with admission (approx. $17.95)",
+    "sourceURL": "https://www.hocm.org/winter-wonderland",
+    "description": "Explore a winter-themed museum takeover with special hands-on art and science activities, including indoor 'snowball' fun.",
+    "primaryEventType": "Museum / Exhibit (Interactive or Family-Focused)",
+    "venueType": "Museum / Gallery",
+    "initialTags": ["Kids", "Families"]
+  },
+  {
+    "eventName": "Adult Craft Night: DIY Ornaments",
+    "eventDate": "2025-12-02",
+    "eventTime": "6:00 PM - 7:30 PM",
+    "locationName": "Lacey Timberland Library",
+    "locationAddress": "500 College St SE, Lacey, WA 98503",
+    "city": "Lacey",
+    "county": "Thurston",
+    "cost": "Free (Registration required)",
+    "sourceURL": "https://events.trl.org/event/adult-craft-night-lacey",
+    "description": "A hands-on workshop for adults to create their own festive holiday ornaments. All supplies provided.",
+    "primaryEventType": "Workshop / Class (Hands-On)",
+    "venueType": "Library",
+    "initialTags": ["Adults", "Arts & Culture", "Singles"]
+  },
+  {
+    "eventName": "Trivia Night",
+    "eventDate": "2025-12-02",
+    "eventTime": "7:00 PM - 9:00 PM",
+    "locationName": "Well 80 Brewhouse",
+    "locationAddress": "514 4th Ave E, Olympia, WA 98501",
+    "city": "Olympia",
+    "county": "Thurston",
+    "cost": "Free to play",
+    "sourceURL": "https://www.well80.com/events",
+    "description": "Join the weekly trivia challenge. Form a team, answer questions, and compete for prizes.",
+    "primaryEventType": "Trivia / Quiz Night",
+    "venueType": "Brewery / Cidery / Winery",
+    "initialTags": ["Adults", "Singles", "Date Night"]
+  },
+  {
+    "eventName": "Oly on Ice",
+    "eventDate": "2025-12-02",
+    "eventTime": "3:00 PM - 9:00 PM",
+    "locationName": "Isthmus Park",
+    "locationAddress": "529 4th Ave W, Olympia, WA 98501",
+    "city": "Olympia",
+    "county": "Thurston",
+    "cost": "$12 - $15 (includes skate rental)",
+    "sourceURL": "https://www.olyonice.com",
+    "description": "Enjoy festive outdoor ice skating at Olympia's seasonal rink. All-ages fun, skate rentals available.",
+    "primaryEventType": "Sports / Fitness Event",
+    "venueType": "Park / Outdoor Space",
+    "initialTags": ["Families", "Kids", "Teens", "Adults", "Date Night", "Fitness & Active"]
+  },
+  {
+    "eventName": "Winter Wonderland",
+    "eventDate": "2025-12-02",
+    "eventTime": "10:00 AM - 5:00 PM",
+    "locationName": "Hands On Children's Museum",
+    "locationAddress": "414 Jefferson St NE, Olympia, WA 98501",
+    "city": "Olympia",
+    "county": "Thurston",
+    "cost": "Included with admission (approx. $17.95)",
+    "sourceURL": "https://www.hocm.org/winter-wonderland",
+    "description": "Explore a winter-themed museum takeover with special hands-on art and science activities, including indoor 'snowball' fun.",
+    "primaryEventType": "Museum / Exhibit (Interactive or Family-Focused)",
+    "venueType": "Museum / Gallery",
+    "initialTags": ["Kids", "Families"]
+  },
+  {
+    "eventName": "Teen Game Night",
+    "eventDate": "2025-12-03",
+    "eventTime": "5:30 PM - 7:00 PM",
+    "locationName": "Olympia Timberland Library",
+    "locationAddress": "313 8th Ave SE, Olympia, WA 98501",
+    "city": "Olympia",
+    "county": "Thurston",
+    "cost": "Free",
+    "sourceURL": "https://events.trl.org/event/teen-game-night-olympia",
+    "description": "Teens are invited to hang out and play a variety of board games and video games.",
+    "primaryEventType": "Game Night",
+    "venueType": "Library",
+    "initialTags": ["Teens"]
+  },
+  {
+    "eventName": "Open Mic Comedy Night",
+    "eventDate": "2025-12-03",
+    "eventTime": "9:00 PM - 11:00 PM",
+    "locationName": "Le Voyeur",
+    "locationAddress": "404 4th Ave E, Olympia, WA 98501",
+    "city": "Olympia",
+    "county": "Thurston",
+    "cost": "Free (21+)",
+    "sourceURL": "https://www.levoyeurolympia.com/calendar",
+    "description": "Catch local comedians trying out new material at this weekly open mic showcase. 21+ only.",
+    "primaryEventType": "Comedy / Stand-Up",
+    "venueType": "Bar / Pub / Tavern",
+    "initialTags": ["Adults", "21+", "Singles", "Date Night", "Arts & Culture"]
+  },
+  {
+    "eventName": "Oly on Ice",
+    "eventDate": "2025-12-03",
+    "eventTime": "3:00 PM - 9:00 PM",
+    "locationName": "Isthmus Park",
+    "locationAddress": "529 4th Ave W, Olympia, WA 98501",
+    "city": "Olympia",
+    "county": "Thurston",
+    "cost": "$12 - $15 (includes skate rental)",
+    "sourceURL": "https://www.olyonice.com",
+    "description": "Enjoy festive outdoor ice skating at Olympia's seasonal rink. All-ages fun, skate rentals available.",
+    "primaryEventType": "Sports / Fitness Event",
+    "venueType": "Park / Outdoor Space",
+    "initialTags": ["Families", "Kids", "Teens", "Adults", "Date Night", "Fitness & Active"]
+  },
+  {
+    "eventName": "Winter Wonderland",
+    "eventDate": "2025-12-03",
+    "eventTime": "10:00 AM - 5:00 PM",
+    "locationName": "Hands On Children's Museum",
+    "locationAddress": "414 Jefferson St NE, Olympia, WA 98501",
+    "city": "Olympia",
+    "county": "Thurston",
+    "cost": "Included with admission (approx. $17.95)",
+    "sourceURL": "https://www.hocm.org/winter-wonderland",
+    "description": "Explore a winter-themed museum takeover with special hands-on art and science activities, including indoor 'snowball' fun.",
+    "primaryEventType": "Museum / Exhibit (Interactive or Family-Focused)",
+    "venueType": "Museum / Gallery",
+    "initialTags": ["Kids", "Families"]
+  },
+  {
+    "eventName": "Bar Bingo",
+    "eventDate": "2025-12-04",
+    "eventTime": "6:30 PM - 8:30 PM",
+    "locationName": "Top Rung Brewing Company",
+    "locationAddress": "8809 Depot Rd NE, Lacey, WA 98516",
+    "city": "Lacey",
+    "county": "Thurston",
+    "cost": "Free to play",
+    "sourceURL": "https://www.toprungbrewing.com/events",
+    "description": "A fun, free-to-play bingo night hosted at the brewery. Win prizes and enjoy local craft beer.",
+    "primaryEventType": "Bar Bingo",
+    "venueType": "Brewery / Cidery / Winery",
+    "initialTags": ["Adults", "Singles", "Date Night"]
+  },
+  {
+    "eventName": "A Christmas Story",
+    "eventDate": "2025-12-04",
+    "eventTime": "8:00 PM - 10:00 PM",
+    "locationName": "Harlequin Productions (The State Theater)",
+    "locationAddress": "202 4th Ave E, Olympia, WA 98501",
+    "city": "Olympia",
+    "county": "Thurston",
+    "cost": "$30 - $45",
+    "sourceURL": "https://harlequinproductions.org/show/a-christmas-story",
+    "description": "The hilarious and heartwarming stage play based on the classic holiday film. You'll shoot your eye out!",
+    "primaryEventType": "Performance / Show",
+    "venueType": "Music Venue / Theater",
+    "initialTags": ["Families", "Adults", "Arts & Culture", "Date Night"]
+  },
+  {
+    "eventName": "Oly on Ice",
+    "eventDate": "2025-12-04",
+    "eventTime": "3:00 PM - 9:00 PM",
+    "locationName": "Isthmus Park",
+    "locationAddress": "529 4th Ave W, Olympia, WA 98501",
+    "city": "Olympia",
+    "county": "Thurston",
+    "cost": "$12 - $15 (includes skate rental)",
+    "sourceURL": "https://www.olyonice.com",
+    "description": "Enjoy festive outdoor ice skating at Olympia's seasonal rink. All-ages fun, skate rentals available.",
+    "primaryEventType": "Sports / Fitness Event",
+    "venueType": "Park / Outdoor Space",
+    "initialTags": ["Families", "Kids", "Teens", "Adults", "Date Night", "Fitness & Active"]
+  },
+  {
+    "eventName": "Winter Wonderland",
+    "eventDate": "2025-12-04",
+    "eventTime": "10:00 AM - 5:00 PM",
+    "locationName": "Hands On Children's Museum",
+    "locationAddress": "414 Jefferson St NE, Olympia, WA 98501",
+    "city": "Olympia",
+    "county": "Thurston",
+    "cost": "Included with admission (approx. $17.95)",
+    "sourceURL": "https://www.hocm.org/winter-wonderland",
+    "description": "Explore a winter-themed museum takeover with special hands-on art and science activities, including indoor 'snowball' fun.",
+    "primaryEventType": "Museum / Exhibit (Interactive or Family-Focused)",
+    "venueType": "Museum / Gallery",
+    "initialTags": ["Kids", "Families"]
+  }
+]
+
+def parse_time(time_str):
+    """Parse time string and return start time"""
+    if ' - ' in time_str:
+        start_time = time_str.split(' - ')[0].strip()
+    else:
+        start_time = time_str.strip()
+    
+    # Convert to 24-hour format
+    try:
+        time_obj = datetime.strptime(start_time, '%I:%M %p')
+        return time_obj.strftime('%H:%M')
+    except:
+        return None
+
+def import_events():
+    """Import events into the database"""
+    app = create_app()
+    
+    with app.app_context():
+        added_count = 0
+        skipped_count = 0
+        
+        for event_data in events_data:
+            # Check if event already exists
+            existing = Event.query.filter_by(
+                title=event_data['eventName'],
+                start_date=datetime.strptime(event_data['eventDate'], '%Y-%m-%d').date()
+            ).first()
+            
+            if existing:
+                print(f"Skipping duplicate: {event_data['eventName']} on {event_data['eventDate']}")
+                skipped_count += 1
+                continue
+            
+            # Parse address
+            address_parts = event_data['locationAddress'].split(', ')
+            street = address_parts[0] if len(address_parts) > 0 else ''
+            zip_code = address_parts[-1].split()[-1] if len(address_parts) > 2 else ''
+            
+            # Create new event
+            event = Event(
+                title=event_data['eventName'],
+                description=event_data['description'],
+                start_date=datetime.strptime(event_data['eventDate'], '%Y-%m-%d'),
+                start_time=parse_time(event_data['eventTime']),
+                location=event_data['locationName'],
+                street=street,
+                city=event_data['city'],
+                state='WA',
+                zip_code=zip_code,
+                website=event_data['sourceURL'],
+                category=event_data['primaryEventType'],
+                target_audience=', '.join(event_data['initialTags']),
+                tags=', '.join(event_data['initialTags']),
+                fun_meter=4,  # Default fun rating for holiday events
+                status='approved',  # Auto-approve these curated events
+                featured=True if 'Tree Lighting' in event_data['eventName'] or 'Parade' in event_data['eventName'] else False
+            )
+            
+            db.session.add(event)
+            added_count += 1
+            print(f"Added: {event_data['eventName']} on {event_data['eventDate']}")
+        
+        db.session.commit()
+        print(f"\n✅ Import complete!")
+        print(f"   Added: {added_count} events")
+        print(f"   Skipped: {skipped_count} duplicates")
+
+if __name__ == '__main__':
+    import_events()
