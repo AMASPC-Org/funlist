@@ -573,7 +573,6 @@ def import_events():
                 category=event_data['primaryEventType'],
                 target_audience=', '.join(event_data['initialTags']),
                 tags=', '.join(event_data['initialTags']),
-                fun_meter=4,  # Default fun rating for holiday events
                 status='approved',  # Auto-approve these curated events
                 featured=True if 'Tree Lighting' in event_data['eventName'] or 'Parade' in event_data['eventName'] else False
             )
