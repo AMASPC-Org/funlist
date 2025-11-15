@@ -144,11 +144,21 @@ def events():
         chapters = Chapter.query.all() # Pass chapters if needed in base.html
         
         # Fetch Funalytics scores for all events
-        funalytics_scores = get_funalytics_scores()
-        
-        # Attach Funalytics scores to events
-        for event in events:
-            event.funalytics = funalytics_scores.get(event.id, None)
+        try:
+            funalytics_scores = get_funalytics_scores()
+            logger.info(f"Fetched Funalytics scores for {len(funalytics_scores)} events")
+            
+            # Attach Funalytics scores to events
+            for event in events:
+                score_data = funalytics_scores.get(event.id)
+                if score_data:
+                    logger.debug(f"Event {event.id} Funalytics: {score_data}")
+                event.funalytics = score_data
+        except Exception as funalytics_error:
+            logger.warning(f"Failed to fetch Funalytics scores: {str(funalytics_error)}")
+            # Continue without Funalytics if the service is unavailable
+            for event in events:
+                event.funalytics = None
         
         return render_template("events.html", events=events, chapters=chapters)
     except Exception as e:

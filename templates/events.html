@@ -67,28 +67,34 @@
                                 <div>
                                     <span class="badge bg-secondary">{{ event.category|default('Uncategorized') }}</span>
                                     
-                                    {% if event.funalytics %}
+                                    {% if event.funalytics and event.funalytics.overallScore %}
                                         <!-- Funalytics Overall Score Badge -->
-                                        <span class="badge bg-primary ms-2">
+                                        <span class="badge bg-primary ms-2" title="AI-powered fun rating">
                                             <i class="fas fa-brain"></i> {{ event.funalytics.overallScore }}/10
                                         </span>
                                         
                                         <!-- Funalytics Facet Chips -->
                                         <div class="mt-1">
-                                            <small class="badge bg-info me-1">
+                                            {% if event.funalytics.communityVibe %}
+                                            <small class="badge bg-info me-1" title="Community engagement score">
                                                 <i class="fas fa-users"></i> Community {{ event.funalytics.communityVibe }}
                                             </small>
-                                            <small class="badge bg-success">
+                                            {% endif %}
+                                            {% if event.funalytics.familyFun %}
+                                            <small class="badge bg-success" title="Family-friendly score">
                                                 <i class="fas fa-child"></i> Family {{ event.funalytics.familyFun }}
                                             </small>
+                                            {% endif %}
                                         </div>
-                                    {% else %}
-                                        <!-- Fallback to old rating if Funalytics unavailable -->
-                                        <span class="ms-2">
-                                            {% for i in range(1, (event.fun_rating or event.fun_meter or 3)|int + 1) %}
+                                    {% elif event.fun_meter or event.fun_rating %}
+                                        <!-- Fallback to standard rating -->
+                                        <span class="ms-2" title="Fun rating">
+                                            {% for i in range(1, (event.fun_meter or event.fun_rating or 3)|int + 1) %}
                                                 ⭐
                                             {% endfor %}
                                         </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary ms-2">Rating pending</span>
                                     {% endif %}
                                 </div>
                                 <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-sm btn-outline-primary">View Details</a>
