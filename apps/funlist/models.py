@@ -9,6 +9,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True)
     email = Column(String(120), unique=True, nullable=False)
@@ -115,6 +116,7 @@ class User(db.Model, UserMixin):
 
 class Event(db.Model):
     __tablename__ = 'events'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True)
     title = Column(String(255), nullable=False)
@@ -183,19 +185,11 @@ class Event(db.Model):
             'status': self.status
         }
 
-class ProhibitedAdvertiserCategory(db.Model):
-    __tablename__ = 'prohibited_advertiser_categories'
-    __table_args__ = {'extend_existing': True}
-    id = Column(Integer, primary_key=True)
-    name = Column(String(100), unique=True, nullable=False)
-
-event_prohibited_advertisers = db.Table('event_prohibited_advertisers',
-    Column('event_id', Integer, ForeignKey('events.id'), primary_key=True),
-    Column('category_id', Integer, ForeignKey('prohibited_advertiser_categories.id'), primary_key=True)
-)
+# ProhibitedAdvertiserCategory and event_prohibited_advertisers are now defined in main models.py
 
 class Subscriber(db.Model):
     __tablename__ = 'subscribers'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True)
     email = Column(String(120), unique=True, nullable=False)
@@ -230,6 +224,7 @@ class VenueType(db.Model):
 
 class Venue(db.Model):
     __tablename__ = 'venues'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True)
     name = Column(String(100), nullable=False)

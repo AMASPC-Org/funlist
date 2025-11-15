@@ -19,11 +19,13 @@ event_prohibited_advertisers = Table(
     'event_prohibited_advertisers',
     db.Model.metadata,
     Column('event_id', Integer, ForeignKey('events.id'), primary_key=True),
-    Column('category_id', Integer, ForeignKey('prohibited_advertiser_categories.id'), primary_key=True)
+    Column('category_id', Integer, ForeignKey('prohibited_advertiser_categories.id'), primary_key=True),
+    extend_existing=True
 )
 
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True)
     email = Column(String(120), unique=True, nullable=False)
