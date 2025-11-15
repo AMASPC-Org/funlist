@@ -1,0 +1,15 @@
+
+[
+  {
+    "eventName": "Yelm Christmas in the Park Tree Lighting",
+    "eventDate": "2024-11-28",
+    "eventTime": "5:30 PM - 8:00 PM",
+    "locationName": "Yelm City Park",
+    "locationAddress": "105 Yelm Ave W, Yelm, WA 98597",
+    "city": "Yelm",
+    "description": "Join us for the annual Christmas in the Park celebration featuring tree lighting, caroling, hot cocoa, and visits with Santa.",
+    "primaryEventType": "Holiday",
+    "initialTags": ["Family-Friendly", "Free", "Outdoor"],
+    "sourceURL": "https://example.com/yelm-tree-lighting"
+  }
+]
