@@ -139,6 +139,7 @@ class User(db.Model, UserMixin):
 
 class Event(db.Model):
     __tablename__ = 'events'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True)
     title = Column(String(255), nullable=False)
@@ -212,6 +213,7 @@ class Event(db.Model):
 
 class Subscriber(db.Model):
     __tablename__ = 'subscribers'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True)
     email = Column(String(120), unique=True, nullable=False)
