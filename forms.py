@@ -60,6 +60,7 @@ class LoginForm(FlaskForm):
 
 class ProfileForm(FlaskForm):
     # Personal Information
+    username = StringField('Username', validators=[Optional(), Length(max=80)])
     first_name = StringField('First Name', validators=[Optional(), Length(max=50)])
     last_name = StringField('Last Name', validators=[Optional(), Length(max=50)])
     title = StringField('Your Title', validators=[Optional(), Length(max=100)])
@@ -132,6 +133,10 @@ class ProfileForm(FlaskForm):
     sponsorship_budget = StringField('Sponsorship Budget Range', validators=[Optional(), Length(max=100)])
     
     submit = SubmitField('Update Profile')
+
+    def __init__(self, *args, **kwargs):
+        self.user_id = kwargs.pop('user_id', None)
+        super().__init__(*args, **kwargs)
 
     def validate_username(self, username):
         if username.data:

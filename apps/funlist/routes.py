@@ -298,7 +298,7 @@ def profile():
 
 @login_required
 def edit_profile():
-     form = ProfileForm(obj=current_user) # Pre-populate form
+    form = ProfileForm(obj=current_user, user_id=current_user.id) # Pre-populate form
 
      if request.method == 'POST':
          # Handle role activation
@@ -339,9 +339,16 @@ def edit_profile():
                 current_user.is_event_creator = True
 
              # Update organizer/vendor fields *if* role is enabled
-             if current_user.is_organizer:
-                 current_user.business_name = form.business_name.data
-                 # ... (update other organizer fields) ...
+            if current_user.is_organizer:
+                 current_user.company_name = form.company_name.data
+                 current_user.organizer_description = form.organizer_description.data
+                 current_user.organizer_website = form.organizer_website.data
+                 current_user.business_street = form.business_street.data
+                 current_user.business_city = form.business_city.data
+                 current_user.business_state = form.business_state.data
+                 current_user.business_zip = form.business_zip.data
+                 current_user.business_phone = form.business_phone.data
+                 current_user.business_email = form.business_email.data
              if current_user.is_vendor:
                   # current_user.vendor_type = form.vendor_type.data # Assuming vendor_type is added back later
                   pass # Add vendor field updates here

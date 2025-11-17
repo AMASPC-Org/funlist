@@ -29,6 +29,7 @@ class User(db.Model, UserMixin):
 
     id = Column(Integer, primary_key=True)
     email = Column(String(120), unique=True, nullable=False)
+    username = Column(String(80), unique=True, nullable=True)
     password_hash = Column(String(256), nullable=False)
     first_name = Column(String(120), nullable=True)
     last_name = Column(String(120), nullable=True)

@@ -7,8 +7,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user, login_required, login_user, logout_user
 from forms import (SignupForm, LoginForm, ProfileForm, EventForm,
                    ResetPasswordRequestForm, ResetPasswordForm, ChangePasswordForm,
-                   ContactForm, SearchForm) # Added ContactForm, SearchForm
-from models import User, Event, Subscriber, Chapter, HelpArticle # Added HelpArticle
+                   VenueForm, ContactForm, SearchForm) # Added ContactForm, SearchForm
+from models import User, Event, Subscriber, Chapter, HelpArticle # Added HelpArticle, CharterMember
 from db_init import db
 # Removed direct import of geocode_address, assume it's in utils.utils now
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
@@ -182,6 +182,125 @@ def event_detail(event_id):
         logger.error(f"Error in event_detail route: {str(e)}")
         return render_template("500.html", error=str(e)), 500
 
+def venues():
+    chapters = Chapter.query.all()
+    all_venues = Venue.query.order_by(Venue.created_at.desc()).all()
+    return render_template("venues.html", venues=all_venues, chapters=chapters)
+
+@login_required
+def my_venues():
+    chapters = Chapter.query.all()
+    user_venues = Venue.query.filter_by(created_by_user_id=current_user.id).order_by(Venue.created_at.desc()).all()
+    return render_template("my_venues.html", venues=user_venues, chapters=chapters)
+
+@login_required
+def add_venue():
+    form = VenueForm()
+    chapters = Chapter.query.all()
+
+    if form.validate_on_submit():
+        venue = Venue(
+            name=form.name.data,
+            street=form.street.data,
+            city=form.city.data,
+            state=form.state.data,
+            zip_code=form.zip_code.data,
+            country=form.country.data,
+            phone=form.phone.data,
+            email=form.email.data,
+            website=form.website.data,
+            venue_type_id=form.venue_type_id.data or None,
+            contact_name=form.contact_name.data,
+            contact_phone=form.contact_phone.data,
+            contact_email=form.contact_email.data,
+            description=form.description.data,
+            created_by_user_id=current_user.id,
+            owner_manager_user_id=current_user.id if form.is_owner_manager.data else None
+        )
+        try:
+            db.session.add(venue)
+            db.session.commit()
+            flash("Venue added successfully.", "success")
+            return redirect(url_for('my_venues'))
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error adding venue: {str(e)}")
+            flash("Failed to add venue. Please try again.", "danger")
+
+    return render_template("add_venue.html", form=form, chapters=chapters)
+
+def venue_detail(venue_id):
+    venue = Venue.query.get_or_404(venue_id)
+    chapters = Chapter.query.all()
+    venue_events = Event.query.filter_by(venue_id=venue.id).order_by(Event.start_date.desc()).all()
+    return render_template(
+        "venue_detail.html",
+        venue=venue,
+        events=venue_events,
+        now=datetime.utcnow(),
+        chapters=chapters
+    )
+
+@login_required
+def edit_venue(venue_id):
+    venue = Venue.query.get_or_404(venue_id)
+    if venue.created_by_user_id != current_user.id and not current_user.is_admin:
+        flash("You do not have permission to edit this venue.", "warning")
+        return redirect(url_for('venue_detail', venue_id=venue.id))
+
+    form = VenueForm(obj=venue)
+    chapters = Chapter.query.all()
+
+    if request.method == "GET":
+        form.venue_type_id.data = venue.venue_type_id or 0
+        form.is_owner_manager.data = venue.owner_manager_user_id == current_user.id
+
+    if form.validate_on_submit():
+        venue.name = form.name.data
+        venue.street = form.street.data
+        venue.city = form.city.data
+        venue.state = form.state.data
+        venue.zip_code = form.zip_code.data
+        venue.country = form.country.data
+        venue.phone = form.phone.data
+        venue.email = form.email.data
+        venue.website = form.website.data
+        venue.venue_type_id = form.venue_type_id.data or None
+        venue.contact_name = form.contact_name.data
+        venue.contact_phone = form.contact_phone.data
+        venue.contact_email = form.contact_email.data
+        venue.description = form.description.data
+        venue.owner_manager_user_id = current_user.id if form.is_owner_manager.data else venue.owner_manager_user_id
+        try:
+            db.session.commit()
+            flash("Venue updated successfully.", "success")
+            return redirect(url_for('venue_detail', venue_id=venue.id))
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error updating venue {venue_id}: {str(e)}")
+            flash("Failed to update venue. Please try again.", "danger")
+
+    return render_template("edit_venue.html", form=form, venue=venue, chapters=chapters)
+
+@login_required
+def claim_venue(venue_id):
+    venue = Venue.query.get_or_404(venue_id)
+    if venue.owner_manager_user_id and venue.owner_manager_user_id != current_user.id and venue.is_verified:
+        flash("This venue has already been verified by another user.", "info")
+        return redirect(url_for('venue_detail', venue_id=venue.id))
+
+    venue.owner_manager_user_id = current_user.id
+    venue.is_verified = False
+    try:
+        db.session.commit()
+        flash("Your claim has been submitted. We'll verify your ownership shortly.", "success")
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error claiming venue {venue_id}: {str(e)}")
+        flash("Unable to claim venue at this time. Please try again later.", "danger")
+
+    return redirect(url_for('venue_detail', venue_id=venue.id))
+
 @login_required
 @admin_required
 def admin_recompute_funalytics(event_id):
@@ -347,9 +466,9 @@ def profile():
 
 @login_required
 def edit_profile():
-     form = ProfileForm(obj=current_user) # Pre-populate form
+    form = ProfileForm(obj=current_user, user_id=current_user.id) # Pre-populate form
 
-     if request.method == 'POST':
+    if request.method == 'POST':
          # Handle role activation
          role_to_activate = request.form.get('activate_role')
          if role_to_activate:
@@ -389,8 +508,15 @@ def edit_profile():
 
              # Update organizer/vendor fields *if* role is enabled
              if current_user.is_organizer:
-                 current_user.business_name = form.business_name.data
-                 # ... (update other organizer fields) ...
+                 current_user.company_name = form.company_name.data
+                 current_user.organizer_description = form.organizer_description.data
+                 current_user.organizer_website = form.organizer_website.data
+                 current_user.business_street = form.business_street.data
+                 current_user.business_city = form.business_city.data
+                 current_user.business_state = form.business_state.data
+                 current_user.business_zip = form.business_zip.data
+                 current_user.business_phone = form.business_phone.data
+                 current_user.business_email = form.business_email.data
              if current_user.is_vendor:
                   # current_user.vendor_type = form.vendor_type.data # Assuming vendor_type is added back later
                   pass # Add vendor field updates here
@@ -404,14 +530,14 @@ def edit_profile():
                  logger.error(f"Error updating profile: {str(e)}")
                  flash("Could not update profile. Please try again.", "danger")
 
-     # Pre-populate checkboxes on GET request
-     elif request.method == "GET":
+    # Pre-populate checkboxes on GET request
+    elif request.method == "GET":
          form.enable_event_creator.data = current_user.is_event_creator
          form.enable_organizer.data = current_user.is_organizer
          form.enable_vendor.data = current_user.is_vendor
 
-     chapters = Chapter.query.all()
-     return render_template('edit_profile.html', form=form, chapters=chapters)
+    chapters = Chapter.query.all()
+    return render_template('edit_profile.html', form=form, chapters=chapters)
 
 # --- Static Pages & Other ---
 def about():
@@ -887,6 +1013,12 @@ def init_routes(app):
     app.route('/chapters')(chapters_page)
     app.route('/chapter/<string:slug>')(chapter)
     app.route('/change-password', methods=['GET', 'POST'])(change_password)
+    app.route('/venues')(venues)
+    app.route('/venues/add', methods=['GET', 'POST'])(add_venue)
+    app.route('/venues/my')(my_venues)
+    app.route('/venues/<int:venue_id>')(venue_detail)
+    app.route('/venues/<int:venue_id>/edit', methods=['GET', 'POST'])(edit_venue)
+    app.route('/venues/<int:venue_id>/claim', methods=['POST'])(claim_venue)
     app.route('/fun-assistant')(fun_assistant_page)
     app.route('/api', methods=['GET', 'HEAD'])(api_health_check)
     app.route('/health', methods=['GET'])(health_check)

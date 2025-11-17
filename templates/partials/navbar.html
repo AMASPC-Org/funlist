@@ -8,14 +8,15 @@
 
     <!-- Logo/Brand -->
     <a class="navbar-brand position-absolute start-50 translate-middle-x" href="{{ url_for('index') }}">
-        <span class="fs-4 fw-bold">FunList.ai</span>
+      <span class="fs-4 fw-bold">FunList.ai</span>
     </a>
 
     <!-- User Menu (Desktop & Mobile) -->
     {% if current_user.is_authenticated %}
     <div class="d-flex align-items-center order-lg-last">
       <div class="dropdown">
-        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User Menu">
+        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown"
+          aria-expanded="false" aria-label="User Menu">
           <i data-feather="user" style="color: var(--primary-color);"></i>
         </a>
         <ul class="dropdown-menu dropdown-menu-end">
@@ -25,21 +26,28 @@
             <span class="dropdown-item-text text-muted small">
               {% if current_user.is_event_creator %}Event Creator{% endif %}
               {% if current_user.is_organizer %}{% if current_user.is_event_creator %} | {% endif %}Organizer{% endif %}
-              {% if current_user.is_vendor %}{% if current_user.is_event_creator or current_user.is_organizer %} | {% endif %}Vendor{% endif %}
+              {% if current_user.is_vendor %}{% if current_user.is_event_creator or current_user.is_organizer %} | {%
+              endif %}Vendor{% endif %}
             </span>
           </li>
-          <li><hr class="dropdown-divider"></li>
+          <li>
+            <hr class="dropdown-divider">
+          </li>
           {% endif %}
-          <li><a class="dropdown-item" href="{{ url_for('edit_profile') }}">My Profile</a></li>
+          <li><a class="dropdown-item" href="{{ url_for('profile') }}">My Profile</a></li>
           <li><a class="dropdown-item" href="{{ url_for('events') }}?filter=my_events">My Events</a></li>
           <li><a class="dropdown-item" href="{{ url_for('events') }}?filter=saved">Saved Events</a></li>
           <li><a class="dropdown-item" id="add-event-link" href="{{ url_for('submit_event') }}">Add Event</a></li>
-          <li><hr class="dropdown-divider"></li>
+          <li>
+            <hr class="dropdown-divider">
+          </li>
           <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
           {% if current_user.email == 'ryan@funlist.ai' %}
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="{{ url_for('admin_dashboard') }}">Admin Dashboard</a></li>
-            <!-- Analytics route temporarily disabled -->
+          <li>
+            <hr class="dropdown-divider">
+          </li>
+          <li><a class="dropdown-item" href="{{ url_for('admin_dashboard') }}">Admin Dashboard</a></li>
+          <!-- Analytics route temporarily disabled -->
           {% endif %}
         </ul>
       </div>
@@ -69,20 +77,20 @@
       <!-- Search or Login/Signup based on auth state -->
       <div class="d-flex align-items-center">
         {% if not current_user.is_authenticated %}
-          <a href="{{ url_for('login') }}" class="btn btn-sm btn-outline-primary me-2">Login</a>
-          <a href="{{ url_for('signup') }}" class="btn btn-sm btn-primary">Sign Up</a>
+        <a href="{{ url_for('login') }}" class="btn btn-sm btn-outline-primary me-2">Login</a>
+        <a href="{{ url_for('signup') }}" class="btn btn-sm btn-primary">Sign Up</a>
         {% else %}
-          <!-- Mobile-only user menu button -->
-          <div class="d-lg-none">
-            <a class="btn btn-sm btn-outline-primary" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-              <i data-feather="user" style="color: var(--primary-color);"></i> Account
-            </a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="{{ url_for('edit_profile') }}">My Profile</a></li>
-              <li><a class="dropdown-item" href="{{ url_for('events') }}?filter=my_events">My Events</a></li>
-              <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
-            </ul>
-          </div>
+        <!-- Mobile-only user menu button -->
+        <div class="d-lg-none">
+          <a class="btn btn-sm btn-outline-primary" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+            <i data-feather="user" style="color: var(--primary-color);"></i> Account
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{{ url_for('edit_profile') }}">My Profile</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('events') }}?filter=my_events">My Events</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+          </ul>
+        </div>
         {% endif %}
       </div>
     </div>
@@ -90,20 +98,20 @@
 </nav>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  // Function to check user roles and show modal if needed
-  function checkRoleAndShowModal(event) {
-    // Get user role data attributes from body
-    const isOrganizer = document.body.dataset.userIsOrganizer === 'true';
-    const isEventCreator = document.body.dataset.userIsEventCreator === 'true';
-    const isVendor = document.body.dataset.userIsVendor === 'true';
+  document.addEventListener('DOMContentLoaded', function () {
+    // Function to check user roles and show modal if needed
+    function checkRoleAndShowModal(event) {
+      // Get user role data attributes from body
+      const isOrganizer = document.body.dataset.userIsOrganizer === 'true';
+      const isEventCreator = document.body.dataset.userIsEventCreator === 'true';
+      const isVendor = document.body.dataset.userIsVendor === 'true';
 
-    // If user doesn't have the required roles
-    if (!isOrganizer && !isEventCreator && !isVendor) {
-      event.preventDefault();
+      // If user doesn't have the required roles
+      if (!isOrganizer && !isEventCreator && !isVendor) {
+        event.preventDefault();
 
-      // Create modal for role check
-      const modalHTML = `
+        // Create modal for role check
+        const modalHTML = `
         <div class="modal fade" id="roleCheckModal" tabindex="-1" aria-labelledby="roleCheckModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -132,7 +140,7 @@ document.addEventListener('DOMContentLoaded', function() {
         roleCheckModal.show();
 
         // Cleanup modal when hidden
-        document.getElementById('roleCheckModal').addEventListener('hidden.bs.modal', function() {
+        document.getElementById('roleCheckModal').addEventListener('hidden.bs.modal', function () {
           document.body.removeChild(modalContainer);
         });
       }
@@ -153,5 +161,5 @@ document.addEventListener('DOMContentLoaded', function() {
     if (mobileAddEvent) {
       mobileAddEvent.addEventListener('click', checkRoleAndShowModal);
     }
-});
+  });
 </script>
