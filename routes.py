@@ -6,7 +6,8 @@ from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user, login_required, login_user, logout_user
 from forms import (SignupForm, LoginForm, ProfileForm, EventForm,
-                   ResetPasswordRequestForm, ResetPasswordForm, ContactForm, SearchForm) # Added ContactForm, SearchForm
+                   ResetPasswordRequestForm, ResetPasswordForm, ChangePasswordForm,
+                   ContactForm, SearchForm) # Added ContactForm, SearchForm
 from models import User, Event, Subscriber, Chapter, HelpArticle # Added HelpArticle
 from db_init import db
 # Removed direct import of geocode_address, assume it's in utils.utils now
@@ -310,6 +311,31 @@ def reset_password(token):
     form = ResetPasswordForm() # Ensure form is initialized
     chapters = Chapter.query.all()
     return render_template('reset_password.html', form=form, token=token, chapters=chapters)
+
+@login_required
+def change_password():
+    if not current_user.password_hash:
+        flash("Your account currently uses Google sign-in. Please use the password reset option to set a password.", "info")
+        return redirect(url_for('profile'))
+    
+    form = ChangePasswordForm()
+    chapters = Chapter.query.all()
+    
+    if form.validate_on_submit():
+        if not check_password_hash(current_user.password_hash, form.current_password.data):
+            flash("Your current password is incorrect. Please try again.", "danger")
+        else:
+            current_user.password_hash = generate_password_hash(form.new_password.data)
+            try:
+                db.session.commit()
+                flash("Your password has been updated successfully.", "success")
+                return redirect(url_for('profile'))
+            except Exception as e:
+                db.session.rollback()
+                logger.error(f"Error updating password: {str(e)}")
+                flash("An error occurred while updating your password. Please try again.", "danger")
+    
+    return render_template('change_password.html', form=form, chapters=chapters)
 
 
 # --- User Profile & Settings ---
@@ -860,6 +886,7 @@ def init_routes(app):
     app.route('/definitions')(definitions)
     app.route('/chapters')(chapters_page)
     app.route('/chapter/<string:slug>')(chapter)
+    app.route('/change-password', methods=['GET', 'POST'])(change_password)
     app.route('/fun-assistant')(fun_assistant_page)
     app.route('/api', methods=['GET', 'HEAD'])(api_health_check)
     app.route('/health', methods=['GET'])(health_check)

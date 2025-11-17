@@ -317,6 +317,22 @@ class ResetPasswordForm(FlaskForm):
     ])
     submit = SubmitField('Reset Password')
 
+class ChangePasswordForm(FlaskForm):
+    current_password = PasswordField('Current Password', validators=[
+        DataRequired(message="Please enter your current password")
+    ])
+    new_password = PasswordField('New Password', validators=[
+        DataRequired(message="Please enter your new password"),
+        Length(min=8, max=128, message="Password must be between 8 and 128 characters long"),
+        Regexp(r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]+$',
+               message="Password must contain at least one letter, one number, and one special character")
+    ])
+    confirm_password = PasswordField('Confirm New Password', validators=[
+        DataRequired(message="Please confirm your new password"),
+        EqualTo('new_password', message='Passwords do not match. Please try again.')
+    ])
+    submit = SubmitField('Update Password')
+
 class ContactForm(FlaskForm):
     name = StringField('Your Name', validators=[
         DataRequired(message="Please enter your name"),
