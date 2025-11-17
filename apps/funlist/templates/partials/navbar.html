@@ -42,7 +42,7 @@
             <hr class="dropdown-divider">
           </li>
           <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
-          {% if current_user.email == 'ryan@funlist.ai' %}
+          {% if current_user.is_admin %}
           <li>
             <hr class="dropdown-divider">
           </li>
