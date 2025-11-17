@@ -5,6 +5,7 @@ import base64
 import hashlib
 import json
 import secrets
+import os
 
 import requests
 from db_init import db
@@ -19,8 +20,9 @@ GOOGLE_CLIENT_ID = settings.get("GOOGLE_OAUTH_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = settings.get("GOOGLE_OAUTH_CLIENT_SECRET")
 GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
 
-# Make sure to use this redirect URL. It has to match the one in the whitelist
-DEV_REDIRECT_URL = f'https://{settings.get("REPLIT_DEV_DOMAIN", "localhost")}/google_login/callback'
+DEFAULT_BASE_URL = f'https://{settings.get("REPLIT_DEV_DOMAIN", "localhost")}'
+PUBLIC_BASE_URL = settings.get("PUBLIC_BASE_URL", DEFAULT_BASE_URL).rstrip("/")
+DEV_REDIRECT_URL = f"{PUBLIC_BASE_URL}/google_login/callback"
 
 # Initialize client globally if configured
 client = None
@@ -64,11 +66,10 @@ def login():
             hashlib.sha256(code_verifier.encode('utf-8')).digest()
         ).decode('utf-8').rstrip('=')
 
+        redirect_uri = f"{PUBLIC_BASE_URL}/google_login/callback"
         request_uri = client.prepare_request_uri(
             authorization_endpoint,
-            # Replacing http:// with https:// is important as the external
-            # protocol must be https to match the URI whitelisted
-            redirect_uri=request.base_url.replace("http://", "https://") + "/callback",
+            redirect_uri=redirect_uri,
             scope=["openid", "email", "profile"],
             state=state,
             code_challenge=code_challenge,
@@ -106,12 +107,11 @@ def callback():
         google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
         token_endpoint = google_provider_cfg["token_endpoint"]
 
+        redirect_uri = f"{PUBLIC_BASE_URL}/google_login/callback"
         token_url, headers, body = client.prepare_token_request(
             token_endpoint,
-            # Replacing http:// with https:// is important as the external
-            # protocol must be https to match the URI whitelisted
-            authorization_response=request.url.replace("http://", "https://"),
-            redirect_url=request.base_url.replace("http://", "https://"),
+            authorization_response=request.url,
+            redirect_url=redirect_uri,
             code=code,
             code_verifier=code_verifier,  # Include PKCE code verifier
         )

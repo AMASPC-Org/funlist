@@ -52,15 +52,18 @@ def create_app():
             "connect_timeout": 10
         }
     }
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     # Simple session configuration using Flask's default signed cookie sessions
     app.config['SESSION_COOKIE_NAME'] = '__Host-funlist'
+    # Production session configuration (database-backed for Cloud Run)
+    app.config['SESSION_TYPE'] = 'sqlalchemy'
+    app.config['SESSION_SQLALCHEMY'] = db
+    app.config['SESSION_SQLALCHEMY_TABLE'] = 'flask_sessions'  # Use unique table name
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
+    app.config['SESSION_COOKIE_SECURE'] = settings.get_bool("SESSION_COOKIE_SECURE", True)
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-    app.config['SESSION_COOKIE_SECURE'] = bool(os.environ.get('PROD', ''))
-    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     try:
         logger.info("Importing models...")

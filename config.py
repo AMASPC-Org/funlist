@@ -24,5 +24,11 @@ class Settings:
             raise RuntimeError(f"{key} environment variable must be set")
         return value
 
+    def get_bool(self, key: str, default: bool = False) -> bool:
+        value = os.environ.get(key)
+        if value is None:
+            return default
+        return str(value).lower() in {"1", "true", "yes", "on"}
+
 
 settings = Settings()
