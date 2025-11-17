@@ -12,6 +12,8 @@ from werkzeug.exceptions import RequestTimeout
 from functools import wraps
 import time
 
+from config import settings
+
 # Configure logging
 logging.basicConfig(
     level=logging.DEBUG,
@@ -25,11 +27,11 @@ def create_app():
     app = Flask(__name__, static_folder='static')
 
     # Production configurations
-    app.config["SECRET_KEY"] = os.environ.get("FLASK_SECRET_KEY")
+    app.config["SECRET_KEY"] = settings.get("FLASK_SECRET_KEY", required=True)
     if not app.config["SECRET_KEY"]:
         raise ValueError("FLASK_SECRET_KEY environment variable must be set")
     
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+    app.config["SQLALCHEMY_DATABASE_URI"] = settings.get("DATABASE_URL")
     if not app.config["SQLALCHEMY_DATABASE_URI"]:
         raise ValueError("DATABASE_URL environment variable must be set")
     
@@ -37,7 +39,7 @@ def create_app():
     app.config["APPLICATION_ROOT"] = "/"
     app.config["PREFERRED_URL_SCHEME"] = "https"
     
-    app.config["GOOGLE_MAPS_API_KEY"] = os.environ.get("GOOGLE_MAPS_API_KEY")
+    app.config["GOOGLE_MAPS_API_KEY"] = settings.get("GOOGLE_MAPS_API_KEY", required=True)
     if not app.config["GOOGLE_MAPS_API_KEY"]:
         raise ValueError("GOOGLE_MAPS_API_KEY environment variable must be set")
 

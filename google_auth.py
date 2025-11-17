@@ -4,7 +4,6 @@
 import base64
 import hashlib
 import json
-import os
 import secrets
 
 import requests
@@ -14,12 +13,14 @@ from flask_login import login_required, login_user, logout_user
 from models import User
 from oauthlib.oauth2 import WebApplicationClient
 
-GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_OAUTH_CLIENT_ID")
-GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET")
+from config import settings
+
+GOOGLE_CLIENT_ID = settings.get("GOOGLE_OAUTH_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = settings.get("GOOGLE_OAUTH_CLIENT_SECRET")
 GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
 
 # Make sure to use this redirect URL. It has to match the one in the whitelist
-DEV_REDIRECT_URL = f'https://{os.environ.get("REPLIT_DEV_DOMAIN", "localhost")}/google_login/callback'
+DEV_REDIRECT_URL = f'https://{settings.get("REPLIT_DEV_DOMAIN", "localhost")}/google_login/callback'
 
 # Initialize client globally if configured
 client = None
@@ -168,4 +169,4 @@ def callback():
 def google_logout():
     logout_user()
     flash('You have been logged out successfully.', 'success')
-    return redirect(url_for('routes.index'))
+    return redirect(url_for('index'))
