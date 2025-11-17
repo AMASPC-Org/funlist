@@ -57,6 +57,73 @@ def build_location_details(selected_venue, form):
 
     return location_label or "Location TBA", street, city, state, zip_code
 
+def coerce_form_date(value):
+    """Convert stored date/datetime/string values into a date object for forms."""
+    if not value:
+        return None
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date):
+        return value
+    if isinstance(value, str):
+        for fmt in ('%Y-%m-%d %H:%M:%S', '%Y-%m-%d'):
+            try:
+                return datetime.strptime(value, fmt).date()
+            except ValueError:
+                continue
+    return None
+
+def coerce_form_time(value):
+    """Convert stored time or HH:MM strings into a time object for forms."""
+    if not value:
+        return None
+    if isinstance(value, time):
+        return value
+    if hasattr(value, 'strftime'):
+        # Already a datetime.time
+        return value
+    if isinstance(value, str):
+        for fmt in ('%H:%M:%S', '%H:%M'):
+            try:
+                return datetime.strptime(value, fmt).time()
+            except ValueError:
+                continue
+    return None
+
+def populate_event_form_from_model(form, event):
+    """Populate the EventForm with values from an existing event record."""
+    form.title.data = event.title
+    form.description.data = event.description
+    form.start_date.data = coerce_form_date(event.start_date)
+    form.end_date.data = coerce_form_date(event.end_date)
+    form.start_time.data = coerce_form_time(event.start_time)
+    form.end_time.data = coerce_form_time(event.end_time)
+    form.all_day.data = event.all_day
+    form.category.data = event.category or ''
+    form.target_audience.data = event.target_audience or ''
+    form.fun_meter.data = str(event.fun_meter or event.fun_rating or 3)
+    form.is_recurring.data = event.is_recurring
+    form.recurrence_type.data = event.recurring_pattern or ''
+    form.recurring_pattern.data = event.recurring_pattern or ''
+    form.recurring_end_date.data = coerce_form_date(event.recurring_end_date)
+    form.street.data = event.street
+    form.city.data = event.city
+    form.state.data = event.state
+    form.zip_code.data = event.zip_code
+    form.ticket_url.data = event.website
+    form.network_opt_out.data = event.network_opt_out
+    form.parent_event.data = event.parent_event_id or 0
+    form.is_sub_event.data = bool(event.parent_event_id)
+    form.prohibited_advertisers.data = event.get_prohibited_category_ids()
+    form.venue_selection_type.data = 'existing' if event.venue_id else 'new'
+    form.venue_id.data = event.venue_id or 0
+    if event.venue:
+        form.venue_name.data = event.venue.name
+        form.venue_street.data = event.venue.street
+        form.venue_city.data = event.venue.city
+        form.venue_state.data = event.venue.state
+        form.venue_zip.data = event.venue.zip_code
+
 # --- Funalytics API Helper ---
 def get_funalytics_scores(event_ids=None):
     """
@@ -467,6 +534,134 @@ def submit_event():
             flash("Something unexpected happened while saving your event. Please try again.", "danger")
 
     return render_template("submit_event.html", form=form, chapters=chapters)
+
+@login_required
+def my_events():
+    if not (current_user.is_event_creator or current_user.is_admin):
+        flash("Enable the Event Creator role in your profile to manage events.", "warning")
+        return redirect(url_for('edit_profile'))
+    chapters = Chapter.query.all()
+    events = Event.query.filter_by(user_id=current_user.id).order_by(Event.start_date.desc()).all()
+    status_counts = {
+        "draft": sum(1 for event in events if (event.status or '').lower() == 'draft'),
+        "pending": sum(1 for event in events if (event.status or '').lower() == 'pending'),
+        "published": sum(1 for event in events if (event.status or '').lower() == 'published')
+    }
+    return render_template("my_events.html", events=events, chapters=chapters, status_counts=status_counts)
+
+@login_required
+def edit_event(event_id):
+    event = Event.query.get_or_404(event_id)
+    if event.user_id != current_user.id and not current_user.is_admin:
+        flash("You can only edit events you created.", "danger")
+        return redirect(url_for('my_events'))
+
+    form = EventForm(obj=event)
+    form.submit.label.text = "Update Event"
+    chapters = Chapter.query.all()
+
+    if request.method == 'GET':
+        populate_event_form_from_model(form, event)
+
+    if form.validate_on_submit():
+        is_draft = request.form.get('is_draft') == 'true'
+        fallback_time = form.start_time.data or time.min
+        start_dt = combine_date_with_time(form.start_date.data, form.start_time.data)
+        end_dt = combine_date_with_time(form.end_date.data or form.start_date.data, form.end_time.data, fallback_time)
+
+        selected_venue = event.venue if event.venue else None
+        if form.venue_selection_type.data == 'existing' and form.venue_id.data:
+            selected_venue = Venue.query.get(form.venue_id.data)
+            if not selected_venue:
+                form.venue_id.errors.append("The selected venue could not be found. Please choose a different venue.")
+                return render_template(
+                    "submit_event.html",
+                    form=form,
+                    chapters=chapters,
+                    page_title="Edit Event",
+                    is_edit=True,
+                    event=event,
+                    form_action=url_for('edit_event', event_id=event.id)
+                )
+        elif form.venue_selection_type.data == 'new' and form.venue_name.data and form.use_new_venue.data:
+            selected_venue = Venue(
+                name=form.venue_name.data,
+                street=form.venue_street.data or None,
+                city=form.venue_city.data or None,
+                state=form.venue_state.data or None,
+                zip_code=form.venue_zip.data or None,
+                venue_type_id=form.venue_type_id.data or None,
+                created_by_user_id=current_user.id,
+                owner_manager_user_id=current_user.id if form.is_venue_owner.data else None
+            )
+            db.session.add(selected_venue)
+            db.session.flush()
+
+        location_label, street, city, state, zip_code = build_location_details(selected_venue, form)
+        recurring_end_value = form.recurring_end_date.data or form.recurrence_end_date.data
+        recurring_end_dt = combine_date_with_time(recurring_end_value, fallback_time) if recurring_end_value else None
+        target_value = form.target_audience.data or None
+        parent_event_id = form.parent_event.data if form.is_sub_event.data and form.parent_event.data else None
+
+        try:
+            event.title = form.title.data.strip() if form.title.data else event.title
+            event.description = form.description.data.strip() if form.description.data else event.description
+            event.start_date = start_dt
+            event.end_date = end_dt
+            event.all_day = form.all_day.data
+            event.start_time = form.start_time.data.strftime('%H:%M') if form.start_time.data else None
+            event.end_time = form.end_time.data.strftime('%H:%M') if form.end_time.data else None
+            event.location = location_label
+            event.street = street
+            event.city = city
+            event.state = state
+            event.zip_code = zip_code
+            event.is_recurring = form.is_recurring.data
+            event.recurring_pattern = form.recurring_pattern.data or form.recurrence_type.data or None
+            event.recurring_end_date = recurring_end_dt
+            event.venue = selected_venue
+            event.category = form.category.data
+            event.target_audience = target_value
+            event.fun_meter = int(form.fun_meter.data) if form.fun_meter.data else event.fun_meter
+            event.fun_rating = event.fun_meter
+            event.network_opt_out = form.network_opt_out.data
+            event.website = form.ticket_url.data or None
+            event.parent_event_id = parent_event_id
+            event.status = 'draft' if is_draft else 'pending'
+
+            if form.prohibited_advertisers.data:
+                categories = ProhibitedAdvertiserCategory.query.filter(
+                    ProhibitedAdvertiserCategory.id.in_(form.prohibited_advertisers.data)
+                ).all()
+                event.prohibited_advertisers = categories
+            else:
+                event.prohibited_advertisers = []
+
+            db.session.commit()
+
+            if is_draft:
+                return jsonify({"status": "saved", "event_id": event.id}), 200
+
+            flash("Event updated successfully.", "success")
+            return redirect(url_for('my_events'))
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            logger.error(f"Database error while updating event {event_id}: {str(e)}", exc_info=True)
+            flash("We couldn't save your changes. Please try again.", "danger")
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Unexpected error while updating event {event_id}: {str(e)}", exc_info=True)
+            flash("Something unexpected happened. Please try again.", "danger")
+
+    return render_template(
+        "submit_event.html",
+        form=form,
+        chapters=chapters,
+        page_title="Edit Event",
+        is_edit=True,
+        event=event,
+        form_action=url_for('edit_event', event_id=event.id)
+    )
 
 # --- Authentication Routes ---
 def login():
@@ -1146,7 +1341,9 @@ def init_routes(app):
     app.route("/")(index)
     app.route("/map")(map)
     app.route("/events")(events)
+    app.route("/events/mine")(my_events)
     app.route("/events/<int:event_id>")(event_detail)
+    app.route("/events/<int:event_id>/edit", methods=["GET", "POST"])(edit_event)
     app.route("/admin/recompute-funalytics/<int:event_id>", methods=["POST"])(admin_recompute_funalytics)
     app.route("/submit-event", methods=["GET", "POST"])(submit_event)
     app.route('/login', methods=['GET', 'POST'])(login)
