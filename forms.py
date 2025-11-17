@@ -208,9 +208,9 @@ class EventForm(FlaskForm):
     is_venue_owner = BooleanField('I am an owner, manager, or authorized representative of this venue')
 
     street = StringField('Street Address', validators=[Optional()])
-    city = StringField('City', validators=[DataRequired()])
-    state = StringField('State', validators=[DataRequired()])
-    zip_code = StringField('ZIP Code', validators=[DataRequired()])
+    city = StringField('City', validators=[Optional()])
+    state = StringField('State', validators=[Optional()])
+    zip_code = StringField('ZIP Code', validators=[Optional()])
 
     category = SelectField('Event Category', choices=[
         ('', 'Select Category'),
@@ -225,7 +225,17 @@ class EventForm(FlaskForm):
         ('Other', 'Other')
     ], validators=[DataRequired()])
 
-    target_audience = StringField('Target Audience', validators=[Optional()])
+    target_audience = SelectField('Target Audience', choices=[
+        ('', 'Select target audience'),
+        ('everyone', 'Open to Everyone'),
+        ('families', 'Families & Kids'),
+        ('adults', 'Adults 21+'),
+        ('students', 'Students'),
+        ('professionals', 'Professionals & Networking'),
+        ('seniors', 'Seniors'),
+        ('teens', 'Teens'),
+        ('performers', 'Performers & Creators')
+    ], validators=[Optional()])
     fun_meter = RadioField('Fun Meter (1-5)', choices=[
         ('1', '1 - Not Fun'),
         ('2', '2 - Somewhat Fun'),
@@ -251,7 +261,13 @@ class EventForm(FlaskForm):
     recurrence_end_date = DateField('Recurring Until', format='%Y-%m-%d', validators=[Optional()])
 
     is_sub_event = BooleanField('This is a sub-event of another event')
-    parent_event = SelectField('Parent Event', choices=[], validators=[Optional()])
+    parent_event = SelectField(
+        'Parent Event',
+        choices=[(0, 'No parent event')],
+        validators=[Optional()],
+        coerce=int,
+        default=0
+    )
 
     ticket_url = StringField('Ticket URL', validators=[Optional(), URL()])
     network_opt_out = BooleanField('Opt out of the event network')
@@ -285,6 +301,15 @@ class EventForm(FlaskForm):
             self.venue_type_id.choices = [(0, 'Select Venue Type')] + [(vt.id, vt.name) for vt in venue_types]
         except Exception as e:
             self.venue_type_id.choices = [(0, 'Select Venue Type')]
+
+        try:
+            from models import Event
+            parent_events = Event.query.order_by(Event.start_date.desc()).limit(50).all()
+            self.parent_event.choices = [(0, 'No parent event')] + [
+                (event.id, event.title or f"Event #{event.id}") for event in parent_events
+            ]
+        except Exception:
+            self.parent_event.choices = [(0, 'No parent event')]
 
 
 class OrganizerProfileForm(FlaskForm):

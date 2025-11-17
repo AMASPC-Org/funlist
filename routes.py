@@ -8,11 +8,11 @@ from flask_login import current_user, login_required, login_user, logout_user
 from forms import (SignupForm, LoginForm, ProfileForm, EventForm,
                    ResetPasswordRequestForm, ResetPasswordForm, ChangePasswordForm,
                    VenueForm, ContactForm, SearchForm) # Added ContactForm, SearchForm
-from models import User, Event, Subscriber, Chapter, HelpArticle # Added HelpArticle, CharterMember
+from models import User, Event, Subscriber, Chapter, HelpArticle, Venue, ProhibitedAdvertiserCategory # Added HelpArticle, CharterMember
 from db_init import db
 # Removed direct import of geocode_address, assume it's in utils.utils now
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date, time
 import json
 import openai # Import OpenAI library
 import anthropic # Import Anthropic library - using python_anthropic integration
@@ -21,6 +21,41 @@ from flask_wtf.csrf import CSRFProtect # Use only CSRFProtect
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
+def combine_date_with_time(date_value, time_value=None, fallback_time=None):
+    """Return a datetime composed from date/time inputs with sensible defaults."""
+    if not date_value:
+        return None
+    if time_value:
+        return datetime.combine(date_value, time_value)
+    if fallback_time:
+        return datetime.combine(date_value, fallback_time)
+    return datetime.combine(date_value, time.min)
+
+def build_location_details(selected_venue, form):
+    """
+    Determine the location string and address fields for an event
+    by prioritizing explicit location input, then venue data.
+    """
+    location_label = selected_venue.name if selected_venue else (form.venue_name.data or None)
+    street = form.street.data or None
+    city = form.city.data or None
+    state = form.state.data or None
+    zip_code = form.zip_code.data or None
+
+    if not street:
+        street = (selected_venue.street if selected_venue else form.venue_street.data) or None
+    if not city:
+        city = (selected_venue.city if selected_venue else form.venue_city.data) or None
+    if not state:
+        state = (selected_venue.state if selected_venue else form.venue_state.data) or None
+    if not zip_code:
+        zip_code = (selected_venue.zip_code if selected_venue else form.venue_zip.data) or None
+
+    if not location_label:
+        location_label = ", ".join([segment for segment in [street, city, state] if segment])
+
+    return location_label or "Location TBA", street, city, state, zip_code
 
 # --- Funalytics API Helper ---
 def get_funalytics_scores(event_ids=None):
@@ -330,20 +365,107 @@ def submit_event():
         return redirect(url_for('edit_profile')) # Redirect to profile to enable
 
     form = EventForm()
-    # Populate venue choices (assuming Venue model exists)
-    # form.existing_venue_id.query = Venue.query.order_by(Venue.name) # Example
+    chapters = Chapter.query.all()
+
+    # Allow quick filling from venue pages
+    requested_venue_id = request.args.get('venue_id', type=int)
+    if request.method == 'GET' and requested_venue_id:
+        form.venue_selection_type.data = 'existing'
+        form.venue_id.data = requested_venue_id
+
+    if request.method == 'GET':
+        today = date.today()
+        if not form.start_date.data:
+            form.start_date.data = today
+        if not form.end_date.data:
+            form.end_date.data = form.start_date.data
 
     if form.validate_on_submit():
-        # ... (existing logic for processing event and venue data) ...
-        # Make sure to import and use geocode_address from utils
-        # from utils.utils import geocode_address
-        # coordinates = geocode_address(...)
-        # ... create Event object ...
-        # db.session.add(event)
-        # db.session.commit()
-        flash("Event submitted successfully!", "success")
-        return redirect(url_for('events'))
-    chapters = Chapter.query.all()
+        is_draft = request.form.get('is_draft') == 'true'
+        fallback_time = form.start_time.data or time.min
+
+        start_dt = combine_date_with_time(form.start_date.data, form.start_time.data)
+        end_dt = combine_date_with_time(form.end_date.data or form.start_date.data, form.end_time.data, fallback_time)
+
+        selected_venue = None
+        if form.venue_selection_type.data == 'existing' and form.venue_id.data:
+            selected_venue = Venue.query.get(form.venue_id.data)
+            if not selected_venue:
+                form.venue_id.errors.append("The selected venue could not be found. Please choose a different venue.")
+                return render_template("submit_event.html", form=form, chapters=chapters)
+
+        try:
+            if form.venue_selection_type.data == 'new' and form.venue_name.data and form.use_new_venue.data:
+                selected_venue = Venue(
+                    name=form.venue_name.data,
+                    street=form.venue_street.data or None,
+                    city=form.venue_city.data or None,
+                    state=form.venue_state.data or None,
+                    zip_code=form.venue_zip.data or None,
+                    venue_type_id=form.venue_type_id.data or None,
+                    created_by_user_id=current_user.id,
+                    owner_manager_user_id=current_user.id if form.is_venue_owner.data else None
+                )
+                db.session.add(selected_venue)
+                db.session.flush()  # Ensure we have an ID for the event relationship
+
+            location_label, street, city, state, zip_code = build_location_details(selected_venue, form)
+            recurring_end_value = form.recurring_end_date.data or form.recurrence_end_date.data
+            recurring_end_dt = combine_date_with_time(recurring_end_value, fallback_time) if recurring_end_value else None
+            target_value = form.target_audience.data or None
+            parent_event_id = form.parent_event.data if form.is_sub_event.data and form.parent_event.data else None
+
+            event = Event(
+                title=form.title.data.strip() if form.title.data else None,
+                description=form.description.data.strip() if form.description.data else None,
+                start_date=start_dt,
+                end_date=end_dt,
+                all_day=form.all_day.data,
+                start_time=form.start_time.data.strftime('%H:%M') if form.start_time.data else None,
+                end_time=form.end_time.data.strftime('%H:%M') if form.end_time.data else None,
+                location=location_label,
+                street=street,
+                city=city,
+                state=state,
+                zip_code=zip_code,
+                is_recurring=form.is_recurring.data,
+                recurring_pattern=form.recurring_pattern.data or form.recurrence_type.data or None,
+                recurring_end_date=recurring_end_dt,
+                user_id=current_user.id,
+                venue=selected_venue,
+                category=form.category.data,
+                target_audience=target_value,
+                fun_meter=int(form.fun_meter.data) if form.fun_meter.data else 3,
+                fun_rating=int(form.fun_meter.data) if form.fun_meter.data else 3,
+                status='draft' if is_draft else 'pending',
+                network_opt_out=form.network_opt_out.data,
+                website=form.ticket_url.data or None,
+                parent_event_id=parent_event_id
+            )
+
+            if form.prohibited_advertisers.data:
+                categories = ProhibitedAdvertiserCategory.query.filter(
+                    ProhibitedAdvertiserCategory.id.in_(form.prohibited_advertisers.data)
+                ).all()
+                event.prohibited_advertisers = categories
+
+            db.session.add(event)
+            db.session.commit()
+
+            if is_draft:
+                return jsonify({"status": "saved", "event_id": event.id}), 200
+
+            flash("Event submitted successfully!", "success")
+            return redirect(url_for('events'))
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            logger.error(f"Database error while saving event: {str(e)}", exc_info=True)
+            flash("We couldn't save your event. Please try again.", "danger")
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Unexpected error while saving event: {str(e)}", exc_info=True)
+            flash("Something unexpected happened while saving your event. Please try again.", "danger")
+
     return render_template("submit_event.html", form=form, chapters=chapters)
 
 # --- Authentication Routes ---

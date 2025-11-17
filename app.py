@@ -2,7 +2,7 @@ import os
 import sys
 import logging
 import traceback
-from datetime import timedelta
+from datetime import timedelta, datetime
 from flask import Flask, session, request, render_template, redirect, url_for, jsonify
 from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect
@@ -304,6 +304,43 @@ def create_app():
     def to_json(value):
         import json
         return json.dumps(value, default=lambda o: o.to_dict() if hasattr(o, 'to_dict') else str(o))
+    
+    @app.template_filter('format_datetime')
+    def format_datetime(value, fmt='%B %d, %Y'):
+        """Format datetime or ISO strings gracefully in templates."""
+        if not value:
+            return 'TBA'
+        if hasattr(value, 'strftime'):
+            return value.strftime(fmt)
+        if isinstance(value, str):
+            for date_format in ('%Y-%m-%dT%H:%M:%S', '%Y-%m-%d %H:%M:%S', '%Y-%m-%d'):
+                try:
+                    parsed = datetime.strptime(value, date_format)
+                    return parsed.strftime(fmt)
+                except ValueError:
+                    continue
+            try:
+                parsed = datetime.fromisoformat(value)
+                return parsed.strftime(fmt)
+            except ValueError:
+                return value
+        return str(value)
+    
+    @app.template_filter('format_time')
+    def format_time(value, fmt='%I:%M %p'):
+        """Format time objects or HH:MM strings without errors."""
+        if not value:
+            return ''
+        if hasattr(value, 'strftime'):
+            return value.strftime(fmt)
+        if isinstance(value, str):
+            for time_format in ('%H:%M:%S', '%H:%M'):
+                try:
+                    parsed = datetime.strptime(value, time_format)
+                    return parsed.strftime(fmt)
+                except ValueError:
+                    continue
+        return str(value)
         
     logger.info("Application creation completed successfully")
     return app
