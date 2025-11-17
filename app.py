@@ -61,6 +61,14 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     try:
+        logger.info("Importing models...")
+        import models  # noqa: F401 (imported for side effects)
+        User = models.User  # Used by login manager below
+    except Exception as e:
+        logger.error(f"Failed to import models: {str(e)}", exc_info=True)
+        raise
+
+    try:
         logger.info("Initializing database...")
         db.init_app(app)
         with app.app_context():
@@ -128,13 +136,6 @@ def create_app():
         response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
         response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
         return response
-
-    try:
-        logger.info("Importing User model...")
-        from models import User
-    except Exception as e:
-        logger.error(f"Failed to import User model: {str(e)}", exc_info=True)
-        raise
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -302,6 +303,7 @@ def create_app():
     logger.info("Application creation completed successfully")
     return app
 
+app = create_app()
+
 if __name__ == "__main__":
-    app = create_app()
     app.run(host="0.0.0.0", port=8080)
