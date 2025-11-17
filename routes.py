@@ -462,7 +462,8 @@ def change_password():
 def profile():
      # Simple profile view page
      chapters = Chapter.query.all()
-     return render_template('profile.html', user=current_user, chapters=chapters)
+     preferences = current_user.get_preferences()
+     return render_template('profile.html', user=current_user, chapters=chapters, preferences=preferences)
 
 @login_required
 def edit_profile():
@@ -497,12 +498,23 @@ def edit_profile():
              current_user.username = form.username.data
              current_user.first_name = form.first_name.data
              current_user.last_name = form.last_name.data
-             # ... (update other personal/social fields) ...
+             current_user.title = form.title.data
+             current_user.phone = form.phone.data
+             current_user.newsletter_opt_in = form.newsletter_opt_in.data
+             current_user.marketing_opt_in = form.marketing_opt_in.data
+
+             # Social links
+             current_user.facebook_url = form.facebook_url.data
+             current_user.instagram_url = form.instagram_url.data
+             current_user.twitter_url = form.twitter_url.data
+             current_user.linkedin_url = form.linkedin_url.data
+             current_user.tiktok_url = form.tiktok_url.data
 
              # Update role flags based on checkboxes
              current_user.is_event_creator = form.enable_event_creator.data
              current_user.is_organizer = form.enable_organizer.data
              current_user.is_vendor = form.enable_vendor.data
+             current_user.is_sponsor = form.enable_sponsor.data
              if current_user.is_organizer: # Ensure organizers can create events
                 current_user.is_event_creator = True
 
@@ -517,9 +529,22 @@ def edit_profile():
                  current_user.business_zip = form.business_zip.data
                  current_user.business_phone = form.business_phone.data
                  current_user.business_email = form.business_email.data
+                 current_user.advertising_opportunities = form.advertising_opportunities.data
+                 current_user.sponsorship_opportunities = form.sponsorship_opportunities.data
              if current_user.is_vendor:
-                  # current_user.vendor_type = form.vendor_type.data # Assuming vendor_type is added back later
-                  pass # Add vendor field updates here
+                 current_user.vendor_type = form.vendor_type.data
+                 current_user.vendor_description = form.vendor_description.data
+             if current_user.is_sponsor:
+                 current_user.sponsorship_opportunities = form.sponsorship_opportunities.data
+
+             # Persist preference style fields
+             preferences = current_user.get_preferences()
+             preferences.update({
+                 "event_focus": form.event_focus.data or [],
+                 "preferred_locations": form.preferred_locations.data,
+                 "event_interests": form.event_interests.data
+             })
+             current_user.set_preferences(preferences)
 
              try:
                  db.session.commit()
@@ -535,6 +560,12 @@ def edit_profile():
          form.enable_event_creator.data = current_user.is_event_creator
          form.enable_organizer.data = current_user.is_organizer
          form.enable_vendor.data = current_user.is_vendor
+         form.enable_sponsor.data = current_user.is_sponsor
+         preferences = current_user.get_preferences()
+         # Ensure multiselects/text fields show stored preferences
+         form.event_focus.data = preferences.get("event_focus", [])
+         form.preferred_locations.data = preferences.get("preferred_locations", "")
+         form.event_interests.data = preferences.get("event_interests", "")
 
     chapters = Chapter.query.all()
     return render_template('edit_profile.html', form=form, chapters=chapters)

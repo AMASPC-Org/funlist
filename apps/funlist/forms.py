@@ -64,6 +64,7 @@ class ProfileForm(FlaskForm):
     first_name = StringField('First Name', validators=[Optional(), Length(max=50)])
     last_name = StringField('Last Name', validators=[Optional(), Length(max=50)])
     title = StringField('Your Title', validators=[Optional(), Length(max=100)])
+    phone = StringField('Phone Number', validators=[Optional(), Length(max=20)])
     event_focus = SelectMultipleField(
         "Tell Us About Yourself", 
         choices=[
@@ -88,6 +89,8 @@ class ProfileForm(FlaskForm):
         description="Enter interests separated by commas (e.g., sports,music,outdoors)",
         validators=[Optional(), Length(max=255)]
     )
+    newsletter_opt_in = BooleanField('Send me FunList news and inspiration', default=True)
+    marketing_opt_in = BooleanField('Send me curated partner opportunities', default=False)
     
     # User Role Management
     enable_event_creator = BooleanField('I want to create/list events', validators=[Optional()])
@@ -112,6 +115,8 @@ class ProfileForm(FlaskForm):
     business_zip = StringField('ZIP Code', validators=[Optional(), Length(max=20)])
     business_phone = StringField('Business Phone', validators=[Optional(), Length(max=20)])
     business_email = StringField('Business Email', validators=[Optional(), Email(), Length(max=120)])
+    advertising_opportunities = TextAreaField('Advertising Opportunities', validators=[Optional(), Length(max=500)])
+    sponsorship_opportunities = TextAreaField('Sponsorship Opportunities', validators=[Optional(), Length(max=500)])
     
     # Vendor Information
     vendor_type = SelectField('Vendor Type', choices=[
@@ -143,6 +148,10 @@ class ProfileForm(FlaskForm):
             user = User.query.filter_by(username=username.data).first()
             if user and user.id != self.user_id:
                 raise ValidationError('This username is already taken. Please choose another one.')
+
+    @property
+    def business_name(self):
+        return self.company_name
 
 class VenueForm(FlaskForm):
     name = StringField('Venue Name', validators=[DataRequired()])

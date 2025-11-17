@@ -2,574 +2,256 @@
 {% from "macros/_form_helpers.html" import render_field %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-12">
-            <h2>My Profile</h2>
-            <p class="text-muted">Manage your personal information and settings</p>
+<div class="container py-4">
+    <div class="bg-light rounded-4 p-4 shadow-sm mb-4 d-flex flex-column flex-md-row justify-content-between">
+        <div>
+            <p class="text-uppercase text-muted small mb-1">Profile</p>
+            <h2 class="h4 mb-1">Keep your FunList identity up to date</h2>
+            <p class="text-muted mb-0">We use these details to personalize recommendations and highlight your capabilities across the platform.</p>
+        </div>
+        <div class="mt-3 mt-md-0 text-md-end">
+            <a href="{{ url_for('profile') }}" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-eye me-1"></i>View Profile
+            </a>
+            <a href="{{ url_for('change_password') }}" class="btn btn-outline-primary">
+                <i class="fas fa-key me-1"></i>Password
+            </a>
+        </div>
+    </div>
 
-            <form method="POST" enctype="multipart/form-data">
-                {{ form.hidden_tag() }}
-
-                <!-- My Capabilities Section -->
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <h5 class="card-title">My Capabilities</h5>
-                        <p class="text-muted">Activate additional features based on your needs</p>
-                        
-                        <div class="d-flex flex-wrap gap-2 mb-3">
-                            {% if not current_user.is_event_creator %}
-                            <button type="submit" name="activate_role" value="event_creator" class="btn btn-outline-success">
-                                <i class="fas fa-calendar-plus"></i> Become an Event Creator
-                            </button>
-                            {% endif %}
-                            
-                            {% if not current_user.is_organizer %}
-                            <button type="submit" name="activate_role" value="organizer" class="btn btn-outline-success">
-                                <i class="fas fa-building"></i> Sign Up as an Organizer
-                            </button>
-                            {% endif %}
-                            
-                            {% if not current_user.is_vendor %}
-                            <button type="submit" name="activate_role" value="vendor" class="btn btn-outline-success">
-                                <i class="fas fa-store"></i> Sign Up as a Vendor
-                            </button>
-                            {% endif %}
-                            
-                            {% if not current_user.is_sponsor %}
-                            <button type="submit" name="activate_role" value="sponsor" class="btn btn-outline-success">
-                                <i class="fas fa-ad"></i> Become a Sponsor
-                            </button>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="alert alert-info" role="alert">
-                            <i class="fas fa-info-circle"></i> Activating a new capability will reveal additional profile sections to complete.
-                        </div>
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white border-0">
+                        <h5 class="mb-1">Capabilities</h5>
+                        <p class="text-muted mb-0">Enable the experiences you want to unlock inside FunList.</p>
                     </div>
-                </div>
-                
-                <!-- Manage Your Roles Section -->
-                <div class="card mb-4">
                     <div class="card-body">
-                        <h5 class="card-title">Manage Your Roles</h5>
-                        <p class="text-muted mb-3">Enable or disable roles to access specific features on FunList.ai. Each role provides unique capabilities.</p>
-                        
-                        <div class="row mb-4">
-                            <!-- Event Creator Role -->
-                            <div class="col-md-6 mb-3">
-                                <div class="card h-100 {% if 'enable_event_creator' in form._fields and form.enable_event_creator.data %}border-success{% else %}border{% endif %}">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-start mb-2">
-                                            <div class="form-check">
-                                                {{ form.enable_event_creator(class="form-check-input role-checkbox", id="enable_event_creator") }}
-                                                <label class="form-check-label h5" for="enable_event_creator">
-                                                    <i class="fas fa-calendar-plus {% if 'enable_event_creator' in form._fields and form.enable_event_creator.data %}text-success{% endif %} me-2"></i>
-                                                    Event Creator
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <p class="text-muted mb-1">Create, manage, and promote your events on FunList.ai.</p>
-                                        <div class="role-features mt-2">
-                                            <span class="d-block mb-1"><i class="fas fa-check text-success me-2"></i> Submit new events</span>
-                                            <span class="d-block mb-1"><i class="fas fa-check text-success me-2"></i> Manage event listings</span>
-                                            <span class="d-block"><i class="fas fa-check text-success me-2"></i> Track performance</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Organizer Role -->
-                            <div class="col-md-6 mb-3">
-                                <div class="card h-100 {% if 'enable_organizer' in form._fields and form.enable_organizer.data %}border-primary{% else %}border{% endif %}">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-start mb-2">
-                                            <div class="form-check">
-                                                {{ form.enable_organizer(class="form-check-input role-checkbox", id="enable_organizer") }}
-                                                <label class="form-check-label h5" for="enable_organizer">
-                                                    <i class="fas fa-building {% if 'enable_organizer' in form._fields and form.enable_organizer.data %}text-primary{% endif %} me-2"></i>
-                                                    Organizer
-                                                </label>
-                                            </div>
-                                            {% if 'enable_organizer' in form._fields and form.enable_organizer.data %}
-                                                <span class="badge bg-primary">Includes Event Creator</span>
-                                            {% endif %}
-                                        </div>
-                                        <p class="text-muted mb-1">Represent an organization or venue that hosts events.</p>
-                                        <div class="role-features mt-2">
-                                            <span class="d-block mb-1"><i class="fas fa-check text-success me-2"></i> Manage venues</span>
-                                            <span class="d-block mb-1"><i class="fas fa-check text-success me-2"></i> Organization profile</span>
-                                            <span class="d-block"><i class="fas fa-check text-success me-2"></i> Enhanced visibility</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Vendor Role -->
-                            <div class="col-md-6 mb-3">
-                                <div class="card h-100 {% if 'enable_vendor' in form._fields and form.enable_vendor.data %}border-warning{% else %}border{% endif %}">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-start mb-2">
-                                            <div class="form-check">
-                                                {{ form.enable_vendor(class="form-check-input role-checkbox", id="enable_vendor") }}
-                                                <label class="form-check-label h5" for="enable_vendor">
-                                                    <i class="fas fa-store {% if 'enable_vendor' in form._fields and form.enable_vendor.data %}text-warning{% endif %} me-2"></i>
-                                                    Vendor
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <p class="text-muted mb-1">Offer services for events such as catering, entertainment, or logistics.</p>
-                                        <div class="role-features mt-2">
-                                            <span class="d-block mb-1"><i class="fas fa-check text-success me-2"></i> Vendor profile</span>
-                                            <span class="d-block mb-1"><i class="fas fa-check text-success me-2"></i> Service listings</span>
-                                            <span class="d-block"><i class="fas fa-check text-success me-2"></i> Connect with organizers</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Sponsor Role -->
-                            <div class="col-md-6 mb-3">
-                                <div class="card h-100 {% if 'enable_sponsor' in form._fields and form.enable_sponsor.data %}border-danger{% else %}border{% endif %}">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-start mb-2">
-                                            <div class="form-check">
-                                                {% if 'enable_sponsor' in form._fields %}
-                                                    {{ form.enable_sponsor(class="form-check-input role-checkbox", id="enable_sponsor") }}
-                                                    <label class="form-check-label h5" for="enable_sponsor">
-                                                        <i class="fas fa-handshake {% if 'enable_sponsor' in form._fields and form.enable_sponsor.data %}text-danger{% endif %} me-2"></i>
-                                                        Sponsor
-                                                    </label>
-                                                {% else %}
-                                                    <input type="checkbox" class="form-check-input role-checkbox" disabled id="enable_sponsor">
-                                                    <label class="form-check-label h5" for="enable_sponsor">
-                                                        <i class="fas fa-handshake me-2"></i>
-                                                        Sponsor
-                                                    </label>
-                                                    <span class="badge bg-secondary">Coming Soon</span>
-                                                {% endif %}
-                                            </div>
-                                        </div>
-                                        <p class="text-muted mb-1">Find advertising and sponsorship opportunities for events.</p>
-                                        <div class="role-features mt-2">
-                                            <span class="d-block mb-1"><i class="fas fa-check text-success me-2"></i> Sponsor profile</span>
-                                            <span class="d-block mb-1"><i class="fas fa-check text-success me-2"></i> Opportunity matching</span>
-                                            <span class="d-block"><i class="fas fa-check text-success me-2"></i> ROI tracking</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="d-flex flex-wrap gap-2 mb-4">
+                            <button type="submit" name="activate_role" value="event_creator" class="btn btn-outline-success btn-sm">
+                                <i class="fas fa-calendar-plus me-1"></i>Become an Event Creator
+                            </button>
+                            <button type="submit" name="activate_role" value="organizer" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-building me-1"></i>Organizer Access
+                            </button>
+                            <button type="submit" name="activate_role" value="vendor" class="btn btn-outline-warning btn-sm">
+                                <i class="fas fa-store me-1"></i>Vendor Tools
+                            </button>
+                            <button type="submit" name="activate_role" value="sponsor" class="btn btn-outline-danger btn-sm">
+                                <i class="fas fa-handshake me-1"></i>Sponsor Mode
+                            </button>
                         </div>
-                        
-                        {% if ('enable_event_creator' in form._fields and form.enable_event_creator.errors) or ('enable_organizer' in form._fields and form.enable_organizer.errors) or ('enable_vendor' in form._fields and form.enable_vendor.errors) %}
-                            <div class="alert alert-danger">
-                                <i class="fas fa-exclamation-triangle"></i> Error updating roles. Please try again or contact support.
-                            </div>
-                        {% endif %}
-                        
-                        <div class="alert alert-info mb-0">
-                            <div class="d-flex">
-                                <div class="me-3">
-                                    <i class="fas fa-info-circle fa-2x"></i>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="form-check card h-100 border rounded-4 p-3">
+                                    {{ form.enable_event_creator(class="form-check-input", id="enable_event_creator") }}
+                                    <label class="form-check-label fw-semibold" for="enable_event_creator">Event Creator</label>
+                                    <p class="text-muted small mb-0">List, manage, and highlight your events.</p>
                                 </div>
-                                <div>
-                                    <h6 class="mb-1">Role Management Information</h6>
-                                    <ul class="mb-0 ps-3">
-                                        <li>Enabling the Organizer role automatically grants Event Creator capabilities</li>
-                                        <li>Each role may require additional profile information to be completed</li>
-                                        <li>You can enable or disable roles at any time from this page</li>
-                                    </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check card h-100 border rounded-4 p-3">
+                                    {{ form.enable_organizer(class="form-check-input", id="enable_organizer") }}
+                                    <label class="form-check-label fw-semibold" for="enable_organizer">Organizer</label>
+                                    <p class="text-muted small mb-0">Tell your venue or org story, add venues, and promote experiences.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check card h-100 border rounded-4 p-3">
+                                    {{ form.enable_vendor(class="form-check-input", id="enable_vendor") }}
+                                    <label class="form-check-label fw-semibold" for="enable_vendor">Vendor</label>
+                                    <p class="text-muted small mb-0">Promote services such as catering, AV, or entertainment.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check card h-100 border rounded-4 p-3">
+                                    {{ form.enable_sponsor(class="form-check-input", id="enable_sponsor") }}
+                                    <label class="form-check-label fw-semibold" for="enable_sponsor">Sponsor</label>
+                                    <p class="text-muted small mb-0">Share your ideal sponsorship opportunities.</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Personal Information Section -->
-                <div class="card mb-4">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white border-0">
+                        <h5 class="mb-1">Personal Information</h5>
+                        <p class="text-muted mb-0">Your name, title, and how FunList can reach you.</p>
+                    </div>
                     <div class="card-body">
-                        <h5 class="card-title">Personal Information</h5>
-                        <div class="row">
+                        <div class="row g-3">
                             <div class="col-md-6">
                                 {{ render_field(form.username, class="form-control") }}
-                                {{ render_field(form.first_name, class="form-control") }}
-                                {{ render_field(form.last_name, class="form-control") }}
+                            </div>
+                            <div class="col-md-6">
                                 {{ render_field(form.title, class="form-control") }}
                             </div>
                             <div class="col-md-6">
-
-                                {% if form.profile_image %}
-                                <div class="mb-3">
-                                    <label class="form-label">Profile Image</label>
-                                    {% if current_user.profile_image %}
-                                    <div class="mb-2">
-                                        <img src="{{ current_user.profile_image }}" alt="Current Profile Image" class="img-thumbnail" style="max-width: 150px;">
-                                    </div>
-                                    {% endif %}
-                                    {{ form.profile_image(class="form-control") }}
-                                    {% if form.profile_image.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {% for error in form.profile_image.errors %}
-                                        {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                    {% endif %}
+                                {{ render_field(form.first_name, class="form-control") }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ render_field(form.last_name, class="form-control") }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ render_field(form.phone, class="form-control") }}
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check form-switch mb-2">
+                                    {{ form.newsletter_opt_in(class="form-check-input", id="newsletter_opt_in") }}
+                                    <label class="form-check-label" for="newsletter_opt_in">Send me the FunList newsletter</label>
                                 </div>
-                                {% endif %}
+                                <div class="form-check form-switch">
+                                    {{ form.marketing_opt_in(class="form-check-input", id="marketing_opt_in") }}
+                                    <label class="form-check-label" for="marketing_opt_in">Share curated partner opportunities with me</label>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Social Media Links Section -->
-                <div class="card mb-4">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white border-0">
+                        <h5 class="mb-1">Preferences</h5>
+                        <p class="text-muted mb-0">Help us personalize your event feed.</p>
+                    </div>
                     <div class="card-body">
-                        <h5 class="card-title">Social Media Links</h5>
-                        <div class="row">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                {{ render_field(form.event_focus, class="form-select", multiple=True) }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ render_field(form.preferred_locations, class="form-control") }}
+                            </div>
+                            <div class="col-12">
+                                {{ render_field(form.event_interests, class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white border-0">
+                        <h5 class="mb-1">Social Links</h5>
+                        <p class="text-muted mb-0">Drive traffic to your favorite channels.</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
                             <div class="col-md-6">
                                 {{ render_field(form.facebook_url, class="form-control") }}
+                            </div>
+                            <div class="col-md-6">
                                 {{ render_field(form.instagram_url, class="form-control") }}
+                            </div>
+                            <div class="col-md-6">
                                 {{ render_field(form.twitter_url, class="form-control") }}
                             </div>
                             <div class="col-md-6">
                                 {{ render_field(form.linkedin_url, class="form-control") }}
+                            </div>
+                            <div class="col-md-6">
                                 {{ render_field(form.tiktok_url, class="form-control") }}
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Organizer Information Section (conditional) -->
                 {% if current_user.is_organizer %}
-                <div class="card mb-4">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white border-0">
+                        <h5 class="mb-1">Organizer Information</h5>
+                        <p class="text-muted mb-0">Tell venues and sponsors about your organization.</p>
+                    </div>
                     <div class="card-body">
-                        <h5 class="card-title">Organizer Information</h5>
-                        <div class="row">
+                        <div class="row g-3">
                             <div class="col-md-6">
                                 {{ render_field(form.company_name, class="form-control") }}
-                                {{ render_field(form.organizer_description, class="form-control") }}
-                                {{ render_field(form.business_street, class="form-control") }}
-                                {{ render_field(form.business_city, class="form-control") }}
                             </div>
                             <div class="col-md-6">
-                                {{ render_field(form.business_state, class="form-control") }}
-                                {{ render_field(form.business_zip, class="form-control") }}
-                                {{ render_field(form.business_phone, class="form-control") }}
-                                {{ render_field(form.business_email, class="form-control") }}
                                 {{ render_field(form.organizer_website, class="form-control") }}
                             </div>
+                            <div class="col-12">
+                                {{ render_field(form.organizer_description, class="form-control", rows="4") }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ render_field(form.business_street, class="form-control") }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ render_field(form.business_city, class="form-control") }}
+                            </div>
+                            <div class="col-md-4">
+                                {{ render_field(form.business_state, class="form-control") }}
+                            </div>
+                            <div class="col-md-4">
+                                {{ render_field(form.business_zip, class="form-control") }}
+                            </div>
+                            <div class="col-md-4">
+                                {{ render_field(form.business_phone, class="form-control") }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ render_field(form.business_email, class="form-control") }}
+                            </div>
+                            <div class="col-12">
+                                {{ render_field(form.advertising_opportunities, class="form-control", rows="3") }}
+                            </div>
+                            <div class="col-12">
+                                {{ render_field(form.sponsorship_opportunities, class="form-control", rows="3") }}
+                            </div>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Venue Management Section (conditional) -->
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <h5 class="card-title">Venue Management</h5>
-                        <p><small>Manage venues associated with your organization.</small></p>
-                        <p class="alert alert-info">You can manage your venues in the Venues section.</p>
-
-                        <a href="{{ url_for('add_venue') }}" class="btn btn-primary">Add New Venue</a>
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-map-marker-alt me-2"></i>Manage venues from the <a href="{{ url_for('my_venues') }}">Venues dashboard</a>.
+                        </div>
                     </div>
                 </div>
                 {% endif %}
 
-                <!-- Vendor Information Section (conditional) -->
                 {% if current_user.is_vendor %}
-                <div class="card mb-4">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white border-0">
+                        <h5 class="mb-1">Vendor Profile</h5>
+                        <p class="text-muted mb-0">Spotlight the services you offer.</p>
+                    </div>
                     <div class="card-body">
-                        <h5 class="card-title">Vendor Information</h5>
-                        <div class="row">
+                        <div class="row g-3">
                             <div class="col-md-6">
-                                {{ render_field(form.vendor_type, class="form-control") }}
-                                {{ render_field(form.vendor_description, class="form-control") }}
+                                {{ render_field(form.vendor_type, class="form-select") }}
                             </div>
-                            <div class="col-md-6">
-                                <div class="alert alert-info">
-                                    <i class="fas fa-info-circle"></i> Complete your vendor profile to be visible to event organizers.
-                                </div>
+                            <div class="col-12">
+                                {{ render_field(form.vendor_description, class="form-control", rows="4") }}
                             </div>
                         </div>
                     </div>
                 </div>
                 {% endif %}
 
-                <!-- Sponsor Information Section (conditional) -->
-                {% if current_user.is_sponsor %}
-                <div class="card mb-4">
+                {% if current_user.is_sponsor and not current_user.is_organizer %}
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white border-0">
+                        <h5 class="mb-1">Sponsor Preferences</h5>
+                        <p class="text-muted mb-0">Describe the types of partnerships you want.</p>
+                    </div>
                     <div class="card-body">
-                        <h5 class="card-title">Sponsor Information</h5>
-                        <div class="row">
-                            <div class="col-md-6">
-                                {{ render_field(form.sponsorship_interests, class="form-control") }}
-                                {{ render_field(form.sponsorship_budget, class="form-control") }}
-                            </div>
-                            <div class="col-md-6">
-                                <div class="alert alert-info">
-                                    <i class="fas fa-lightbulb"></i> Providing sponsorship details helps match you with relevant opportunities.
-                                </div>
-                            </div>
-                        </div>
+                        {{ render_field(form.sponsorship_opportunities, class="form-control", rows="4") }}
                     </div>
                 </div>
                 {% endif %}
+            </div>
 
-                <!-- Account Settings Section -->
-                <div class="card mb-4">
+            <div class="col-lg-4">
+                <div class="card shadow-sm border-0 sticky-top" style="top: 90px;">
                     <div class="card-body">
-                        <h5 class="card-title">Account Settings</h5>
-                        <p><strong>Email:</strong> {{ current_user.email }}</p>
-                        <p><strong>Membership Tier:</strong> {{ current_user.membership_tier.name if current_user.membership_tier else 'N/A' }}
-                           <!-- Membership management coming soon -->
-                        </p>
-                        <a href="{{ url_for('change_password') }}" class="btn btn-secondary mt-2">Change Password</a>
-                        <!-- Placeholder for future settings -->
+                        <h5 class="mb-3">Save Changes</h5>
+                        <p class="text-muted small">Always click save so FunList can reflect your latest information.</p>
+                        <div class="d-grid gap-2">
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                            <a href="{{ url_for('profile') }}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
                     </div>
                 </div>
-
-                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                    <a href="{{ url_for('profile') }}" class="btn btn-secondary me-md-2">Cancel</a>
-                    {{ form.submit(class="btn btn-primary") }}
-                </div>
-            </form>
+            </div>
         </div>
-    </div>
+    </form>
 </div>
-<style>
-    /* Styles for role checkbox cards */
-    .card.border-success {
-        box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
-    }
-    .card.border-primary {
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-    }
-    .card.border-warning {
-        box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.25);
-    }
-    .card.border-danger {
-        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25); 
-    }
-    .role-checkbox {
-        transform: scale(1.2);
-    }
-    .role-features span {
-        font-size: 0.9rem;
-    }
-    .role-checkbox:checked {
-        background-color: #0d6efd;
-        border-color: #0d6efd;
-    }
-    .form-check-input.role-checkbox:checked#enable_event_creator {
-        background-color: #198754;
-        border-color: #198754;
-    }
-    .form-check-input.role-checkbox:checked#enable_organizer {
-        background-color: #0d6efd;
-        border-color: #0d6efd;
-    }
-    .form-check-input.role-checkbox:checked#enable_vendor {
-        background-color: #ffc107;
-        border-color: #ffc107;
-    }
-    .form-check-input.role-checkbox:checked#enable_sponsor {
-        background-color: #dc3545;
-        border-color: #dc3545;
-    }
-</style>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Handle role activation button confirmation
-        const roleButtons = document.querySelectorAll('button[name="activate_role"]');
-        
-        roleButtons.forEach(button => {
-            button.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                const roleName = this.value;
-                let roleTitle;
-                
-                switch(roleName) {
-                    case 'event_creator':
-                        roleTitle = 'Event Creator';
-                        break;
-                    case 'organizer':
-                        roleTitle = 'Organizer';
-                        break;
-                    case 'vendor':
-                        roleTitle = 'Vendor';
-                        break;
-                    case 'sponsor':
-                        roleTitle = 'Sponsor';
-                        break;
-                    default:
-                        roleTitle = 'this role';
-                }
-                
-                if (confirm(`Activate ${roleTitle} capabilities? This will add new sections to your profile to complete.`)) {
-                    // Create a hidden form to submit the role activation
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = window.location.href;
-                    
-                    // Add CSRF token
-                    const csrfToken = document.querySelector('input[name="csrf_token"]').value;
-                    const csrfInput = document.createElement('input');
-                    csrfInput.type = 'hidden';
-                    csrfInput.name = 'csrf_token';
-                    csrfInput.value = csrfToken;
-                    form.appendChild(csrfInput);
-                    
-                    // Add role activation field
-                    const roleInput = document.createElement('input');
-                    roleInput.type = 'hidden';
-                    roleInput.name = 'activate_role';
-                    roleInput.value = roleName;
-                    form.appendChild(roleInput);
-                    
-                    // Submit the form
-                    document.body.appendChild(form);
-                    form.submit();
-                }
-            });
-        });
-        
-        // Handle role checkbox dependencies and visual updates
-        const organizerCheckbox = document.getElementById('enable_organizer');
-        const eventCreatorCheckbox = document.getElementById('enable_event_creator');
-        const roleCheckboxes = document.querySelectorAll('.role-checkbox');
-        
-        // Function to update card styling based on checkbox state
-        function updateCardStyle(checkbox) {
-            const card = checkbox.closest('.card');
-            const icon = card.querySelector('.fas');
-            
-            if (checkbox.checked) {
-                // Apply selected styling
-                if (checkbox.id === 'enable_event_creator') {
-                    card.classList.add('border-success');
-                    if (icon) icon.classList.add('text-success');
-                } else if (checkbox.id === 'enable_organizer') {
-                    card.classList.add('border-primary');
-                    if (icon) icon.classList.add('text-primary');
-                } else if (checkbox.id === 'enable_vendor') {
-                    card.classList.add('border-warning');
-                    if (icon) icon.classList.add('text-warning');
-                } else if (checkbox.id === 'enable_sponsor') {
-                    card.classList.add('border-danger');
-                    if (icon) icon.classList.add('text-danger');
-                }
-            } else {
-                // Remove styling
-                card.classList.remove('border-success', 'border-primary', 'border-warning', 'border-danger');
-                if (icon) {
-                    icon.classList.remove('text-success', 'text-primary', 'text-warning', 'text-danger');
-                }
-            }
-        }
-        
-        // Initialize card styles
-        roleCheckboxes.forEach(updateCardStyle);
-        
-        // Add change event listeners
-        roleCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                updateCardStyle(this);
-                
-                // Handle dependencies
-                if (this.id === 'enable_organizer' && this.checked) {
-                    eventCreatorCheckbox.checked = true;
-                    updateCardStyle(eventCreatorCheckbox);
-                }
-                
-                // Show feedback when a role is toggled
-                if (this.checked) {
-                    // Show a tip when a role is activated
-                    const roleId = this.id;
-                    let message = '';
-                    let messageClass = '';
-                    
-                    if (roleId === 'enable_event_creator') {
-                        message = 'Event Creator role activated. You can now create and manage events.';
-                        messageClass = 'alert-success';
-                    } else if (roleId === 'enable_organizer') {
-                        message = 'Organizer role activated. You can manage venues and organization details.';
-                        messageClass = 'alert-primary';
-                    } else if (roleId === 'enable_vendor') {
-                        message = 'Vendor role activated. You can offer services to event organizers.';
-                        messageClass = 'alert-warning';
-                    } else if (roleId === 'enable_sponsor') {
-                        message = 'Sponsor role activated. You can explore sponsorship opportunities.';
-                        messageClass = 'alert-danger';
-                    }
-                    
-                    if (message) {
-                        // Create and show tooltip or info message
-                        const infoElement = document.createElement('div');
-                        infoElement.className = `alert ${messageClass} mt-3 role-info-message`;
-                        infoElement.innerHTML = `<i class="fas fa-info-circle"></i> ${message}`;
-                        
-                        // Remove any existing info messages
-                        const existingInfos = document.querySelectorAll('.role-info-message');
-                        existingInfos.forEach(el => el.remove());
-                        
-                        // Add the new info message
-                        const rolesSection = document.querySelector('.card-body:has(#enable_event_creator)');
-                        if (rolesSection) {
-                            const alertInfoElement = rolesSection.querySelector('.alert-info');
-                            if (alertInfoElement) {
-                                rolesSection.insertBefore(infoElement, alertInfoElement);
-                            } else {
-                                rolesSection.appendChild(infoElement);
-                            }
-                            
-                            // Add a subtle animation
-                            infoElement.style.opacity = '0';
-                            infoElement.style.transform = 'translateY(-10px)';
-                            infoElement.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-                            
-                            setTimeout(() => {
-                                infoElement.style.opacity = '1';
-                                infoElement.style.transform = 'translateY(0)';
-                            }, 10);
-                            
-                            // Auto-remove after 5 seconds
-                            setTimeout(() => {
-                                infoElement.style.opacity = '0';
-                                infoElement.style.transform = 'translateY(-10px)';
-                                
-                                setTimeout(() => {
-                                    infoElement.remove();
-                                }, 300);
-                            }, 5000);
-                        }
-                    }
-                }
-            });
-        });
-        
-        // Check initial state for organizer dependency
-        if (organizerCheckbox && eventCreatorCheckbox && organizerCheckbox.checked) {
-            eventCreatorCheckbox.checked = true;
-            updateCardStyle(eventCreatorCheckbox);
-        }
-        
-        // Make the entire card clickable to toggle the checkbox
-        const roleCards = document.querySelectorAll('.role-checkbox').forEach(checkbox => {
-            const card = checkbox.closest('.card');
-            if (card) {
-                card.addEventListener('click', function(e) {
-                    // Don't toggle if clicking on the checkbox itself (it already toggles)
-                    if (e.target !== checkbox) {
-                        checkbox.checked = !checkbox.checked;
-                        
-                        // Trigger the change event
-                        const changeEvent = new Event('change');
-                        checkbox.dispatchEvent(changeEvent);
-                    }
-                });
-            }
-        });
-    });
-</script>
 {% endblock %}

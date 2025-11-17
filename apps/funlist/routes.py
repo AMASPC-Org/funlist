@@ -1159,3 +1159,104 @@ def init_routes(app):
     # ... existing routes ...
     app.route('/api/docs')(api_documentation)
     return app
+
+# --- Modernized profile handlers (override legacy versions) ---
+@login_required
+def profile():  # type: ignore[redefinition]
+    chapters = Chapter.query.all()
+    preferences = current_user.get_preferences()
+    return render_template('profile.html', user=current_user, chapters=chapters, preferences=preferences)
+
+@login_required
+def edit_profile():  # type: ignore[redefinition]
+    form = ProfileForm(obj=current_user, user_id=current_user.id)
+
+    if request.method == 'POST':
+        role_to_activate = request.form.get('activate_role')
+        if role_to_activate:
+            if role_to_activate == 'organizer':
+                current_user.is_organizer = True
+                current_user.is_event_creator = True
+            elif role_to_activate == 'vendor':
+                current_user.is_vendor = True
+            elif role_to_activate == 'event_creator':
+                current_user.is_event_creator = True
+            elif role_to_activate == 'sponsor':
+                current_user.is_sponsor = True
+
+            try:
+                db.session.commit()
+                flash(f"Your {role_to_activate.capitalize()} features are now active! Please complete the relevant profile section below.", "success")
+                return render_template('edit_profile.html', form=form, chapters=Chapter.query.all())
+            except Exception as e:
+                db.session.rollback()
+                logger.error(f"Error activating role: {str(e)}")
+                flash("Could not activate role. Please try again.", "danger")
+        elif form.validate_on_submit():
+            current_user.username = form.username.data
+            current_user.first_name = form.first_name.data
+            current_user.last_name = form.last_name.data
+            current_user.title = form.title.data
+            current_user.phone = form.phone.data
+            current_user.newsletter_opt_in = form.newsletter_opt_in.data
+            current_user.marketing_opt_in = form.marketing_opt_in.data
+
+            current_user.facebook_url = form.facebook_url.data
+            current_user.instagram_url = form.instagram_url.data
+            current_user.twitter_url = form.twitter_url.data
+            current_user.linkedin_url = form.linkedin_url.data
+            current_user.tiktok_url = form.tiktok_url.data
+
+            current_user.is_event_creator = form.enable_event_creator.data
+            current_user.is_organizer = form.enable_organizer.data
+            current_user.is_vendor = form.enable_vendor.data
+            current_user.is_sponsor = form.enable_sponsor.data
+            if current_user.is_organizer:
+                current_user.is_event_creator = True
+
+            if current_user.is_organizer:
+                current_user.company_name = form.company_name.data
+                current_user.organizer_description = form.organizer_description.data
+                current_user.organizer_website = form.organizer_website.data
+                current_user.business_street = form.business_street.data
+                current_user.business_city = form.business_city.data
+                current_user.business_state = form.business_state.data
+                current_user.business_zip = form.business_zip.data
+                current_user.business_phone = form.business_phone.data
+                current_user.business_email = form.business_email.data
+                current_user.advertising_opportunities = form.advertising_opportunities.data
+                current_user.sponsorship_opportunities = form.sponsorship_opportunities.data
+            if current_user.is_vendor:
+                current_user.vendor_type = form.vendor_type.data
+                current_user.vendor_description = form.vendor_description.data
+            if current_user.is_sponsor and not current_user.is_organizer:
+                current_user.sponsorship_opportunities = form.sponsorship_opportunities.data
+
+            preferences = current_user.get_preferences()
+            preferences.update({
+                "event_focus": form.event_focus.data or [],
+                "preferred_locations": form.preferred_locations.data,
+                "event_interests": form.event_interests.data
+            })
+            current_user.set_preferences(preferences)
+
+            try:
+                db.session.commit()
+                flash('Profile updated successfully!', 'success')
+                return redirect(url_for('profile'))
+            except Exception as e:
+                db.session.rollback()
+                logger.error(f"Error updating profile: {str(e)}")
+                flash("Could not update profile. Please try again.", "danger")
+    else:
+        form.enable_event_creator.data = current_user.is_event_creator
+        form.enable_organizer.data = current_user.is_organizer
+        form.enable_vendor.data = current_user.is_vendor
+        form.enable_sponsor.data = current_user.is_sponsor
+        preferences = current_user.get_preferences()
+        form.event_focus.data = preferences.get("event_focus", [])
+        form.preferred_locations.data = preferences.get("preferred_locations", "")
+        form.event_interests.data = preferences.get("event_interests", "")
+
+    chapters = Chapter.query.all()
+    return render_template('edit_profile.html', form=form, chapters=chapters)
