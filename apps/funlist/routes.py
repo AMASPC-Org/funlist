@@ -601,7 +601,7 @@ def admin_dashboard():
      users = [] # Placeholder
      events_by_category = {"labels": [], "datasets": [{"data":[]}]} # Placeholder
      user_growth_data = {"labels": [], "datasets": [{"label": "New Users", "data":[]}]} # Placeholder
-     return render_template('admin/dashboard.html', chapters=chapters, stats=stats, events=events, users=users, status='pending', events_by_category=events_by_category, user_growth_data=user_growth_data)
+     return render_template('admin_dashboard.html', chapters=chapters, stats=stats, events=events, users=users, status='pending', events_by_category=events_by_category, user_growth_data=user_growth_data)
 
 # Add other routes from your previous routes.py here, ensuring imports are correct
 # ... e.g., /marketplace, /admin/users, /api/feedback, /search, etc. ...
