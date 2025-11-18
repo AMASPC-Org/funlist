@@ -1,0 +1,236 @@
+Short answer: your Google OAuth config looks fine, but it can’t be exercised because the app keeps dying on two backend issues: (1) the SQLAlchemy association table order/name, and (2) a brittle session setup. Fix those and OAuth will work.
+
+Here’s the fastest, copy-paste path to green:
+
+1) Fix the SQLAlchemy association table (the root crash)
+
+models.py — define the association table before Event, give tables explicit __tablename__, and reference the object (not a string) in the relationship.
+
+# models.py
+from datetime import datetime
+from flask_sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()
+
+# --- define category model first ---
+class ProhibitedAdvertiserCategory(db.Model):
+    __tablename__ = "prohibited_advertiser_categories"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), unique=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+# --- define the association table NEXT, still before Event ---
+event_prohibited_advertisers = db.Table(
+    "event_prohibited_advertisers",
+    db.Column("event_id", db.Integer, db.ForeignKey("events.id"), primary_key=True),
+    db.Column("category_id", db.Integer, db.ForeignKey("prohibited_advertiser_categories.id"), primary_key=True),
+)
+
+# --- NOW define Event and use the table object directly ---
+class Event(db.Model):
+    __tablename__ = "events"
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255), nullable=False)
+    # ... your other columns ...
+
+    prohibited_advertiser_categories = db.relationship(
+        "ProhibitedAdvertiserCategory",
+        secondary=event_prohibited_advertisers,   # object, not "event_prohibited_advertisers"
+        backref=db.backref("events", lazy="dynamic"),
+        lazy="joined",
+    )
+
+Important gotchas it fixes:
+
+Association table is defined before Event.
+
+secondary=event_prohibited_advertisers (object, not string).
+
+Consistent __tablename__ names match your FKs exactly.
+
+
+Then apply the DB shape:
+
+# if you’re using Flask-Migrate
+flask db stamp head || true
+flask db migrate -m "Fix association table order/names"
+flask db upgrade
+
+If you’re not on Flask-Migrate yet (Replit quick start):
+
+# one-time bootstrap (e.g., run in a repl cell or a manage.py script)
+from app import app
+from models import db
+with app.app_context():
+    db.create_all()
+
+2) Make sessions boring (and unbreakable)
+
+You don’t need Flask-Session unless you truly want server-side sessions. The “bytes vs string” error you saw is a common time sink. Simplest/robust for OAuth is Flask’s signed cookie session only.
+
+app.py (or your factory):
+
+from flask import Flask
+from datetime import timedelta
+import os
+
+def create_app():
+    app = Flask(__name__)
+    app.config["SECRET_KEY"] = os.getenv("SESSION_SECRET") or os.urandom(32)
+    app.config["SESSION_COOKIE_NAME"] = "__Host-funlist"
+    app.config["SESSION_COOKIE_HTTPONLY"] = True
+    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+    app.config["SESSION_COOKIE_SECURE"] = bool(os.getenv("PROD", ""))  # True in HTTPS prod
+    app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=7)
+
+    # If you previously added Flask-Session, remove it:
+    #  - pip uninstall Flask-Session  (optional)
+    #  - delete SESSION_TYPE / SESSION_USE_SIGNER overrides
+
+    return app
+
+If you must keep Flask-Session, use filesystem cleanly and avoid the signer clash:
+
+# add ONLY if you need server-side sessions
+app.config.update(
+    SESSION_TYPE="filesystem",
+    SESSION_FILE_DIR=os.path.join("/tmp", "flask_sessions"),
+    SESSION_PERMANENT=True,
+    SESSION_USE_SIGNER=False,  # avoid bytes/string mismatch
+)
+
+3) Ensure Replit runs on the expected port/host
+
+Your OAuth redirect shows you’re on Replit’s HTTPS domain, but Flask must bind correctly.
+
+main.py (or run entry):
+
+if __name__ == "__main__":
+    import os
+    port = int(os.getenv("PORT", "5000"))
+    # Replit needs 0.0.0.0
+    app.run(host="0.0.0.0", port=port, debug=False)
+
+Replit “Secrets” required (set all of these):
+
+GOOGLE_OAUTH_CLIENT_ID=...
+GOOGLE_OAUTH_CLIENT_SECRET=...
+SESSION_SECRET= # python -c "import secrets; print(secrets.token_hex(32))"
+OAUTHLIB_INSECURE_TRANSPORT=1   # only if you test over http locally
+APP_URL=https://<your-repl>.replit.dev
+
+4) Sanity-check your OAuth routes
+
+You already have:
+
+/google_login → starts the flow
+
+/google_login/callback → handles it
+
+/google_logout
+
+
+Two quick correctness checks:
+
+# at app startup, log effective callback to copy into Google console:
+print("Google OAuth Redirect URI:",
+      f"{os.getenv('APP_URL','https://<your-repl>.replit.dev')}/google_login/callback")
+
+In Google Cloud Console, set Authorized redirect URI exactly to that value.
+
+5) Quick “is OAuth wired?” test without clicking the button
+
+Add a tiny config checker route so we can verify env + route wiring even before DB models load:
+
+# routes_debug.py
+from flask import Blueprint, jsonify, url_for
+import os
+debug = Blueprint("debug", __name__)
+
+@debug.route("/_health/oauth")
+def oauth_health():
+    ok = all(os.getenv(k) for k in ["GOOGLE_OAUTH_CLIENT_ID","GOOGLE_OAUTH_CLIENT_SECRET","SESSION_SECRET"])
+    return jsonify({
+        "env_ok": ok,
+        "login_route_exists": True,        # if blueprint registered
+        "callback_hint": f"{os.getenv('APP_URL','')}/google_login/callback"
+    }), (200 if ok else 500)
+
+Register it in app.py (before hitting DB):
+
+from routes_debug import debug
+app.register_blueprint(debug)
+
+Then from your Replit shell:
+
+curl -i https://<your-repl>.replit.dev/_health/oauth
+
+Expect 200 and your callback hint.
+
+6) After those fixes, run this end-to-end checklist
+
+1. Start server (no tracebacks):
+
+
+
+python main.py
+
+2. Hit health:
+
+
+
+curl -f https://<repl>.replit.dev/_health/oauth
+
+3. Visit /<your login page> → click “Sign in with Google” → Google consent → redirected to /google_login/callback → lands in your app.
+
+
+4. Verify session:
+
+
+
+Auth-required page /dashboard loads when signed in
+
+curl -i https://<repl>.replit.dev/dashboard returns 401 when not signed in
+
+
+7) If the DB still blocks startup, temporarily decouple OAuth from models
+
+As a last resort for demoing OAuth while you finish the Event models, postpone model import until after app + routes are registered:
+
+# app factory
+def create_app():
+    app = Flask(__name__)
+    # config...
+    # register auth blueprints BEFORE importing heavy models
+    from google_auth import google_bp
+    app.register_blueprint(google_bp)
+
+    try:
+        from models import db
+        db.init_app(app)
+        with app.app_context():
+            db.create_all()
+    except Exception as e:
+        # log but don't kill OAuth demo routes
+        app.logger.error("DB init failed: %s", e)
+
+    return app
+
+This lets /google_login work even if the Event mapping still needs attention.
+
+
+---
+
+TL;DR
+
+Yes, OAuth is configured correctly.
+
+Fix the association table order/name and switch to simple Flask cookie sessions (or properly configured Flask-Session).
+
+Bind Flask to 0.0.0.0:5000, confirm the redirect URI in Google console.
+
+Use the health route + curl to verify readiness, then click through.
+
+
+If you paste any traceback you still see after applying the model + session edits above, I’ll pinpoint the exact line to change.
+

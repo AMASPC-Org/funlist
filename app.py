@@ -6,7 +6,6 @@ from datetime import timedelta
 from flask import Flask, session, request, render_template, redirect, url_for, jsonify
 from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect
-from flask_session import Session
 from db_init import db
 from flask_migrate import Migrate
 from werkzeug.exceptions import RequestTimeout
@@ -53,21 +52,13 @@ def create_app():
     }
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    # Production session configuration (database-backed for Cloud Run)
-    app.config['SESSION_TYPE'] = 'sqlalchemy'
-    app.config['SESSION_SQLALCHEMY'] = db
-    app.config['SESSION_SQLALCHEMY_TABLE'] = 'flask_sessions'  # Use unique table name
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
-    app.config['SESSION_COOKIE_SECURE'] = True  # Enforce HTTPS
+    # Simple session configuration using Flask's default signed cookie sessions
+    app.config['SESSION_COOKIE_NAME'] = '__Host-funlist'
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-    app.config['SESSION_USE_SIGNER'] = True
-    app.config['SESSION_REFRESH_EACH_REQUEST'] = True
-    app.config['SESSION_COOKIE_NAME'] = 'funlist_session'
-    
-    # Prevent table redefinition errors
-    db.metadata.clear()  # Clear any existing metadata
+    app.config['SESSION_COOKIE_SECURE'] = bool(os.environ.get('PROD', ''))
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     try:
         logger.info("Initializing database...")
@@ -95,13 +86,8 @@ def create_app():
         logger.error(f"Failed to initialize CSRF protection: {str(e)}", exc_info=True)
         raise
 
-    try:
-        logger.info("Initializing Session...")
-        Session(app)
-        logger.info("Session initialized successfully")
-    except Exception as e:
-        logger.error(f"Failed to initialize Session: {str(e)}", exc_info=True)
-        raise
+    # Using Flask's default signed cookie sessions - no additional session extension needed
+    logger.info("Using Flask default signed cookie sessions")
 
     try:
         logger.info("Setting up login manager...")
@@ -284,10 +270,24 @@ def create_app():
         return redirect(url_for('map'))
 
     try:
+        logger.info("Initializing OAuth providers...")
+        from oauth_providers import init_oauth
+        oauth = init_oauth(app)
+        logger.info("OAuth providers initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize OAuth providers: {str(e)}", exc_info=True)
+        raise
+    
+    try:
         logger.info("Initializing routes...")
         # Import routes first, then initialize
         import routes
         routes.init_routes(app)
+        
+        # Register debug routes for OAuth health checks
+        from routes_debug import debug
+        app.register_blueprint(debug)
+        
         logger.info("Routes initialized successfully")
     except Exception as e:
         logger.error(f"Failed to initialize routes: {str(e)}", exc_info=True)

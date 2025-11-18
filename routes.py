@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user, login_required, login_user, logout_user
 from forms import (SignupForm, LoginForm, ProfileForm, EventForm,
                    ResetPasswordRequestForm, ResetPasswordForm, ContactForm, SearchForm) # Added ContactForm, SearchForm
-from models import User, Event, Subscriber, Chapter, HelpArticle, CharterMember # Added HelpArticle, CharterMember
+from models import User, Event, Subscriber, Chapter, HelpArticle # Added HelpArticle
 from db_init import db
 # Removed direct import of geocode_address, assume it's in utils.utils now
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
@@ -144,11 +144,21 @@ def events():
         chapters = Chapter.query.all() # Pass chapters if needed in base.html
         
         # Fetch Funalytics scores for all events
-        funalytics_scores = get_funalytics_scores()
-        
-        # Attach Funalytics scores to events
-        for event in events:
-            event.funalytics = funalytics_scores.get(event.id, None)
+        try:
+            funalytics_scores = get_funalytics_scores()
+            logger.info(f"Fetched Funalytics scores for {len(funalytics_scores)} events")
+            
+            # Attach Funalytics scores to events
+            for event in events:
+                score_data = funalytics_scores.get(event.id)
+                if score_data:
+                    logger.debug(f"Event {event.id} Funalytics: {score_data}")
+                event.funalytics = score_data
+        except Exception as funalytics_error:
+            logger.warning(f"Failed to fetch Funalytics scores: {str(funalytics_error)}")
+            # Continue without Funalytics if the service is unavailable
+            for event in events:
+                event.funalytics = None
         
         return render_template("events.html", events=events, chapters=chapters)
     except Exception as e:
@@ -221,15 +231,21 @@ def login():
     chapters = Chapter.query.all()
     form = LoginForm() # Ensure form is initialized
     
+    # Check if user is a returning visitor
+    is_returning_user = request.cookies.get('returning_user') == 'true'
+    
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         if user and user.password_hash and check_password_hash(user.password_hash, form.password.data):
             login_user(user, remember=form.remember_me.data)
-            next_page = request.args.get('next')
-            return redirect(next_page) if next_page else redirect(url_for('index'))
+            
+            # Set cookie to mark as returning user
+            response = redirect(request.args.get('next') or url_for('index'))
+            response.set_cookie('returning_user', 'true', max_age=31536000)  # 1 year
+            return response
         flash('Invalid email or password', 'danger')
     
-    return render_template('login.html', form=form, chapters=chapters)
+    return render_template('login.html', form=form, chapters=chapters, is_returning_user=is_returning_user)
 
 @login_required
 def logout():
@@ -725,9 +741,26 @@ Focus on actionable, specific suggestions that would improve the event's appeal 
         current_app.logger.error(f"Error in event analysis: {str(e)}")
         return jsonify({"error": "Analysis service temporarily unavailable", "success": False}), 500
 
+@login_required
+@admin_required
+def add_venue():
+    """Route for adding a new venue"""
+    from forms import VenueForm  # Import if exists, or create placeholder
+    chapters = Chapter.query.all()
+    # TODO: Implement venue creation logic
+    return render_template('add_venue.html', chapters=chapters)
+
+@login_required
+def venues():
+    """Route for viewing venues"""
+    chapters = Chapter.query.all()
+    # TODO: Fetch venues from database
+    venues = []
+    return render_template('venues.html', venues=venues, chapters=chapters)
+
 # --- Other Routes (Placeholder/Keep Existing) ---
 @login_required
-#@admin_required # Add decorator back once roles are solid
+@admin_required
 def admin_dashboard():
      # ... (Keep existing logic) ...
      chapters = Chapter.query.all()
@@ -737,7 +770,7 @@ def admin_dashboard():
      users = [] # Placeholder
      events_by_category = {"labels": [], "datasets": [{"data":[]}]} # Placeholder
      user_growth_data = {"labels": [], "datasets": [{"label": "New Users", "data":[]}]} # Placeholder
-     return render_template('admin/dashboard.html', chapters=chapters, stats=stats, events=events, users=users, status='pending', events_by_category=events_by_category, user_growth_data=user_growth_data)
+     return render_template('admin_dashboard.html', chapters=chapters, stats=stats, events=events, users=users, status='pending', events_by_category=events_by_category, user_growth_data=user_growth_data)
 
 # Add other routes from your previous routes.py here, ensuring imports are correct
 # ... e.g., /marketplace, /admin/users, /api/feedback, /search, etc. ...
@@ -792,15 +825,17 @@ def init_routes(app):
     """Initialize all routes with the Flask app instance"""
     csrf = CSRFProtect(app) #Initialize CSRF protection
     
-    # Register Google OAuth blueprint
+    # Register OAuth blueprints
     try:
         from google_auth import google_auth
+        from github_auth import github_auth
         app.register_blueprint(google_auth)
-        print("✅ Google OAuth blueprint registered successfully")
+        app.register_blueprint(github_auth)
+        print("✅ OAuth blueprints registered successfully (Google + GitHub)")
     except ImportError as e:
-        print(f"⚠️ Google OAuth blueprint not available: {str(e)}")
+        print(f"⚠️ OAuth blueprints not available: {str(e)}")
     except Exception as e:
-        print(f"⚠️ Google OAuth blueprint registration failed: {str(e)}")
+        print(f"⚠️ OAuth blueprints registration failed: {str(e)}")
     
     # Register all routes with the app instance
     app.route("/")(index)
@@ -831,6 +866,8 @@ def init_routes(app):
     app.route('/api/fun-assistant/chat', methods=['POST'])(fun_assistant_chat)
     app.route('/api/analyze-event', methods=['POST'])(analyze_event)
     app.route('/admin/dashboard')(admin_dashboard)
+    app.route('/add-venue', methods=['GET', 'POST'])(add_venue)
+    app.route('/venues')(venues)
     app.route("/api/feedback", methods=['POST'])(submit_feedback)
     app.route("/search", methods=["GET", "POST"])(search)
 

@@ -1,49 +1,128 @@
 
 # FunList.ai Technical Stack
 
-## Backend
+## Backend Architecture
+
+### Primary Application (Flask)
 - **Framework**: Flask 3.0.3
 - **Database**: PostgreSQL with SQLAlchemy 2.0.35
 - **Authentication**: Flask-Login
 - **Form Handling**: Flask-WTF 1.2.1
 - **Session Management**: Flask-Session 0.8.0
 - **Database Migrations**: Flask-Migrate 4.1.0
-- **Security**: 
-  - CSRF Protection
-  - Rate Limiting (Flask-Limiter 3.10.1)
-  - Secure Sessions
+- **Port**: 5000 (forwarded to 80/443 in production)
 
-## Frontend
-- **Template Engine**: Jinja2
-- **Maps Integration**: Leaflet.js 1.9.4
-- **Styling**: Custom CSS with responsive design
-- **JavaScript**: Vanilla JS with modern ES6+ features
+### Central API (Multi-Brand Scoring)
+- **Framework**: Node.js + Express 5.1.0
+- **Database Client**: Prisma 6.16.1 with PostgreSQL
+- **Port**: 3001
+- **Architecture**: RESTful API with TypeScript types and Zod validation
 
-## Data Processing
+## Frontend Technologies
+- **Template Engine**: Jinja2 (server-side rendering)
+- **CSS Framework**: Bootstrap 5.3.2
+- **JavaScript**: Vanilla JS with ES6+ features
+- **Maps**: Leaflet.js 1.9.4 for interactive mapping
+- **Icons**: Font Awesome for UI elements
+
+## Multi-Brand Scoring Systems
+
+### Funalytics™ (FunList.ai)
+- **Focus**: Community engagement and family-friendly fun
+- **Dimensions**: CommunityVibe™ (0-10), FamilyFun™ (0-10)
+- **Algorithm**: Keyword-based heuristics with AI enhancement
+
+### ConnectScore™ (BusinessCalendar)
+- **Focus**: Professional networking potential
+- **Dimensions**: NetworkingPotential, IndustryRelevance, CareerImpact
+- **Algorithm**: Business-focused keyword analysis
+
+### Elevate™ (BusinessCalendar)
+- **Focus**: Career development and growth
+- **Dimensions**: SkillBuilding, LeadershipExposure, GrowthPotential
+- **Algorithm**: Professional development indicators
+
+## Data Processing & AI
 - **Machine Learning**: scikit-learn 1.5.2
-- **Numerical Processing**: NumPy 2.1.2
+- **Numerical Computing**: NumPy 2.1.2
+- **AI Integration**: OpenAI API, Anthropic, Google GenAI
 - **Geocoding**: geopy 2.4.1
 
-## Infrastructure
-- **Hosting**: Replit
-- **Version Control**: Git
-- **Error Tracking**: Built-in logging system
+## Infrastructure & Deployment
+- **Platform**: Replit with Nix package management
+- **Python Version**: 3.11+
+- **Node.js**: 20.x
+- **Database**: PostgreSQL (shared between Flask and Central API)
 - **Process Management**: psutil 7.0.0
 
-## API Integrations
-- Google Maps API
-- Stripe API (planned)
-- Email validation (email-validator 2.2.0)
-
-## Development Tools
-- **Python Version**: 3.11+
-- **Package Management**: Poetry
-- **HTTP Client**: requests 2.32.3
-- **Testing**: Built-in Python unittest
-
 ## Security Features
-- HTTPS enforcement
-- Cross-Site Request Forgery (CSRF) protection
-- Rate limiting
-- Secure session management
-- Password hashing with Werkzeug
+- **HTTPS Enforcement**: Production deployment
+- **CSRF Protection**: Flask-WTF
+- **Rate Limiting**: Flask-Limiter 3.10.1
+- **Secure Sessions**: Database-backed session management
+- **Password Hashing**: Werkzeug security utilities
+
+## API Integrations
+- **Google Maps API**: Location services and geocoding
+- **OpenAI API**: AI-powered Fun Assistant chatbot
+- **Anthropic**: Alternative AI provider
+- **Google GenAI**: Additional AI capabilities
+
+## Type Safety & Validation
+- **TypeScript**: Shared schemas and type definitions
+- **Zod**: Runtime validation for API requests/responses
+- **Shared Schemas Package**: `@funlist/shared-schemas` for cross-platform types
+
+## Project Structure
+```
+├── apps/
+│   ├── funlist/              # Flask application (port 5000)
+│   ├── central-api/          # Express API (port 3001)
+│   └── businesscalendar/     # Future brand expansion
+├── packages/
+│   └── shared-schemas/       # TypeScript + Zod schemas
+├── FUNALYTICS_DOCS/          # Algorithm documentation
+└── docs/                     # API and system documentation
+```
+
+## API Architecture
+
+### Generic Multi-Brand Endpoints
+```
+GET  /scores/latest          # Get latest scores for any brand/system
+POST /scores/compute         # Compute new scores
+GET  /events                 # Events with scoring data
+```
+
+### Legacy Compatibility
+```
+GET  /funalytics/latest      # Backward compatible FunList API
+POST /funalytics/recompute   # Legacy score recomputation
+```
+
+## Development Workflow
+- **Monorepo Design**: Central API + brand-specific applications
+- **Shared Database**: Single PostgreSQL instance with generic scores table
+- **Adapter Pattern**: Pluggable scoring algorithms
+- **Version Control**: Git with comprehensive documentation
+
+## Testing
+- **Backend**: Jest for Central API integration tests
+- **Database**: SQLAlchemy models with Prisma schema sync
+- **API Validation**: Zod schema validation with error handling
+
+## Performance Optimizations
+- **Database Indexing**: Optimized queries for scores and events
+- **Caching**: Score computation caching
+- **Connection Pooling**: Prisma and SQLAlchemy connection management
+- **Async Operations**: Node.js async/await patterns
+
+## Monitoring & Observability
+- **Logging**: Structured logging in both Flask and Express
+- **Error Tracking**: Built-in error handling and reporting
+- **Health Checks**: API health endpoints for monitoring
+
+---
+
+**Last Updated**: October 2025  
+**Architecture Version**: 2.0 (Multi-Brand Scoring System)

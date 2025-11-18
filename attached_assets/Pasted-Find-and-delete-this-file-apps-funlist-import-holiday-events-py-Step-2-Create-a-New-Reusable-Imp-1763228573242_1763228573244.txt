@@ -1,0 +1,180 @@
+Find and delete this file: apps/funlist/import_holiday_events.py
+
+Step 2: Create a New, Reusable Import Script
+Now, let's create a new script in the root directory of your Repl.
+
+Create a new file in your Repl's root folder named: import_from_json.py
+
+Copy and paste the following code into that new file:
+
+Python
+
+import json
+from datetime import datetime
+from app import create_app, db
+from apps.funlist.models import Event # Assuming your model is here
+
+# --- Configuration ---
+# This is the file your script will read
+JSON_FILE_PATH = 'events.json' 
+# ---------------------
+
+def parse_event_time(time_str):
+    """
+    Handles various time formats and returns start/end datetimes.
+    This is a helper function; you may need to adjust it if your
+    Event model stores time differently (e.g., as strings).
+    """
+    # This is a simple parser. We'll just return the string for now,
+    # as your model likely stores time as a string.
+    # If your model stores datetime.time objects, more parsing is needed.
+    if time_str == "N/A":
+        return None, None
+
+    try:
+        parts = time_str.split(' - ')
+        start_time_str = parts[0]
+        end_time_str = parts[1] if len(parts) > 1 else 'N/A'
+
+        # Assuming your model just stores the string "7:00 PM - 9:00 PM"
+        # If you store start_time and end_time separately, adjust this.
+        return start_time_str, end_time_str
+    except Exception:
+        return None, None
+
+def import_events():
+    """
+    Reads events from a JSON file and adds them to the database.
+    Checks for duplicates before adding.
+    """
+    app = create_app()
+    with app.app_context():
+        print(f"Starting import from {JSON_FILE_PATH}...")
+
+        try:
+            with open(JSON_FILE_PATH, 'r') as f:
+                events_data = json.load(f)
+        except FileNotFoundError:
+            print(f"--- ERROR ---")
+            print(f"Could not find the file: {JSON_FILE_PATH}")
+            print(f"Make sure you created this file in the root of your Repl.")
+            print(f"-----------------")
+            return
+        except json.JSONDecodeError:
+            print(f"--- ERROR ---")
+            print(f"Could not read the file: {JSON_FILE_PATH}")
+            print(f"It seems to be invalid JSON. Make sure you copied everything correctly.")
+            print(f"-----------------")
+            return
+
+        added_count = 0
+        skipped_count = 0
+
+        for event in events_data:
+            event_name = event.get('eventName')
+            event_date_str = event.get('eventDate')
+
+            # Convert string date to a Python date object
+            try:
+                event_date_obj = datetime.strptime(event_date_str, '%Y-%m-%d').date()
+            except (ValueError, TypeError):
+                print(f"Skipping event with invalid date: {event_name}")
+                continue
+
+            # --- Duplicate Check ---
+            # Checks if an event with the same name on the same date already exists
+            existing_event = db.session.query(Event).filter_by(
+                event_name=event_name, 
+                event_date=event_date_obj
+            ).first()
+
+            if existing_event:
+                skipped_count += 1
+                continue
+
+            # --- Create New Event ---
+            # Assumes your Event model has these field names.
+            # ** Adjust field names if your model is different! **
+
+            # Simple time parsing (assumes your model stores strings)
+            event_time_str = event.get('eventTime', 'N/A')
+            # start_time, end_time = parse_event_time(event_time_str) # Use this if you have separate fields
+
+            new_event = Event(
+                event_name=event_name,
+                event_date=event_date_obj,
+                event_time=event_time_str, # Or use start_time/end_time if you have them
+                location_name=event.get('locationName'),
+                location_address=event.get('locationAddress'),
+                city=event.get('city'),
+                county=event.get('county'),
+                cost=event.get('cost'),
+                source_url=event.get('sourceURL'),
+                description=event.get('description'),
+                primary_event_type=event.get('primaryEventType'),
+                venue_type=event.get('venueType'),
+
+                # --- Funalytics Placeholder ---
+                # We simply *don't set* the funalytics_score.
+                # This will leave it as 'None' (null) in the database.
+                # This is the *best practice* placeholder. It clearly
+                # means "score has not been calculated yet."
+
+                # --- Other Fields ---
+                # Set defaults for your app
+                status='approved', # Auto-approve these curated events
+                is_featured= 'tree lighting' in event_name.lower() or 'parade' in event_name.lower()
+            )
+
+            # Add initial tags if your model supports them
+            # This part requires knowing how you've set up tags
+            # For example, if it's just a simple string field:
+            # new_event.tags = ", ".join(event.get('initialTags', []))
+
+            db.session.add(new_event)
+            added_count += 1
+
+        # Commit all new events to the database at once
+        db.session.commit()
+
+        print(f"\n--- Import Complete ---")
+        print(f"Successfully added: {added_count} new events")
+        print(f"Skipped (duplicates): {skipped_count} events")
+        print(f"-----------------------")
+
+if __name__ == "__main__":
+    import_events()
+Step 3: Run the Import Script
+Now, all you need to do is run this new script from the Shell.
+
+Make sure you have the events.json file in your root directory. (If not, use the cat > events.json command I gave you before to create it and paste the data).
+
+Go to the Shell tab in your Repl.
+
+Type this command and press Enter:
+
+Bash
+
+python import_from_json.py
+You should see an output like this:
+
+Starting import from events.json...
+
+--- Import Complete ---
+Successfully added: 37 new events
+Skipped (duplicates): 0 events
+-----------------------
+If you run it a second time, it will show:
+
+Starting import from events.json...
+
+--- Import Complete ---
+Successfully added: 0 new events
+Skipped (duplicates): 37 events
+-----------------------
+Why This Is a Better Solution
+Reusable: You can run python import_from_json.py anytime.
+
+Easy to Update: To add new events, you just edit the events.json file. You don't have to touch the Python code at all.
+
+Correct Placeholder: We are not putting in a fake score. By not setting the funalytics_score field, it will be None (or null) in your database. This is the correct way to show that a score is "pending calculation." Your front-end code can then check for this.

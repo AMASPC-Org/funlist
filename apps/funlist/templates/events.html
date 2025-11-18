@@ -15,7 +15,7 @@
   "description": "Curated list of local community events",
   "numberOfItems": {{ events|length }},
   "itemListElement": [
-    {% for event in events[:10] %}
+    {% for event in events %}
     {
       "@type": "ListItem",
       "position": {{ loop.index }},

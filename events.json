@@ -1,0 +1,594 @@
+[
+  {
+    "eventName": "Yelm Christmas in the Park Tree Lighting",
+    "eventDate": "2025-11-16",
+    "eventTime": "5:30 PM - 8:00 PM",
+    "locationName": "Yelm City Park",
+    "locationAddress": "105 Yelm Ave W, Yelm, WA 98597",
+    "city": "Yelm",
+    "description": "Join us for the annual Christmas in the Park celebration featuring tree lighting, caroling, hot cocoa, and visits with Santa.",
+    "primaryEventType": "Holiday",
+    "initialTags": [
+      "Family-Friendly",
+      "Free",
+      "Outdoor"
+    ],
+    "sourceURL": "https://example.com/yelm-tree-lighting"
+  },
+  {
+    "eventName": "Olympia Harbor Days Festival",
+    "eventDate": "2025-11-17",
+    "eventTime": "10:00 AM - 6:00 PM",
+    "locationName": "Percival Landing Park",
+    "locationAddress": "217 Thurston Ave NW, Olympia, WA 98501",
+    "city": "Olympia",
+    "description": "Annual waterfront festival celebrating maritime heritage with live music, food vendors, craft booths, and kids' activities.",
+    "primaryEventType": "Festival",
+    "initialTags": [
+      "Family-Friendly",
+      "Outdoor",
+      "Food & Drink"
+    ],
+    "sourceURL": "https://example.com/harbor-days"
+  },
+  {
+    "eventName": "Lacey Spring Fun Fair",
+    "eventDate": "2025-11-18",
+    "eventTime": "11:00 AM - 5:00 PM",
+    "locationName": "Regional Athletic Complex",
+    "locationAddress": "7600 Depot Dr SE, Lacey, WA 98503",
+    "city": "Lacey",
+    "description": "Community spring celebration with carnival rides, games, local vendors, live entertainment, and food trucks.",
+    "primaryEventType": "Festival",
+    "initialTags": [
+      "Family-Friendly",
+      "Outdoor",
+      "Food & Drink"
+    ],
+    "sourceURL": "https://example.com/spring-fair"
+  },
+  {
+    "eventName": "Tumwater Artesian Brewfest",
+    "eventDate": "2025-11-19",
+    "eventTime": "1:00 PM - 9:00 PM",
+    "locationName": "Tumwater Historical Park",
+    "locationAddress": "777 Simmons Rd SW, Tumwater, WA 98501",
+    "city": "Tumwater",
+    "description": "Annual craft beer festival featuring local and regional breweries, live music, food vendors, and artisan market.",
+    "primaryEventType": "Festival",
+    "initialTags": [
+      "21+",
+      "Outdoor",
+      "Food & Drink"
+    ],
+    "sourceURL": "https://example.com/brewfest"
+  },
+  {
+    "eventName": "Thurston County Fair",
+    "eventDate": "2025-11-20",
+    "eventTime": "9:00 AM - 10:00 PM",
+    "locationName": "Thurston County Fairgrounds",
+    "locationAddress": "3054 Carpenter Rd SE, Lacey, WA 98503",
+    "city": "Lacey",
+    "description": "Week-long county fair with carnival rides, livestock shows, competitions, concerts, and traditional fair food.",
+    "primaryEventType": "Festival",
+    "initialTags": [
+      "Family-Friendly",
+      "Outdoor",
+      "Multi-Day"
+    ],
+    "sourceURL": "https://example.com/county-fair"
+  },
+  {
+    "eventName": "Olympia Farmers Market Opening Day",
+    "eventDate": "2025-11-21",
+    "eventTime": "10:00 AM - 3:00 PM",
+    "locationName": "Olympia Farmers Market",
+    "locationAddress": "700 Capitol Way N, Olympia, WA 98501",
+    "city": "Olympia",
+    "description": "Season opening of the renowned Olympia Farmers Market featuring fresh produce, artisan goods, live music, and community celebration.",
+    "primaryEventType": "Market",
+    "initialTags": [
+      "Family-Friendly",
+      "Outdoor",
+      "Food & Drink"
+    ],
+    "sourceURL": "https://example.com/farmers-market"
+  },
+  {
+    "eventName": "Procession of the Species",
+    "eventDate": "2025-11-22",
+    "eventTime": "4:30 PM - 7:00 PM",
+    "locationName": "Downtown Olympia",
+    "locationAddress": "Capitol Way, Olympia, WA 98501",
+    "city": "Olympia",
+    "description": "Annual community celebration of Earth Day featuring a parade of giant puppets, costumes, music, and dance representing the natural world.",
+    "primaryEventType": "Parade",
+    "initialTags": [
+      "Family-Friendly",
+      "Free",
+      "Outdoor"
+    ],
+    "sourceURL": "https://example.com/procession"
+  },
+  {
+    "eventName": "Lacey in Tune Summer Concert Series",
+    "eventDate": "2025-11-23",
+    "eventTime": "6:00 PM - 8:00 PM",
+    "locationName": "Huntamer Park",
+    "locationAddress": "1320 Ruddell Rd SE, Lacey, WA 98503",
+    "city": "Lacey",
+    "description": "Free outdoor concert series featuring local and regional bands across various genres. Bring blankets and picnic baskets!",
+    "primaryEventType": "Concert",
+    "initialTags": [
+      "Family-Friendly",
+      "Free",
+      "Outdoor"
+    ],
+    "sourceURL": "https://example.com/lacey-concert"
+  },
+  {
+    "eventName": "Olympia Film Festival",
+    "eventDate": "2025-11-24",
+    "eventTime": "Various Times",
+    "locationName": "Multiple Venues",
+    "locationAddress": "Downtown Olympia, WA 98501",
+    "city": "Olympia",
+    "description": "Week-long independent film festival showcasing local, national, and international films with Q&A sessions and filmmaker panels.",
+    "primaryEventType": "Film",
+    "initialTags": [
+      "Arts & Culture",
+      "Indoor",
+      "Multi-Day"
+    ],
+    "sourceURL": "https://example.com/film-fest"
+  },
+  {
+    "eventName": "Yelm Prairie Days",
+    "eventDate": "2025-11-25",
+    "eventTime": "9:00 AM - 5:00 PM",
+    "locationName": "Downtown Yelm",
+    "locationAddress": "Yelm Ave, Yelm, WA 98597",
+    "city": "Yelm",
+    "description": "Annual community celebration with parade, street fair, live entertainment, food vendors, and family activities.",
+    "primaryEventType": "Festival",
+    "initialTags": [
+      "Family-Friendly",
+      "Outdoor",
+      "Free"
+    ],
+    "sourceURL": "https://example.com/prairie-days"
+  },
+  {
+    "eventName": "Lakefair",
+    "eventDate": "2025-11-26",
+    "eventTime": "10:00 AM - 10:00 PM",
+    "locationName": "Capitol Lake Park",
+    "locationAddress": "500 Water St SW, Olympia, WA 98501",
+    "city": "Olympia",
+    "description": "Olympia's premier summer festival with carnival rides, live music, food vendors, beer garden, and fireworks over Capitol Lake.",
+    "primaryEventType": "Festival",
+    "initialTags": [
+      "Family-Friendly",
+      "Outdoor",
+      "Multi-Day"
+    ],
+    "sourceURL": "https://example.com/lakefair"
+  },
+  {
+    "eventName": "Tenino Oregon Trail Days",
+    "eventDate": "2025-11-27",
+    "eventTime": "10:00 AM - 6:00 PM",
+    "locationName": "City Park",
+    "locationAddress": "399 Park Ave E, Tenino, WA 98589",
+    "city": "Tenino",
+    "description": "Historical celebration featuring pioneer reenactments, vintage demonstrations, live music, food vendors, and craft fair.",
+    "primaryEventType": "Festival",
+    "initialTags": [
+      "Family-Friendly",
+      "Outdoor",
+      "Historical"
+    ],
+    "sourceURL": "https://example.com/oregon-trail"
+  },
+  {
+    "eventName": "Olympia Arts Walk",
+    "eventDate": "2025-11-28",
+    "eventTime": "5:00 PM - 9:00 PM",
+    "locationName": "Downtown Olympia",
+    "locationAddress": "4th Ave, Olympia, WA 98501",
+    "city": "Olympia",
+    "description": "Monthly evening art walk featuring galleries, studios, shops, and street performances throughout downtown.",
+    "primaryEventType": "Arts & Culture",
+    "initialTags": [
+      "Family-Friendly",
+      "Free",
+      "Outdoor"
+    ],
+    "sourceURL": "https://example.com/arts-walk"
+  },
+  {
+    "eventName": "Tumwater Falls Festival",
+    "eventDate": "2025-11-29",
+    "eventTime": "11:00 AM - 6:00 PM",
+    "locationName": "Tumwater Falls Park",
+    "locationAddress": "110 Deschutes Way SW, Tumwater, WA 98501",
+    "city": "Tumwater",
+    "description": "Annual festival celebrating salmon migration with environmental exhibits, Native American cultural demonstrations, food, and music.",
+    "primaryEventType": "Festival",
+    "initialTags": [
+      "Family-Friendly",
+      "Free",
+      "Outdoor"
+    ],
+    "sourceURL": "https://example.com/falls-fest"
+  },
+  {
+    "eventName": "Rochester Community Fair",
+    "eventDate": "2025-11-30",
+    "eventTime": "10:00 AM - 8:00 PM",
+    "locationName": "Rochester Fairgrounds",
+    "locationAddress": "12375 183rd Ave SW, Rochester, WA 98579",
+    "city": "Rochester",
+    "description": "Small-town fair with demolition derby, livestock shows, carnival rides, vendor booths, and live entertainment.",
+    "primaryEventType": "Festival",
+    "initialTags": [
+      "Family-Friendly",
+      "Outdoor",
+      "Multi-Day"
+    ],
+    "sourceURL": "https://example.com/rochester-fair"
+  },
+  {
+    "eventName": "Hands On Children's Museum Free Day",
+    "eventDate": "2025-12-01",
+    "eventTime": "10:00 AM - 5:00 PM",
+    "locationName": "Hands On Children's Museum",
+    "locationAddress": "414 Jefferson St NE, Olympia, WA 98501",
+    "city": "Olympia",
+    "description": "Monthly free admission day at the interactive children's museum featuring exhibits, activities, and special programs.",
+    "primaryEventType": "Family",
+    "initialTags": [
+      "Family-Friendly",
+      "Free",
+      "Indoor"
+    ],
+    "sourceURL": "https://example.com/museum-free"
+  },
+  {
+    "eventName": "Olympia Symphony Orchestra Concert",
+    "eventDate": "2025-12-02",
+    "eventTime": "7:30 PM - 9:30 PM",
+    "locationName": "Washington Center for the Performing Arts",
+    "locationAddress": "512 Washington St SE, Olympia, WA 98501",
+    "city": "Olympia",
+    "description": "Professional symphony orchestra performance featuring classical and contemporary works.",
+    "primaryEventType": "Concert",
+    "initialTags": [
+      "Arts & Culture",
+      "Indoor",
+      "Ticketed"
+    ],
+    "sourceURL": "https://example.com/symphony"
+  },
+  {
+    "eventName": "Lacey Museum Heritage Day",
+    "eventDate": "2025-12-03",
+    "eventTime": "12:00 PM - 4:00 PM",
+    "locationName": "Lacey Museum",
+    "locationAddress": "829 Carpenter Rd SE, Lacey, WA 98503",
+    "city": "Lacey",
+    "description": "Free museum open house with historical exhibits, demonstrations, activities, and local history presentations.",
+    "primaryEventType": "Educational",
+    "initialTags": [
+      "Family-Friendly",
+      "Free",
+      "Indoor"
+    ],
+    "sourceURL": "https://example.com/heritage-day"
+  },
+  {
+    "eventName": "Olympia Holiday Market",
+    "eventDate": "2025-12-04",
+    "eventTime": "10:00 AM - 5:00 PM",
+    "locationName": "Greater Olympia Sports Complex",
+    "locationAddress": "2929 Carpenter Rd SE, Lacey, WA 98503",
+    "city": "Lacey",
+    "description": "Indoor holiday shopping event featuring local artisans, crafters, food vendors, and live entertainment.",
+    "primaryEventType": "Market",
+    "initialTags": [
+      "Family-Friendly",
+      "Indoor",
+      "Shopping"
+    ],
+    "sourceURL": "https://example.com/holiday-market"
+  },
+  {
+    "eventName": "Tumwater Community BBQ & Concert",
+    "eventDate": "2025-12-05",
+    "eventTime": "5:00 PM - 10:00 PM",
+    "locationName": "Tumwater Valley Golf Club",
+    "locationAddress": "4611 Tumwater Valley Dr SE, Tumwater, WA 98501",
+    "city": "Tumwater",
+    "description": "Independence Day celebration with BBQ dinner, live music, and fireworks display.",
+    "primaryEventType": "Holiday",
+    "initialTags": [
+      "Family-Friendly",
+      "Outdoor",
+      "Food & Drink"
+    ],
+    "sourceURL": "https://example.com/july4-tumwater"
+  },
+  {
+    "eventName": "Olympia Reggae Festival",
+    "eventDate": "2025-12-06",
+    "eventTime": "12:00 PM - 9:00 PM",
+    "locationName": "Brewery Park",
+    "locationAddress": "401 7th Ave SW, Olympia, WA 98501",
+    "city": "Olympia",
+    "description": "Outdoor reggae music festival featuring regional and national acts, food vendors, and beer garden.",
+    "primaryEventType": "Concert",
+    "initialTags": [
+      "21+",
+      "Outdoor",
+      "Music"
+    ],
+    "sourceURL": "https://example.com/reggae-fest"
+  },
+  {
+    "eventName": "Lacey Harvest Festival",
+    "eventDate": "2025-12-07",
+    "eventTime": "10:00 AM - 4:00 PM",
+    "locationName": "Long Lake Ranch",
+    "locationAddress": "4915 Yelm Hwy SE, Lacey, WA 98503",
+    "city": "Lacey",
+    "description": "Fall celebration with pumpkin patch, corn maze, hayrides, petting zoo, and autumn-themed activities.",
+    "primaryEventType": "Festival",
+    "initialTags": [
+      "Family-Friendly",
+      "Outdoor",
+      "Seasonal"
+    ],
+    "sourceURL": "https://example.com/harvest-fest"
+  },
+  {
+    "eventName": "Olympia Comic Con",
+    "eventDate": "2025-12-08",
+    "eventTime": "10:00 AM - 6:00 PM",
+    "locationName": "Olympia Center",
+    "locationAddress": "222 Columbia St NW, Olympia, WA 98501",
+    "city": "Olympia",
+    "description": "Pop culture convention featuring vendors, artists, cosplay contest, panels, and special guests.",
+    "primaryEventType": "Convention",
+    "initialTags": [
+      "Family-Friendly",
+      "Indoor",
+      "Ticketed"
+    ],
+    "sourceURL": "https://example.com/comic-con"
+  },
+  {
+    "eventName": "Yelm Winter Fest",
+    "eventDate": "2025-12-09",
+    "eventTime": "4:00 PM - 8:00 PM",
+    "locationName": "Yelm Community Center",
+    "locationAddress": "210 2nd St SE, Yelm, WA 98597",
+    "city": "Yelm",
+    "description": "Community winter celebration with holiday activities, crafts, Santa visits, and seasonal refreshments.",
+    "primaryEventType": "Holiday",
+    "initialTags": [
+      "Family-Friendly",
+      "Free",
+      "Indoor"
+    ],
+    "sourceURL": "https://example.com/winter-fest"
+  },
+  {
+    "eventName": "Olympia VegFest",
+    "eventDate": "2025-12-10",
+    "eventTime": "11:00 AM - 5:00 PM",
+    "locationName": "Olympia Center",
+    "locationAddress": "222 Columbia St NW, Olympia, WA 98501",
+    "city": "Olympia",
+    "description": "Plant-based food and lifestyle festival with vendors, cooking demos, speakers, and tastings.",
+    "primaryEventType": "Festival",
+    "initialTags": [
+      "Family-Friendly",
+      "Indoor",
+      "Food & Drink"
+    ],
+    "sourceURL": "https://example.com/vegfest"
+  },
+  {
+    "eventName": "Lacey 5K Fun Run",
+    "eventDate": "2025-12-11",
+    "eventTime": "8:00 AM - 11:00 AM",
+    "locationName": "Woodland Creek Community Park",
+    "locationAddress": "6729 Pacific Ave SE, Lacey, WA 98503",
+    "city": "Lacey",
+    "description": "Community fun run/walk supporting local charities with awards, refreshments, and family activities.",
+    "primaryEventType": "Sports",
+    "initialTags": [
+      "Family-Friendly",
+      "Outdoor",
+      "Fitness"
+    ],
+    "sourceURL": "https://example.com/5k-run"
+  },
+  {
+    "eventName": "Tumwater Chocolate Festival",
+    "eventDate": "2025-12-12",
+    "eventTime": "10:00 AM - 5:00 PM",
+    "locationName": "Tumwater Community Center",
+    "locationAddress": "5304 Littlerock Rd SW, Tumwater, WA 98512",
+    "city": "Tumwater",
+    "description": "Valentine's weekend chocolate celebration with vendors, tastings, cooking demos, and chocolate-themed activities.",
+    "primaryEventType": "Festival",
+    "initialTags": [
+      "Family-Friendly",
+      "Indoor",
+      "Food & Drink"
+    ],
+    "sourceURL": "https://example.com/chocolate-fest"
+  },
+  {
+    "eventName": "Olympia Wooden Boat Fair",
+    "eventDate": "2025-12-13",
+    "eventTime": "10:00 AM - 4:00 PM",
+    "locationName": "Percival Landing",
+    "locationAddress": "217 Thurston Ave NW, Olympia, WA 98501",
+    "city": "Olympia",
+    "description": "Maritime celebration showcasing wooden boats, boat building demonstrations, maritime history, and waterfront activities.",
+    "primaryEventType": "Festival",
+    "initialTags": [
+      "Family-Friendly",
+      "Free",
+      "Outdoor"
+    ],
+    "sourceURL": "https://example.com/boat-fair"
+  },
+  {
+    "eventName": "Rochester Egg Hunt",
+    "eventDate": "2025-12-14",
+    "eventTime": "10:00 AM - 12:00 PM",
+    "locationName": "Rochester Park",
+    "locationAddress": "18990 Old Hwy 99 SW, Rochester, WA 98579",
+    "city": "Rochester",
+    "description": "Community Easter egg hunt with age divisions, prizes, photos with the Easter Bunny, and spring activities.",
+    "primaryEventType": "Holiday",
+    "initialTags": [
+      "Family-Friendly",
+      "Free",
+      "Outdoor"
+    ],
+    "sourceURL": "https://example.com/egg-hunt"
+  },
+  {
+    "eventName": "Olympia Pet Expo",
+    "eventDate": "2025-12-15",
+    "eventTime": "10:00 AM - 5:00 PM",
+    "locationName": "Greater Olympia Sports Complex",
+    "locationAddress": "2929 Carpenter Rd SE, Lacey, WA 98503",
+    "city": "Lacey",
+    "description": "Pet-friendly expo featuring vendors, demonstrations, adoptions, pet contests, and educational seminars.",
+    "primaryEventType": "Expo",
+    "initialTags": [
+      "Family-Friendly",
+      "Indoor",
+      "Pets"
+    ],
+    "sourceURL": "https://example.com/pet-expo"
+  },
+  {
+    "eventName": "Lacey Spring Carnival",
+    "eventDate": "2025-12-16",
+    "eventTime": "12:00 PM - 8:00 PM",
+    "locationName": "South Sound Center",
+    "locationAddress": "901 Sleater Kinney Rd SE, Lacey, WA 98503",
+    "city": "Lacey",
+    "description": "Spring carnival with rides, games, food vendors, live entertainment, and family activities.",
+    "primaryEventType": "Festival",
+    "initialTags": [
+      "Family-Friendly",
+      "Outdoor",
+      "Ticketed"
+    ],
+    "sourceURL": "https://example.com/spring-carnival"
+  },
+  {
+    "eventName": "Tumwater Summer Concert",
+    "eventDate": "2025-12-17",
+    "eventTime": "6:00 PM - 8:00 PM",
+    "locationName": "Tumwater Town Center",
+    "locationAddress": "5304 Littlerock Rd SW, Tumwater, WA 98512",
+    "city": "Tumwater",
+    "description": "Free outdoor concert featuring local bands, food vendors, and community gathering.",
+    "primaryEventType": "Concert",
+    "initialTags": [
+      "Family-Friendly",
+      "Free",
+      "Outdoor"
+    ],
+    "sourceURL": "https://example.com/tumwater-concert"
+  },
+  {
+    "eventName": "Olympia Craft Beer Week",
+    "eventDate": "2025-12-18",
+    "eventTime": "Various Times",
+    "locationName": "Multiple Breweries",
+    "locationAddress": "Various Locations, Olympia, WA 98501",
+    "city": "Olympia",
+    "description": "Week-long celebration of local craft beer with special releases, brewery tours, tastings, and beer-themed events.",
+    "primaryEventType": "Festival",
+    "initialTags": [
+      "21+",
+      "Multi-Day",
+      "Food & Drink"
+    ],
+    "sourceURL": "https://example.com/beer-week"
+  },
+  {
+    "eventName": "Yelm Pumpkin Run",
+    "eventDate": "2025-12-19",
+    "eventTime": "9:00 AM - 12:00 PM",
+    "locationName": "Yelm City Park",
+    "locationAddress": "105 Yelm Ave W, Yelm, WA 98597",
+    "city": "Yelm",
+    "description": "Fall-themed 5K run/walk with costume contest, post-race refreshments, and autumn activities for all ages.",
+    "primaryEventType": "Sports",
+    "initialTags": [
+      "Family-Friendly",
+      "Outdoor",
+      "Fitness"
+    ],
+    "sourceURL": "https://example.com/pumpkin-run"
+  },
+  {
+    "eventName": "Olympia Holiday Lights Parade",
+    "eventDate": "2025-12-20",
+    "eventTime": "5:30 PM - 7:30 PM",
+    "locationName": "Downtown Olympia",
+    "locationAddress": "Capitol Way, Olympia, WA 98501",
+    "city": "Olympia",
+    "description": "Annual lighted holiday parade with floats, marching bands, community groups, and Santa Claus finale.",
+    "primaryEventType": "Parade",
+    "initialTags": [
+      "Family-Friendly",
+      "Free",
+      "Outdoor"
+    ],
+    "sourceURL": "https://example.com/lights-parade"
+  },
+  {
+    "eventName": "Lacey New Year's Eve Celebration",
+    "eventDate": "2025-12-21",
+    "eventTime": "8:00 PM - 12:30 AM",
+    "locationName": "Regional Athletic Complex",
+    "locationAddress": "7600 Depot Dr SE, Lacey, WA 98503",
+    "city": "Lacey",
+    "description": "Family-friendly New Year's Eve event with early countdown for kids, live entertainment, food, and midnight fireworks.",
+    "primaryEventType": "Holiday",
+    "initialTags": [
+      "Family-Friendly",
+      "Outdoor",
+      "Free"
+    ],
+    "sourceURL": "https://example.com/nye-lacey"
+  },
+  {
+    "eventName": "Olympia Winter Brewfest",
+    "eventDate": "2025-12-22",
+    "eventTime": "1:00 PM - 8:00 PM",
+    "locationName": "Capitol Theater",
+    "locationAddress": "206 5th Ave SE, Olympia, WA 98501",
+    "city": "Olympia",
+    "description": "Indoor winter beer festival featuring local breweries, food pairings, live music, and special winter beer releases.",
+    "primaryEventType": "Festival",
+    "initialTags": [
+      "21+",
+      "Indoor",
+      "Food & Drink"
+    ],
+    "sourceURL": "https://example.com/winter-brewfest"
+  }
+]

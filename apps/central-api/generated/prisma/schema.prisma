@@ -60,6 +60,16 @@ model Event {
   location        String?
   fun_rating      Int?
 
+  // Funalytics fields
+  funalytics_score          Int? // 0-100 overall
+  funalytics_grade          String? // Exceptional, Very Good, Good, Fair, Poor
+  funalytics_persona_scores Json? // { persona: { score:int, grade:str, reason:str, confidence:float } }
+  funalytics_engine_version String?
+  funalytics_last_updated   DateTime? @db.Timestamptz(6)
+  age_restriction           String?   @db.VarChar(16) // 'all_ages' | '18_plus' | '21_plus'
+  alcohol_present           Boolean?
+  audience_zones            Json? // optional zones array [{ name, age_restriction, alcohol_present, prominence, features... }]
+
   // Relations
   user              User              @relation(fields: [user_id], references: [id])
   venue             Venue?            @relation(fields: [venue_id], references: [id])

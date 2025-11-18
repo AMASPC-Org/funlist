@@ -33,11 +33,32 @@ def find_available_port(start_port=3000, max_attempts=15):
 def run_flask_app():
     """Run the Flask application."""
     try:
-        # Use PORT from environment or default to 8080 (Google Cloud default)
-        port = int(os.environ.get('PORT', 8080))
-                
+        # Kill any existing processes on common ports first
+        for port_to_check in [8080, 5000, 3000]:
+            try:
+                for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+                    try:
+                        for conn in proc.connections():
+                            if conn.laddr.port == port_to_check:
+                                logger.info(f"Killing process {proc.pid} using port {port_to_check}")
+                                proc.kill()
+                    except (psutil.NoSuchProcess, psutil.AccessDenied):
+                        pass
+            except Exception as e:
+                logger.debug(f"Error checking port {port_to_check}: {e}")
+        
+        time.sleep(1)  # Give processes time to release ports
+        
+        # Always use port 5000 for Replit
+        port = 5000
+        
+        # Log the effective OAuth callback URL
+        app_url = os.environ.get('APP_URL', 'https://<your-repl>.replit.dev')
+        print(f"\n{'='*60}")
         print(f"Starting Flask server on port {port}")
         print(f"🚀 Server running at: http://0.0.0.0:{port}")
+        print(f"📋 Google OAuth Redirect URI: {app_url}/google_login/callback")
+        print(f"{'='*60}\n")
 
         # Update database schema first (before creating app)
         update_database_schema()
@@ -77,7 +98,7 @@ def update_database_schema():
 # Don't create app globally - do it in run_flask_app() only
 app = None
 
-    if __name__ == "__main__":
+if __name__ == "__main__":
     # Register signal handlers for graceful shutdown
     def signal_handler(sig, frame):
         logger.info(f"Received signal {sig}, shutting down")

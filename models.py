@@ -7,8 +7,25 @@ from sqlalchemy import Column, Integer, String, Boolean, DateTime, Float, Text, 
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.hybrid import hybrid_property
 
+# Define ProhibitedAdvertiserCategory FIRST
+class ProhibitedAdvertiserCategory(db.Model):
+    __tablename__ = 'prohibited_advertiser_categories'
+    __table_args__ = {'extend_existing': True}
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), unique=True, nullable=False)
+
+# Define the association table BEFORE Event model
+event_prohibited_advertisers = Table(
+    'event_prohibited_advertisers',
+    db.Model.metadata,
+    Column('event_id', Integer, ForeignKey('events.id'), primary_key=True),
+    Column('category_id', Integer, ForeignKey('prohibited_advertiser_categories.id'), primary_key=True),
+    extend_existing=True
+)
+
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True)
     email = Column(String(120), unique=True, nullable=False)
@@ -38,6 +55,11 @@ class User(db.Model, UserMixin):
     newsletter_opt_in = Column(Boolean, default=True)
     marketing_opt_in = Column(Boolean, default=False)
     user_preferences = Column(Text, nullable=True)
+    
+    # OAuth fields
+    oauth_provider = Column(String(20), nullable=True)  # 'google', 'github', etc.
+    oauth_provider_id = Column(String(255), nullable=True, unique=True)  # Provider's user ID
+    email_verified = Column(Boolean, default=False)
     business_street = Column(String(100), nullable=True)
     business_city = Column(String(50), nullable=True)
     business_state = Column(String(50), nullable=True)
@@ -113,8 +135,11 @@ class User(db.Model, UserMixin):
         if self.is_vendor and ('vendor_type' in data or 'vendor_description' in data):
             self.vendor_profile_updated_at = datetime.utcnow()
 
+
+
 class Event(db.Model):
     __tablename__ = 'events'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True)
     title = Column(String(255), nullable=False)
@@ -149,9 +174,12 @@ class Event(db.Model):
     fun_meter = Column(Integer, default=3)
     status = Column(String(50), default="pending")
     network_opt_out = Column(Boolean, default=False)
-    prohibited_advertisers = relationship('ProhibitedAdvertiserCategory',
-                                          secondary='event_prohibited_advertisers',
-                                          backref=backref('events', lazy='dynamic'))
+    prohibited_advertisers = relationship(
+        'ProhibitedAdvertiserCategory',
+        secondary=event_prohibited_advertisers,
+        backref=backref('events', lazy='dynamic'),
+        lazy='joined'
+    )
     user = relationship("User", back_populates="events")
     venue = relationship("Venue", back_populates="events")
 
@@ -183,18 +211,9 @@ class Event(db.Model):
             'status': self.status
         }
 
-class ProhibitedAdvertiserCategory(db.Model):
-    __tablename__ = 'prohibited_advertiser_categories'
-    id = Column(Integer, primary_key=True)
-    name = Column(String(100), unique=True, nullable=False)
-
-event_prohibited_advertisers = db.Table('event_prohibited_advertisers',
-    Column('event_id', Integer, ForeignKey('events.id'), primary_key=True),
-    Column('category_id', Integer, ForeignKey('prohibited_advertiser_categories.id'), primary_key=True)
-)
-
 class Subscriber(db.Model):
     __tablename__ = 'subscribers'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True)
     email = Column(String(120), unique=True, nullable=False)
@@ -216,6 +235,7 @@ class Subscriber(db.Model):
 
 class VenueType(db.Model):
     __tablename__ = 'venue_types'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True)
     name = Column(String(100), nullable=False)
@@ -229,6 +249,7 @@ class VenueType(db.Model):
 
 class Venue(db.Model):
     __tablename__ = 'venues'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True)
     name = Column(String(100), nullable=False)
@@ -264,6 +285,7 @@ class Venue(db.Model):
 
 class Chapter(db.Model):
     __tablename__ = 'chapters'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True)
     name = Column(String(100), nullable=False)
@@ -286,6 +308,7 @@ class Chapter(db.Model):
 
 class HelpArticle(db.Model):
     __tablename__ = 'help_articles'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True)
     title = Column(String(255), nullable=False)
@@ -301,18 +324,18 @@ class HelpArticle(db.Model):
         return f"<HelpArticle {self.title}>"
 
 
-class CharterMember(db.Model):
-    __tablename__ = 'charter_members'
-
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    chapter_id = Column(Integer, ForeignKey('chapters.id'), nullable=False)
-    role = Column(String(50), default='member')
-    joined_at = Column(DateTime, default=datetime.utcnow)
-    is_active = Column(Boolean, default=True)
-    
-    user = relationship("User", backref="charter_memberships")
-    chapter = relationship("Chapter", backref="charter_members")
-    
-    def __repr__(self):
-        return f"<CharterMember {self.user.email} in {self.chapter.name}>"
+# class CharterMember(db.Model):
+#     __tablename__ = 'charter_members'
+#
+#     id = Column(Integer, primary_key=True)
+#     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+#     chapter_id = Column(Integer, ForeignKey('chapters.id'), nullable=False)
+#     role = Column(String(50), default='member')
+#     joined_at = Column(DateTime, default=datetime.utcnow)
+#     is_active = Column(Boolean, default=True)
+#     
+#     user = relationship("User", backref="charter_memberships")
+#     chapter = relationship("Chapter", backref="charter_members")
+#     
+#     def __repr__(self):
+#         return f"<CharterMember {self.user.email} in {self.chapter.name}>"
