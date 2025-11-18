@@ -13,6 +13,7 @@ from functools import wraps
 import time
 
 from config import settings
+from sqlalchemy.exc import IntegrityError
 
 # Configure logging
 logging.basicConfig(
@@ -81,8 +82,20 @@ def create_app():
         logger.info("Initializing database...")
         db.init_app(app)
         with app.app_context():
-            db.create_all()
-            logger.info("Database tables created successfully")
+            try:
+                db.create_all()
+                logger.info("Database tables created successfully")
+            except IntegrityError as integrity_error:
+                db.session.rollback()
+                error_text = str(integrity_error)
+                if "pg_type_typname_nsp_index" in error_text or "already exists" in error_text:
+                    logger.warning(
+                        "Database already had required tables/types. "
+                        "Continuing startup after IntegrityError: %s",
+                        error_text
+                    )
+                else:
+                    raise
     except Exception as e:
         logger.error(f"Failed to initialize database: {str(e)}", exc_info=True)
         raise

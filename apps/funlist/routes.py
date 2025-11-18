@@ -7,11 +7,12 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user, login_required, login_user, logout_user
 from forms import (SignupForm, LoginForm, ProfileForm, EventForm,
                    ResetPasswordRequestForm, ResetPasswordForm, ContactForm, SearchForm) # Added ContactForm, SearchForm
-from models import User, Event, Subscriber, Chapter, HelpArticle, CharterMember # Added HelpArticle, CharterMember
+from models import User, Event, Subscriber, Chapter, HelpArticle, CharterMember, Venue # Added HelpArticle, CharterMember, Venue
 from db_init import db
 # Removed direct import of geocode_address, assume it's in utils.utils now
+from sqlalchemy import func
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import json
 import openai # Import OpenAI library
 from flask_wtf.csrf import CSRFProtect # Use only CSRFProtect
@@ -593,15 +594,178 @@ def fun_assistant_chat():
 @login_required
 #@admin_required # Add decorator back once roles are solid
 def admin_dashboard():
-     # ... (Keep existing logic) ...
-     chapters = Chapter.query.all()
-     # Fetch necessary data for the admin dashboard
-     stats = { "pending_events": 0, "total_users": 0, "todays_events": 0, "new_users_24h": 0} # Placeholder
-     events = [] # Placeholder
-     users = [] # Placeholder
-     events_by_category = {"labels": [], "datasets": [{"data":[]}]} # Placeholder
-     user_growth_data = {"labels": [], "datasets": [{"label": "New Users", "data":[]}]} # Placeholder
-     return render_template('admin_dashboard.html', chapters=chapters, stats=stats, events=events, users=users, status='pending', events_by_category=events_by_category, user_growth_data=user_growth_data)
+    section = (request.args.get('section') or request.args.get('tab') or 'overview').lower()
+    allowed_sections = {'overview', 'events', 'users', 'venues', 'organizations', 'analytics'}
+    if section not in allowed_sections:
+        section = 'overview'
+
+    status_filter = (request.args.get('status') or 'pending').lower()
+    if status_filter not in {'pending', 'approved', 'rejected', 'draft', 'all'}:
+        status_filter = 'pending'
+
+    chapters = Chapter.query.order_by(Chapter.name.asc()).all()
+    today = date.today()
+    now = datetime.utcnow()
+
+    total_events = Event.query.count()
+    stats = {
+        "pending_events": Event.query.filter(func.lower(Event.status) == 'pending').count(),
+        "approved_events": Event.query.filter(func.lower(Event.status) == 'approved').count(),
+        "rejected_events": Event.query.filter(func.lower(Event.status) == 'rejected').count(),
+        "draft_events": Event.query.filter(func.lower(Event.status) == 'draft').count(),
+        "total_events": total_events,
+        "total_users": User.query.count(),
+        "todays_events": Event.query.filter(func.date(Event.start_date) == today).count(),
+        "new_users_24h": User.query.filter(User.created_at >= now - timedelta(days=1)).count(),
+        "featured_events": Event.query.filter_by(featured=True).count(),
+        "active_venues": Venue.query.count(),
+        "organisations": Chapter.query.count()
+    }
+
+    event_status_counts = {
+        "all": total_events,
+        "pending": stats["pending_events"],
+        "approved": stats["approved_events"],
+        "rejected": stats["rejected_events"],
+        "draft": stats["draft_events"]
+    }
+
+    events_query = Event.query
+    if status_filter not in {'all', ''}:
+        events_query = events_query.filter(func.lower(Event.status) == status_filter)
+
+    filtered_events = events_query.order_by(Event.start_date.desc()).limit(25).all()
+    recent_events = Event.query.order_by(Event.created_at.desc()).limit(6).all()
+    recent_users = User.query.order_by(User.created_at.desc()).limit(8).all()
+    venues = Venue.query.order_by(Venue.created_at.desc()).limit(6).all()
+    organizations = Chapter.query.order_by(Chapter.created_at.desc()).limit(6).all()
+
+    category_rows = db.session.query(Event.category, func.count(Event.id)) \
+        .group_by(Event.category).order_by(func.count(Event.id).desc()).limit(6).all()
+    chart_colors = ['#0EA5E9', '#F97316', '#22C55E', '#A855F7', '#F43F5E', '#14B8A6']
+    category_labels = [row[0] or 'Uncategorized' for row in category_rows] or ['No data yet']
+    category_data = [row[1] for row in category_rows] or [0]
+    events_by_category = {
+        "labels": category_labels,
+        "datasets": [{
+            "label": "Events",
+            "data": category_data,
+            "backgroundColor": [chart_colors[i % len(chart_colors)] for i in range(len(category_labels))]
+        }]
+    }
+
+    user_growth_labels = []
+    user_growth_counts = []
+    for offset in range(6, -1, -1):
+        day = today - timedelta(days=offset)
+        user_growth_labels.append(day.strftime('%b %d'))
+        user_growth_counts.append(
+            User.query.filter(func.date(User.created_at) == day).count()
+        )
+    user_growth_data = {
+        "labels": user_growth_labels,
+        "datasets": [{
+            "label": "New Users",
+            "data": user_growth_counts,
+            "borderColor": "#0D9488",
+            "backgroundColor": "rgba(13, 148, 136, 0.15)",
+            "fill": True,
+            "tension": 0.4
+        }]
+    }
+
+    recent_activity = []
+    for event in recent_events[:4]:
+        recent_activity.append({
+            "type": "event",
+            "title": event.title,
+            "subtitle": ", ".join(filter(None, [event.city, event.state])) or "Event submission",
+            "timestamp": event.created_at or event.start_date,
+            "status": (event.status or '').title(),
+            "featured": event.featured
+        })
+    for user in recent_users[:4]:
+        recent_activity.append({
+            "type": "user",
+            "title": user.email,
+            "subtitle": "Organizer" if user.is_organizer else "Attendee",
+            "timestamp": user.created_at,
+            "status": "New signup",
+            "featured": False
+        })
+    recent_activity.sort(key=lambda item: item["timestamp"] or datetime.min, reverse=True)
+
+    role_breakdown = {
+        "organizers": User.query.filter_by(is_organizer=True).count(),
+        "event_creators": User.query.filter(User._is_event_creator == True).count(),  # noqa: E712
+        "vendors": User.query.filter_by(is_vendor=True).count(),
+        "sponsors": User.query.filter_by(is_sponsor=True).count()
+    }
+
+    verified_venues = Venue.query.filter_by(is_verified=True).count()
+    venue_status_counts = {
+        "verified": verified_venues,
+        "unverified": max(stats["active_venues"] - verified_venues, 0)
+    }
+
+    quick_actions = [
+        {
+            "label": "Create Event",
+            "description": "Add a new experience to the marketplace.",
+            "icon": "bi-calendar-plus",
+            "href": url_for('submit_event')
+        },
+        {
+            "label": "Review Pending",
+            "description": "Approve or reject new submissions.",
+            "icon": "bi-check-circle",
+            "href": url_for('admin_dashboard', section='events', status='pending')
+        },
+        {
+            "label": "Add Venue",
+            "description": "Publish or verify a venue profile.",
+            "icon": "bi-geo-alt",
+            "href": url_for('add_venue')
+        },
+        {
+            "label": "Invite Organizer",
+            "description": "Onboard partners into FunList.",
+            "icon": "bi-people",
+            "href": url_for('admin_dashboard', section='users')
+        }
+    ]
+
+    section_titles = {
+        "overview": "Operations Overview",
+        "events": "Events & Submissions",
+        "users": "Community Members",
+        "venues": "Venues & Locations",
+        "organizations": "Chapters & Organizations",
+        "analytics": "Insights & Analytics"
+    }
+    section_label = section_titles.get(section, "Operations Overview")
+
+    return render_template(
+        'admin_dashboard.html',
+        chapters=chapters,
+        stats=stats,
+        events=filtered_events,
+        recent_events=recent_events,
+        users=recent_users,
+        venues=venues,
+        organizations=organizations,
+        status=status_filter,
+        active_section=section,
+        active_tab=section,
+        events_by_category=events_by_category,
+        user_growth_data=user_growth_data,
+        event_status_counts=event_status_counts,
+        role_breakdown=role_breakdown,
+        venue_status_counts=venue_status_counts,
+        recent_activity=recent_activity,
+        quick_actions=quick_actions,
+        section_label=section_label
+    )
 
 # Add other routes from your previous routes.py here, ensuring imports are correct
 # ... e.g., /marketplace, /admin/users, /api/feedback, /search, etc. ...
