@@ -47,7 +47,7 @@ google_auth = Blueprint("google_auth", __name__)
 def login():
     if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET or not client:
         flash('Google OAuth is not configured. Please contact support.', 'error')
-        return redirect(url_for('routes.login'))
+        return redirect(url_for('login'))
 
     try:
         google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
@@ -78,21 +78,21 @@ def login():
         return redirect(request_uri)
     except Exception as e:
         flash('Google sign-in temporarily unavailable. Please try email login.', 'error')
-        return redirect(url_for('routes.login'))
+        return redirect(url_for('login'))
 
 
 @google_auth.route("/google_login/callback")
 def callback():
     if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET or not client:
         flash('Google OAuth is not configured.', 'error')
-        return redirect(url_for('routes.login'))
+        return redirect(url_for('login'))
 
     try:
         # Verify state parameter for CSRF protection
         state = request.args.get("state")
         if not state or state != session.get('oauth_state'):
             flash('Invalid authentication request. Please try again.', 'error')
-            return redirect(url_for('routes.login'))
+            return redirect(url_for('login'))
 
         # Clear the state from session
         session.pop('oauth_state', None)
@@ -101,7 +101,7 @@ def callback():
         code_verifier = session.pop('code_verifier', None)
         if not code_verifier:
             flash('Session expired. Please try signing in again.', 'error')
-            return redirect(url_for('routes.login'))
+            return redirect(url_for('login'))
 
         code = request.args.get("code")
         google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
@@ -134,7 +134,7 @@ def callback():
             users_name = userinfo["given_name"]
         else:
             flash("Google account email not verified. Please use email login.", 'error')
-            return redirect(url_for('routes.login'))
+            return redirect(url_for('login'))
 
         user = User.query.filter_by(email=users_email).first()
         if not user:
@@ -157,11 +157,11 @@ def callback():
 
         # Redirect to the page they were trying to access, or home
         next_page = request.args.get('next')
-        return redirect(next_page) if next_page else redirect(url_for('routes.index'))
+        return redirect(next_page) if next_page else redirect(url_for('index'))
 
     except Exception as e:
         flash('Google sign-in failed. Please try email login.', 'error')
-        return redirect(url_for('routes.login'))
+        return redirect(url_for('login'))
 
 
 @google_auth.route("/google_logout")
