@@ -4,11 +4,175 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="description" content="FunList.ai - Your AI-powered guide to fun events and activities in your area">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: data:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https: blob:; font-src 'self' https:; connect-src 'self' https: wss:; frame-src 'self' https:;">
 
-    <title>{% block title %}FunList.ai{% endblock %}</title>
+    <!-- Primary SEO Meta Tags -->
+    <title>{% block title %}FunList.ai - Discover Fun Events Near You{% endblock %}</title>
+    <meta name="description" content="{% block description %}Discover fun community events near you with FunList.ai. AI-powered event discovery platform featuring local festivals, concerts, food events, and activities with fun ratings.{% endblock %}">
+    <meta name="keywords" content="{% block keywords %}events near me, local events, community events, festivals, concerts, activities, event discovery, fun events, {{ 'Olympia events' if request.endpoint == 'map' else 'Washington events' }}{% endblock %}">
+    <meta name="author" content="FunList.ai">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:title" content="{% block og_title %}{{ self.title() }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{{ self.description() }}{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{{ url_for('static', filename='images/Have-Fun-FunList.ai-home.jpeg', _external=True) }}{% endblock %}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:site_name" content="FunList.ai">
+    <meta property="og:locale" content="en_US">
+
+    <!-- Additional SEO -->
+    <meta name="theme-color" content="#007bff">
+    <link rel="canonical" href="{% block canonical %}{{ request.url }}{% endblock %}">
+
+    <!-- Enhanced Structured Data for LLM Knowledge Extraction -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "{{ url_for('index', _external=True) }}#website",
+          "name": "FunList.ai",
+          "alternateName": ["FunList", "Fun List AI"],
+          "url": "{{ url_for('index', _external=True) }}",
+          "description": "AI-powered community event discovery platform using proprietary Funalytics scoring to help families and individuals find engaging local events in Washington State",
+          "inLanguage": "en-US",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "{{ url_for('map', _external=True) }}?q={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+          },
+          "publisher": {
+            "@id": "{{ url_for('index', _external=True) }}#organization"
+          }
+        },
+        {
+          "@type": "Organization",
+          "@id": "{{ url_for('index', _external=True) }}#organization",
+          "name": "FunList.ai",
+          "alternateName": ["FunList", "Fun List AI"],
+          "url": "{{ url_for('index', _external=True) }}",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "{{ url_for('static', filename='images/logo.png', _external=True) }}",
+            "width": 600,
+            "height": 200
+          },
+          "description": "AI-powered community event discovery platform using proprietary Funalytics scoring to help families and individuals find engaging local events",
+          "foundingDate": "2024",
+          "industry": ["Event Discovery Technology", "Community Platforms", "AI-Powered Recommendations"],
+          "serviceType": "Community Event Discovery Platform",
+          "areaServed": {
+            "@type": "State",
+            "name": "Washington",
+            "containedInPlace": {
+              "@type": "Country", 
+              "name": "United States"
+            }
+          },
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "customer service",
+            "availableLanguage": "English",
+            "serviceArea": "Washington State"
+          },
+          "sameAs": [
+            "https://www.facebook.com/funlistai",
+            "https://www.instagram.com/funlistai",
+            "https://www.tiktok.com/@funlistai"
+          ],
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Olympia",
+            "addressRegion": "WA", 
+            "addressCountry": "US"
+          },
+          "knowsAbout": [
+            "Community Event Discovery",
+            "Family-Friendly Activities", 
+            "AI Event Scoring",
+            "Local Entertainment",
+            "Washington State Events",
+            "Event Recommendation Systems",
+            "Funalytics Scoring",
+            "CommunityVibe Metrics",
+            "FamilyFun Ratings"
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "@id": "{{ url_for('index', _external=True) }}#faq",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "What is FunList.ai and how does it work?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "FunList.ai is an AI-powered community event discovery platform that helps families and individuals find engaging local events. We use our proprietary Funalytics scoring system that rates events on CommunityVibe (sense of togetherness and local flavor) and FamilyFun (suitability for families and children) metrics on a 1-10 scale."
+              }
+            },
+            {
+              "@type": "Question", 
+              "name": "How does the Funalytics scoring system work?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Funalytics is our breakthrough AI scoring methodology that evaluates events across two key dimensions: CommunityVibe (0-10 scale measuring sense of togetherness, local flavor, and inclusivity) and FamilyFun (0-10 scale evaluating suitability for families and children). The overall fun rating combines these metrics to help you quickly identify the most enjoyable events."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What types of events can I find on FunList.ai?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "FunList.ai features community events across Washington State including festivals, concerts, food events, family activities, educational workshops, arts and culture events, sports activities, and seasonal celebrations. All events are curated with our AI-powered fun rating system."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How do I find events near me?",
+              "acceptedAnswer": {
+                "@type": "Answer", 
+                "text": "Use our interactive map feature or browse events by location. Search by city, state, or zip code, and filter results by category, date, and fun rating. Our AI system provides personalized recommendations based on your interests."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Can I submit my own events to FunList.ai?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes! Event organizers can submit community events for free. Each event is evaluated using our Funalytics scoring system and reviewed for community relevance and family-friendliness before being featured."
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
+
+    <!-- LLM-Optimized Knowledge Extraction Meta -->
+    <meta property="funlist:platform_type" content="AI-powered community event discovery">
+    <meta property="funlist:scoring_system" content="Funalytics - CommunityVibe and FamilyFun metrics">
+    <meta property="funlist:target_audience" content="families, individuals, community organizers">
+    <meta property="funlist:coverage_area" content="Washington State, Pacific Northwest">
+    <meta property="funlist:primary_features" content="AI event recommendations, interactive mapping, community-focused curation">
+    
+    <!-- Enhanced Knowledge Graph -->
+    <meta property="article:publisher" content="FunList.ai">
+    <meta property="article:author" content="FunList.ai Team">
+    <meta name="application-name" content="FunList.ai">
+    <meta name="msapplication-TileColor" content="#007bff">
+    <meta name="theme-color" content="#007bff">
+
+    {% block structured_data %}{% endblock %}
+
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: data:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https: blob:; font-src 'self' https:; connect-src 'self' https: wss:; frame-src 'self' https:; worker-src 'self' blob:;">
+
     <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -20,7 +184,7 @@
     <!-- Custom CSS with cache-busting -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}?v={{ range(1, 10000) | random }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <style>
         .cookie-banner {
@@ -29,28 +193,80 @@
             left: 0;
             right: 0;
             background-color: #f8f9fa;
-            padding: 15px;
+            padding: 20px 15px;
             text-align: center;
-            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.15);
             z-index: 1000;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .cookie-content {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
         }
         .cookie-content p {
             margin: 0;
-            display: inline;
+            display: block;
+            font-size: 14px;
+            line-height: 1.4;
+            max-width: 600px;
         }
         .cookie-content a {
-            margin-left: 10px;
             color: #007bff;
             text-decoration: none;
+            font-weight: 500;
         }
         .cookie-content a:hover {
             text-decoration: underline;
         }
         .cookie-buttons {
-            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 0;
         }
         .cookie-buttons button {
-            margin: 0 5px;
+            margin: 0;
+            white-space: nowrap;
+        }
+        
+        .floating-buttons-container {
+            position: fixed;
+            right: 20px;
+            bottom: 100px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 999;
+        }
+        .floating-button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        .floating-button:hover {
+            background-color: #0056b3;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transform: translateY(-2px);
+        }
+        .floating-button i {
+            font-size: 16px;
         }
     </style>
 </head>
