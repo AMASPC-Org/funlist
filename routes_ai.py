@@ -156,9 +156,9 @@ def ai_feed():
                 "title": event.title,
                 "description": event.description,
                 "start_date": event.start_date.strftime('%Y-%m-%d') if event.start_date else None,
-                "start_time": event.start_time,
+                "start_time": str(event.start_time) if event.start_time else None,
                 "end_date": event.end_date.strftime('%Y-%m-%d') if event.end_date else None,
-                "end_time": event.end_time,
+                "end_time": str(event.end_time) if event.end_time else None,
                 "location": {
                     "venue": event.location,
                     "street": event.street,

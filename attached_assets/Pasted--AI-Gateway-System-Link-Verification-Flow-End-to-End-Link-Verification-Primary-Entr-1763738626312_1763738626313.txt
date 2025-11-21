@@ -1,0 +1,93 @@
+
+# AI Gateway System - Link Verification & Flow
+
+## End-to-End Link Verification ✓
+
+### Primary Entry Points
+
+1. **Main Navigation** → AI Gateway
+   - Route: `/ai-gateway`
+   - Template: `templates/ai_gateway.html`
+   - Status: ✓ Working
+
+2. **Footer** → AI & Developers Section
+   - Links to: AI Gateway, AI Policy, AI License, Events Feed Demo
+   - Status: ✓ All Working
+
+### AI Gateway Page Links
+
+#### Policy Documentation Section
+- ✓ AI Access Policy → `/ai-policy` (public.ai_policy)
+- ✓ AI Data License → `/ai-license` (public.ai_license)
+- ✓ Policy JSON → `/.well-known/ai-policy.json` (public.ai_policy_json)
+
+#### Developer Quickstart (3 Steps)
+- **Step 1**: ✓ Links to AI Policy and AI License
+- **Step 2**: API Key Registration (pilot program - contact policy@amaspc.com)
+- **Step 3**: Code example showing proper header usage
+
+#### Available Endpoints Section
+1. ✓ Policy JSON → `/.well-known/ai-policy.json` (Public, no auth)
+2. ✓ Events Feed → `/ai-feed.json` (Auth required)
+3. ✓ AI Access Policy → `/ai-policy` (Public)
+4. ✓ AI Data License → `/ai-license` (Public)
+5. ✓ Events Feed Guide → `/ai-feed-demo` (Public)
+6. ✓ Access Report → `/ai-report` (Admin only)
+
+### AI Policy Page Links
+- ✓ Back to AI Gateway → `/ai-gateway`
+- ✓ Policy JSON → `/.well-known/ai-policy.json`
+- ✓ Events Feed Demo → `/ai-feed-demo` (correctly points to demo, not raw JSON)
+- ✓ AI License → `/ai-license`
+
+### AI License Page Links
+- ✓ AI Access Policy → `/ai-policy`
+- ✓ AI Gateway → `/ai-gateway`
+- ✓ Contact → `/contact`
+
+### Events Feed Demo Page Links
+- ✓ AI Gateway → `/ai-gateway`
+- ✓ AI Policy → `/ai-policy`
+- ✓ AI License → `/ai-license`
+- ✓ Contact → `/contact`
+
+### Access Report Page (Admin Only)
+- ✓ Back to AI Gateway → `/ai-gateway`
+- ✓ AI Policy → `/ai-policy`
+
+## Logical Flow Verification
+
+### For AI Developers/Systems:
+1. **Discover** → AI Gateway (overview)
+2. **Learn** → Read AI Policy & License
+3. **Understand** → Events Feed Demo (implementation guide)
+4. **Implement** → Use proper headers with `/ai-feed.json`
+5. **Monitor** → Admin can view access logs at `/ai-report`
+
+### For Site Visitors:
+1. Navigate to AI Gateway from main nav or footer
+2. Review policies and understand requirements
+3. See example code and endpoint documentation
+4. Contact team for API key access
+
+## Authentication & Authorization Flow
+
+- **Public Access**: AI Gateway, AI Policy, AI License, Events Feed Demo, Policy JSON
+- **Authenticated Access**: `/ai-feed.json` (requires X-AI-Consumer, X-AI-Purpose, X-AI-Key headers)
+- **Admin Access**: `/ai-report` (requires login + admin privileges)
+
+## Rate Limiting (as documented)
+- 60 requests/minute
+- 1,000 requests/hour
+- 10,000 requests/day
+
+## Contact Points
+- Policy questions: policy@amaspc.com
+- API key requests: policy@amaspc.com
+- General contact: /contact page
+
+## All Links Verified: ✓
+- No broken internal links detected
+- All url_for() references point to valid endpoints
+- External mailto: links properly formatted
+- Navigation flows logically from discovery to implementation
