@@ -1,1 +1,57 @@
-{}
+[{
+  "aiPolicy": {
+    "version": "1.0",
+    "lastUpdated": "2025-03-19",
+    "organizationName": "FunList.ai",
+    "contact": "legal@funlist.ai",
+    "dataUsage": {
+      "allowAITraining": false,
+      "allowAIScraping": false,
+      "allowIndexing": true
+    },
+    "license": {
+      "type": "Proprietary",
+      "terms": "All content on this website is proprietary and protected by copyright. AI systems, crawlers, and automated tools are prohibited from accessing, scraping, or using this content for training purposes without explicit written permission.",
+      "humanReadableUrl": "https://funlist.ai/terms",
+      "restrictions": [
+        "No AI training on site content",
+        "No automated scraping without permission",
+        "No data harvesting for commercial AI systems",
+        "Must respect robots.txt directives"
+      ]
+    },
+    "gateway": {
+      "requiresAuthentication": true,
+      "rateLimit": {
+        "requestsPerDay": 200,
+        "requestsPerHour": 50
+      },
+      "allowedPurposes": [
+        "Member directory access (authenticated users only)",
+        "Public information retrieval",
+        "Search engine indexing"
+      ],
+      "prohibitedPurposes": [
+        "AI model training",
+        "Automated data harvesting",
+        "Competitor intelligence gathering",
+        "Unauthorized commercial use"
+      ]
+    },
+    "compliance": {
+      "gdpr": true,
+      "ccpa": true,
+      "coppa": false
+    },
+    "aiDetection": {
+      "userAgentMonitoring": true,
+      "behaviorAnalysis": true,
+      "securityMeasures": [
+        "Rate limiting",
+        "IP monitoring",
+        "Captcha for suspicious traffic",
+        "Request pattern analysis"
+      ]
+    }
+  }
+}]
