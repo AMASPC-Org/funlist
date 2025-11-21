@@ -11,7 +11,7 @@ from forms import (SignupForm, LoginForm, ProfileForm, EventForm,
 from models import User, Event, Subscriber, Chapter, HelpArticle, Venue, ProhibitedAdvertiserCategory # Added HelpArticle, CharterMember
 from db_init import db
 # Removed direct import of geocode_address, assume it's in utils.utils now
-from sqlalchemy import func
+from sqlalchemy import func, text
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from datetime import datetime, timedelta, date, time
 import json
@@ -697,11 +697,15 @@ def signup():
     if form.validate_on_submit():
         # Create user with form data
         password_data = form.password.data
-        if password_data:
-            user = User(
-                email=form.email.data,
-                password_hash=generate_password_hash(password_data)
-            )
+        if not password_data:
+            flash("Password is required.", "danger")
+            chapters = Chapter.query.all()
+            return render_template('signup.html', form=form, chapters=chapters)
+            
+        user = User(
+            email=form.email.data,
+            password_hash=generate_password_hash(password_data)
+        )
         
         # Set roles based on primary_role selection
         if form.primary_role.data == 'organizer':
@@ -1460,7 +1464,7 @@ def health_check():
     # Check database connectivity
     try:
         # Execute a simple query to verify database connection
-        db.session.execute('SELECT 1')
+        db.session.execute(text('SELECT 1'))
         health_status["checks"]["database"] = "ok"
     except Exception as e:
         health_status["status"] = "degraded"
