@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block title %}AI Data License - FunList.ai{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="ai-portal-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto text-center">
+                <div class="mb-3">
+                    <i data-feather="file-text" style="width: 64px; height: 64px; stroke: white;"></i>
+                </div>
+                <h1 class="display-4 mb-3" style="color: white;">AI Data License</h1>
+                <p class="lead mb-4" style="color: rgba(255,255,255,0.9);">Legal terms governing AI access and data usage</p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <a href="{{ url_for('ai_gateway') }}" class="btn btn-light btn-lg">
+                        <i data-feather="arrow-left" class="me-2"></i>Back to AI Gateway
+                    </a>
+                    <a href="{{ url_for('ai_policy') }}" class="btn btn-outline-light btn-lg">
+                        <i data-feather="shield" class="me-2"></i>View AI Policy
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Breadcrumb -->
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('ai_gateway') }}">AI Gateway</a></li>
+            <li class="breadcrumb-item active" aria-current="page">AI Data License</li>
+        </ol>
+    </nav>
+</div>
+
+<!-- Main Content -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                
+                <!-- License Terms -->
+                <div class="card mb-4 border-0 shadow-sm">
+                    <div class="card-header bg-white border-bottom">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-circle bg-primary-soft me-3">
+                                <i data-feather="book-open" style="color: var(--primary-orange);"></i>
+                            </div>
+                            <h2 class="mb-0 h4">License Terms</h2>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p>This license governs the use of data and content from FunList.ai by artificial intelligence systems, automated crawlers, and other programmatic access methods.</p>
+                        <p class="mb-0"><strong>Effective Date:</strong> November 2025 | <strong>Version:</strong> 1.0</p>
+                    </div>
+                </div>
+
+                <!-- Permitted Uses -->
+                <div class="card mb-4 border-0 shadow-sm">
+                    <div class="card-header bg-white border-bottom">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-circle bg-primary-soft me-3">
+                                    <i data-feather="check-circle" style="color: var(--primary-orange);"></i>
+                                </div>
+                                <h2 class="mb-0 h4">Permitted Uses</h2>
+                            </div>
+                            <span class="badge bg-success">Allowed</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <ul class="mb-0">
+                            <li><strong>Search & Indexing:</strong> Accessing public event data through our <a href="{{ url_for('ai_gateway') }}">API endpoints</a> for search purposes</li>
+                            <li><strong>Citation & Reference:</strong> Using our data with proper attribution to FunList</li>
+                            <li><strong>Analysis:</strong> Non-commercial research and analysis with appropriate disclosure</li>
+                            <li><strong>Integration:</strong> Displaying our events in applications with proper attribution</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Prohibited Uses -->
+                <div class="card mb-4 border-0 shadow-sm">
+                    <div class="card-header bg-white border-bottom">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-circle bg-primary-soft me-3">
+                                    <i data-feather="x-circle" style="color: var(--accent-coral);"></i>
+                                </div>
+                                <h2 class="mb-0 h4">Prohibited Uses</h2>
+                            </div>
+                            <span class="badge bg-danger">Not Allowed</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <ul class="mb-3">
+                            <li><strong>AI Model Training:</strong> Using our data to train LLMs or other AI models without <a href="mailto:legal@funlist.ai">explicit written license</a></li>
+                            <li><strong>Commercial Resale:</strong> Redistributing or reselling our data without licensing agreement</li>
+                            <li><strong>Unauthorized Access:</strong> Circumventing authentication, rate limits, or access controls</li>
+                            <li><strong>Missing Attribution:</strong> Using our data without proper source attribution</li>
+                            <li><strong>Scraping:</strong> Unauthorized automated scraping outside our official API</li>
+                        </ul>
+                        <div class="alert alert-danger mb-0">
+                            <i data-feather="alert-triangle" class="me-2"></i>
+                            <strong>Violations will result in:</strong> Immediate API key revocation, IP blocking, and potential legal action.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- License Application -->
+                <div class="card mb-4 border-0 shadow-sm">
+                    <div class="card-header bg-white border-bottom">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-circle bg-primary-soft me-3">
+                                <i data-feather="send" style="color: var(--primary-orange);"></i>
+                            </div>
+                            <h2 class="mb-0 h4">License Application Process</h2>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p>To apply for a license for AI training, commercial use, or other special purposes, submit a request to <a href="mailto:legal@funlist.ai">legal@funlist.ai</a> including:</p>
+                        <ul class="mb-3">
+                            <li><strong>Organization Details:</strong> Name, website, and primary contact information</li>
+                            <li><strong>Intended Use Case:</strong> Detailed description of how you plan to use our data</li>
+                            <li><strong>Expected Volume:</strong> Estimated requests per day/month</li>
+                            <li><strong>Attribution Method:</strong> How you will credit FunList in your application</li>
+                            <li><strong>Data Handling:</strong> How you will store, process, and protect our data</li>
+                        </ul>
+                        <p class="mb-0"><small class="text-muted">We typically respond to license requests within 5 business days.</small></p>
+                    </div>
+                </div>
+
+                <!-- Technical Specifications -->
+                <div class="card mb-4 border-0 shadow-sm">
+                    <div class="card-header bg-white border-bottom">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-circle bg-primary-soft me-3">
+                                <i data-feather="code" style="color: var(--primary-orange);"></i>
+                            </div>
+                            <h2 class="mb-0 h4">Technical Implementation</h2>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="mb-3">Available Resources:</h5>
+                        <div class="list-group mb-0">
+                            <a href="/.well-known/ai-policy.json" target="_blank" class="list-group-item list-group-item-action">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">Machine-Readable Policy JSON</h6>
+                                        <small class="text-muted">Structured policy data for automated compliance</small>
+                                    </div>
+                                    <i data-feather="external-link"></i>
+                                </div>
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">Events Feed Implementation Guide</h6>
+                                        <small class="text-muted">Code examples and authentication requirements</small>
+                                    </div>
+                                    <i data-feather="book"></i>
+                                </div>
+                            </a>
+                            <a href="{{ url_for('ai_policy') }}" class="list-group-item list-group-item-action">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">Human-Readable AI Access Policy</h6>
+                                        <small class="text-muted">Complete policy documentation</small>
+                                    </div>
+                                    <i data-feather="file-text"></i>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security & Privacy -->
+                <div class="card mb-4 border-0 shadow-sm">
+                    <div class="card-header bg-white border-bottom">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-circle bg-primary-soft me-3">
+                                <i data-feather="shield" style="color: var(--primary-orange);"></i>
+                            </div>
+                            <h2 class="mb-0 h4">Security & Privacy Commitment</h2>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-3">Our data access security measures are detailed in our <a href="{{ url_for('privacy') }}#ai-access">Security & Privacy Policy</a>. Key protections include:</p>
+                        <ul class="mb-0">
+                            <li>End-to-end encryption for all API traffic</li>
+                            <li>Comprehensive access logging and monitoring</li>
+                            <li>No access to private or member-only content</li>
+                            <li>Regular security audits and compliance reviews</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Updates Notice -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-bottom">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-circle bg-primary-soft me-3">
+                                <i data-feather="refresh-cw" style="color: var(--primary-orange);"></i>
+                            </div>
+                            <h2 class="mb-0 h4">License Updates</h2>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-2">This license may be updated periodically to reflect new capabilities, security enhancements, or legal requirements. The current version is always available at this URL.</p>
+                        <p class="mb-0"><strong>Last Updated:</strong> November 2025 | <strong>Version:</strong> 1.0</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Section -->
+<section class="py-5" style="background: linear-gradient(135deg, var(--text-navy) 0%, var(--primary-orange) 100%);">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <i data-feather="mail" style="width: 48px; height: 48px; stroke: white;" class="mb-3"></i>
+                <h3 class="mb-3" style="color: white;">Questions Or Need A License?</h3>
+                <p class="mb-4" style="color: rgba(255,255,255,0.9);">Our AI Gateway team is here to help with licensing inquiries, technical questions, and partnership opportunities.</p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <a href="mailto:legal@funlist.ai" class="btn btn-light btn-lg">
+                        <i data-feather="mail" class="me-2"></i>legal@funlist.ai
+                    </a>
+                    <a href="{{ url_for('ai_gateway') }}" class="btn btn-outline-light btn-lg">
+                        <i data-feather="arrow-left" class="me-2"></i>AI Gateway Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Related Resources -->
+<section class="bg-light py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <h3 class="mb-4 text-center" style="color: var(--primary-orange);">RELATED RESOURCES</h3>
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <i data-feather="file-text" style="width: 40px; height: 40px; stroke: var(--primary-orange);" class="mb-3"></i>
+                                <h5>Data License</h5>
+                                <p class="text-muted small mb-3">Detailed legal terms governing data usage</p>
+                                <a href="{{ url_for('ai_data_license') }}" class="btn btn-sm btn-outline-primary">Read License</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <i data-feather="cpu" style="width: 40px; height: 40px; stroke: var(--primary-orange);" class="mb-3"></i>
+                                <h5>AI Gateway Home</h5>
+                                <p class="text-muted small mb-3">Overview and developer quickstart</p>
+                                <a href="{{ url_for('ai_gateway') }}" class="btn btn-sm btn-outline-primary">View Gateway</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <i data-feather="shield" style="width: 40px; height: 40px; stroke: var(--primary-orange);" class="mb-3"></i>
+                                <h5>Security Policy</h5>
+                                <p class="text-muted small mb-3">Data protection and security standards</p>
+                                <a href="{{ url_for('privacy') }}" class="btn btn-sm btn-outline-primary">Learn More</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
