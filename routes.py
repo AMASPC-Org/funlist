@@ -1232,3 +1232,8 @@ def register_ai_governance_routes(app):
             return jsonify(policy_data)
         else:
             return jsonify({"error": "AI policy not found"}), 404
+    
+    @app.route('/ai-feed-guide')
+    def ai_feed_guide():
+        """Render the AI Feed Guide page with technical documentation"""
+        return render_template('ai/feed_guide.html')

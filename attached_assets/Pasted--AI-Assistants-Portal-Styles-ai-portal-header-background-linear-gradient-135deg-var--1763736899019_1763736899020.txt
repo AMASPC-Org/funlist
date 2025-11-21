@@ -1,0 +1,528 @@
+/* AI Assistants Portal Styles */
+.ai-portal-header {
+    background: linear-gradient(135deg, var(--ama-dark-blue) 0%, var(--ama-midi-blue) 100%);
+    color: white;
+    padding: 3rem 0;
+    margin-bottom: 2rem;
+}
+
+/* AI tools portal styles */
+.tool-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.tool-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+.tool-card .card-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 1.5rem;
+}
+
+.tool-card .btn {
+    margin-top: auto;
+    width: 100%;
+    max-width: 180px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.tool-features {
+    margin-bottom: 1.5rem;
+    margin-top: auto;
+    padding-top: 0.5rem;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+}
+
+.feature-item i {
+    color: var(--ama-bright-red);
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.feature-item span {
+    color: #555;
+    line-height: 1.4;
+}
+
+/* Equal height cards for AI assistants in portal */
+.assistant-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+.assistant-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+/* Consistent tool card styling */
+.tool-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+/* New styles for tools hub cards */
+.tools-hub-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 10px;
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.tools-hub-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+.tool-header {
+  background-color: #f8f9fa;
+  padding: 15px;
+  text-align: center;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+.tool-header h3 {
+  margin: 0;
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.tool-section-title {
+  font-weight: 700;
+  color: var(--ama-dark-blue);
+  letter-spacing: 0.5px;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.feature-item {
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  color: #333;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background-color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+}
+
+.tool-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    border-color: rgba(var(--ama-light-blue-rgb), 0.5);
+}
+
+.tool-card .card-body {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.tool-card h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0;
+    color: var(--ama-dark-blue);
+}
+
+.tool-card p {
+    margin: 1rem 0;
+    color: #555;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.tool-icon {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: rgba(var(--ama-light-blue-rgb), 0.1);
+    color: var(--ama-light-blue);
+}
+
+.tool-icon i {
+    width: 20px;
+    height: 20px;
+}
+
+.assistant-card .card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.assistant-card .btn {
+    margin-top: auto;
+    width: 100%;
+}
+
+.assistant-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 1rem;
+    color: var(--ama-light-blue);
+}
+
+/* Portal action buttons alignment */
+.portal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+
+@media (max-width: 768px) {
+    .assistant-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .portal-buttons {
+        flex-direction: column;
+    }
+}
+
+.tool-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.tool-card:hover {
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transform: translateY(-3px);
+}
+
+.tool-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: rgba(var(--ama-light-blue-rgb), 0.1);
+}
+
+
+.tool-features {
+    margin: 1.5rem 0;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.feature-item i {
+    margin-right: 0.5rem;
+    width: 18px;
+    height: 18px;
+}
+
+.member-only-content {
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 2rem;
+}
+
+.tool-preview-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    height: 100%;
+}
+
+.tool-preview-card i {
+    width: 32px;
+    height: 32px;
+}
+
+/* Membership Required Overlay */
+.tools-hub-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.membership-required-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tools-hub-card:hover .membership-required-overlay {
+  opacity: 1;
+}
+
+.membership-required-content {
+  background-color: white;
+  color: var(--ama-dark-blue);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-weight: bold;
+}
+
+.membership-required-content svg {
+  width: 24px;
+  height: 24px;
+  stroke: var(--ama-midi-red);
+}
+
+
+/* Onboarding Modal Styles */
+.step-indicators {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.step-indicators::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: #e0e0e0;
+    z-index: 1;
+}
+
+.step-indicators .step {
+    position: relative;
+    z-index: 2;
+    background-color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    border: 2px solid #e0e0e0;
+    font-weight: 500;
+}
+
+.step-indicators .step.active {
+    border-color: var(--ama-light-blue);
+    background-color: var(--ama-light-blue);
+    color: white;
+}
+
+.onboarding-step {
+    display: none;
+}
+
+.onboarding-step.active {
+    display: block;
+}
+
+.complete-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+}
+
+.recommended-tool {
+    transition: all 0.3s ease;
+}
+
+.recommended-tool:hover {
+    border-color: var(--ama-light-blue) !important;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* Modal interaction fixes */
+.modal {
+  pointer-events: auto !important;
+}
+
+.modal-backdrop {
+  pointer-events: none !important;
+}
+
+.modal-content {
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 1050 !important;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal input,
+.modal select,
+.modal textarea,
+.modal button {
+  position: relative;
+  z-index: 1060 !important;
+  pointer-events: auto !important;
+}
+
+.modal-footer {
+  position: relative;
+  z-index: 1060;
+}
+
+.modal label {
+  cursor: pointer;
+}
+
+/* Fix for safari/mobile */
+@media (max-width: 768px) {
+  .modal-dialog {
+    margin: 0.5rem;
+    max-width: calc(100% - 1rem);
+  }
+
+  .modal-content {
+    overflow-y: auto;
+    max-height: 90vh;
+  }
+}
+
+/* AI Portal styling */
+.ai-portal-header {
+    background: linear-gradient(135deg, #4A86E8 0%, #347AE2 100%);
+    color: white;
+    padding: 4rem 0;
+    margin-bottom: 2rem;
+}
+
+.security-badge {
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.security-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.icon-circle {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bg-primary-soft {
+    background-color: rgba(74, 134, 232, 0.1);
+}
+
+/* Center tool headers and card content */
+.tools-hub-header h1,
+.tools-hub-header p {
+  text-align: center;
+}
+
+.tool-header {
+  text-align: center;
+}
+
+.tools-hub-card {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.tools-hub-card .card-title {
+  text-align: center;
+  font-size: 1.25rem;
+  margin-bottom: 0;
+}
+
+.tools-hub-card .card-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.tools-hub-card .feature-item {
+  margin-bottom: 8px;
+}
+
+.tools-hub-container {
+  padding: 2rem 0;
+}
+
+.tools-hub-container p.lead {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.tools-hub-card {
+  transition: transform 0.2s;
+}
+
+.tools-hub-card:hover {
+  transform: translateY(-5px);
+}
+
+.row-cols-1.row-cols-md-2.row-cols-lg-3 {
+  margin: 0 -1rem;
+}
+
+.row-cols-1.row-cols-md-2.row-cols-lg-3 > .col {
+  padding: 0 1rem;
+}
+
+.tool-section-title {
+  text-align: center;
+  font-weight: bold;
+}
+
+.tools-hub-card .feature-item {
+  text-align: center;
+}
