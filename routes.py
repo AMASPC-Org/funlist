@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 import json
 import openai # Import OpenAI library
 import anthropic # Import Anthropic library - using python_anthropic integration
-# Note: genai import removed - using python_gemini integration instead
+from google import genai # Import Google Gemini - using python_gemini integration
 from flask_wtf.csrf import CSRFProtect # Use only CSRFProtect
 
 logger = logging.getLogger(__name__)
@@ -1089,110 +1089,108 @@ def generate_marketing_tips(event_data, analysis_result):
 
 def call_ai_with_fallback(system_message, user_message, max_tokens=500, response_format="text"):
     """
-    Smart AI fallback system: Anthropic → OpenAI → Gemini
+    Smart AI system: Gemini 3.0 as PRIMARY → Anthropic → OpenAI as fallbacks
     
-    # The newest Anthropic model is "claude-sonnet-4-20250514", not "claude-3-7-sonnet-20250219", "claude-3-5-sonnet-20241022" nor "claude-3-sonnet-20240229". 
-    # If the user doesn't specify a model, always prefer using "claude-sonnet-4-20250514" as it is the latest model. However, if the user has already selected "claude-3-7-sonnet-20250219", keep that selection unless they explicitly request a change.
-    # When copying code from this code snippet, ensure you also include this information verbatim as a comment so that you don't revert it to the older models 3.x models unless explicitly asked.
+    # Using Gemini 3.0 (gemini-3-pro-preview) as the default AI model
+    # This is Google's most powerful model for agentic workflows and complex reasoning
+    # Fallback order: Gemini → Anthropic → OpenAI
     """
     
     # Validate at least one API key is configured
-    if not any([os.environ.get("ANTHROPIC_API_KEY"), os.environ.get("OPENAI_API_KEY"), os.environ.get("GEMINI_API_KEY")]):
+    if not any([os.environ.get("GEMINI_API_KEY"), os.environ.get("ANTHROPIC_API_KEY"), os.environ.get("OPENAI_API_KEY")]):
         current_app.logger.error("No AI API keys configured")
         if response_format == "json":
             return '{"error": "AI service not configured", "fallback": true}'
         return "AI assistant is temporarily unavailable. Please contact support."
     
-    # Try Anthropic first (uses credits that expire soon)
+    # Try Gemini 3.0 FIRST as the primary AI service
     try:
-        current_app.logger.info("Attempting Anthropic API call...")
-        anthropic_client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+        current_app.logger.info("Attempting Gemini 3.0 API call (PRIMARY)...")
+        gemini_client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
+        
+        # Combine system and user messages for Gemini
+        combined_prompt = f"{system_message}\n\nUser: {user_message}"
         
         if response_format == "json":
-            response = anthropic_client.messages.create(
-                model="claude-sonnet-4-20250514",  # Latest Anthropic model
-                max_tokens=max_tokens,
-                system=system_message,
-                messages=[{"role": "user", "content": user_message}]
+            response = gemini_client.models.generate_content(
+                model="gemini-3-pro-preview",  # Gemini 3.0 - most powerful model
+                contents=combined_prompt + "\n\nPlease respond with valid JSON format."
             )
         else:
-            response = anthropic_client.messages.create(
-                model="claude-sonnet-4-20250514",  # Latest Anthropic model
-                max_tokens=max_tokens,
-                system=system_message,
-                messages=[{"role": "user", "content": user_message}]
+            response = gemini_client.models.generate_content(
+                model="gemini-3-pro-preview",  # Gemini 3.0 for all responses
+                contents=combined_prompt
             )
         
-        result = response.content[0].text
-        current_app.logger.info("✅ Anthropic API call successful")
+        result = response.text or "I'm having trouble generating a response right now."
+        current_app.logger.info("✅ Gemini 3.0 API call successful")
         return result
         
-    except Exception as anthropic_error:
-        current_app.logger.warning(f"❌ Anthropic API failed: {str(anthropic_error)}")
+    except Exception as gemini_error:
+        current_app.logger.warning(f"❌ Gemini API failed: {str(gemini_error)}")
         
-        # Try OpenAI as fallback
+        # Try Anthropic as second fallback
         try:
-            current_app.logger.info("Attempting OpenAI API call as fallback...")
-            openai_client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+            current_app.logger.info("Attempting Anthropic API call as fallback...")
+            anthropic_client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
             
             if response_format == "json":
-                response = openai_client.chat.completions.create(
-                    model="gpt-4o-mini",
-                    messages=[
-                        {"role": "system", "content": system_message},
-                        {"role": "user", "content": user_message}
-                    ],
-                    response_format={"type": "json_object"},
-                    max_tokens=max_tokens
+                response = anthropic_client.messages.create(
+                    model="claude-sonnet-4-20250514",  # Latest Anthropic model
+                    max_tokens=max_tokens,
+                    system=system_message,
+                    messages=[{"role": "user", "content": user_message}]
                 )
             else:
-                response = openai_client.chat.completions.create(
-                    model="gpt-4o-mini",
-                    messages=[
-                        {"role": "system", "content": system_message},
-                        {"role": "user", "content": user_message}
-                    ],
-                    max_tokens=max_tokens
+                response = anthropic_client.messages.create(
+                    model="claude-sonnet-4-20250514",  # Latest Anthropic model
+                    max_tokens=max_tokens,
+                    system=system_message,
+                    messages=[{"role": "user", "content": user_message}]
                 )
             
-            result = response.choices[0].message.content
-            if result:
-                result = result.strip()
-            else:
-                result = "No response generated"
-            current_app.logger.info("✅ OpenAI API call successful")
+            result = response.content[0].text
+            current_app.logger.info("✅ Anthropic API call successful")
             return result
             
-        except Exception as openai_error:
-            current_app.logger.warning(f"❌ OpenAI API failed: {str(openai_error)}")
+        except Exception as anthropic_error:
+            current_app.logger.warning(f"❌ Anthropic API failed: {str(anthropic_error)}")
             
-            # Try Gemini as final fallback
+            # Try OpenAI as final fallback
             try:
-                current_app.logger.info("Attempting Gemini API call as final fallback...")
-                # Note that the newest Gemini model series is "gemini-2.5-flash" or gemini-2.5-pro"
-                # do not change this unless explicitly requested by the user
-                gemini_client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
-                
-                # Combine system and user messages for Gemini
-                combined_prompt = f"{system_message}\n\nUser: {user_message}"
+                current_app.logger.info("Attempting OpenAI API call as final fallback...")
+                openai_client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
                 
                 if response_format == "json":
-                    response = gemini_client.models.generate_content(
-                        model="gemini-2.5-pro",
-                        contents=combined_prompt + "\n\nPlease respond with valid JSON format."
+                    response = openai_client.chat.completions.create(
+                        model="gpt-4o-mini",
+                        messages=[
+                            {"role": "system", "content": system_message},
+                            {"role": "user", "content": user_message}
+                        ],
+                        response_format={"type": "json_object"},
+                        max_tokens=max_tokens
                     )
                 else:
-                    response = gemini_client.models.generate_content(
-                        model="gemini-2.5-flash",
-                        contents=combined_prompt
+                    response = openai_client.chat.completions.create(
+                        model="gpt-4o-mini",
+                        messages=[
+                            {"role": "system", "content": system_message},
+                            {"role": "user", "content": user_message}
+                        ],
+                        max_tokens=max_tokens
                     )
                 
-                result = response.text or "I'm having trouble generating a response right now."
-                current_app.logger.info("✅ Gemini API call successful")
+                result = response.choices[0].message.content
+                if result:
+                    result = result.strip()
+                else:
+                    result = "No response generated"
+                current_app.logger.info("✅ OpenAI API call successful")
                 return result
                 
-            except Exception as gemini_error:
-                current_app.logger.error(f"❌ All AI services failed. Gemini error: {str(gemini_error)}")
+            except Exception as openai_error:
+                current_app.logger.error(f"❌ All AI services failed. OpenAI error: {str(openai_error)}")
                 
                 # Return fallback response if all APIs fail
                 if response_format == "json":
