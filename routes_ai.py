@@ -11,11 +11,18 @@ logger = logging.getLogger(__name__)
 
 ai_routes = Blueprint('ai_routes', __name__)
 
-# In production, this should be stored in environment variables or a database
-VALID_API_KEYS = {
-    os.environ.get('AI_FEED_API_KEY', 'demo_key_12345'): 'demo',
-    # Add more keys as needed
-}
+# API keys must be set via environment variables for security
+# No default keys are provided to prevent unauthorized access
+VALID_API_KEYS = {}
+
+# Load API key from environment if available
+ai_feed_key = os.environ.get('AI_FEED_API_KEY')
+if ai_feed_key:
+    VALID_API_KEYS[ai_feed_key] = 'primary'
+
+# For demo purposes ONLY - can be enabled temporarily
+if os.environ.get('ENABLE_DEMO_MODE') == 'true':
+    VALID_API_KEYS['demo_key_12345'] = 'demo'
 
 @ai_routes.route('/ai-feed.json', methods=['GET'])
 def ai_feed():
@@ -82,21 +89,61 @@ def ai_feed():
             "message": "The provided API key is not valid"
         }), 401
     
-    # Check other required headers
+    # Check other required headers and log failures
     if not consumer:
+        # Log failed attempt
+        log_entry = AIAccessLog(
+            consumer='unknown',
+            purpose=purpose or 'unknown',
+            api_key=api_key[-4:] if len(api_key) > 4 else '****',
+            path=request.path,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            success=False,
+            error_message='Missing consumer header'
+        )
+        db.session.add(log_entry)
+        db.session.commit()
+        
         return jsonify({
             "error": "Missing X-AI-Consumer header",
             "message": "X-AI-Consumer header is required to identify your application"
         }), 400
     
     if not purpose:
+        # Log failed attempt
+        log_entry = AIAccessLog(
+            consumer=consumer,
+            purpose='unknown',
+            api_key=api_key[-4:] if len(api_key) > 4 else '****',
+            path=request.path,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            success=False,
+            error_message='Missing purpose header'
+        )
+        db.session.add(log_entry)
+        db.session.commit()
+        
         return jsonify({
             "error": "Missing X-AI-Purpose header",
             "message": "X-AI-Purpose header is required to specify data usage intent"
         }), 400
     
-    # Log the access
+    # Log the successful access to database
     logger.info(f"AI Feed accessed by consumer: {consumer}, purpose: {purpose}, key: {VALID_API_KEYS.get(api_key)}")
+    log_entry = AIAccessLog(
+        consumer=consumer,
+        purpose=purpose,
+        api_key=api_key[-4:] if len(api_key) > 4 else '****',
+        path=request.path,
+        ip_address=ip_address,
+        user_agent=user_agent,
+        success=True,
+        error_message=None
+    )
+    db.session.add(log_entry)
+    db.session.commit()
     
     try:
         # Query upcoming approved events
@@ -114,9 +161,9 @@ def ai_feed():
                 "title": event.title,
                 "description": event.description,
                 "start_date": event.start_date.strftime('%Y-%m-%d') if event.start_date else None,
-                "start_time": event.start_time,
+                "start_time": str(event.start_time) if event.start_time else None,
                 "end_date": event.end_date.strftime('%Y-%m-%d') if event.end_date else None,
-                "end_time": event.end_time,
+                "end_time": str(event.end_time) if event.end_time else None,
                 "location": {
                     "venue": event.location,
                     "street": event.street,
@@ -158,3 +205,39 @@ def ai_feed():
             "error": "Internal server error",
             "message": "Failed to generate event feed"
         }), 500
+
+
+@ai_routes.route('/ai-report')
+@login_required
+def ai_access_report():
+    """Admin-only dashboard for monitoring AI access"""
+    
+    # Check if user is admin
+    if not current_user.is_admin:
+        flash('You do not have permission to view this page.', 'danger')
+        return redirect(url_for('index'))
+    
+    # Query recent access logs
+    recent_logs = AIAccessLog.query.order_by(
+        AIAccessLog.created_at.desc()
+    ).limit(50).all()
+    
+    # Calculate statistics
+    total_requests = AIAccessLog.query.count()
+    successful_requests = AIAccessLog.query.filter_by(success=True).count()
+    failed_requests = AIAccessLog.query.filter_by(success=False).count()
+    
+    # Get unique consumers
+    unique_consumers = db.session.query(
+        AIAccessLog.consumer
+    ).distinct().count()
+    
+    stats = {
+        'total_requests': total_requests,
+        'successful_requests': successful_requests,
+        'failed_requests': failed_requests,
+        'success_rate': round((successful_requests / total_requests * 100) if total_requests > 0 else 0, 1),
+        'unique_consumers': unique_consumers
+    }
+    
+    return render_template('ai/report.html', logs=recent_logs, stats=stats)
