@@ -48,3 +48,4 @@ anthropic
 google-genai
 oauthlib
 sift-stack-py
+python-dotenv
