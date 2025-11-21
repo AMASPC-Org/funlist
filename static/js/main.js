@@ -128,9 +128,19 @@ function setupModals() {
             e.preventDefault();
             console.log("Feedback form submitted");
 
-            const feedbackType = document.getElementById('feedbackType').value;
-            const message = document.getElementById('feedbackMessage').value;
-            const email = document.getElementById('feedbackEmail').value;
+            const feedbackTypeElement = document.getElementById('feedbackType');
+            const messageElement = document.getElementById('feedbackMessage');
+            const emailElement = document.getElementById('feedbackEmail');
+
+            // Check if required elements exist
+            if (!feedbackTypeElement || !messageElement) {
+                console.error('Required form elements not found');
+                return;
+            }
+
+            const feedbackType = feedbackTypeElement.value;
+            const message = messageElement.value;
+            const email = emailElement ? emailElement.value : '';
 
             // Submit feedback
             fetch('/submit-feedback', {
@@ -149,9 +159,12 @@ function setupModals() {
                 if (data.success) {
                     alert('Thank you for your feedback!');
                     // Close modal
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('feedbackModal'));
-                    if (modal) modal.hide();
-                    else console.log("Couldn't find modal instance");
+                    const feedbackModalElement = document.getElementById('feedbackModal');
+                    if (feedbackModalElement) {
+                        const modal = bootstrap.Modal.getInstance(feedbackModalElement);
+                        if (modal) modal.hide();
+                        else console.log("Couldn't find modal instance");
+                    }
                 } else {
                     alert('Error: ' + (data.message || 'Unknown error'));
                 }
@@ -234,17 +247,22 @@ function setupFloatingButtons() {
         feedbackBtn.addEventListener('click', function(e) {
             console.log("Feedback button clicked");
             try {
-                const feedbackModal = new bootstrap.Modal(document.getElementById('feedbackModal'));
-                feedbackModal.show();
+                const feedbackModalElement = document.getElementById('feedbackModal');
+                if (feedbackModalElement) {
+                    const feedbackModal = new bootstrap.Modal(feedbackModalElement);
+                    feedbackModal.show();
 
-                // Ensure proper cleanup when the modal is hidden
-                document.getElementById('feedbackModal').addEventListener('hidden.bs.modal', function () {
-                    document.body.classList.remove('modal-open');
-                    const backdrops = document.querySelectorAll('.modal-backdrop');
-                    backdrops.forEach(backdrop => {
-                        backdrop.remove();
+                    // Ensure proper cleanup when the modal is hidden
+                    feedbackModalElement.addEventListener('hidden.bs.modal', function () {
+                        document.body.classList.remove('modal-open');
+                        const backdrops = document.querySelectorAll('.modal-backdrop');
+                        backdrops.forEach(backdrop => {
+                            backdrop.remove();
+                        });
                     });
-                });
+                } else {
+                    console.warn("Feedback modal element not found in DOM");
+                }
             } catch (error) {
                 console.error("Error showing feedback modal:", error);
                 alert("Sorry, there was an error opening the feedback form.");
