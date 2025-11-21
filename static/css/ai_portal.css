@@ -2,8 +2,10 @@
 .ai-portal-header {
     background: linear-gradient(135deg, var(--text-navy) 0%, var(--primary-orange) 100%);
     color: white;
-    padding: 3rem 0;
+    padding: 4rem 0 3rem 0;
+    margin-top: 80px; /* Clear the fixed navbar */
     margin-bottom: 2rem;
+    position: relative; /* Ensure normal document flow */
 }
 
 /* AI tools portal styles */
@@ -202,6 +204,12 @@
     .portal-buttons {
         flex-direction: column;
     }
+
+    /* Adjust hero section spacing for mobile */
+    .ai-portal-header {
+        margin-top: 60px; /* Smaller margin on mobile */
+        padding: 3rem 0 2rem 0; /* Slightly less padding on mobile */
+    }
 }
 
 .tool-features {
@@ -394,12 +402,7 @@
   }
 }
 
-/* AI Portal styling */
-.ai-portal-header {
-    background: linear-gradient(135deg, var(--text-navy) 0%, var(--primary-orange) 100%);
-    color: white;
-    padding: 4rem 0;
-}
+/* AI Portal styling - definition moved to top of file to avoid duplication */
 
 .security-badge {
     font-size: 0.85rem;
