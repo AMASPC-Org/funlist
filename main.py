@@ -38,7 +38,7 @@ def run_flask_app():
             try:
                 for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
                     try:
-                        for conn in proc.connections():
+                        for conn in proc.net_connections():
                             if conn.laddr.port == port_to_check:
                                 logger.info(f"Killing process {proc.pid} using port {port_to_check}")
                                 proc.kill()

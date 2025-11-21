@@ -3,9 +3,41 @@
 
 {% block content %}
 <div class="container py-4">
-    <h1 class="mb-4">Submit a New Event</h1>
+    <h1 class="mb-4">{{ page_title or "Submit a New Event" }}</h1>
 
-    <form id="eventForm" method="POST" action="{{ url_for('submit_event') }}" class="mx-3">
+    <div class="row g-3 mb-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="mb-0">Live Summary</h5>
+                        <span class="badge bg-secondary" id="liveSummaryStatus">Draft not saved</span>
+                    </div>
+                    <p class="text-muted small mb-3">Your event snapshot updates automatically while you type.</p>
+                    <p class="fw-semibold mb-1" id="liveSummaryTitle">Name your event to get started</p>
+                    <p class="text-muted mb-2" id="liveSummaryDates">Pick a start date to see it here</p>
+                    <p class="mb-2" id="liveSummaryLocation">Location TBA</p>
+                    <p class="mb-1"><strong>Category:</strong> <span id="liveSummaryCategory">Not selected</span></p>
+                    <p class="mb-0"><strong>Audience:</strong> <span id="liveSummaryAudience">Not selected</span></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h6 class="text-uppercase text-muted small mb-3">Quick Tips</h6>
+                    <ul class="list-unstyled small mb-0">
+                        <li class="mb-2"><i class="fas fa-magic text-warning me-2"></i>Lead with what makes your event unique.</li>
+                        <li class="mb-2"><i class="fas fa-clock text-primary me-2"></i>Specific dates and times help guests commit.</li>
+                        <li class="mb-2"><i class="fas fa-map-marker-alt text-danger me-2"></i>Add a landmark or neighborhood for flexible locations.</li>
+                        <li class="mb-0"><i class="fas fa-eye text-success me-2"></i>Use Preview anytime to check the attendee view.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form id="eventForm" method="POST" action="{{ form_action or url_for('submit_event') }}" class="mx-3">
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
@@ -177,8 +209,11 @@
                 <!-- Location Details (only if not using venue) -->
                 <div class="card mb-4">
                     <div class="card-body">
-                        <h5 class="card-title">Additional Location Details</h5>
-                        <p class="text-muted">If your event is not at a specific venue or needs additional location information.</p>
+                        <h5 class="card-title d-flex justify-content-between align-items-center">
+                            Additional Location Details
+                            <span class="badge bg-light text-muted border">Optional</span>
+                        </h5>
+                        <p class="text-muted small mb-3">Use this if your event does not have a fixed venue or needs extra context (e.g., “Meet near the park fountain”).</p>
                         <div class="row">
                             <div class="col-md-12">
                                 {{ render_field(form.street, class="form-control") }}
@@ -201,7 +236,10 @@
         {{ form.category(class="form-select") }}
     </div>
     <div class="mb-3">
-        {{ form.target_audience.label(class="form-label") }}
+        <div class="d-flex justify-content-between align-items-center">
+            {{ form.target_audience.label(class="form-label mb-0") }}
+            <small class="text-muted ms-2">Helps match your listing to the right attendees</small>
+        </div>
         {{ form.target_audience(class="form-select") }}
     </div>
     <div class="mb-3">
@@ -336,154 +374,32 @@
 </div>
 
 
-<script>
-// Recurring event handling
-document.addEventListener('DOMContentLoaded', function() {
-    const isRecurringCheckbox = document.getElementById('is_recurring');
-    const recurrenceFields = document.getElementById('recurrenceFields');
-    const recurrenceType = document.getElementById('recurrence_type');
-    const customRecurrenceFields = document.getElementById('customRecurrenceFields');
-    const endAfterRadio = document.getElementById('end_after');
-    const endOnDateRadio = document.getElementById('end_on_date');
-    const occurrenceCount = document.getElementById('occurrence_count');
-    const recurrenceEndDate = document.getElementById('recurrence_end_date');
-
-    isRecurringCheckbox.addEventListener('change', function() {
-        recurrenceFields.style.display = this.checked ? 'block' : 'none';
-    });
-
-    recurrenceType.addEventListener('change', function() {
-        customRecurrenceFields.style.display = this.value === 'custom' ? 'block' : 'none';
-    });
-
-    endAfterRadio.addEventListener('change', function() {
-        occurrenceCount.disabled = !this.checked;
-        recurrenceEndDate.disabled = true;
-    });
-
-    endOnDateRadio.addEventListener('change', function() {
-        recurrenceEndDate.disabled = !this.checked;
-        occurrenceCount.disabled = true;
-    });
-
-    document.getElementById('never_end').addEventListener('change', function() {
-        occurrenceCount.disabled = true;
-        recurrenceEndDate.disabled = true;
-    });
-});
-
-function updateCharCount(input, counterId, maxLength) {
-    const count = input.value.length;
-    document.getElementById(counterId).textContent = count;
-
-    // Add visual feedback
-    const small = input.nextElementSibling;
-    if (count > maxLength * 0.9) {
-        small.classList.add('text-warning');
-    } else {
-        small.classList.remove('text-warning');
-    }
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize character counts
-    updateCharCount(document.getElementById('title'), 'titleCount', 150);
-    updateCharCount(document.getElementById('description'), 'descriptionCount', 500);
-    const form = document.querySelector('form');
-    const previewBtn = document.getElementById('previewBtn');
-    const saveAsDraftBtn = document.getElementById('saveAsDraftBtn');
-    const clearFormBtn = document.getElementById('clearFormBtn');
-    const submitFromPreview = document.getElementById('submitFromPreview');
-
-    previewBtn.addEventListener('click', function() {
-        const formData = new FormData(form);
-        const previewContent = document.getElementById('previewContent');
-
-        // Create preview HTML
-        const preview = `
-            <div class="event-preview">
-                <h3>${formData.get('title')}</h3>
-                <p>${formData.get('description')}</p>
-                <div class="event-details">
-                    <p><strong>Date:</strong> ${formData.get('start_date')} to ${formData.get('end_date')}</p>
-                    <p><strong>Location:</strong> ${formData.get('street')}, ${formData.get('city')}, ${formData.get('state')} ${formData.get('zip_code')}</p>
-                    <p><strong>Category:</strong> ${formData.get('category')}</p>
-                    <p><strong>Target Audience:</strong> ${formData.get('target_audience')}</p>
-                    <p><strong>Fun Rating:</strong> ${formData.get('fun_meter')} ⭐</p>
-                    ${formData.get('ticket_url') ? `<p><strong>Tickets:</strong> <a href="${formData.get('ticket_url')}">${formData.get('ticket_url')}</a></p>` : ''}
-                </div>
-            </div>
-        `;
-
-        previewContent.innerHTML = preview;
-        new bootstrap.Modal(document.getElementById('previewModal')).show();
-    });
-
-    submitFromPreview.addEventListener('click', function() {
-        form.submit();
-    });
-
-    saveAsDraftBtn.addEventListener('click', async function() {
-        const formData = new FormData(form);
-        formData.append('is_draft', 'true');
-
-        try {
-            const response = await fetch('/submit-event', {
-                method: 'POST',
-                body: formData
-            });
-            if (response.ok) {
-                window.location.href = '/events';
-            }
-        } catch (error) {
-            console.error('Error saving draft:', error);
-        }
-    });
-
-    clearFormBtn.addEventListener('click', function() {
-        if (confirm('Are you sure you want to clear the form?')) {
-            form.reset();
-        }
-    });
-});
-
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Handle recurring event fields visibility
-    const isRecurringCheckbox = document.getElementById('is_recurring');
-    const recurringFields = document.getElementById('recurring-fields');
-
-    if (isRecurringCheckbox && recurringFields) {
-        isRecurringCheckbox.addEventListener('change', function() {
-            recurringFields.style.display = this.checked ? 'block' : 'none';
-        });
-
-        // Initial state
-        recurringFields.style.display = isRecurringCheckbox.checked ? 'block' : 'none';
+window.updateCharCount = function(input, counterId, maxLength) {
+    if (!input) return;
+    const counter = document.getElementById(counterId);
+    if (counter) {
+        counter.textContent = input.value.length;
     }
-
-    // Handle sub-event fields visibility
-    const isSubEventCheckbox = document.getElementById('is_sub_event');
-    const subEventFields = document.getElementById('sub-event-fields');
-
-    if (isSubEventCheckbox && subEventFields) {
-        isSubEventCheckbox.addEventListener('change', function() {
-            subEventFields.style.display = this.checked ? 'block' : 'none';
-        });
-
-        // Initial state
-        subEventFields.style.display = isSubEventCheckbox.checked ? 'block' : 'none';
+    const helper = input.nextElementSibling;
+    if (helper && helper.classList) {
+        if (maxLength && input.value.length > maxLength * 0.9) {
+            helper.classList.add('text-warning');
+        } else {
+            helper.classList.remove('text-warning');
+        }
     }
+};
 
-    // Initialize venue selection toggle
-    toggleVenueSelection();
-});
-
-function toggleVenueSelection() {
+window.toggleVenueSelection = function() {
     const existingVenueRadio = document.getElementById('venue_selection_existing');
     const existingVenueSection = document.getElementById('existing-venue-section');
     const newVenueSection = document.getElementById('new-venue-section');
+
+    if (!existingVenueRadio || !existingVenueSection || !newVenueSection) {
+        return;
+    }
 
     if (existingVenueRadio.checked) {
         existingVenueSection.style.display = 'block';
@@ -492,8 +408,334 @@ function toggleVenueSelection() {
         existingVenueSection.style.display = 'none';
         newVenueSection.style.display = 'block';
     }
-}
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('eventForm');
+    if (!form) {
+        return;
+    }
+
+    const startDateInput = document.getElementById('start_date');
+    const endDateInput = document.getElementById('end_date');
+    const startTimeInput = document.getElementById('start_time');
+    const endTimeInput = document.getElementById('end_time');
+    const titleInput = document.getElementById('title');
+    const descriptionInput = document.getElementById('description');
+    const previewBtn = document.getElementById('previewBtn');
+    const previewModalEl = document.getElementById('previewModal');
+    const previewContent = document.getElementById('previewContent');
+    const submitFromPreview = document.getElementById('submitFromPreview');
+    const saveAsDraftBtn = document.getElementById('saveAsDraftBtn');
+    const clearFormBtn = document.getElementById('clearFormBtn');
+    const categoryField = document.getElementById('category');
+    const targetAudienceField = document.getElementById('target_audience');
+    const venueSelect = document.getElementById('venue_id');
+    const venueNameInput = document.getElementById('venue_name');
+    const isRecurringCheckbox = document.getElementById('is_recurring');
+    const recurrenceFields = document.getElementById('recurrenceFields');
+    const recurrenceType = document.getElementById('recurrence_type');
+    const customRecurrenceFields = document.getElementById('customRecurrenceFields');
+    const neverEndRadio = document.getElementById('never_end');
+    const endAfterRadio = document.getElementById('end_after');
+    const endOnDateRadio = document.getElementById('end_on_date');
+    const occurrenceCount = document.getElementById('occurrence_count');
+    const recurringEndDate = document.getElementById('recurring_end_date');
+    const isSubEventCheckbox = document.getElementById('is_sub_event');
+    const subEventFields = document.getElementById('sub-event-fields');
+    const liveSummaryTitle = document.getElementById('liveSummaryTitle');
+    const liveSummaryDates = document.getElementById('liveSummaryDates');
+    const liveSummaryLocation = document.getElementById('liveSummaryLocation');
+    const liveSummaryCategory = document.getElementById('liveSummaryCategory');
+    const liveSummaryAudience = document.getElementById('liveSummaryAudience');
+    const liveSummaryStatus = document.getElementById('liveSummaryStatus');
+
+    const previewModal = previewModalEl && window.bootstrap ? new bootstrap.Modal(previewModalEl) : null;
+
+    const readFieldValue = (id) => {
+        const node = document.getElementById(id);
+        return node ? node.value.trim() : '';
+    };
+
+    const getSelectedText = (selectEl) => {
+        if (!selectEl || !selectEl.options.length || !selectEl.value) {
+            return '';
+        }
+        const option = selectEl.options[selectEl.selectedIndex];
+        return option ? option.textContent.trim() : '';
+    };
+
+    const buildLocationString = () => {
+        const locationParts = ['street', 'city', 'state', 'zip_code']
+            .map(readFieldValue)
+            .filter(Boolean);
+
+        if (locationParts.length) {
+            return locationParts.join(', ');
+        }
+
+        const newVenueParts = ['venue_street', 'venue_city', 'venue_state', 'venue_zip']
+            .map(readFieldValue)
+            .filter(Boolean);
+
+        if (newVenueParts.length) {
+            return newVenueParts.join(', ');
+        }
+
+        if (venueSelect && venueSelect.selectedIndex > 0) {
+            return venueSelect.options[venueSelect.selectedIndex].textContent.trim();
+        }
+
+        if (venueNameInput && venueNameInput.value.trim()) {
+            return venueNameInput.value.trim();
+        }
+
+        return '';
+    };
+
+    const formatDateRange = () => {
+        const startDate = startDateInput ? startDateInput.value : '';
+        const endDate = (endDateInput ? endDateInput.value : '') || startDate;
+
+        if (!startDate) {
+            return 'Date TBA';
+        }
+
+        const dateSegment = endDate && endDate !== startDate ? `${startDate} → ${endDate}` : startDate;
+        const startTime = startTimeInput ? startTimeInput.value : '';
+        const endTime = endTimeInput ? endTimeInput.value : '';
+
+        if (startTime || endTime) {
+            const times = [startTime, endTime].filter(Boolean).join('–');
+            return `${dateSegment} (${times})`;
+        }
+
+        return dateSegment;
+    };
+
+    const setSummaryStatus = (text, badgeClass = 'bg-secondary') => {
+        if (!liveSummaryStatus) return;
+        liveSummaryStatus.textContent = text;
+        liveSummaryStatus.className = `badge ${badgeClass}`;
+    };
+
+    const updateSummary = () => {
+        if (liveSummaryTitle) {
+            liveSummaryTitle.textContent = titleInput && titleInput.value.trim()
+                ? titleInput.value.trim()
+                : 'Name your event to get started';
+        }
+
+        if (liveSummaryDates) {
+            liveSummaryDates.textContent = formatDateRange();
+        }
+
+        if (liveSummaryLocation) {
+            const location = buildLocationString();
+            liveSummaryLocation.textContent = location || 'Location TBA';
+        }
+
+        if (liveSummaryCategory) {
+            const category = getSelectedText(categoryField);
+            liveSummaryCategory.textContent = category || 'Not selected';
+        }
+
+        if (liveSummaryAudience) {
+            const audience = getSelectedText(targetAudienceField);
+            liveSummaryAudience.textContent = audience || 'Not selected';
+        }
+    };
+
+    const syncEndDate = () => {
+        if (!startDateInput || !endDateInput) return;
+        if (!endDateInput.value || endDateInput.value < startDateInput.value) {
+            endDateInput.value = startDateInput.value;
+        }
+        updateSummary();
+    };
+
+    const updateRecurrenceVisibility = () => {
+        if (!recurrenceFields || !isRecurringCheckbox) return;
+        recurrenceFields.style.display = isRecurringCheckbox.checked ? 'block' : 'none';
+    };
+
+    const updateCustomRecurrenceVisibility = () => {
+        if (!customRecurrenceFields || !recurrenceType) return;
+        customRecurrenceFields.style.display = recurrenceType.value === 'custom' ? 'block' : 'none';
+    };
+
+    const handleRecurrenceRadioChange = () => {
+        if (neverEndRadio && neverEndRadio.checked) {
+            if (occurrenceCount) occurrenceCount.disabled = true;
+            if (recurringEndDate) recurringEndDate.disabled = true;
+        } else if (endAfterRadio && endAfterRadio.checked) {
+            if (occurrenceCount) occurrenceCount.disabled = false;
+            if (recurringEndDate) recurringEndDate.disabled = true;
+        } else if (endOnDateRadio && endOnDateRadio.checked) {
+            if (recurringEndDate) recurringEndDate.disabled = false;
+            if (occurrenceCount) occurrenceCount.disabled = true;
+        }
+    };
+
+    const updateSubEventVisibility = () => {
+        if (!isSubEventCheckbox || !subEventFields) return;
+        subEventFields.style.display = isSubEventCheckbox.checked ? 'block' : 'none';
+    };
+
+    const escapeHtml = (value = '') => value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
+    const getFunMeterValue = () => {
+        const checked = form.querySelector('input[name="fun_meter"]:checked');
+        return checked ? parseInt(checked.value, 10) || 0 : 0;
+    };
+
+    const openPreview = () => {
+        if (!previewContent) return;
+        const funMeterValue = Math.min(getFunMeterValue(), 5);
+        const funStars = funMeterValue ? '⭐'.repeat(funMeterValue) : 'Not rated yet';
+        const description = descriptionInput && descriptionInput.value
+            ? escapeHtml(descriptionInput.value).replace(/\n/g, '<br>')
+            : '<em>No description added yet.</em>';
+        const category = getSelectedText(categoryField) || 'Category pending';
+        const audience = getSelectedText(targetAudienceField) || 'General attendees';
+        const location = buildLocationString() || 'Location TBA';
+        const ticketUrl = readFieldValue('ticket_url');
+        const ticketMarkup = ticketUrl
+            ? `<li><strong>Tickets:</strong> <a href="${escapeHtml(ticketUrl)}" target="_blank" rel="noopener">${escapeHtml(ticketUrl)}</a></li>`
+            : '';
+
+        previewContent.innerHTML = `
+            <div class="event-preview">
+                <h3 class="mb-1">${escapeHtml(titleInput && titleInput.value ? titleInput.value : 'Untitled Event')}</h3>
+                <p class="text-muted mb-3">${formatDateRange()}</p>
+                <p class="mb-3">${description}</p>
+                <ul class="list-unstyled small mb-0">
+                    <li><strong>Location:</strong> ${escapeHtml(location)}</li>
+                    <li><strong>Category:</strong> ${escapeHtml(category)}</li>
+                    <li><strong>Audience:</strong> ${escapeHtml(audience)}</li>
+                    <li><strong>Fun Meter:</strong> ${funStars}</li>
+                    ${ticketMarkup}
+                </ul>
+            </div>
+        `;
+
+        if (previewModal) {
+            previewModal.show();
+        }
+    };
+
+    const saveDraft = async () => {
+        if (!saveAsDraftBtn) return;
+        const originalContent = saveAsDraftBtn.innerHTML;
+        saveAsDraftBtn.disabled = true;
+        saveAsDraftBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+
+        try {
+            const formData = new FormData(form);
+            formData.append('is_draft', 'true');
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: formData
+            });
+
+            const contentType = response.headers.get('content-type') || '';
+            if (!response.ok || !contentType.includes('application/json')) {
+                throw new Error('Unexpected response');
+            }
+
+            const payload = await response.json();
+            if (payload.status != 'saved') {
+                throw new Error('Draft was not saved');
+            }
+
+            setSummaryStatus('Draft saved', 'bg-success');
+        } catch (error) {
+            console.error('Error saving draft:', error);
+            setSummaryStatus('Save failed', 'bg-danger');
+        } finally {
+            saveAsDraftBtn.disabled = false;
+            saveAsDraftBtn.innerHTML = originalContent;
+        }
+    };
+
+    const clearForm = () => {
+        if (!confirm('Are you sure you want to clear the form?')) {
+            return;
+        }
+        form.reset();
+        syncEndDate();
+        updateSummary();
+        if (titleInput) {
+            window.updateCharCount(titleInput, 'titleCount', 250);
+        }
+        if (descriptionInput) {
+            window.updateCharCount(descriptionInput, 'descriptionCount', 1500);
+        }
+        setSummaryStatus('Draft not saved', 'bg-secondary');
+        toggleVenueSelection();
+    };
+
+    if (titleInput) {
+        window.updateCharCount(titleInput, 'titleCount', 250);
+    }
+    if (descriptionInput) {
+        window.updateCharCount(descriptionInput, 'descriptionCount', 1500);
+    }
+
+    form.addEventListener('input', updateSummary);
+    form.addEventListener('change', updateSummary);
+    if (startDateInput) {
+        startDateInput.addEventListener('change', syncEndDate);
+    }
+    if (previewBtn) {
+        previewBtn.addEventListener('click', openPreview);
+    }
+    if (submitFromPreview) {
+        submitFromPreview.addEventListener('click', () => form.submit());
+    }
+    if (saveAsDraftBtn) {
+        saveAsDraftBtn.addEventListener('click', saveDraft);
+    }
+    if (clearFormBtn) {
+        clearFormBtn.addEventListener('click', clearForm);
+    }
+
+    if (isRecurringCheckbox) {
+        isRecurringCheckbox.addEventListener('change', updateRecurrenceVisibility);
+        updateRecurrenceVisibility();
+    }
+
+    if (recurrenceType) {
+        recurrenceType.addEventListener('change', updateCustomRecurrenceVisibility);
+    }
+    updateCustomRecurrenceVisibility();
+
+    if (neverEndRadio) {
+        neverEndRadio.addEventListener('change', handleRecurrenceRadioChange);
+    }
+    if (endAfterRadio) {
+        endAfterRadio.addEventListener('change', handleRecurrenceRadioChange);
+    }
+    if (endOnDateRadio) {
+        endOnDateRadio.addEventListener('change', handleRecurrenceRadioChange);
+    }
+    handleRecurrenceRadioChange();
+
+    if (isSubEventCheckbox) {
+        isSubEventCheckbox.addEventListener('change', updateSubEventVisibility);
+    }
+    updateSubEventVisibility();
+
+    toggleVenueSelection();
+    syncEndDate();
+    updateSummary();
+    setSummaryStatus('Draft not saved', 'bg-secondary');
+});
 </script>
 {% endblock %}
-</script>
 {% endblock %}

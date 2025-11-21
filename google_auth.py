@@ -4,8 +4,8 @@
 import base64
 import hashlib
 import json
-import os
 import secrets
+import os
 
 import requests
 from db_init import db
@@ -14,12 +14,15 @@ from flask_login import login_required, login_user, logout_user
 from models import User
 from oauthlib.oauth2 import WebApplicationClient
 
-GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_OAUTH_CLIENT_ID")
-GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET")
+from config import settings
+
+GOOGLE_CLIENT_ID = settings.get("GOOGLE_OAUTH_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = settings.get("GOOGLE_OAUTH_CLIENT_SECRET")
 GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
 
-# Make sure to use this redirect URL. It has to match the one in the whitelist
-DEV_REDIRECT_URL = f'https://{os.environ.get("REPLIT_DEV_DOMAIN", "localhost")}/google_login/callback'
+DEFAULT_BASE_URL = f'https://{settings.get("REPLIT_DEV_DOMAIN", "localhost")}'
+PUBLIC_BASE_URL = settings.get("PUBLIC_BASE_URL", DEFAULT_BASE_URL).rstrip("/")
+DEV_REDIRECT_URL = f"{PUBLIC_BASE_URL}/google_login/callback"
 
 # Initialize client globally if configured
 client = None
@@ -44,7 +47,7 @@ google_auth = Blueprint("google_auth", __name__)
 def login():
     if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET or not client:
         flash('Google OAuth is not configured. Please contact support.', 'error')
-        return redirect(url_for('routes.login'))
+        return redirect(url_for('login'))
 
     try:
         google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
@@ -63,11 +66,10 @@ def login():
             hashlib.sha256(code_verifier.encode('utf-8')).digest()
         ).decode('utf-8').rstrip('=')
 
+        redirect_uri = f"{PUBLIC_BASE_URL}/google_login/callback"
         request_uri = client.prepare_request_uri(
             authorization_endpoint,
-            # Replacing http:// with https:// is important as the external
-            # protocol must be https to match the URI whitelisted
-            redirect_uri=request.base_url.replace("http://", "https://") + "/callback",
+            redirect_uri=redirect_uri,
             scope=["openid", "email", "profile"],
             state=state,
             code_challenge=code_challenge,
@@ -76,21 +78,21 @@ def login():
         return redirect(request_uri)
     except Exception as e:
         flash('Google sign-in temporarily unavailable. Please try email login.', 'error')
-        return redirect(url_for('routes.login'))
+        return redirect(url_for('login'))
 
 
 @google_auth.route("/google_login/callback")
 def callback():
     if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET or not client:
         flash('Google OAuth is not configured.', 'error')
-        return redirect(url_for('routes.login'))
+        return redirect(url_for('login'))
 
     try:
         # Verify state parameter for CSRF protection
         state = request.args.get("state")
         if not state or state != session.get('oauth_state'):
             flash('Invalid authentication request. Please try again.', 'error')
-            return redirect(url_for('routes.login'))
+            return redirect(url_for('login'))
 
         # Clear the state from session
         session.pop('oauth_state', None)
@@ -99,18 +101,17 @@ def callback():
         code_verifier = session.pop('code_verifier', None)
         if not code_verifier:
             flash('Session expired. Please try signing in again.', 'error')
-            return redirect(url_for('routes.login'))
+            return redirect(url_for('login'))
 
         code = request.args.get("code")
         google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
         token_endpoint = google_provider_cfg["token_endpoint"]
 
+        redirect_uri = f"{PUBLIC_BASE_URL}/google_login/callback"
         token_url, headers, body = client.prepare_token_request(
             token_endpoint,
-            # Replacing http:// with https:// is important as the external
-            # protocol must be https to match the URI whitelisted
-            authorization_response=request.url.replace("http://", "https://"),
-            redirect_url=request.base_url.replace("http://", "https://"),
+            authorization_response=request.url,
+            redirect_url=redirect_uri,
             code=code,
             code_verifier=code_verifier,  # Include PKCE code verifier
         )
@@ -133,7 +134,7 @@ def callback():
             users_name = userinfo["given_name"]
         else:
             flash("Google account email not verified. Please use email login.", 'error')
-            return redirect(url_for('routes.login'))
+            return redirect(url_for('login'))
 
         user = User.query.filter_by(email=users_email).first()
         if not user:
@@ -156,11 +157,11 @@ def callback():
 
         # Redirect to the page they were trying to access, or home
         next_page = request.args.get('next')
-        return redirect(next_page) if next_page else redirect(url_for('routes.index'))
+        return redirect(next_page) if next_page else redirect(url_for('index'))
 
     except Exception as e:
         flash('Google sign-in failed. Please try email login.', 'error')
-        return redirect(url_for('routes.login'))
+        return redirect(url_for('login'))
 
 
 @google_auth.route("/google_logout")
@@ -168,4 +169,4 @@ def callback():
 def google_logout():
     logout_user()
     flash('You have been logged out successfully.', 'success')
-    return redirect(url_for('routes.index'))
+    return redirect(url_for('index'))

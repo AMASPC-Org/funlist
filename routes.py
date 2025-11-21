@@ -6,12 +6,14 @@ from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user, login_required, login_user, logout_user
 from forms import (SignupForm, LoginForm, ProfileForm, EventForm,
-                   ResetPasswordRequestForm, ResetPasswordForm, ContactForm, SearchForm) # Added ContactForm, SearchForm
-from models import User, Event, Subscriber, Chapter, HelpArticle # Added HelpArticle
+                   ResetPasswordRequestForm, ResetPasswordForm, ChangePasswordForm,
+                   VenueForm, ContactForm, SearchForm) # Added ContactForm, SearchForm
+from models import User, Event, Subscriber, Chapter, HelpArticle, Venue, ProhibitedAdvertiserCategory # Added HelpArticle, CharterMember
 from db_init import db
 # Removed direct import of geocode_address, assume it's in utils.utils now
+from sqlalchemy import func, text
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date, time
 import json
 import openai # Import OpenAI library
 import anthropic # Import Anthropic library - using python_anthropic integration
@@ -20,6 +22,108 @@ from flask_wtf.csrf import CSRFProtect # Use only CSRFProtect
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
+def combine_date_with_time(date_value, time_value=None, fallback_time=None):
+    """Return a datetime composed from date/time inputs with sensible defaults."""
+    if not date_value:
+        return None
+    if time_value:
+        return datetime.combine(date_value, time_value)
+    if fallback_time:
+        return datetime.combine(date_value, fallback_time)
+    return datetime.combine(date_value, time.min)
+
+def build_location_details(selected_venue, form):
+    """
+    Determine the location string and address fields for an event
+    by prioritizing explicit location input, then venue data.
+    """
+    location_label = selected_venue.name if selected_venue else (form.venue_name.data or None)
+    street = form.street.data or None
+    city = form.city.data or None
+    state = form.state.data or None
+    zip_code = form.zip_code.data or None
+
+    if not street:
+        street = (selected_venue.street if selected_venue else form.venue_street.data) or None
+    if not city:
+        city = (selected_venue.city if selected_venue else form.venue_city.data) or None
+    if not state:
+        state = (selected_venue.state if selected_venue else form.venue_state.data) or None
+    if not zip_code:
+        zip_code = (selected_venue.zip_code if selected_venue else form.venue_zip.data) or None
+
+    if not location_label:
+        location_label = ", ".join([segment for segment in [street, city, state] if segment])
+
+    return location_label or "Location TBA", street, city, state, zip_code
+
+def coerce_form_date(value):
+    """Convert stored date/datetime/string values into a date object for forms."""
+    if not value:
+        return None
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date):
+        return value
+    if isinstance(value, str):
+        for fmt in ('%Y-%m-%d %H:%M:%S', '%Y-%m-%d'):
+            try:
+                return datetime.strptime(value, fmt).date()
+            except ValueError:
+                continue
+    return None
+
+def coerce_form_time(value):
+    """Convert stored time or HH:MM strings into a time object for forms."""
+    if not value:
+        return None
+    if isinstance(value, time):
+        return value
+    if hasattr(value, 'strftime'):
+        # Already a datetime.time
+        return value
+    if isinstance(value, str):
+        for fmt in ('%H:%M:%S', '%H:%M'):
+            try:
+                return datetime.strptime(value, fmt).time()
+            except ValueError:
+                continue
+    return None
+
+def populate_event_form_from_model(form, event):
+    """Populate the EventForm with values from an existing event record."""
+    form.title.data = event.title
+    form.description.data = event.description
+    form.start_date.data = coerce_form_date(event.start_date)
+    form.end_date.data = coerce_form_date(event.end_date)
+    form.start_time.data = coerce_form_time(event.start_time)
+    form.end_time.data = coerce_form_time(event.end_time)
+    form.all_day.data = event.all_day
+    form.category.data = event.category or ''
+    form.target_audience.data = event.target_audience or ''
+    form.fun_meter.data = str(event.fun_meter or event.fun_rating or 3)
+    form.is_recurring.data = event.is_recurring
+    form.recurrence_type.data = event.recurring_pattern or ''
+    form.recurring_pattern.data = event.recurring_pattern or ''
+    form.recurring_end_date.data = coerce_form_date(event.recurring_end_date)
+    form.street.data = event.street
+    form.city.data = event.city
+    form.state.data = event.state
+    form.zip_code.data = event.zip_code
+    form.ticket_url.data = event.website
+    form.network_opt_out.data = event.network_opt_out
+    form.parent_event.data = event.parent_event_id or 0
+    form.is_sub_event.data = bool(event.parent_event_id)
+    form.prohibited_advertisers.data = event.get_prohibited_category_ids()
+    form.venue_selection_type.data = 'existing' if event.venue_id else 'new'
+    form.venue_id.data = event.venue_id or 0
+    if event.venue:
+        form.venue_name.data = event.venue.name
+        form.venue_street.data = event.venue.street
+        form.venue_city.data = event.venue.city
+        form.venue_state.data = event.venue.state
+        form.venue_zip.data = event.venue.zip_code
 
 # --- Funalytics API Helper ---
 def get_funalytics_scores(event_ids=None):
@@ -181,6 +285,124 @@ def event_detail(event_id):
         logger.error(f"Error in event_detail route: {str(e)}")
         return render_template("500.html", error=str(e)), 500
 
+def venues():
+    chapters = Chapter.query.all()
+    all_venues = Venue.query.order_by(Venue.created_at.desc()).all()
+    return render_template("venues.html", venues=all_venues, chapters=chapters)
+
+@login_required
+def my_venues():
+    chapters = Chapter.query.all()
+    user_venues = Venue.query.filter_by(created_by_user_id=current_user.id).order_by(Venue.created_at.desc()).all()
+    return render_template("my_venues.html", venues=user_venues, chapters=chapters)
+
+@login_required
+def add_venue():
+    form = VenueForm()
+    chapters = Chapter.query.all()
+    if form.validate_on_submit():
+        venue = Venue(
+            name=form.name.data,
+            street=form.street.data,
+            city=form.city.data,
+            state=form.state.data,
+            zip_code=form.zip_code.data,
+            country=form.country.data,
+            phone=form.phone.data,
+            email=form.email.data,
+            website=form.website.data,
+            venue_type_id=form.venue_type_id.data or None,
+            contact_name=form.contact_name.data,
+            contact_phone=form.contact_phone.data,
+            contact_email=form.contact_email.data,
+            description=form.description.data,
+            created_by_user_id=current_user.id,
+            owner_manager_user_id=current_user.id if form.is_owner_manager.data else None
+        )
+        try:
+            db.session.add(venue)
+            db.session.commit()
+            flash("Venue added successfully.", "success")
+            return redirect(url_for('my_venues'))
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error adding venue: {str(e)}")
+            flash("Failed to add venue. Please try again.", "danger")
+
+    return render_template("add_venue.html", form=form, chapters=chapters)
+
+def venue_detail(venue_id):
+    venue = Venue.query.get_or_404(venue_id)
+    chapters = Chapter.query.all()
+    venue_events = Event.query.filter_by(venue_id=venue.id).order_by(Event.start_date.desc()).all()
+    return render_template(
+        "venue_detail.html",
+        venue=venue,
+        events=venue_events,
+        now=datetime.utcnow(),
+        chapters=chapters
+    )
+
+@login_required
+def edit_venue(venue_id):
+    venue = Venue.query.get_or_404(venue_id)
+    if venue.created_by_user_id != current_user.id and not current_user.is_admin:
+        flash("You do not have permission to edit this venue.", "warning")
+        return redirect(url_for('venue_detail', venue_id=venue.id))
+
+    form = VenueForm(obj=venue)
+    chapters = Chapter.query.all()
+
+    if request.method == "GET":
+        form.venue_type_id.data = venue.venue_type_id or 0
+        form.is_owner_manager.data = venue.owner_manager_user_id == current_user.id
+
+    if form.validate_on_submit():
+        venue.name = form.name.data
+        venue.street = form.street.data
+        venue.city = form.city.data
+        venue.state = form.state.data
+        venue.zip_code = form.zip_code.data
+        venue.country = form.country.data
+        venue.phone = form.phone.data
+        venue.email = form.email.data
+        venue.website = form.website.data
+        venue.venue_type_id = form.venue_type_id.data or None
+        venue.contact_name = form.contact_name.data
+        venue.contact_phone = form.contact_phone.data
+        venue.contact_email = form.contact_email.data
+        venue.description = form.description.data
+        venue.owner_manager_user_id = current_user.id if form.is_owner_manager.data else venue.owner_manager_user_id
+        try:
+            db.session.commit()
+            flash("Venue updated successfully.", "success")
+            return redirect(url_for('venue_detail', venue_id=venue.id))
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error updating venue {venue_id}: {str(e)}")
+            flash("Failed to update venue. Please try again.", "danger")
+
+    return render_template("edit_venue.html", form=form, venue=venue, chapters=chapters)
+
+@login_required
+def claim_venue(venue_id):
+    venue = Venue.query.get_or_404(venue_id)
+    if venue.owner_manager_user_id and venue.owner_manager_user_id != current_user.id and venue.is_verified:
+        flash("This venue has already been verified by another user.", "info")
+        return redirect(url_for('venue_detail', venue_id=venue.id))
+
+    venue.owner_manager_user_id = current_user.id
+    venue.is_verified = False
+    try:
+        db.session.commit()
+        flash("Your claim has been submitted. We'll verify your ownership shortly.", "success")
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error claiming venue {venue_id}: {str(e)}")
+        flash("Unable to claim venue at this time. Please try again later.", "danger")
+
+    return redirect(url_for('venue_detail', venue_id=venue.id))
+
 @login_required
 @admin_required
 def admin_recompute_funalytics(event_id):
@@ -210,21 +432,236 @@ def submit_event():
         return redirect(url_for('edit_profile')) # Redirect to profile to enable
 
     form = EventForm()
-    # Populate venue choices (assuming Venue model exists)
-    # form.existing_venue_id.query = Venue.query.order_by(Venue.name) # Example
+    chapters = Chapter.query.all()
+
+    # Allow quick filling from venue pages
+    requested_venue_id = request.args.get('venue_id', type=int)
+    if request.method == 'GET' and requested_venue_id:
+        form.venue_selection_type.data = 'existing'
+        form.venue_id.data = requested_venue_id
+
+    if request.method == 'GET':
+        today = date.today()
+        if not form.start_date.data:
+            form.start_date.data = today
+        if not form.end_date.data:
+            form.end_date.data = form.start_date.data
 
     if form.validate_on_submit():
-        # ... (existing logic for processing event and venue data) ...
-        # Make sure to import and use geocode_address from utils
-        # from utils.utils import geocode_address
-        # coordinates = geocode_address(...)
-        # ... create Event object ...
-        # db.session.add(event)
-        # db.session.commit()
-        flash("Event submitted successfully!", "success")
-        return redirect(url_for('events'))
-    chapters = Chapter.query.all()
+        is_draft = request.form.get('is_draft') == 'true'
+        fallback_time = form.start_time.data or time.min
+
+        start_dt = combine_date_with_time(form.start_date.data, form.start_time.data)
+        end_dt = combine_date_with_time(form.end_date.data or form.start_date.data, form.end_time.data, fallback_time)
+
+        selected_venue = None
+        if form.venue_selection_type.data == 'existing' and form.venue_id.data:
+            selected_venue = Venue.query.get(form.venue_id.data)
+            if not selected_venue:
+                form.venue_id.errors.append("The selected venue could not be found. Please choose a different venue.")
+                return render_template("submit_event.html", form=form, chapters=chapters)
+
+        try:
+            if form.venue_selection_type.data == 'new' and form.venue_name.data and form.use_new_venue.data:
+                selected_venue = Venue(
+                    name=form.venue_name.data,
+                    street=form.venue_street.data or None,
+                    city=form.venue_city.data or None,
+                    state=form.venue_state.data or None,
+                    zip_code=form.venue_zip.data or None,
+                    venue_type_id=form.venue_type_id.data or None,
+                    created_by_user_id=current_user.id,
+                    owner_manager_user_id=current_user.id if form.is_venue_owner.data else None
+                )
+                db.session.add(selected_venue)
+                db.session.flush()  # Ensure we have an ID for the event relationship
+
+            location_label, street, city, state, zip_code = build_location_details(selected_venue, form)
+            recurring_end_value = form.recurring_end_date.data or form.recurrence_end_date.data
+            recurring_end_dt = combine_date_with_time(recurring_end_value, fallback_time) if recurring_end_value else None
+            target_value = form.target_audience.data or None
+            parent_event_id = form.parent_event.data if form.is_sub_event.data and form.parent_event.data else None
+
+            event = Event(
+                title=form.title.data.strip() if form.title.data else None,
+                description=form.description.data.strip() if form.description.data else None,
+                start_date=start_dt,
+                end_date=end_dt,
+                all_day=form.all_day.data,
+                start_time=form.start_time.data.strftime('%H:%M') if form.start_time.data else None,
+                end_time=form.end_time.data.strftime('%H:%M') if form.end_time.data else None,
+                location=location_label,
+                street=street,
+                city=city,
+                state=state,
+                zip_code=zip_code,
+                is_recurring=form.is_recurring.data,
+                recurring_pattern=form.recurring_pattern.data or form.recurrence_type.data or None,
+                recurring_end_date=recurring_end_dt,
+                user_id=current_user.id,
+                venue=selected_venue,
+                category=form.category.data,
+                target_audience=target_value,
+                fun_meter=int(form.fun_meter.data) if form.fun_meter.data else 3,
+                fun_rating=int(form.fun_meter.data) if form.fun_meter.data else 3,
+                status='draft' if is_draft else 'pending',
+                network_opt_out=form.network_opt_out.data,
+                website=form.ticket_url.data or None,
+                parent_event_id=parent_event_id
+            )
+
+            if form.prohibited_advertisers.data:
+                categories = ProhibitedAdvertiserCategory.query.filter(
+                    ProhibitedAdvertiserCategory.id.in_(form.prohibited_advertisers.data)
+                ).all()
+                event.prohibited_advertisers = categories
+
+            db.session.add(event)
+            db.session.commit()
+
+            if is_draft:
+                return jsonify({"status": "saved", "event_id": event.id}), 200
+
+            flash("Event submitted successfully!", "success")
+            return redirect(url_for('events'))
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            logger.error(f"Database error while saving event: {str(e)}", exc_info=True)
+            flash("We couldn't save your event. Please try again.", "danger")
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Unexpected error while saving event: {str(e)}", exc_info=True)
+            flash("Something unexpected happened while saving your event. Please try again.", "danger")
+
     return render_template("submit_event.html", form=form, chapters=chapters)
+
+@login_required
+def my_events():
+    if not (current_user.is_event_creator or current_user.is_admin):
+        flash("Enable the Event Creator role in your profile to manage events.", "warning")
+        return redirect(url_for('edit_profile'))
+    chapters = Chapter.query.all()
+    events = Event.query.filter_by(user_id=current_user.id).order_by(Event.start_date.desc()).all()
+    status_counts = {
+        "draft": sum(1 for event in events if (event.status or '').lower() == 'draft'),
+        "pending": sum(1 for event in events if (event.status or '').lower() == 'pending'),
+        "published": sum(1 for event in events if (event.status or '').lower() == 'published')
+    }
+    return render_template("my_events.html", events=events, chapters=chapters, status_counts=status_counts)
+
+@login_required
+def edit_event(event_id):
+    event = Event.query.get_or_404(event_id)
+    if event.user_id != current_user.id and not current_user.is_admin:
+        flash("You can only edit events you created.", "danger")
+        return redirect(url_for('my_events'))
+
+    form = EventForm(obj=event)
+    form.submit.label.text = "Update Event"
+    chapters = Chapter.query.all()
+
+    if request.method == 'GET':
+        populate_event_form_from_model(form, event)
+
+    if form.validate_on_submit():
+        is_draft = request.form.get('is_draft') == 'true'
+        fallback_time = form.start_time.data or time.min
+        start_dt = combine_date_with_time(form.start_date.data, form.start_time.data)
+        end_dt = combine_date_with_time(form.end_date.data or form.start_date.data, form.end_time.data, fallback_time)
+
+        selected_venue = event.venue if event.venue else None
+        if form.venue_selection_type.data == 'existing' and form.venue_id.data:
+            selected_venue = Venue.query.get(form.venue_id.data)
+            if not selected_venue:
+                form.venue_id.errors.append("The selected venue could not be found. Please choose a different venue.")
+                return render_template(
+                    "submit_event.html",
+                    form=form,
+                    chapters=chapters,
+                    page_title="Edit Event",
+                    is_edit=True,
+                    event=event,
+                    form_action=url_for('edit_event', event_id=event.id)
+                )
+        elif form.venue_selection_type.data == 'new' and form.venue_name.data and form.use_new_venue.data:
+            selected_venue = Venue(
+                name=form.venue_name.data,
+                street=form.venue_street.data or None,
+                city=form.venue_city.data or None,
+                state=form.venue_state.data or None,
+                zip_code=form.venue_zip.data or None,
+                venue_type_id=form.venue_type_id.data or None,
+                created_by_user_id=current_user.id,
+                owner_manager_user_id=current_user.id if form.is_venue_owner.data else None
+            )
+            db.session.add(selected_venue)
+            db.session.flush()
+
+        location_label, street, city, state, zip_code = build_location_details(selected_venue, form)
+        recurring_end_value = form.recurring_end_date.data or form.recurrence_end_date.data
+        recurring_end_dt = combine_date_with_time(recurring_end_value, fallback_time) if recurring_end_value else None
+        target_value = form.target_audience.data or None
+        parent_event_id = form.parent_event.data if form.is_sub_event.data and form.parent_event.data else None
+
+        try:
+            event.title = form.title.data.strip() if form.title.data else event.title
+            event.description = form.description.data.strip() if form.description.data else event.description
+            event.start_date = start_dt
+            event.end_date = end_dt
+            event.all_day = form.all_day.data
+            event.start_time = form.start_time.data.strftime('%H:%M') if form.start_time.data else None
+            event.end_time = form.end_time.data.strftime('%H:%M') if form.end_time.data else None
+            event.location = location_label
+            event.street = street
+            event.city = city
+            event.state = state
+            event.zip_code = zip_code
+            event.is_recurring = form.is_recurring.data
+            event.recurring_pattern = form.recurring_pattern.data or form.recurrence_type.data or None
+            event.recurring_end_date = recurring_end_dt
+            event.venue = selected_venue
+            event.category = form.category.data
+            event.target_audience = target_value
+            event.fun_meter = int(form.fun_meter.data) if form.fun_meter.data else event.fun_meter
+            event.fun_rating = event.fun_meter
+            event.network_opt_out = form.network_opt_out.data
+            event.website = form.ticket_url.data or None
+            event.parent_event_id = parent_event_id
+            event.status = 'draft' if is_draft else 'pending'
+
+            if form.prohibited_advertisers.data:
+                categories = ProhibitedAdvertiserCategory.query.filter(
+                    ProhibitedAdvertiserCategory.id.in_(form.prohibited_advertisers.data)
+                ).all()
+                event.prohibited_advertisers = categories
+            else:
+                event.prohibited_advertisers = []
+
+            db.session.commit()
+
+            if is_draft:
+                return jsonify({"status": "saved", "event_id": event.id}), 200
+
+            flash("Event updated successfully.", "success")
+            return redirect(url_for('my_events'))
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            logger.error(f"Database error while updating event {event_id}: {str(e)}", exc_info=True)
+            flash("We couldn't save your changes. Please try again.", "danger")
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Unexpected error while updating event {event_id}: {str(e)}", exc_info=True)
+            flash("Something unexpected happened. Please try again.", "danger")
+
+    return render_template(
+        "submit_event.html",
+        form=form,
+        chapters=chapters,
+        page_title="Edit Event",
+        is_edit=True,
+        event=event,
+        form_action=url_for('edit_event', event_id=event.id)
+    )
 
 # --- Authentication Routes ---
 def login():
@@ -260,11 +697,15 @@ def signup():
     if form.validate_on_submit():
         # Create user with form data
         password_data = form.password.data
-        if password_data:
-            user = User(
-                email=form.email.data,
-                password_hash=generate_password_hash(password_data)
-            )
+        if not password_data:
+            flash("Password is required.", "danger")
+            chapters = Chapter.query.all()
+            return render_template('signup.html', form=form, chapters=chapters)
+            
+        user = User(
+            email=form.email.data,
+            password_hash=generate_password_hash(password_data)
+        )
         
         # Set roles based on primary_role selection
         if form.primary_role.data == 'organizer':
@@ -311,19 +752,45 @@ def reset_password(token):
     chapters = Chapter.query.all()
     return render_template('reset_password.html', form=form, token=token, chapters=chapters)
 
+@login_required
+def change_password():
+    if not current_user.password_hash:
+        flash("Your account currently uses Google sign-in. Please use the password reset option to set a password.", "info")
+        return redirect(url_for('profile'))
+    
+    form = ChangePasswordForm()
+    chapters = Chapter.query.all()
+    
+    if form.validate_on_submit():
+        if not check_password_hash(current_user.password_hash, form.current_password.data):
+            flash("Your current password is incorrect. Please try again.", "danger")
+        else:
+            current_user.password_hash = generate_password_hash(form.new_password.data)
+            try:
+                db.session.commit()
+                flash("Your password has been updated successfully.", "success")
+                return redirect(url_for('profile'))
+            except Exception as e:
+                db.session.rollback()
+                logger.error(f"Error updating password: {str(e)}")
+                flash("An error occurred while updating your password. Please try again.", "danger")
+    
+    return render_template('change_password.html', form=form, chapters=chapters)
+
 
 # --- User Profile & Settings ---
 @login_required
 def profile():
      # Simple profile view page
      chapters = Chapter.query.all()
-     return render_template('profile.html', user=current_user, chapters=chapters)
+     preferences = current_user.get_preferences()
+     return render_template('profile.html', user=current_user, chapters=chapters, preferences=preferences)
 
 @login_required
 def edit_profile():
-     form = ProfileForm(obj=current_user) # Pre-populate form
+    form = ProfileForm(obj=current_user, user_id=current_user.id) # Pre-populate form
 
-     if request.method == 'POST':
+    if request.method == 'POST':
          # Handle role activation
          role_to_activate = request.form.get('activate_role')
          if role_to_activate:
@@ -352,22 +819,53 @@ def edit_profile():
              current_user.username = form.username.data
              current_user.first_name = form.first_name.data
              current_user.last_name = form.last_name.data
-             # ... (update other personal/social fields) ...
+             current_user.title = form.title.data
+             current_user.phone = form.phone.data
+             current_user.newsletter_opt_in = form.newsletter_opt_in.data
+             current_user.marketing_opt_in = form.marketing_opt_in.data
+
+             # Social links
+             current_user.facebook_url = form.facebook_url.data
+             current_user.instagram_url = form.instagram_url.data
+             current_user.twitter_url = form.twitter_url.data
+             current_user.linkedin_url = form.linkedin_url.data
+             current_user.tiktok_url = form.tiktok_url.data
 
              # Update role flags based on checkboxes
              current_user.is_event_creator = form.enable_event_creator.data
              current_user.is_organizer = form.enable_organizer.data
              current_user.is_vendor = form.enable_vendor.data
+             current_user.is_sponsor = form.enable_sponsor.data
              if current_user.is_organizer: # Ensure organizers can create events
                 current_user.is_event_creator = True
 
              # Update organizer/vendor fields *if* role is enabled
              if current_user.is_organizer:
-                 current_user.business_name = form.business_name.data
-                 # ... (update other organizer fields) ...
+                 current_user.company_name = form.company_name.data
+                 current_user.organizer_description = form.organizer_description.data
+                 current_user.organizer_website = form.organizer_website.data
+                 current_user.business_street = form.business_street.data
+                 current_user.business_city = form.business_city.data
+                 current_user.business_state = form.business_state.data
+                 current_user.business_zip = form.business_zip.data
+                 current_user.business_phone = form.business_phone.data
+                 current_user.business_email = form.business_email.data
+                 current_user.advertising_opportunities = form.advertising_opportunities.data
+                 current_user.sponsorship_opportunities = form.sponsorship_opportunities.data
              if current_user.is_vendor:
-                  # current_user.vendor_type = form.vendor_type.data # Assuming vendor_type is added back later
-                  pass # Add vendor field updates here
+                 current_user.vendor_type = form.vendor_type.data
+                 current_user.vendor_description = form.vendor_description.data
+             if current_user.is_sponsor:
+                 current_user.sponsorship_opportunities = form.sponsorship_opportunities.data
+
+             # Persist preference style fields
+             preferences = current_user.get_preferences()
+             preferences.update({
+                 "event_focus": form.event_focus.data or [],
+                 "preferred_locations": form.preferred_locations.data,
+                 "event_interests": form.event_interests.data
+             })
+             current_user.set_preferences(preferences)
 
              try:
                  db.session.commit()
@@ -378,14 +876,20 @@ def edit_profile():
                  logger.error(f"Error updating profile: {str(e)}")
                  flash("Could not update profile. Please try again.", "danger")
 
-     # Pre-populate checkboxes on GET request
-     elif request.method == "GET":
+    # Pre-populate checkboxes on GET request
+    elif request.method == "GET":
          form.enable_event_creator.data = current_user.is_event_creator
          form.enable_organizer.data = current_user.is_organizer
          form.enable_vendor.data = current_user.is_vendor
+         form.enable_sponsor.data = current_user.is_sponsor
+         preferences = current_user.get_preferences()
+         # Ensure multiselects/text fields show stored preferences
+         form.event_focus.data = preferences.get("event_focus", [])
+         form.preferred_locations.data = preferences.get("preferred_locations", "")
+         form.event_interests.data = preferences.get("event_interests", "")
 
-     chapters = Chapter.query.all()
-     return render_template('edit_profile.html', form=form, chapters=chapters)
+    chapters = Chapter.query.all()
+    return render_template('edit_profile.html', form=form, chapters=chapters)
 
 # --- Static Pages & Other ---
 def about():
@@ -762,15 +1266,178 @@ def venues():
 @login_required
 @admin_required
 def admin_dashboard():
-     # ... (Keep existing logic) ...
-     chapters = Chapter.query.all()
-     # Fetch necessary data for the admin dashboard
-     stats = { "pending_events": 0, "total_users": 0, "todays_events": 0, "new_users_24h": 0} # Placeholder
-     events = [] # Placeholder
-     users = [] # Placeholder
-     events_by_category = {"labels": [], "datasets": [{"data":[]}]} # Placeholder
-     user_growth_data = {"labels": [], "datasets": [{"label": "New Users", "data":[]}]} # Placeholder
-     return render_template('admin_dashboard.html', chapters=chapters, stats=stats, events=events, users=users, status='pending', events_by_category=events_by_category, user_growth_data=user_growth_data)
+    section = (request.args.get('section') or request.args.get('tab') or 'overview').lower()
+    allowed_sections = {'overview', 'events', 'users', 'venues', 'organizations', 'analytics'}
+    if section not in allowed_sections:
+        section = 'overview'
+
+    status_filter = (request.args.get('status') or 'pending').lower()
+    if status_filter not in {'pending', 'approved', 'rejected', 'draft', 'all'}:
+        status_filter = 'pending'
+
+    chapters = Chapter.query.order_by(Chapter.name.asc()).all()
+    today = date.today()
+    now = datetime.utcnow()
+
+    total_events = Event.query.count()
+    stats = {
+        "pending_events": Event.query.filter(func.lower(Event.status) == 'pending').count(),
+        "approved_events": Event.query.filter(func.lower(Event.status) == 'approved').count(),
+        "rejected_events": Event.query.filter(func.lower(Event.status) == 'rejected').count(),
+        "draft_events": Event.query.filter(func.lower(Event.status) == 'draft').count(),
+        "total_events": total_events,
+        "total_users": User.query.count(),
+        "todays_events": Event.query.filter(func.date(Event.start_date) == today).count(),
+        "new_users_24h": User.query.filter(User.created_at >= now - timedelta(days=1)).count(),
+        "featured_events": Event.query.filter_by(featured=True).count(),
+        "active_venues": Venue.query.count(),
+        "organisations": Chapter.query.count()
+    }
+
+    event_status_counts = {
+        "all": total_events,
+        "pending": stats["pending_events"],
+        "approved": stats["approved_events"],
+        "rejected": stats["rejected_events"],
+        "draft": stats["draft_events"]
+    }
+
+    events_query = Event.query
+    if status_filter not in {'all', ''}:
+        events_query = events_query.filter(func.lower(Event.status) == status_filter)
+
+    filtered_events = events_query.order_by(Event.start_date.desc()).limit(25).all()
+    recent_events = Event.query.order_by(Event.created_at.desc()).limit(6).all()
+    recent_users = User.query.order_by(User.created_at.desc()).limit(8).all()
+    venues = Venue.query.order_by(Venue.created_at.desc()).limit(6).all()
+    organizations = Chapter.query.order_by(Chapter.created_at.desc()).limit(6).all()
+
+    category_rows = db.session.query(Event.category, func.count(Event.id)) \
+        .group_by(Event.category).order_by(func.count(Event.id).desc()).limit(6).all()
+    chart_colors = ['#0EA5E9', '#F97316', '#22C55E', '#A855F7', '#F43F5E', '#14B8A6']
+    category_labels = [row[0] or 'Uncategorized' for row in category_rows] or ['No data yet']
+    category_data = [row[1] for row in category_rows] or [0]
+    events_by_category = {
+        "labels": category_labels,
+        "datasets": [{
+            "label": "Events",
+            "data": category_data,
+            "backgroundColor": [chart_colors[i % len(chart_colors)] for i in range(len(category_labels))]
+        }]
+    }
+
+    user_growth_labels = []
+    user_growth_counts = []
+    for offset in range(6, -1, -1):
+        day = today - timedelta(days=offset)
+        user_growth_labels.append(day.strftime('%b %d'))
+        user_growth_counts.append(
+            User.query.filter(func.date(User.created_at) == day).count()
+        )
+    user_growth_data = {
+        "labels": user_growth_labels,
+        "datasets": [{
+            "label": "New Users",
+            "data": user_growth_counts,
+            "borderColor": "#0D9488",
+            "backgroundColor": "rgba(13, 148, 136, 0.15)",
+            "fill": True,
+            "tension": 0.4
+        }]
+    }
+
+    recent_activity = []
+    for event in recent_events[:4]:
+        recent_activity.append({
+            "type": "event",
+            "title": event.title,
+            "subtitle": ", ".join(filter(None, [event.city, event.state])) or "Event submission",
+            "timestamp": event.created_at or event.start_date,
+            "status": (event.status or '').title(),
+            "featured": event.featured
+        })
+    for user in recent_users[:4]:
+        recent_activity.append({
+            "type": "user",
+            "title": user.email,
+            "subtitle": "Organizer" if user.is_organizer else "Attendee",
+            "timestamp": user.created_at,
+            "status": "New signup",
+            "featured": False
+        })
+    recent_activity.sort(key=lambda item: item["timestamp"] or datetime.min, reverse=True)
+
+    role_breakdown = {
+        "organizers": User.query.filter_by(is_organizer=True).count(),
+        "event_creators": User.query.filter(User._is_event_creator == True).count(),  # noqa: E712
+        "vendors": User.query.filter_by(is_vendor=True).count(),
+        "sponsors": User.query.filter_by(is_sponsor=True).count()
+    }
+
+    verified_venues = Venue.query.filter_by(is_verified=True).count()
+    venue_status_counts = {
+        "verified": verified_venues,
+        "unverified": max(stats["active_venues"] - verified_venues, 0)
+    }
+
+    quick_actions = [
+        {
+            "label": "Create Event",
+            "description": "Add a new experience to the marketplace.",
+            "icon": "bi-calendar-plus",
+            "href": url_for('submit_event')
+        },
+        {
+            "label": "Review Pending",
+            "description": "Approve or reject new submissions.",
+            "icon": "bi-check-circle",
+            "href": url_for('admin_dashboard', section='events', status='pending')
+        },
+        {
+            "label": "Add Venue",
+            "description": "Publish or verify a venue profile.",
+            "icon": "bi-geo-alt",
+            "href": url_for('add_venue')
+        },
+        {
+            "label": "Invite Organizer",
+            "description": "Onboard partners into FunList.",
+            "icon": "bi-people",
+            "href": url_for('admin_dashboard', section='users')
+        }
+    ]
+
+    section_titles = {
+        "overview": "Operations Overview",
+        "events": "Events & Submissions",
+        "users": "Community Members",
+        "venues": "Venues & Locations",
+        "organizations": "Chapters & Organizations",
+        "analytics": "Insights & Analytics"
+    }
+    section_label = section_titles.get(section, "Operations Overview")
+
+    return render_template(
+        'admin_dashboard.html',
+        chapters=chapters,
+        stats=stats,
+        events=filtered_events,
+        recent_events=recent_events,
+        users=recent_users,
+        venues=venues,
+        organizations=organizations,
+        status=status_filter,
+        active_section=section,
+        active_tab=section,
+        events_by_category=events_by_category,
+        user_growth_data=user_growth_data,
+        event_status_counts=event_status_counts,
+        role_breakdown=role_breakdown,
+        venue_status_counts=venue_status_counts,
+        recent_activity=recent_activity,
+        quick_actions=quick_actions,
+        section_label=section_label
+    )
 
 # Add other routes from your previous routes.py here, ensuring imports are correct
 # ... e.g., /marketplace, /admin/users, /api/feedback, /search, etc. ...
@@ -797,7 +1464,7 @@ def health_check():
     # Check database connectivity
     try:
         # Execute a simple query to verify database connection
-        db.session.execute('SELECT 1')
+        db.session.execute(text('SELECT 1'))
         health_status["checks"]["database"] = "ok"
     except Exception as e:
         health_status["status"] = "degraded"
@@ -851,7 +1518,9 @@ def init_routes(app):
     app.route("/")(index)
     app.route("/map")(map)
     app.route("/events")(events)
+    app.route("/events/mine")(my_events)
     app.route("/events/<int:event_id>")(event_detail)
+    app.route("/events/<int:event_id>/edit", methods=["GET", "POST"])(edit_event)
     app.route("/admin/recompute-funalytics/<int:event_id>", methods=["POST"])(admin_recompute_funalytics)
     app.route("/submit-event", methods=["GET", "POST"])(submit_event)
     app.route('/login', methods=['GET', 'POST'])(login)
@@ -870,6 +1539,13 @@ def init_routes(app):
     app.route('/definitions')(definitions)
     app.route('/chapters')(chapters_page)
     app.route('/chapter/<string:slug>')(chapter)
+    app.route('/change-password', methods=['GET', 'POST'])(change_password)
+    app.route('/venues')(venues)
+    app.route('/venues/add', methods=['GET', 'POST'])(add_venue)
+    app.route('/venues/my')(my_venues)
+    app.route('/venues/<int:venue_id>')(venue_detail)
+    app.route('/venues/<int:venue_id>/edit', methods=['GET', 'POST'])(edit_venue)
+    app.route('/venues/<int:venue_id>/claim', methods=['POST'])(claim_venue)
     app.route('/fun-assistant')(fun_assistant_page)
     app.route('/api', methods=['GET', 'HEAD'])(api_health_check)
     app.route('/health', methods=['GET'])(health_check)
@@ -1210,8 +1886,6 @@ def call_ai_with_fallback(system_message, user_message, max_tokens=500, response
                     return '{"error": "AI services temporarily unavailable", "fallback": true}'
                 else:
                     return "I'm experiencing technical difficulties with my AI services. Please try again in a few moments."
-
-
 # --- AI Governance Shield Routes ---
 def register_ai_governance_routes(app):
     """Register AI governance related routes"""

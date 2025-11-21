@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+{% endblock %}
+
+{% block admin_active_section %}{% endblock %}
+{% block admin_page_title %}{% endblock %}
+
+{% block content %}
+{% set override_section = self.admin_active_section() | trim %}
+{% set current_section = override_section if override_section else active_section | default('overview') %}
+{% set section_titles = {
+    'overview': 'Operations Overview',
+    'events': 'Events & Submissions',
+    'users': 'Community Members',
+    'venues': 'Venues & Locations',
+    'organizations': 'Chapters & Organizations',
+    'analytics': 'Insights & Analytics'
+} %}
+{% set section_descriptions = {
+    'overview': 'Monitor marketplace health, discover potential risks, and see the wins worth celebrating.',
+    'events': 'Review submissions, curate featured picks, and keep the calendar high-quality.',
+    'users': 'Understand who is joining, what roles they play, and how engaged the community is.',
+    'venues': 'Track the locations powering events and ensure venue information stays accurate.',
+    'organizations': 'Manage FunList chapters and strategic partners region by region.',
+    'analytics': 'Use signals and trendlines to make confident decisions about growth.'
+} %}
+{% set override_title = self.admin_page_title() | trim %}
+{% set computed_title = override_title if override_title else section_label | default(section_titles.get(current_section, 'Operations Overview')) %}
+{% set hero_copy = section_descriptions.get(current_section, 'Keep FunList humming by staying close to the people, places, and partners that make great events happen.') %}
+
+{% set nav_sections = [
+    {'key': 'overview', 'label': 'Overview', 'icon': 'bi-speedometer2', 'description': 'Pulse & alerts'},
+    {'key': 'events', 'label': 'Events', 'icon': 'bi-calendar-event', 'description': 'Submissions queue'},
+    {'key': 'users', 'label': 'Users', 'icon': 'bi-people', 'description': 'Organizers & members'},
+    {'key': 'venues', 'label': 'Venues', 'icon': 'bi-geo-alt', 'description': 'Locations & hosts'},
+    {'key': 'organizations', 'label': 'Organizations', 'icon': 'bi-diagram-2', 'description': 'Chapters & partners'},
+    {'key': 'analytics', 'label': 'Analytics', 'icon': 'bi-graph-up', 'description': 'Signals & insights'}
+ ] %}
+
+<div class="admin-shell">
+    <aside class="admin-sidebar">
+        <div class="admin-brand">
+            <div class="brand-mark">
+                <i class="bi bi-stars"></i>
+            </div>
+            <div>
+                <p class="text-white-50 mb-1 small">FunList.ai</p>
+                <h2 class="h5 mb-0 text-white">Admin Console</h2>
+            </div>
+        </div>
+        <nav class="admin-nav">
+            {% for item in nav_sections %}
+            {% set is_active = current_section == item.key %}
+            <a href="{{ url_for('admin_dashboard', section=item.key) }}"
+               class="admin-nav-link {% if is_active %}active{% endif %}">
+                <div class="admin-nav-icon">
+                    <i class="{{ item.icon }}"></i>
+                </div>
+                <div class="admin-nav-text">
+                    <span>{{ item.label }}</span>
+                    <small>{{ item.description }}</small>
+                </div>
+                {% if item.key == 'events' %}
+                    {% set pending = event_status_counts.pending if event_status_counts is defined else (stats.pending_events if stats is defined else none) %}
+                    {% if pending %}
+                    <span class="nav-pill">{{ pending }}</span>
+                    {% endif %}
+                {% elif item.key == 'users' %}
+                    {% set users_total = stats.total_users if stats is defined else none %}
+                    {% if users_total %}
+                    <span class="nav-pill">{{ users_total }}</span>
+                    {% endif %}
+                {% elif item.key == 'venues' %}
+                    {% set venue_total = stats.active_venues if stats is defined else none %}
+                    {% if venue_total %}
+                    <span class="nav-pill">{{ venue_total }}</span>
+                    {% endif %}
+                {% endif %}
+            </a>
+            {% endfor %}
+        </nav>
+        <div class="admin-sidebar-footer">
+            <p class="text-white-50 small mb-2">Need a hand?</p>
+            <a href="mailto:support@funlist.ai" class="btn btn-outline-light btn-sm w-100">
+                <i class="bi bi-life-preserver me-1"></i> Support
+            </a>
+        </div>
+    </aside>
+    <section class="admin-main">
+        <div class="admin-header-bar">
+            <div>
+                <p class="admin-eyebrow">Running FunList</p>
+                <h1 class="admin-page-title">{{ computed_title }}</h1>
+                <p class="admin-page-description">{{ hero_copy }}</p>
+            </div>
+            <div class="admin-header-actions">
+                <form class="admin-search d-none d-md-flex" role="search">
+                    <input class="form-control form-control-sm" type="search" placeholder="Global search (coming soon)" disabled>
+                    <span class="search-key">⌘K</span>
+                </form>
+                <a href="{{ url_for('admin_dashboard', section='events', status='pending') }}" class="btn btn-primary">
+                    <i class="bi bi-lightning-charge me-2"></i>Review queue
+                </a>
+            </div>
+        </div>
+        {% block admin_content %}{% endblock %}
+    </section>
+</div>
+{% endblock %}

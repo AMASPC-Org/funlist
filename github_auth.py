@@ -13,7 +13,7 @@ github_auth = Blueprint("github_auth", __name__, url_prefix='/auth/github')
 def login():
     """Initiate GitHub OAuth flow with PKCE"""
     if current_user.is_authenticated:
-        return redirect(url_for('routes.index'))
+        return redirect(url_for('index'))
     
     # Generate and store PKCE code verifier
     code_verifier = secrets.token_urlsafe(64)
@@ -36,7 +36,7 @@ def login():
         )
     else:
         flash('GitHub OAuth is not configured.', 'error')
-        return redirect(url_for('routes.login'))
+        return redirect(url_for('login'))
 
 @github_auth.route('/callback')
 def callback():
@@ -46,7 +46,7 @@ def callback():
         state = session.pop('oauth_state', None)
         if not state or state != request.args.get('state'):
             flash('Invalid OAuth state. Please try again.', 'danger')
-            return redirect(url_for('routes.login'))
+            return redirect(url_for('login'))
         
         # Get code verifier for PKCE
         code_verifier = session.pop('oauth_code_verifier', None)
@@ -72,7 +72,7 @@ def callback():
         
         if not user_info.get('email'):
             flash('Could not retrieve email from GitHub. Please ensure your email is public or grant email scope.', 'danger')
-            return redirect(url_for('routes.login'))
+            return redirect(url_for('login'))
         
         # Find or create user
         user = User.query.filter_by(email=user_info['email']).first()
@@ -107,9 +107,9 @@ def callback():
         login_user(user, remember=True)
         flash(f'Successfully signed in with GitHub!', 'success')
         
-        return redirect(url_for('routes.index'))
+        return redirect(url_for('index'))
         
     except Exception as e:
         print(f"❌ GitHub OAuth error: {str(e)}")
         flash('An error occurred during GitHub sign-in. Please try again.', 'danger')
-        return redirect(url_for('routes.login'))
+        return redirect(url_for('login'))
