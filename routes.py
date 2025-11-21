@@ -1504,8 +1504,15 @@ def init_routes(app):
     except Exception as e:
         print(f"⚠️ OAuth blueprints registration failed: {str(e)}")
     
-    # AI routes are now registered in app.py to avoid duplicate registration
-    # This avoids the "blueprint already registered" error
+    # Register AI routes blueprint
+    try:
+        from routes_ai import ai_routes
+        app.register_blueprint(ai_routes)
+        print("✅ AI routes registered successfully")
+    except ImportError as e:
+        print(f"⚠️ AI routes not available: {str(e)}")
+    except Exception as e:
+        print(f"⚠️ AI routes registration failed: {str(e)}")
     
     # Register all routes with the app instance
     app.route("/")(index)
@@ -1550,7 +1557,8 @@ def init_routes(app):
     app.route("/api/feedback", methods=['POST'])(submit_feedback)
     app.route("/search", methods=["GET", "POST"])(search)
     
-    # AI Governance routes are handled by the ai_routes blueprint in routes_ai.py
+    # Register AI Governance Shield routes
+    register_ai_governance_routes(app)
 
     # Return the app instance
     return app
@@ -1878,4 +1886,38 @@ def call_ai_with_fallback(system_message, user_message, max_tokens=500, response
                     return '{"error": "AI services temporarily unavailable", "fallback": true}'
                 else:
                     return "I'm experiencing technical difficulties with my AI services. Please try again in a few moments."
-# AI Governance Shield Routes are now handled by the ai_routes blueprint in routes_ai.py
+# --- AI Governance Shield Routes ---
+def register_ai_governance_routes(app):
+    """Register AI governance related routes"""
+    
+    @app.route('/ai-gateway')
+    def ai_gateway():
+        """Render the AI Gateway page"""
+        return render_template('ai/gateway.html')
+    
+    @app.route('/ai-policy')
+    def ai_policy():
+        """Render the AI Policy page"""
+        return render_template('ai/policy.html')
+    
+    @app.route('/ai-data-license')
+    def ai_data_license():
+        """Render the AI Data License page"""
+        return render_template('ai/license.html')
+    
+    @app.route('/.well-known/ai-policy.json')
+    def ai_policy_json():
+        """Return the AI policy JSON file with correct MIME type"""
+        import os
+        json_path = os.path.join(app.static_folder, '.well-known', 'ai-policy.json')
+        if os.path.exists(json_path):
+            with open(json_path, 'r') as f:
+                policy_data = json.load(f)
+            return jsonify(policy_data)
+        else:
+            return jsonify({"error": "AI policy not found"}), 404
+    
+    @app.route('/ai-feed-guide')
+    def ai_feed_guide():
+        """Render the AI Feed Guide page with technical documentation"""
+        return render_template('ai/feed_guide.html')
