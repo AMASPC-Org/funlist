@@ -77,7 +77,6 @@ document.addEventListener('DOMContentLoaded', function() {
         setupTippy();
         setupModals();
         setupFloatingButtons();
-        setupCookieConsent();
         setupFilters();
         setupEventButtons(); 
 
@@ -263,47 +262,7 @@ function setupFloatingButtons() {
     }
 }
 
-// Cookie consent handling
-function setupCookieConsent() {
-    // Check if cookie is already set
-    const cookieConsent = getCookie('cookie_consent');
-    const consentFromLocalStorage = checkCookieConsentExpiration();
-
-    if (!cookieConsent && !consentFromLocalStorage) {
-        const cookieBanner = document.getElementById('cookieConsent');
-        if (cookieBanner) {
-            cookieBanner.classList.add('show');
-            document.body.classList.add('cookie-consent-visible');
-
-            // Setup cookie consent buttons
-            const acceptAllBtn = document.getElementById('acceptAllCookies');
-            const rejectNonEssentialBtn = document.getElementById('rejectNonEssentialCookies');
-            const customizeBtn = document.getElementById('customizeCookies');
-
-            if (acceptAllBtn) {
-                acceptAllBtn.addEventListener('click', function() {
-                    setCookie('cookie_consent', 'all', 365);
-                    hideCookieConsent();
-                });
-            }
-
-            if (rejectNonEssentialBtn) {
-                rejectNonEssentialBtn.addEventListener('click', function() {
-                    setCookie('cookie_consent', 'essential', 365);
-                    hideCookieConsent();
-                });
-            }
-
-            if (customizeBtn) {
-                customizeBtn.addEventListener('click', function() {
-                    // Show cookie preferences modal
-                    const cookiePreferencesModal = new bootstrap.Modal(document.getElementById('cookiePreferencesModal'));
-                    if (cookiePreferencesModal) cookiePreferencesModal.show();
-                });
-            }
-        }
-    }
-}
+// Cookie consent is handled in cookie_consent.html partial
 
 // Hide cookie consent banner
 function hideCookieConsent() {
@@ -720,13 +679,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setupGlobalModalHandlers();
 });
 
-// Show cookie consent if not already accepted
-checkCookieConsent();
-
-
-function checkCookieConsent() {
-    //Check if cookie consent is set, if not show the banner.  This function was not defined in the original code.
-}
+// Cookie consent is handled in cookie_consent.html partial
 
 function displayFeaturedEvents(events) {
     const container = document.getElementById('featured-events');
