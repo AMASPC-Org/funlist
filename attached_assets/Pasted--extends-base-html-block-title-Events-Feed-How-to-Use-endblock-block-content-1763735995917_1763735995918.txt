@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Events Feed — How to Use{% endblock %}
+
+{% block content %}
+<section class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="mb-4">Events Feed — How to Use</h1>
+
+            <div class="alert alert-info">
+                <i data-feather="info" class="me-2"></i>
+                <strong>Authentication Required:</strong> The JSON feed requires proper headers for access control and usage tracking.
+            </div>
+
+            <h3 class="mt-4 mb-3">Example Request</h3>
+            <p>Use curl with the required headers to access the feed:</p>
+
+            <pre class="bg-dark text-light p-3 rounded"><code>curl -s "https://amaspc.com/ai-feed.json?source=funlist.ai" \
+  -H "X-AI-Consumer: demo" \
+  -H "X-AI-Purpose: search" \
+  -H "X-AI-Key: &lt;YOUR_TOKEN&gt;" | jq .</code></pre>
+
+            <h3 class="mt-5 mb-3">Required Headers</h3>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Header</th>
+                        <th>Description</th>
+                        <th>Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>X-AI-Consumer</code></td>
+                        <td>Identifies your application or service</td>
+                        <td><code>funlist.ai</code>, <code>demo</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>X-AI-Purpose</code></td>
+                        <td>Intended use of the data</td>
+                        <td><code>search</code>, <code>indexing</code>, <code>analysis</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>X-AI-Key</code></td>
+                        <td>Your API authentication token</td>
+                        <td><em>Contact us for access</em></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3 class="mt-5 mb-3">Response Format</h3>
+            <p>The feed returns JSON data with the following structure:</p>
+
+            <pre class="bg-dark text-light p-3 rounded"><code>{
+  "version": "1.0",
+  "generated_at": "2025-11-08T17:00:00Z",
+  "license": "Training use prohibited without written license from policy@amaspc.com",
+  "items": [
+    {
+      "id": 1,
+      "title": "Event Title",
+      "content": "Event description and details",
+      "timestamp": "2025-11-08T17:00:00Z"
+    }
+  ]
+}</code></pre>
+
+            <div class="alert alert-warning mt-4">
+                <i data-feather="alert-circle" class="me-2"></i>
+                <strong>Note:</strong> Direct browser access will fail due to missing authentication headers. Use an API client or application instead.
+            </div>
+
+            <h3 class="mt-5 mb-3">Need Access?</h3>
+            <p>To request an API key or learn more about the Community AI Gateway:</p>
+            <ul>
+                <li><a href="{{ url_for('public.ai_gateway') }}">Visit the AI Gateway overview</a></li>
+                <li><a href="{{ url_for('public.ai_policy') }}">Read our AI Access Policy</a></li>
+                <li><a href="{{ url_for('public.ai_license') }}">Review the AI Data License</a></li>
+                <li><a href="{{ url_for('public.contact') }}">Contact us at contact@amaspc.com</a></li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Section -->
+<section class="py-5" style="background: linear-gradient(135deg, var(--ama-dark-blue) 0%, var(--ama-midi-blue) 100%);">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <i data-feather="mail" style="width: 48px; height: 48px; stroke: white;" class="mb-3"></i>
+                <h3 class="mb-3" style="color: white;">Questions Or Need Enterprise Access?</h3>
+                <p class="mb-4" style="color: rgba(255,255,255,0.9);">Our AI Gateway team is here to help with licensing inquiries, technical questions, and partnership opportunities.</p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <a href="mailto:policy@amaspc.com" class="btn btn-light btn-lg">
+                        <i data-feather="mail" class="me-2"></i>POLICY@AMASPC.COM
+                    </a>
+                    <a href="{{ url_for('public.events_feed_guide') }}" class="btn btn-outline-light btn-lg">
+                        <i data-feather="book" class="me-2"></i>Implementation Guide
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Related Resources -->
+<section class="bg-light py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <h3 class="mb-4 text-center" style="color: var(--ama-dark-red);">RELATED RESOURCES</h3>
+                <div class="row g-4">
+                    <!-- Data License -->
+                    <div class="col-md-4">
+                        <div class="card h-100 text-center border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <i data-feather="file-text" style="width: 48px; height: 48px; stroke: var(--ama-midi-blue);"></i>
+                                </div>
+                                <h5 class="card-title">Data License</h5>
+                                <p class="card-text text-muted">Detailed legal terms governing data usage</p>
+                                <a href="{{ url_for('public.ai_license') }}" class="btn btn-outline-primary">Read License</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Gateway -->
+                    <div class="col-md-4">
+                        <div class="card h-100 text-center border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <i data-feather="code" style="width: 48px; height: 48px; stroke: var(--ama-midi-blue);"></i>
+                                </div>
+                                <h5 class="card-title">AI Gateway Home</h5>
+                                <p class="card-text text-muted">Overview and developer quickstart</p>
+                                <a href="{{ url_for('public.ai_gateway') }}" class="btn btn-outline-primary">View Gateway</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security Policy -->
+                    <div class="col-md-4">
+                        <div class="card h-100 text-center border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <i data-feather="shield" style="width: 48px; height: 48px; stroke: var(--ama-midi-blue);"></i>
+                                </div>
+                                <h5 class="card-title">Security Policy</h5>
+                                <p class="card-text text-muted">Data protection and security standards</p>
+                                <a href="{{ url_for('public.security') }}" class="btn btn-outline-primary">Learn More</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

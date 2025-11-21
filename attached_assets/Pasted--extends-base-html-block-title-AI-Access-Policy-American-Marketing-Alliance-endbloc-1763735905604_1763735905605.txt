@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}AI Access Policy - FunList.ai{% endblock %}
+{% block title %}AI Access Policy - American Marketing Alliance{% endblock %}
 
 {% block content %}
 <!-- Hero Section -->
@@ -12,12 +12,12 @@
                     <i data-feather="shield" style="width: 64px; height: 64px; stroke: white;"></i>
                 </div>
                 <h1 class="display-4 mb-3" style="color: white;">AI Access Policy</h1>
-                <p class="lead mb-4" style="color: rgba(255,255,255,0.9);">Clear rules for responsible AI interaction with FunList data</p>
+                <p class="lead mb-4" style="color: rgba(255,255,255,0.9);">Clear rules for responsible AI interaction with AMA data</p>
                 <div class="d-flex gap-3 justify-content-center flex-wrap">
-                    <a href="{{ url_for('ai_gateway') }}" class="btn btn-light btn-lg">
+                    <a href="{{ url_for('public.ai_gateway') }}" class="btn btn-light btn-lg">
                         <i data-feather="arrow-left" class="me-2"></i>Back to AI Gateway
                     </a>
-                    <a href="{{ url_for('ai_data_license') }}" class="btn btn-outline-light btn-lg">
+                    <a href="{{ url_for('public.ai_license') }}" class="btn btn-outline-light btn-lg">
                         <i data-feather="file-text" class="me-2"></i>View Data License
                     </a>
                 </div>
@@ -30,8 +30,8 @@
 <div class="container mt-4">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
-            <li class="breadcrumb-item"><a href="{{ url_for('ai_gateway') }}">AI Gateway</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('public.index') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('public.ai_gateway') }}">AI Gateway</a></li>
             <li class="breadcrumb-item active" aria-current="page">AI Access Policy</li>
         </ol>
     </nav>
@@ -49,7 +49,7 @@
                         <i data-feather="info" class="me-3 mt-1" style="min-width: 24px;"></i>
                         <div>
                             <h5 class="alert-heading mb-2">Policy Summary</h5>
-                            <p class="mb-0">This policy governs how AI systems, crawlers, and automated tools may access FunList.ai's public data. <strong>Training use requires written authorization.</strong> All access must comply with our gateway requirements and attribution standards.</p>
+                            <p class="mb-0">This policy governs how AI systems, crawlers, and automated tools may access American Marketing Alliance SPC's public data. <strong>Training use requires written authorization.</strong> All access must comply with our gateway requirements and attribution standards.</p>
                         </div>
                     </div>
                 </div>
@@ -59,13 +59,13 @@
                     <div class="card-header bg-white border-bottom">
                         <div class="d-flex align-items-center">
                             <div class="icon-circle bg-primary-soft me-3">
-                                <i data-feather="book-open" style="color: var(--primary-orange);"></i>
+                                <i data-feather="book-open" style="color: var(--ama-midi-blue);"></i>
                             </div>
                             <h2 class="mb-0 h4">Overview</h2>
                         </div>
                     </div>
                     <div class="card-body">
-                        <p class="mb-0">FunList.ai maintains clear, enforceable policies regarding AI access to our content and data. This policy outlines permitted uses, prohibited activities, and technical requirements for AI systems interacting with our platform.</p>
+                        <p class="mb-0">American Marketing Alliance SPC maintains clear, enforceable policies regarding AI access to our content and data. This policy outlines permitted uses, prohibited activities, and technical requirements for AI systems interacting with our platform.</p>
                     </div>
                 </div>
 
@@ -75,7 +75,7 @@
                         <div class="d-flex align-items-center justify-content-between">
                             <div class="d-flex align-items-center">
                                 <div class="icon-circle bg-primary-soft me-3">
-                                    <i data-feather="alert-triangle" style="color: var(--accent-coral);"></i>
+                                    <i data-feather="alert-triangle" style="color: var(--ama-bright-red);"></i>
                                 </div>
                                 <h2 class="mb-0 h4">Training Use</h2>
                             </div>
@@ -83,7 +83,7 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <p><strong>Training AI models on FunList data requires explicit written authorization.</strong></p>
+                        <p><strong>Training AI models on AMA data requires explicit written authorization.</strong></p>
                         <p class="mb-3">This includes but is not limited to:</p>
                         <ul class="mb-3">
                             <li>Large Language Model (LLM) training</li>
@@ -92,7 +92,7 @@
                             <li>Fine-tuning existing models</li>
                         </ul>
                         <div class="alert alert-warning mb-0">
-                            <strong>To request training authorization:</strong> Contact <a href="mailto:legal@funlist.ai" class="alert-link">legal@funlist.ai</a> with details about your intended use, organization, and data handling practices.
+                            <strong>To request training authorization:</strong> Contact <a href="mailto:policy@amaspc.com" class="alert-link">policy@amaspc.com</a> with details about your intended use, organization, and data handling practices.
                         </div>
                     </div>
                 </div>
@@ -103,7 +103,7 @@
                         <div class="d-flex align-items-center justify-content-between">
                             <div class="d-flex align-items-center">
                                 <div class="icon-circle bg-primary-soft me-3">
-                                    <i data-feather="award" style="color: var(--primary-orange);"></i>
+                                    <i data-feather="award" style="color: var(--ama-midi-blue);"></i>
                                 </div>
                                 <h2 class="mb-0 h4">Attribution Requirements</h2>
                             </div>
@@ -114,8 +114,8 @@
                         <p><strong>All AI-assisted content derived from our platform must include proper attribution.</strong></p>
                         <p class="mb-3">Acceptable attribution formats:</p>
                         <div class="bg-light p-3 rounded mb-3">
-                            <code class="d-block mb-2">Source: FunList.ai (funlist.ai)</code>
-                            <code class="d-block">Data provided by FunList.ai - https://funlist.ai</code>
+                            <code class="d-block mb-2">Source: American Marketing Alliance SPC (amaspc.com)</code>
+                            <code class="d-block">Data provided by American Marketing Alliance - https://amaspc.com</code>
                         </div>
                         <p class="mb-0"><small class="text-muted">Attribution must be visible to end users and cannot be hidden in metadata only.</small></p>
                     </div>
@@ -127,7 +127,7 @@
                         <div class="d-flex align-items-center justify-content-between">
                             <div class="d-flex align-items-center">
                                 <div class="icon-circle bg-primary-soft me-3">
-                                    <i data-feather="briefcase" style="color: var(--primary-orange);"></i>
+                                    <i data-feather="briefcase" style="color: var(--ama-midi-blue);"></i>
                                 </div>
                                 <h2 class="mb-0 h4">Commercial Use</h2>
                             </div>
@@ -135,7 +135,7 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <p><strong>Commercial applications using FunList data require a separate licensing agreement.</strong></p>
+                        <p><strong>Commercial applications using AMA data require a separate licensing agreement.</strong></p>
                         <p class="mb-3">Examples of commercial use:</p>
                         <ul class="mb-3">
                             <li>Building paid products or services using our data</li>
@@ -152,7 +152,7 @@
                     <div class="card-header bg-white border-bottom">
                         <div class="d-flex align-items-center">
                             <div class="icon-circle bg-primary-soft me-3">
-                                <i data-feather="lock" style="color: var(--primary-orange);"></i>
+                                <i data-feather="lock" style="color: var(--ama-midi-blue);"></i>
                             </div>
                             <h2 class="mb-0 h4">Gateway Access Requirements</h2>
                         </div>
@@ -169,7 +169,7 @@
                                         <p class="mb-1 text-muted small">Structured policy data for automated systems</p>
                                         <code class="small">GET /.well-known/ai-policy.json</code>
                                     </div>
-                                    <a href="/.well-known/ai-policy.json" target="_blank" class="btn btn-sm btn-outline-primary">View</a>
+                                    <a href="{{ url_for('public.ai_policy_json') }}" target="_blank" class="btn btn-sm btn-outline-primary">View</a>
                                 </div>
                             </div>
                             <div class="list-group-item">
@@ -184,14 +184,14 @@
                                             <span class="badge bg-secondary">X-AI-Key</span>
                                         </div>
                                     </div>
-                                    <a href="#" class="btn btn-sm btn-outline-primary">Guide</a>
+                                    <a href="{{ url_for('public.events_feed_guide') }}" class="btn btn-sm btn-outline-primary">Guide</a>
                                 </div>
                             </div>
                         </div>
 
                         <div class="alert alert-info mb-0">
                             <i data-feather="book" class="me-2"></i>
-                            <strong>Implementation Guide:</strong> See our documentation for code examples and best practices.
+                            <strong>Implementation Guide:</strong> See our <a href="{{ url_for('public.events_feed_guide') }}" class="alert-link">Events Feed Guide</a> for code examples and best practices.
                         </div>
                     </div>
                 </div>
@@ -201,7 +201,7 @@
                     <div class="card-header bg-white border-bottom">
                         <div class="d-flex align-items-center">
                             <div class="icon-circle bg-primary-soft me-3">
-                                <i data-feather="activity" style="color: var(--primary-orange);"></i>
+                                <i data-feather="activity" style="color: var(--ama-midi-blue);"></i>
                             </div>
                             <h2 class="mb-0 h4">Rate Limits</h2>
                         </div>
@@ -228,7 +228,7 @@
                                 </div>
                             </div>
                         </div>
-                        <p class="mb-0"><small class="text-muted">Rate limits may be adjusted based on usage patterns. Enterprise users may request higher limits by contacting <a href="mailto:legal@funlist.ai">legal@funlist.ai</a>.</small></p>
+                        <p class="mb-0"><small class="text-muted">Rate limits may be adjusted based on usage patterns. Enterprise users may request higher limits by contacting <a href="mailto:policy@amaspc.com">policy@amaspc.com</a>.</small></p>
                     </div>
                 </div>
 
@@ -237,7 +237,7 @@
                     <div class="card-header bg-white border-bottom">
                         <div class="d-flex align-items-center">
                             <div class="icon-circle bg-primary-soft me-3">
-                                <i data-feather="alert-octagon" style="color: var(--accent-coral);"></i>
+                                <i data-feather="alert-octagon" style="color: var(--ama-bright-red);"></i>
                             </div>
                             <h2 class="mb-0 h4">Enforcement & Violations</h2>
                         </div>
@@ -255,16 +255,16 @@
                 </div>
 
                 <!-- Contact & Support -->
-                <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, rgba(255, 107, 53, 0.05) 0%, rgba(255, 107, 74, 0.05) 100%);">
+                <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, rgba(var(--ama-light-blue-rgb, 0, 178, 227), 0.05) 0%, rgba(var(--ama-bright-red-rgb, 233, 45, 41), 0.05) 100%);">
                     <div class="card-body text-center py-5">
-                        <i data-feather="mail" style="width: 48px; height: 48px; stroke: var(--primary-orange);" class="mb-3"></i>
+                        <i data-feather="mail" style="width: 48px; height: 48px; stroke: var(--ama-midi-blue);" class="mb-3"></i>
                         <h3 class="mb-3">Questions or Need a License?</h3>
                         <p class="mb-4">Our AI Gateway team is here to help with licensing inquiries, technical questions, and partnership opportunities.</p>
                         <div class="d-flex gap-3 justify-content-center flex-wrap">
-                            <a href="mailto:legal@funlist.ai" class="btn btn-primary btn-lg">
-                                <i data-feather="mail" class="me-2"></i>legal@funlist.ai
+                            <a href="mailto:policy@amaspc.com" class="btn btn-primary btn-lg">
+                                <i data-feather="mail" class="me-2"></i>policy@amaspc.com
                             </a>
-                            <a href="{{ url_for('ai_gateway') }}" class="btn btn-outline-primary btn-lg">
+                            <a href="{{ url_for('public.ai_gateway') }}" class="btn btn-outline-primary btn-lg">
                                 <i data-feather="home" class="me-2"></i>AI Gateway Home
                             </a>
                         </div>
@@ -277,7 +277,7 @@
 </section>
 
 <!-- Contact Section -->
-<section class="py-5" style="background: linear-gradient(135deg, var(--text-navy) 0%, var(--primary-orange) 100%);">
+<section class="py-5" style="background: linear-gradient(135deg, var(--ama-dark-blue) 0%, var(--ama-midi-blue) 100%);">
     <div class="container">
         <div class="row">
             <div class="col-lg-8 mx-auto text-center">
@@ -285,10 +285,10 @@
                 <h3 class="mb-3" style="color: white;">Questions Or Need A License?</h3>
                 <p class="mb-4" style="color: rgba(255,255,255,0.9);">Our AI Gateway team is here to help with licensing inquiries, technical questions, and partnership opportunities.</p>
                 <div class="d-flex gap-3 justify-content-center flex-wrap">
-                    <a href="mailto:legal@funlist.ai" class="btn btn-light btn-lg">
-                        <i data-feather="mail" class="me-2"></i>legal@funlist.ai
+                    <a href="mailto:policy@amaspc.com" class="btn btn-light btn-lg">
+                        <i data-feather="mail" class="me-2"></i>POLICY@AMASPC.COM
                     </a>
-                    <a href="{{ url_for('ai_gateway') }}" class="btn btn-outline-light btn-lg">
+                    <a href="{{ url_for('public.ai_gateway') }}" class="btn btn-outline-light btn-lg">
                         <i data-feather="arrow-left" class="me-2"></i>AI Gateway Home
                     </a>
                 </div>
@@ -302,35 +302,35 @@
     <div class="container">
         <div class="row">
             <div class="col-lg-10 mx-auto">
-                <h3 class="mb-4 text-center" style="color: var(--primary-orange);">RELATED RESOURCES</h3>
+                <h3 class="mb-4 text-center" style="color: var(--ama-dark-red);">RELATED RESOURCES</h3>
                 <div class="row g-4">
                     <div class="col-md-4">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body text-center">
-                                <i data-feather="file-text" style="width: 40px; height: 40px; stroke: var(--primary-orange);" class="mb-3"></i>
+                                <i data-feather="file-text" style="width: 40px; height: 40px; stroke: var(--ama-midi-blue);" class="mb-3"></i>
                                 <h5>Data License</h5>
                                 <p class="text-muted small mb-3">Detailed legal terms governing data usage</p>
-                                <a href="{{ url_for('ai_data_license') }}" class="btn btn-sm btn-outline-primary">Read License</a>
+                                <a href="{{ url_for('public.ai_license') }}" class="btn btn-sm btn-outline-primary">Read License</a>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body text-center">
-                                <i data-feather="code" style="width: 40px; height: 40px; stroke: var(--primary-orange);" class="mb-3"></i>
-                                <h5>Developer Guide</h5>
+                                <i data-feather="code" style="width: 40px; height: 40px; stroke: var(--ama-midi-blue);" class="mb-3"></i>
+                                <h5>Events Feed Guide</h5>
                                 <p class="text-muted small mb-3">Implementation examples and code samples</p>
-                                <a href="#" class="btn btn-sm btn-outline-primary">Coming Soon</a>
+                                <a href="{{ url_for('public.events_feed_guide') }}" class="btn btn-sm btn-outline-primary">View Guide</a>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body text-center">
-                                <i data-feather="shield" style="width: 40px; height: 40px; stroke: var(--primary-orange);" class="mb-3"></i>
+                                <i data-feather="shield" style="width: 40px; height: 40px; stroke: var(--ama-midi-blue);" class="mb-3"></i>
                                 <h5>Security Policy</h5>
                                 <p class="text-muted small mb-3">Data protection and security standards</p>
-                                <a href="{{ url_for('privacy') }}" class="btn btn-sm btn-outline-primary">Learn More</a>
+                                <a href="{{ url_for('public.security') }}" class="btn btn-sm btn-outline-primary">Learn More</a>
                             </div>
                         </div>
                     </div>
