@@ -1,21 +1,17 @@
 
-<!-- Help & Support Section - Non-sticky buttons integrated into page layout -->
-<div class="help-support-section py-4 bg-white">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-8 text-center">
-                <h5 class="mb-3">Need Help?</h5>
-                <div class="d-flex justify-content-center gap-3 flex-wrap">
-                    <button type="button" class="btn btn-primary btn-lg" id="feedback-btn" data-bs-toggle="modal" data-bs-target="#feedbackModal">
-                        <i class="bi bi-chat-dots"></i> Send Feedback
-                    </button>
-                    <button type="button" class="btn btn-success btn-lg" id="fun-assistant-btn" data-bs-toggle="modal" data-bs-target="#funAssistantModal">
-                        <i class="bi bi-robot"></i> Fun Assistant
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+<!-- Sticky Floating Buttons Container -->
+<div class="floating-buttons-container">
+    <!-- Feedback Button -->
+    <button type="button" class="floating-button feedback-button" id="feedbackButton" data-bs-toggle="modal" data-bs-target="#feedbackModal">
+        <i class="fas fa-comment-dots"></i>
+        <span>Feedback</span>
+    </button>
+    
+    <!-- Fun Assistant Button -->
+    <a href="{{ url_for('fun_assistant_page') }}" class="floating-button fun-assistant-button" id="funAssistantButton">
+        <i class="fas fa-robot"></i>
+        <span>Fun Assistant</span>
+    </a>
 </div>
 
 <!-- Feedback Modal -->
