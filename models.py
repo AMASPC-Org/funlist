@@ -82,12 +82,12 @@ class User(db.Model, UserMixin):
     is_sponsor_last_known = Column(Boolean, default=False)
 
 
-    def is_active(self):
+    def is_active(self):  # type: ignore
         return self.account_active
 
     @property
     def is_event_creator(self):
-        return self.is_admin or self._is_event_creator
+        return self.is_admin or self._is_event_creator  # type: ignore
 
     @is_event_creator.setter
     def is_event_creator(self, value):
@@ -99,11 +99,11 @@ class User(db.Model, UserMixin):
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
+        return check_password_hash(self.password_hash, password)  # type: ignore
 
     def get_preferences(self):
-        if self.user_preferences:
-            return json.loads(self.user_preferences)
+        if self.user_preferences:  # type: ignore
+            return json.loads(self.user_preferences)  # type: ignore
         return {}
 
     def set_preferences(self, preferences_dict):
@@ -129,10 +129,10 @@ class User(db.Model, UserMixin):
                 setattr(self, key, value)
                 
         # If user has multiple roles, track when profile data was updated
-        if self.is_organizer and 'company_name' in data:
+        if self.is_organizer and 'company_name' in data:  # type: ignore
             self.organizer_profile_updated_at = datetime.utcnow()
             
-        if self.is_vendor and ('vendor_type' in data or 'vendor_description' in data):
+        if self.is_vendor and ('vendor_type' in data or 'vendor_description' in data):  # type: ignore
             self.vendor_profile_updated_at = datetime.utcnow()
 
 
@@ -185,7 +185,7 @@ class Event(db.Model):
 
     @hybrid_property
     def is_past(self):
-        return self.end_date < datetime.utcnow() if self.end_date else self.start_date < datetime.utcnow()
+        return self.end_date < datetime.utcnow() if self.end_date else self.start_date < datetime.utcnow()  # type: ignore
 
     def is_advertiser_prohibited(self, advertiser_category_id):
         return any(cat.id == advertiser_category_id for cat in self.prohibited_advertisers)
@@ -199,8 +199,8 @@ class Event(db.Model):
             'id': self.id,
             'title': self.title,
             'description': self.description,
-            'start_date': self.start_date.strftime('%Y-%m-%d') if self.start_date else None,
-            'end_date': self.end_date.strftime('%Y-%m-%d') if self.end_date else None,
+            'start_date': self.start_date.strftime('%Y-%m-%d') if self.start_date else None,  # type: ignore
+            'end_date': self.end_date.strftime('%Y-%m-%d') if self.end_date else None,  # type: ignore
             'location': self.location,
             'city': self.city,
             'state': self.state,
@@ -226,8 +226,8 @@ class Subscriber(db.Model):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     def get_preferences(self):
-        if self.preferences:
-            return json.loads(self.preferences)
+        if self.preferences:  # type: ignore
+            return json.loads(self.preferences)  # type: ignore
         return {}
 
     def set_preferences(self, preferences_dict):
@@ -356,11 +356,11 @@ class AIAccessLog(db.Model):
             'id': self.id,
             'consumer': self.consumer,
             'purpose': self.purpose,
-            'api_key_suffix': self.api_key[-4:] if len(self.api_key) > 4 else '****',
+            'api_key_suffix': self.api_key[-4:] if len(self.api_key) > 4 else '****',  # type: ignore
             'path': self.path,
             'ip_address': self.ip_address,
             'user_agent': self.user_agent,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None,  # type: ignore
             'success': self.success,
             'error_message': self.error_message
         }

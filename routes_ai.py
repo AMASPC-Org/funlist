@@ -43,7 +43,7 @@ def ai_feed():
         logger.warning(f"AI Feed access attempt without API key from {ip_address}")
 
         # Log failed attempt to database
-        log_entry = AIAccessLog(
+        log_entry = AIAccessLog(  # type: ignore
             consumer=consumer or 'unknown',
             purpose=purpose or 'unknown',
             api_key='****',  # Don't log missing key
@@ -65,7 +65,7 @@ def ai_feed():
         logger.warning(f"AI Feed access attempt with invalid API key from {ip_address}")
 
         # Log failed attempt to database
-        log_entry = AIAccessLog(
+        log_entry = AIAccessLog(  # type: ignore
             consumer=consumer or 'unknown',
             purpose=purpose or 'unknown',
             api_key=api_key[-4:] if len(api_key) > 4 else '****',  # Store only last 4 chars
@@ -86,7 +86,7 @@ def ai_feed():
     # Check other required headers
     if not consumer:
         # Log failed attempt to database
-        log_entry = AIAccessLog(
+        log_entry = AIAccessLog(  # type: ignore
             consumer='unknown',
             purpose=purpose or 'unknown',
             api_key=api_key[-4:] if len(api_key) > 4 else '****',
@@ -106,7 +106,7 @@ def ai_feed():
 
     if not purpose:
         # Log failed attempt to database
-        log_entry = AIAccessLog(
+        log_entry = AIAccessLog(  # type: ignore
             consumer=consumer,
             purpose='unknown',
             api_key=api_key[-4:] if len(api_key) > 4 else '****',
@@ -125,7 +125,7 @@ def ai_feed():
         }), 400
 
     # Log successful access to database BEFORE processing request
-    log_entry = AIAccessLog(
+    log_entry = AIAccessLog(  # type: ignore
         consumer=consumer,
         purpose=purpose,
         api_key=api_key[-4:] if len(api_key) > 4 else '****',  # Store only last 4 chars for security
@@ -197,7 +197,7 @@ def ai_feed():
     except Exception as e:
         logger.error(f"Error generating AI feed: {str(e)}", exc_info=True)
         # Log the error in the database as well
-        error_log_entry = AIAccessLog(
+        error_log_entry = AIAccessLog(  # type: ignore
             consumer=consumer or 'unknown',
             purpose=purpose or 'unknown',
             api_key=api_key[-4:] if len(api_key) > 4 else '****',
