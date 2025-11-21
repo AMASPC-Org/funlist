@@ -14,10 +14,10 @@
                 <h1 class="display-4 mb-3" style="color: white;">Community AI Gateway</h1>
                 <p class="lead mb-4" style="color: rgba(255,255,255,0.9);">Developer quickstart guide for accessing FunList data through our AI-friendly endpoints</p>
                 <div class="d-flex gap-3 justify-content-center flex-wrap">
-                    <a href="{{ url_for('ai_policy') }}" class="btn btn-light btn-lg">
+                    <a href="{{ url_for('ai_routes.ai_policy') }}" class="btn btn-light btn-lg">
                         <i data-feather="shield" class="me-2"></i>View AI Policy
                     </a>
-                    <a href="{{ url_for('ai_data_license') }}" class="btn btn-outline-light btn-lg">
+                    <a href="{{ url_for('ai_routes.ai_data_license') }}" class="btn btn-outline-light btn-lg">
                         <i data-feather="file-text" class="me-2"></i>Data License
                     </a>
                 </div>
@@ -50,8 +50,8 @@
                             <h5 class="alert-heading mb-2">Essential Documentation</h5>
                             <p class="mb-2">Before using the AI Gateway, please review our policies:</p>
                             <ul class="mb-0">
-                                <li><a href="{{ url_for('ai_policy') }}" class="alert-link"><strong>AI Access Policy</strong></a> - Human-readable rules and restrictions</li>
-                                <li><a href="{{ url_for('ai_data_license') }}" class="alert-link"><strong>AI Data License</strong></a> - Legal terms governing data usage</li>
+                                <li><a href="{{ url_for('ai_routes.ai_policy') }}" class="alert-link"><strong>AI Access Policy</strong></a> - Human-readable rules and restrictions</li>
+                                <li><a href="{{ url_for('ai_routes.ai_data_license') }}" class="alert-link"><strong>AI Data License</strong></a> - Legal terms governing data usage</li>
                                 <li><a href="/.well-known/ai-policy.json" class="alert-link" target="_blank"><strong>Policy JSON</strong></a> - Machine-readable policy document</li>
                             </ul>
                         </div>
@@ -72,7 +72,7 @@
                         <ol class="mb-0">
                             <li class="mb-4">
                                 <strong>Step 1: Read the Policies</strong><br>
-                                <p class="mb-2">Review our <a href="{{ url_for('ai_policy') }}">AI Access Policy</a> and <a href="{{ url_for('ai_data_license') }}">AI Data License</a> to understand permitted uses and restrictions.</p>
+                                <p class="mb-2">Review our <a href="{{ url_for('ai_routes.ai_policy') }}">AI Access Policy</a> and <a href="{{ url_for('ai_routes.ai_data_license') }}">AI Data License</a> to understand permitted uses and restrictions.</p>
                             </li>
                             <li class="mb-4">
                                 <strong>Step 2: Request an API Key (Pilot Program)</strong><br>
@@ -117,7 +117,7 @@
                             <li><strong>Required Headers:</strong> <code>X-AI-Consumer</code>, <code>X-AI-Purpose</code>, and <code>X-AI-Key</code></li>
                             <li><strong>Attribution:</strong> All AI-generated content must properly attribute FunList</li>
                             <li><strong>Training Use:</strong> Prohibited without written license from <a href="mailto:legal@funlist.ai">legal@funlist.ai</a></li>
-                            <li><strong>Compliance:</strong> Usage must comply with our <a href="{{ url_for('ai_policy') }}">AI Access Policy</a> and <a href="{{ url_for('ai_data_license') }}">Data License</a></li>
+                            <li><strong>Compliance:</strong> Usage must comply with our <a href="{{ url_for('ai_routes.ai_policy') }}">AI Access Policy</a> and <a href="{{ url_for('ai_routes.ai_data_license') }}">Data License</a></li>
                         </ul>
                     </div>
                 </div>
@@ -200,7 +200,7 @@
                                     <div class="flex-grow-1">
                                         <h6 class="mb-1">AI Access Policy</h6>
                                         <p class="mb-1 text-muted small">Human-readable AI access rules and restrictions</p>
-                                        <a href="{{ url_for('ai_policy') }}"><code class="small">/ai-policy</code></a>
+                                        <a href="{{ url_for('ai_routes.ai_policy') }}"><code class="small">/ai-policy</code></a>
                                     </div>
                                     <span class="badge bg-success">Public</span>
                                 </div>
@@ -210,7 +210,7 @@
                                     <div class="flex-grow-1">
                                         <h6 class="mb-1">AI Data License</h6>
                                         <p class="mb-1 text-muted small">Legal terms governing AI data usage</p>
-                                        <a href="{{ url_for('ai_data_license') }}"><code class="small">/ai-data-license</code></a>
+                                        <a href="{{ url_for('ai_routes.ai_data_license') }}"><code class="small">/ai-data-license</code></a>
                                     </div>
                                     <span class="badge bg-success">Public</span>
                                 </div>
@@ -254,7 +254,7 @@
                                 <i data-feather="shield" style="width: 40px; height: 40px; stroke: var(--primary-orange);" class="mb-3"></i>
                                 <h5>AI Access Policy</h5>
                                 <p class="text-muted small mb-3">Clear rules for responsible AI interaction</p>
-                                <a href="{{ url_for('ai_policy') }}" class="btn btn-sm btn-outline-primary">Read Policy</a>
+                                <a href="{{ url_for('ai_routes.ai_policy') }}" class="btn btn-sm btn-outline-primary">Read Policy</a>
                             </div>
                         </div>
                     </div>
@@ -264,7 +264,7 @@
                                 <i data-feather="file-text" style="width: 40px; height: 40px; stroke: var(--primary-orange);" class="mb-3"></i>
                                 <h5>Data License</h5>
                                 <p class="text-muted small mb-3">Detailed legal terms governing data usage</p>
-                                <a href="{{ url_for('ai_data_license') }}" class="btn btn-sm btn-outline-primary">View License</a>
+                                <a href="{{ url_for('ai_routes.ai_data_license') }}" class="btn btn-sm btn-outline-primary">View License</a>
                             </div>
                         </div>
                     </div>

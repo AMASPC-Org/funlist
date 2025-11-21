@@ -14,10 +14,10 @@
                 <h1 class="display-4 mb-3" style="color: white;">AI Access Policy</h1>
                 <p class="lead mb-4" style="color: rgba(255,255,255,0.9);">Clear rules for responsible AI interaction with FunList data</p>
                 <div class="d-flex gap-3 justify-content-center flex-wrap">
-                    <a href="{{ url_for('ai_gateway') }}" class="btn btn-light btn-lg">
+                    <a href="{{ url_for('ai_routes.ai_gateway') }}" class="btn btn-light btn-lg">
                         <i data-feather="arrow-left" class="me-2"></i>Back to AI Gateway
                     </a>
-                    <a href="{{ url_for('ai_data_license') }}" class="btn btn-outline-light btn-lg">
+                    <a href="{{ url_for('ai_routes.ai_data_license') }}" class="btn btn-outline-light btn-lg">
                         <i data-feather="file-text" class="me-2"></i>View Data License
                     </a>
                 </div>
@@ -31,7 +31,7 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
-            <li class="breadcrumb-item"><a href="{{ url_for('ai_gateway') }}">AI Gateway</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('ai_routes.ai_gateway') }}">AI Gateway</a></li>
             <li class="breadcrumb-item active" aria-current="page">AI Access Policy</li>
         </ol>
     </nav>
@@ -264,7 +264,7 @@
                             <a href="mailto:legal@funlist.ai" class="btn btn-primary btn-lg">
                                 <i data-feather="mail" class="me-2"></i>legal@funlist.ai
                             </a>
-                            <a href="{{ url_for('ai_gateway') }}" class="btn btn-outline-primary btn-lg">
+                            <a href="{{ url_for('ai_routes.ai_gateway') }}" class="btn btn-outline-primary btn-lg">
                                 <i data-feather="home" class="me-2"></i>AI Gateway Home
                             </a>
                         </div>
@@ -288,7 +288,7 @@
                     <a href="mailto:legal@funlist.ai" class="btn btn-light btn-lg">
                         <i data-feather="mail" class="me-2"></i>legal@funlist.ai
                     </a>
-                    <a href="{{ url_for('ai_gateway') }}" class="btn btn-outline-light btn-lg">
+                    <a href="{{ url_for('ai_routes.ai_gateway') }}" class="btn btn-outline-light btn-lg">
                         <i data-feather="arrow-left" class="me-2"></i>AI Gateway Home
                     </a>
                 </div>
@@ -310,7 +310,7 @@
                                 <i data-feather="file-text" style="width: 40px; height: 40px; stroke: var(--primary-orange);" class="mb-3"></i>
                                 <h5>Data License</h5>
                                 <p class="text-muted small mb-3">Detailed legal terms governing data usage</p>
-                                <a href="{{ url_for('ai_data_license') }}" class="btn btn-sm btn-outline-primary">Read License</a>
+                                <a href="{{ url_for('ai_routes.ai_data_license') }}" class="btn btn-sm btn-outline-primary">Read License</a>
                             </div>
                         </div>
                     </div>

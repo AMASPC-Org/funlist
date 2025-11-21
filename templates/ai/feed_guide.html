@@ -74,9 +74,9 @@
             <h3 class="mt-5 mb-3">Need Access?</h3>
             <p>To request an API key or learn more about the Community AI Gateway:</p>
             <ul>
-                <li><a href="{{ url_for('ai_gateway') }}">Visit the AI Gateway overview</a></li>
-                <li><a href="{{ url_for('ai_policy') }}">Read our AI Access Policy</a></li>
-                <li><a href="{{ url_for('ai_data_license') }}">Review the AI Data License</a></li>
+                <li><a href="{{ url_for('ai_routes.ai_gateway') }}">Visit the AI Gateway overview</a></li>
+                <li><a href="{{ url_for('ai_routes.ai_policy') }}">Read our AI Access Policy</a></li>
+                <li><a href="{{ url_for('ai_routes.ai_data_license') }}">Review the AI Data License</a></li>
                 <li><a href="{{ url_for('contact') }}">Contact us at legal@funlist.ai</a></li>
             </ul>
         </div>
@@ -95,7 +95,7 @@
                     <a href="mailto:legal@funlist.ai" class="btn btn-light btn-lg">
                         <i data-feather="mail" class="me-2"></i>legal@funlist.ai
                     </a>
-                    <a href="{{ url_for('ai_feed_guide') }}" class="btn btn-outline-light btn-lg">
+                    <a href="{{ url_for('ai_routes.ai_feed_guide') }}" class="btn btn-outline-light btn-lg">
                         <i data-feather="book" class="me-2"></i>Implementation Guide
                     </a>
                 </div>
@@ -120,7 +120,7 @@
                                 </div>
                                 <h5 class="card-title">Data License</h5>
                                 <p class="card-text text-muted">Detailed legal terms governing data usage</p>
-                                <a href="{{ url_for('ai_data_license') }}" class="btn btn-outline-primary">Read License</a>
+                                <a href="{{ url_for('ai_routes.ai_data_license') }}" class="btn btn-outline-primary">Read License</a>
                             </div>
                         </div>
                     </div>
@@ -134,7 +134,7 @@
                                 </div>
                                 <h5 class="card-title">AI Gateway Home</h5>
                                 <p class="card-text text-muted">Overview and developer quickstart</p>
-                                <a href="{{ url_for('ai_gateway') }}" class="btn btn-outline-primary">View Gateway</a>
+                                <a href="{{ url_for('ai_routes.ai_gateway') }}" class="btn btn-outline-primary">View Gateway</a>
                             </div>
                         </div>
                     </div>

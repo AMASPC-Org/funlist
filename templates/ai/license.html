@@ -14,10 +14,10 @@
                 <h1 class="display-4 mb-3" style="color: white;">AI Data License</h1>
                 <p class="lead mb-4" style="color: rgba(255,255,255,0.9);">Legal terms governing AI access and data usage</p>
                 <div class="d-flex gap-3 justify-content-center flex-wrap">
-                    <a href="{{ url_for('ai_gateway') }}" class="btn btn-light btn-lg">
+                    <a href="{{ url_for('ai_routes.ai_gateway') }}" class="btn btn-light btn-lg">
                         <i data-feather="arrow-left" class="me-2"></i>Back to AI Gateway
                     </a>
-                    <a href="{{ url_for('ai_policy') }}" class="btn btn-outline-light btn-lg">
+                    <a href="{{ url_for('ai_routes.ai_policy') }}" class="btn btn-outline-light btn-lg">
                         <i data-feather="shield" class="me-2"></i>View AI Policy
                     </a>
                 </div>
@@ -31,7 +31,7 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
-            <li class="breadcrumb-item"><a href="{{ url_for('ai_gateway') }}">AI Gateway</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('ai_routes.ai_gateway') }}">AI Gateway</a></li>
             <li class="breadcrumb-item active" aria-current="page">AI Data License</li>
         </ol>
     </nav>
@@ -74,7 +74,7 @@
                     </div>
                     <div class="card-body">
                         <ul class="mb-0">
-                            <li><strong>Search & Indexing:</strong> Accessing public event data through our <a href="{{ url_for('ai_gateway') }}">API endpoints</a> for search purposes</li>
+                            <li><strong>Search & Indexing:</strong> Accessing public event data through our <a href="{{ url_for('ai_routes.ai_gateway') }}">API endpoints</a> for search purposes</li>
                             <li><strong>Citation & Reference:</strong> Using our data with proper attribution to FunList</li>
                             <li><strong>Analysis:</strong> Non-commercial research and analysis with appropriate disclosure</li>
                             <li><strong>Integration:</strong> Displaying our events in applications with proper attribution</li>
@@ -164,7 +164,7 @@
                                     <i data-feather="book"></i>
                                 </div>
                             </a>
-                            <a href="{{ url_for('ai_policy') }}" class="list-group-item list-group-item-action">
+                            <a href="{{ url_for('ai_routes.ai_policy') }}" class="list-group-item list-group-item-action">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
                                         <h6 class="mb-1">Human-Readable AI Access Policy</h6>
@@ -231,7 +231,7 @@
                     <a href="mailto:legal@funlist.ai" class="btn btn-light btn-lg">
                         <i data-feather="mail" class="me-2"></i>legal@funlist.ai
                     </a>
-                    <a href="{{ url_for('ai_gateway') }}" class="btn btn-outline-light btn-lg">
+                    <a href="{{ url_for('ai_routes.ai_gateway') }}" class="btn btn-outline-light btn-lg">
                         <i data-feather="arrow-left" class="me-2"></i>AI Gateway Home
                     </a>
                 </div>
@@ -253,7 +253,7 @@
                                 <i data-feather="file-text" style="width: 40px; height: 40px; stroke: var(--primary-orange);" class="mb-3"></i>
                                 <h5>Data License</h5>
                                 <p class="text-muted small mb-3">Detailed legal terms governing data usage</p>
-                                <a href="{{ url_for('ai_data_license') }}" class="btn btn-sm btn-outline-primary">Read License</a>
+                                <a href="{{ url_for('ai_routes.ai_data_license') }}" class="btn btn-sm btn-outline-primary">Read License</a>
                             </div>
                         </div>
                     </div>
@@ -263,7 +263,7 @@
                                 <i data-feather="cpu" style="width: 40px; height: 40px; stroke: var(--primary-orange);" class="mb-3"></i>
                                 <h5>AI Gateway Home</h5>
                                 <p class="text-muted small mb-3">Overview and developer quickstart</p>
-                                <a href="{{ url_for('ai_gateway') }}" class="btn btn-sm btn-outline-primary">View Gateway</a>
+                                <a href="{{ url_for('ai_routes.ai_gateway') }}" class="btn btn-sm btn-outline-primary">View Gateway</a>
                             </div>
                         </div>
                     </div>
