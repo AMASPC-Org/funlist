@@ -28,9 +28,9 @@ def create_app():
     app = Flask(__name__, static_folder='static')
 
     # Production configurations
-    app.config["SECRET_KEY"] = settings.get("FLASK_SECRET_KEY", required=True)
+    app.config["SECRET_KEY"] = os.environ.get("SESSION_SECRET")
     if not app.config["SECRET_KEY"]:
-        raise ValueError("FLASK_SECRET_KEY environment variable must be set")
+        raise ValueError("SESSION_SECRET environment variable must be set")
     
     app.config["SQLALCHEMY_DATABASE_URI"] = settings.get("DATABASE_URL")
     if not app.config["SQLALCHEMY_DATABASE_URI"]:
@@ -123,7 +123,7 @@ def create_app():
         logger.info("Setting up login manager...")
         login_manager = LoginManager()
         login_manager.init_app(app)
-        login_manager.login_view = "login"
+        login_manager.login_view: str = "login"
         login_manager.login_message = "Please log in to access this page."
         login_manager.login_message_category = "info"
         login_manager.session_protection = "strong"
@@ -167,80 +167,6 @@ def create_app():
             logger.error(f"Error loading user {user_id}: {str(e)}", exc_info=True)
             return None
 
-    # Define a dummy get_events function for testing
-    def get_events():
-        return [
-            {
-                'id': 1,
-                'title': 'Thurston County Fair',
-                'description': 'A fun county fair with rides, games, and food.',
-                'start_date': '2025-03-25',
-                'latitude': 47.0379,
-                'longitude': -122.9007,
-                'category': 'Other',
-                'fun_rating': 4
-            },
-            {
-                'id': 2,
-                'title': 'Olympia Music Festival',
-                'description': 'Live music performances by local bands.',
-                'start_date': '2025-03-26',
-                'latitude': 47.0380,
-                'longitude': -122.9008,
-                'category': 'Music',
-                'fun_rating': 5
-            },
-            {
-                'id': 3,
-                'title': 'Art Walk Downtown',
-                'description': 'Explore local art galleries and street performances.',
-                'start_date': '2025-03-27',
-                'latitude': 47.0381,
-                'longitude': -122.9009,
-                'category': 'Arts',
-                'fun_rating': 3
-            },
-            {
-                'id': 4,
-                'title': 'Food Truck Rally',
-                'description': 'A gathering of food trucks with diverse cuisines.',
-                'start_date': '2025-03-28',
-                'latitude': 47.0382,
-                'longitude': -122.9010,
-                'category': 'Food',
-                'fun_rating': 4
-            },
-            {
-                'id': 5,
-                'title': 'Soccer Tournament',
-                'description': 'Local teams compete in a soccer tournament.',
-                'start_date': '2025-03-29',
-                'latitude': 47.0383,
-                'longitude': -122.9011,
-                'category': 'Sports',
-                'fun_rating': 4
-            },
-            {
-                'id': 6,
-                'title': 'Farmers Market',
-                'description': 'Fresh produce and handmade goods.',
-                'start_date': '2025-03-30',
-                'latitude': 47.0384,
-                'longitude': -122.9012,
-                'category': 'Other',
-                'fun_rating': 3
-            },
-            {
-                'id': 7,
-                'title': 'Jazz Night',
-                'description': 'An evening of jazz music at a local venue.',
-                'start_date': '2025-03-31',
-                'latitude': 47.0385,
-                'longitude': -122.9013,
-                'category': 'Music',
-                'fun_rating': 5
-            }
-        ]
 
     # Add route to accept cookies
     @app.route('/accept-cookies', methods=['POST'])

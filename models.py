@@ -41,6 +41,7 @@ class User(db.Model, UserMixin):
     is_organizer = Column(Boolean, default=False)
     is_vendor = Column(Boolean, default=False)
     is_sponsor = Column(Boolean, default=False)  # Added per requirements
+    is_investor = Column(Boolean, default=False)  # Investor role field
     vendor_type = Column(String(50), nullable=True)
     vendor_description = Column(Text, nullable=True)
     vendor_profile_updated_at = Column(DateTime, nullable=True)
