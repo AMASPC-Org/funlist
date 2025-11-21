@@ -53,7 +53,7 @@ The application implements OAuth 2.0 authentication with both Google and GitHub 
 - **Font Awesome**: Icon library for UI elements
 
 ## API Integrations
-- **Google Maps API**: Geocoding and location services (API key: AIzaSyDRkUhORhaKILaPN0-qi9YndDShVov0DVE)
+- **Google Maps API**: Geocoding and location services (API key required - set GOOGLE_MAPS_API_KEY environment variable)
 - **OpenAI API**: AI-powered features and recommendations
 - **Stripe API**: Payment processing (planned implementation)
 

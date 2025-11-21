@@ -216,24 +216,6 @@ a:hover {
     margin: 0 auto;
 }
 
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-    .hero-section {
-        height: 300px;
-    }
-    
-    .hero-content h1 {
-        font-size: 2rem;
-    }
-    
-    .rating-scale {
-        flex-direction: column;
-    }
-    
-    .rating-item {
-        margin-bottom: 1rem;
-    }
-}
 
 /* Map Styles */
 #map {
@@ -257,69 +239,25 @@ a:hover {
     box-shadow: 0 4px 8px rgba(2, 117, 216, 0.2);
 }
 
-/* Fixed Button Alignment & Centering */
-.feedback-button,
-#feedbackButton,
-.fun-assistant-button, 
-#funAssistantButton,
-a[href*="fun-assistant"] {
-    position: fixed !important;
-    bottom: 20px !important;
-    z-index: 1060 !important;
-    height: 50px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    text-align: center !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
-    padding: 10px 15px;
-    border-radius: 30px;
-    font-weight: 600;
-}
+/* Note: Floating button styles moved to base.html inline styles for consistency */
 
-.feedback-button, #feedbackButton {
-    left: 20px !important;
-    background-color: #4e66f8;
-    color: white;
-}
-
-.fun-assistant-button, #funAssistantButton, a[href*="fun-assistant"] {
-    right: 20px !important;
-    background-color: #28a745;
-    color: white;
-}
-
-.subscribe-button {
-    position: fixed !important;
-    right: 20px !important;
-    bottom: 20px !important;
-    z-index: 1060 !important;
-    height: 50px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    text-align: center !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
-    padding: 10px 15px;
-    border-radius: 30px;
-    font-weight: 600;
-    background-color: #28a745;
-    color: white;
-}
-
-.feedback-button i, .subscribe-button i, .fun-assistant-button i, #funAssistantButton i {
-    margin-right: 8px;
-}
-
-/* Compact Cookie Banner */
-.cookie-banner {
-    z-index: 1050 !important;
-    display: flex !important;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    padding: 10px !important;
-    gap: 10px;
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+    .hero-section {
+        height: 300px;
+    }
+    
+    .hero-content h1 {
+        font-size: 2rem;
+    }
+    
+    .rating-scale {
+        flex-direction: column;
+    }
+    
+    .rating-item {
+        margin-bottom: 1rem;
+    }
 }
 
 /* Form Styles */
