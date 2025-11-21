@@ -751,12 +751,9 @@
 }
 
 .alert {
-    position: fixed;
-    top: 70px;
-    left: 0;
-    right: 0;
-    margin-bottom: 0;
-    z-index: 1020;
+    /* Removed fixed positioning to allow normal document flow on AI pages */
+    position: static;
+    margin-bottom: 1rem;
     border-radius: 0;
 }
 
@@ -2061,8 +2058,9 @@ main {
     margin: 2rem auto 0;
 }
 
-/* Alert positioning */
-.alert {
+/* Alert positioning - removed fixed to allow normal flow */
+/* Duplicate rule commented out - see line 756 for active rule */
+/* .alert {
     position: fixed;
     top: 70px;
     left: 0;
@@ -2070,7 +2068,7 @@ main {
     z-index: 1020;
     margin: 0;
     border-radius: 0;
-}
+} */
 
 /* Adjust main content when alert is present */
 .alert+main {

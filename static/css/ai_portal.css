@@ -8,6 +8,16 @@
     position: relative; /* Ensure normal document flow */
 }
 
+/* Override global alert styles for AI pages - ensure static positioning */
+.alert {
+    position: static !important;
+    margin: 1rem 0 !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    z-index: auto !important;
+}
+
 /* AI tools portal styles */
 .tool-card {
     height: 100%;
