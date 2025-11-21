@@ -263,6 +263,25 @@ function setupFloatingButtons() {
     }
 }
 
+// Function to open Fun Assistant from CTA buttons
+function openFunAssistant() {
+    const funAssistantBtn = document.getElementById('funAssistantButton');
+    if (funAssistantBtn) {
+        // Scroll to the floating button
+        funAssistantBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Trigger click on the button
+        setTimeout(() => {
+            funAssistantBtn.click();
+        }, 500);
+    } else {
+        // Fallback: scroll to the Fun Assistant section
+        const section = document.getElementById('fun-assistant');
+        if (section) {
+            section.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+}
+
 // Cookie consent handling
 function setupCookieConsent() {
     // Check if cookie is already set
