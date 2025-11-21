@@ -79,6 +79,14 @@ def create_app():
         raise
 
     try:
+        logger.info("Importing models...")
+        import models  # noqa: F401 (imported for side effects)
+        User = models.User  # Used by login manager below
+    except Exception as e:
+        logger.error(f"Failed to import models: {str(e)}", exc_info=True)
+        raise
+
+    try:
         logger.info("Initializing database...")
         db.init_app(app)
         with app.app_context():
