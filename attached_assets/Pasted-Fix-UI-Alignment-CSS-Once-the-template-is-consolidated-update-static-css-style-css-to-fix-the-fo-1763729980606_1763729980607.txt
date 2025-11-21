@@ -1,0 +1,52 @@
+Fix UI Alignment & CSS
+Once the template is consolidated, update static/css/style.css to fix the following visual bugs on Desktop and Mobile:
+Button Alignment: The "Feedback" (left) and "Fun Assistant" (right) buttons must be aligned to the exact same baseline.
+Set both to bottom: 20px (or bottom: 90px on mobile to sit above the cookie banner).
+Ensure they have a higher z-index than the cookie banner so they are always visible/clickable, even before cookies are accepted.
+Text Centering: The text inside these buttons is not centered.
+Use display: flex, align-items: center, and justify-content: center to fix this.
+Cookie Banner: It is too large on mobile.
+Convert it to a flex container (display: flex) so the text and buttons sit side-by-side on wider screens.
+Reduce padding to make it a thin strip.
+Use this CSS logic for the fix:
+code
+CSS
+/* Fixed Button Alignment & Centering */
+.feedback-button,
+#feedbackButton,
+.fun-assistant-button, 
+#funAssistantButton,
+a[href*="fun-assistant"] {
+    position: fixed !important;
+    bottom: 20px !important; /* Baseline alignment */
+    z-index: 1060 !important; /* Higher than cookie banner */
+    height: 50px !important;
+    display: flex !important;
+    align-items: center !important; /* Vertical centering */
+    justify-content: center !important; /* Horizontal centering */
+    text-align: center !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+}
+
+.feedback-button, #feedbackButton { left: 20px !important; }
+.fun-assistant-button, #funAssistantButton, a[href*="fun-assistant"] { right: 20px !important; }
+
+/* Compact Cookie Banner */
+.cookie-banner {
+    z-index: 1050 !important;
+    display: flex !important;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    padding: 10px !important;
+    gap: 10px;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+    /* Move buttons up so they don't cover the cookie banner buttons */
+    .feedback-button, #feedbackButton,
+    .fun-assistant-button, #funAssistantButton, a[href*="fun-assistant"] {
+        bottom: 85px !important; 
+    }
+}
