@@ -44,13 +44,96 @@
 }
 
 :root {
-    --primary-color: #FF8A00;    /* Brighter Orange from image */
-    --secondary-color: #00D4E0;  /* Bright Teal */
-    --accent-color: #FF6B00;     /* Deeper Orange */
-    --dark-color: #1A1A1A;       /* Darker Gray for contrast */
-    --light-color: #ffffff;      /* White */
-    --text-primary: #1A1A1A;     /* Main text color */
-    --text-secondary: #4A4A4A;   /* Secondary text color */
+    /* New Orange-Centric Color Palette */
+    --primary-orange: #FF6B35;      /* Vibrant Orange - Main brand color */
+    --secondary-cream: #F5E6D3;     /* Warm Cream - Backgrounds */
+    --accent-coral: #FF6B4A;        /* Coral - Hover states & accents */
+    --text-navy: #1a2332;           /* Deep Navy - Primary text */
+    --text-secondary: #4a5568;      /* Softer dark - Secondary text */
+    --bg-warm-white: #FFF9F5;       /* Warm White - Light backgrounds */
+    --bg-peach-tint: #FFE8DC;       /* Peachy tint - Section backgrounds */
+    --orange-light: #FF8A5B;        /* Lighter orange for gradients */
+    --orange-dark: #E55A2B;         /* Darker orange for emphasis */
+    
+    /* Legacy mappings for backward compatibility */
+    --primary-color: var(--primary-orange);
+    --secondary-color: var(--secondary-cream);
+    --accent-color: var(--accent-coral);
+    --dark-color: var(--text-navy);
+    --light-color: var(--bg-warm-white);
+    --text-primary: var(--text-navy);
+}
+
+/* Override Bootstrap's background utilities with warm colors */
+.bg-light {
+    background-color: var(--bg-peach-tint) !important;
+}
+
+.bg-white {
+    background-color: var(--bg-warm-white) !important;
+}
+
+.bg-secondary {
+    background-color: var(--secondary-cream) !important;
+}
+
+.text-muted {
+    color: var(--text-secondary) !important;
+}
+
+/* Form Controls with Orange Theme */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary-orange);
+    box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25);
+}
+
+.form-check-input:checked {
+    background-color: var(--primary-orange);
+    border-color: var(--primary-orange);
+}
+
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25);
+}
+
+/* Modal Headers with Orange Accent */
+.modal-header {
+    background: linear-gradient(135deg, var(--bg-warm-white) 0%, var(--secondary-cream) 100%);
+    border-bottom: 2px solid var(--primary-orange);
+}
+
+.modal-title {
+    color: var(--text-navy);
+    font-weight: 600;
+}
+
+/* Cards with Orange Theme */
+.card {
+    border: 1px solid rgba(255, 107, 53, 0.1);
+    box-shadow: 0 2px 4px rgba(255, 107, 53, 0.05);
+}
+
+.card:hover {
+    box-shadow: 0 4px 8px rgba(255, 107, 53, 0.1);
+}
+
+.card-header {
+    background: var(--secondary-cream);
+    border-bottom: 2px solid var(--primary-orange);
+}
+
+/* Badges with Orange Theme */
+.badge.bg-primary {
+    background-color: var(--primary-orange) !important;
+}
+
+.badge.bg-success {
+    background-color: var(--orange-light) !important;
+}
+
+.badge.bg-info {
+    background-color: var(--accent-coral) !important;
 }
 
 /* Enhanced Feature Boxes */
@@ -59,17 +142,19 @@
     transition: all 0.3s ease;
     border: 2px solid transparent;
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    background-color: white;
 }
 
 .feature-box:hover {
     transform: translateY(-5px);
-    border-color: var(--primary-color);
-    box-shadow: 0 8px 24px rgba(255, 138, 0, 0.15);
+    border-color: var(--primary-orange);
+    box-shadow: 0 8px 24px rgba(255, 107, 53, 0.15);
+    background-color: var(--bg-warm-white);
 }
 
 /* Enhanced Fun Assistant Section */
 .fun-assistant-section {
-    background: linear-gradient(135deg, rgba(255,138,0,0.05) 0%, rgba(0,212,224,0.05) 100%);
+    background: linear-gradient(135deg, var(--bg-peach-tint) 0%, var(--secondary-cream) 100%);
 }
 
 /* About page CTA buttons */
@@ -113,7 +198,7 @@
     padding: 1.5rem;
     background: white;
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.08);
     transition: all 0.3s ease;
     text-align: center;
     display: flex;
@@ -121,6 +206,14 @@
     align-items: center;
     gap: 0.5rem;
     flex: 1;
+    border: 2px solid transparent;
+}
+
+.rating-scale .rating-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(255, 107, 53, 0.15);
+    border-color: var(--primary-orange);
+    background-color: var(--bg-warm-white);
 }
 
 .rating-scale .rating-item:hover {
@@ -151,7 +244,7 @@
     border-width: 2px !important;
 }
 
-/* Enhanced Buttons */
+/* Enhanced Buttons - Orange Theme */
 .btn {
     font-weight: 500;
     padding: 0.5rem 1rem;
@@ -159,61 +252,107 @@
     transition: all 0.2s ease-in-out;
 }
 
-.btn.btn-primary {
-    background: var(--primary-color);
-    border: none;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+/* Primary buttons - Orange */
+.btn-primary, .btn.btn-primary {
+    background: var(--primary-orange);
+    border-color: var(--primary-orange);
+    color: white;
+    box-shadow: 0 2px 4px rgba(255, 107, 53, 0.2);
 }
 
-.btn.btn-primary:hover {
-    background: var(--accent-color);
+.btn-primary:hover, .btn.btn-primary:hover,
+.btn-primary:focus, .btn.btn-primary:focus,
+.btn-primary:active, .btn.btn-primary:active {
+    background: var(--orange-dark);
+    border-color: var(--orange-dark);
+    color: white;
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
 }
 
-.btn.btn-outline-primary {
-    border: 2px solid var(--primary-color);
-    color: var(--primary-color);
-}
-
-.btn.btn-outline-primary:hover {
-    background: var(--primary-color);
+/* Success buttons - Also Orange (for consistency) */
+.btn-success, .btn.btn-success {
+    background: var(--primary-orange);
+    border-color: var(--primary-orange);
     color: white;
 }
 
-.btn.btn-outline-secondary {
-    border: 2px solid #6c757d;
-    color: #6c757d;
-}
-
-.btn.btn-outline-secondary:hover {
-    background: #6c757d;
+.btn-success:hover, .btn.btn-success:hover,
+.btn-success:focus, .btn.btn-success:focus {
+    background: var(--orange-dark);
+    border-color: var(--orange-dark);
     color: white;
 }
 
-.btn.btn-outline-danger {
-    border: 2px solid #dc3545;
-    color: #dc3545;
+/* Outline Primary - Orange */
+.btn-outline-primary, .btn.btn-outline-primary {
+    color: var(--primary-orange);
+    border: 2px solid var(--primary-orange);
+    background: transparent;
 }
 
-.btn.btn-outline-danger:hover {
-    background: #dc3545;
+.btn-outline-primary:hover, .btn.btn-outline-primary:hover {
+    background: var(--primary-orange);
+    border-color: var(--primary-orange);
     color: white;
 }
 
-.btn.btn-primary:hover {
-    background: linear-gradient(135deg, var(--accent-color) 0%, var(--primary-color) 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(255,138,0,0.3);
+/* Secondary buttons - Cream */
+.btn-secondary, .btn.btn-secondary {
+    background: var(--secondary-cream);
+    border-color: var(--secondary-cream);
+    color: var(--text-navy);
 }
 
-.btn.btn-outline-primary {
-    color: var(--primary-color);
-    border-color: var(--primary-color);
+.btn-secondary:hover, .btn.btn-secondary:hover {
+    background: var(--bg-peach-tint);
+    border-color: var(--bg-peach-tint);
+    color: var(--text-navy);
 }
 
-.btn.btn-outline-primary:hover {
-    background-color: var(--primary-color);
+/* Outline Secondary */
+.btn-outline-secondary, .btn.btn-outline-secondary {
+    border: 2px solid var(--secondary-cream);
+    color: var(--text-navy);
+    background: transparent;
+}
+
+.btn-outline-secondary:hover, .btn.btn-outline-secondary:hover {
+    background: var(--secondary-cream);
+    color: var(--text-navy);
+}
+
+/* Info buttons - Lighter Orange */
+.btn-info, .btn.btn-info {
+    background: var(--orange-light);
+    border-color: var(--orange-light);
+    color: white;
+}
+
+.btn-info:hover, .btn.btn-info:hover {
+    background: var(--primary-orange);
+    border-color: var(--primary-orange);
+    color: white;
+}
+
+/* Danger buttons - Coral accent */
+.btn-danger, .btn.btn-danger,
+.btn-outline-danger, .btn.btn-outline-danger {
+    border-color: var(--accent-coral);
+}
+
+.btn-danger, .btn.btn-danger {
+    background: var(--accent-coral);
+    color: white;
+}
+
+.btn-outline-danger, .btn.btn-outline-danger {
+    color: var(--accent-coral);
+    background: transparent;
+}
+
+.btn-outline-danger:hover, .btn.btn-outline-danger:hover {
+    background: var(--accent-coral);
     color: white;
 }
 
@@ -584,8 +723,9 @@
 
 /* Navbar Styles */
 .navbar {
-    background-color: #fff !important;
-    box-shadow: 0px 2px 12px rgba(0,0,0,0.1);
+    background: white !important;
+    border-bottom: 3px solid var(--primary-orange);
+    box-shadow: 0px 2px 12px rgba(255, 107, 53, 0.15);
     padding: 0.75rem 0;
     min-height: 70px;
     position: fixed;
@@ -613,7 +753,7 @@
 }
 
 .navbar-brand {
-    color: var(--primary-color);
+    color: var(--primary-orange) !important;
     font-weight: 700;
     z-index: 1031;
     text-align: center;
@@ -625,7 +765,7 @@
 .navbar-brand span {
     display: inline-block;
     font-size: 1.5rem;
-    color: var(--primary-color);
+    color: var(--primary-orange) !important;
 }
 
 /* Ensure brand stays centered on all screens */
@@ -659,14 +799,16 @@
 }
 
 .navbar .nav-link {
-    color: var(--text-primary) !important;
+    color: var(--text-navy) !important;
     font-weight: 500;
     padding: 0.5rem 1rem;
-    transition: color 0.2s ease;
+    transition: all 0.2s ease;
 }
 
 .navbar .nav-link:hover {
-    color: var(--primary-color) !important;
+    color: var(--primary-orange) !important;
+    background-color: var(--bg-warm-white);
+    border-radius: 4px;
 }
 
 .navbar .dropdown-menu {
@@ -1686,7 +1828,7 @@ body.is-scrolled .floating-buttons-container {
 .floating-button {
     padding: 0.6rem 1rem;
     border-radius: 2rem;
-    background-color: #4CAF50;
+    background-color: var(--primary-orange);
     color: white;
     font-weight: 600;
     display: flex;
@@ -1694,7 +1836,7 @@ body.is-scrolled .floating-buttons-container {
     justify-content: center;
     height: 2.4rem;
     min-height: 2.4rem;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 10px rgba(255, 107, 53, 0.3);
     cursor: pointer;
     transition: all 0.3s ease;
     pointer-events: auto;
@@ -1710,7 +1852,8 @@ body.is-scrolled .floating-buttons-container {
 
 .floating-button:hover {
     transform: translateY(-3px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+    background-color: var(--orange-dark);
     color: white; /* Maintain text color on hover */
     text-decoration: none;
 }
@@ -1721,27 +1864,28 @@ body.is-scrolled .floating-buttons-container {
 }
 
 .feedback-button {
-    background-color: #5d78ff;
+    background-color: var(--orange-light);
 }
 
 .subscribe-button {
-    background-color: #4CAF50;
+    background-color: var(--primary-orange);
 }
 
 .fun-assistant-button {
-    background-color: #FF8A00; /* Primary brand color */
-    animation: pulse-light 2s infinite;
+    background-color: var(--primary-orange); /* Primary brand color */
+    background: linear-gradient(135deg, var(--primary-orange) 0%, var(--orange-dark) 100%);
+    animation: pulse-orange 2s infinite;
 }
 
-@keyframes pulse-light {
+@keyframes pulse-orange {
     0% {
-        box-shadow: 0 0 0 0 rgba(255, 138, 0, 0.4);
+        box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.4);
     }
     70% {
-        box-shadow: 0 0 0 10px rgba(255, 138, 0, 0);
+        box-shadow: 0 0 0 10px rgba(255, 107, 53, 0);
     }
     100% {
-        box-shadow: 0 0 0 0 rgba(255, 138, 0, 0);
+        box-shadow: 0 0 0 0 rgba(255, 107, 53, 0);
     }
 }
 
@@ -1790,14 +1934,14 @@ body.user-logged-in .floating-button {
 
     /* Different styles for each button */
     .feedback-button {
-        background: linear-gradient(135deg, #4e54c8, #8f94fb);
-        box-shadow: 0 2px 15px rgba(78, 84, 200, 0.6);
+        background: linear-gradient(135deg, var(--orange-light), var(--primary-orange));
+        box-shadow: 0 2px 15px rgba(255, 138, 91, 0.6);
     }
 
     .fun-assistant-button {
-        background: linear-gradient(135deg, #FF8A00, #FF6B00);
-        box-shadow: 0 2px 15px rgba(255, 138, 0, 0.6);
-        animation: pulse-light 2s infinite;
+        background: linear-gradient(135deg, var(--primary-orange), var(--orange-dark));
+        box-shadow: 0 2px 15px rgba(255, 107, 53, 0.6);
+        animation: pulse-orange 2s infinite;
     }
 
     /* When cookie consent is visible, move buttons up */
