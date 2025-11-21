@@ -320,7 +320,7 @@
 <footer class="footer mt-5 py-4 bg-light">
     <div class="container">
         <div class="row">
-            <div class="col-md-3 col-sm-6 mb-4">
+            <div class="col-lg col-md-3 col-sm-6 mb-4">
                 <h5 class="mb-3">COMPANY</h5>
                 <ul class="list-unstyled mb-0">
                     <li class="mb-2"><a href="{{ url_for('about') }}">About Us</a></li>
@@ -329,7 +329,7 @@
                     <li class="mb-2"><a href="#">Advertise with Us</a></li>
                 </ul>
             </div>
-            <div class="col-md-3 col-sm-6 mb-4">
+            <div class="col-lg col-md-3 col-sm-6 mb-4">
                 <h5 class="mb-3">ACCOUNT</h5>
                 <ul class="list-unstyled mb-0">
                     <li class="mb-2"><a href="{{ url_for('login') }}" class="login-link">Sign In</a></li>
@@ -337,14 +337,23 @@
                     <li class="mb-2"><a href="{{ url_for('submit_event') }}">Add Event</a></li>
                 </ul>
             </div>
-            <div class="col-md-3 col-sm-6 mb-4">
+            <div class="col-lg col-md-3 col-sm-6 mb-4">
                 <h5 class="mb-3">LEGAL</h5>
                 <ul class="list-unstyled mb-0">
                     <li class="mb-2"><a href="{{ url_for('terms') }}">Terms & Conditions</a></li>
                     <li class="mb-2"><a href="{{ url_for('privacy') }}" class="footer-link">Privacy Policy</a></li>
                 </ul>
             </div>
-            <div class="col-md-3 col-sm-6 mb-4 ms-auto">
+            <div class="col-lg col-md-3 col-sm-6 mb-4">
+                <h5 class="mb-3">AI & DEVELOPERS</h5>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><a href="{{ url_for('ai_gateway') }}">AI Gateway</a></li>
+                    <li class="mb-2"><a href="{{ url_for('ai_policy') }}">AI Policy</a></li>
+                    <li class="mb-2"><a href="{{ url_for('ai_data_license') }}">AI Data License</a></li>
+                    <li class="mb-2"><a href="/.well-known/ai-policy.json" target="_blank">AI Policy JSON</a></li>
+                </ul>
+            </div>
+            <div class="col-lg col-md-3 col-sm-6 mb-4">
                 <h5 class="mb-3">NETWORK</h5>
                 <ul class="list-unstyled mb-0">
                     <li class="mb-2"><a href="https://amaspc.com" target="_blank">American Marketing Alliance SPC</a></li>
