@@ -324,6 +324,48 @@ class HelpArticle(db.Model):
         return f"<HelpArticle {self.title}>"
 
 
+class AIAccessLog(db.Model):
+    """Track AI system access to data feeds and API endpoints"""
+    __tablename__ = 'ai_access_logs'
+    __table_args__ = {'extend_existing': True}
+
+    id = Column(Integer, primary_key=True)
+    consumer = Column(String(255), nullable=False, index=True)  # X-AI-Consumer header value
+    purpose = Column(String(255), nullable=False)  # X-AI-Purpose header value
+    api_key = Column(String(64), nullable=False)  # Hashed or truncated API key (last 4 chars)
+    path = Column(String(255), nullable=False)  # Request path
+    ip_address = Column(String(45), nullable=False, index=True)  # IPv6 compatible
+    user_agent = Column(Text, nullable=True)  # User agent string
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+    success = Column(Boolean, default=True)  # Track if request was successful
+    error_message = Column(String(255), nullable=True)  # Store error if failed
+    
+    # Composite index for efficient report queries
+    __table_args__ = (
+        db.Index('idx_ai_access_created_desc', created_at.desc()),
+        db.Index('idx_ai_access_consumer_created', consumer, created_at.desc()),
+        {'extend_existing': True}
+    )
+    
+    def __repr__(self):
+        return f"<AIAccessLog {self.consumer} - {self.path} - {self.created_at}>"
+    
+    def to_dict(self):
+        """Convert to dictionary for JSON serialization"""
+        return {
+            'id': self.id,
+            'consumer': self.consumer,
+            'purpose': self.purpose,
+            'api_key_suffix': self.api_key[-4:] if len(self.api_key) > 4 else '****',
+            'path': self.path,
+            'ip_address': self.ip_address,
+            'user_agent': self.user_agent,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'success': self.success,
+            'error_message': self.error_message
+        }
+
+
 # class CharterMember(db.Model):
 #     __tablename__ = 'charter_members'
 #

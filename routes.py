@@ -1247,3 +1247,161 @@ def register_ai_governance_routes(app):
     def ai_feed_guide():
         """Render the AI Feed Guide page with technical documentation"""
         return render_template('ai/feed_guide.html')
+    
+    @app.route('/ai-feed.json')
+    def ai_feed_json():
+        """Authenticated AI feed endpoint for events data"""
+        from models import Event, AIAccessLog
+        import hmac
+        import hashlib
+        
+        # Check required headers
+        consumer = request.headers.get('X-AI-Consumer')
+        purpose = request.headers.get('X-AI-Purpose')
+        api_key = request.headers.get('X-AI-Key')
+        
+        # Get IP address (accounting for proxy)
+        ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
+        if ip_address and ',' in ip_address:
+            ip_address = ip_address.split(',')[0].strip()
+        
+        user_agent = request.headers.get('User-Agent', '')
+        
+        # Validate headers presence
+        if not all([consumer, purpose, api_key]):
+            # Log failed attempt if we have at least consumer info
+            if consumer:
+                log_entry = AIAccessLog(
+                    consumer=consumer or 'unknown',
+                    purpose=purpose or 'unknown',
+                    api_key='****',  # Don't log full key
+                    path=request.path,
+                    ip_address=ip_address,
+                    user_agent=user_agent,
+                    success=False,
+                    error_message='Missing required headers'
+                )
+                db.session.add(log_entry)
+                db.session.commit()
+            
+            return jsonify({
+                'error': 'Missing required headers',
+                'required': ['X-AI-Consumer', 'X-AI-Purpose', 'X-AI-Key'],
+                'documentation': url_for('ai_feed_guide', _external=True)
+            }), 401
+        
+        # Validate API key (simple validation for now - in production, use env vars or database)
+        # For demo purposes, accept 'demo' key or check against environment variable
+        valid_keys = ['demo']
+        env_key = os.environ.get('AI_API_KEY')
+        if env_key:
+            valid_keys.append(env_key)
+        
+        key_valid = api_key in valid_keys
+        
+        # Log the access attempt
+        log_entry = AIAccessLog(
+            consumer=consumer,
+            purpose=purpose,
+            api_key=api_key[-4:] if len(api_key) > 4 else '****',  # Store only last 4 chars
+            path=request.path,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            success=key_valid,
+            error_message=None if key_valid else 'Invalid API key'
+        )
+        db.session.add(log_entry)
+        db.session.commit()
+        
+        if not key_valid:
+            return jsonify({
+                'error': 'Invalid API key',
+                'contact': 'legal@funlist.ai'
+            }), 403
+        
+        # Query upcoming events (limit to 10)
+        try:
+            events = Event.query.filter(
+                Event.start_date >= datetime.utcnow(),
+                Event.status == 'approved'
+            ).order_by(Event.start_date).limit(10).all()
+            
+            # Format response following AI feed specification
+            feed_data = {
+                'version': '1.0',
+                'generated_at': datetime.utcnow().isoformat() + 'Z',
+                'license': 'Training use prohibited without written license from legal@funlist.ai',
+                'attribution': 'Data provided by FunList.ai',
+                'items': []
+            }
+            
+            for event in events:
+                item = {
+                    'id': event.id,
+                    'title': event.title,
+                    'content': event.description or '',
+                    'timestamp': event.created_at.isoformat() + 'Z' if event.created_at else None,
+                    'event_date': event.start_date.isoformat() if event.start_date else None,
+                    'location': {
+                        'venue': event.location,
+                        'city': event.city,
+                        'state': event.state,
+                        'coordinates': {
+                            'lat': event.latitude,
+                            'lng': event.longitude
+                        } if event.latitude and event.longitude else None
+                    },
+                    'category': event.category,
+                    'fun_rating': event.fun_meter,
+                    'url': url_for('event_details', event_id=event.id, _external=True) if event.id else None
+                }
+                feed_data['items'].append(item)
+            
+            response = jsonify(feed_data)
+            response.headers['Cache-Control'] = 'public, max-age=300'  # Cache for 5 minutes
+            response.headers['X-RateLimit-Limit'] = '200'
+            response.headers['X-RateLimit-Remaining'] = '199'  # Would be calculated in production
+            return response
+            
+        except Exception as e:
+            app.logger.error(f"Error generating AI feed: {str(e)}")
+            return jsonify({
+                'error': 'Internal server error',
+                'message': 'Unable to generate feed'
+            }), 500
+    
+    @app.route('/ai-report')
+    @login_required
+    def ai_access_report():
+        """Admin-only dashboard for monitoring AI access"""
+        from models import AIAccessLog
+        
+        # Check if user is admin
+        if not current_user.is_admin:
+            flash('You do not have permission to view this page.', 'danger')
+            return redirect(url_for('index'))
+        
+        # Query recent access logs
+        recent_logs = AIAccessLog.query.order_by(
+            AIAccessLog.created_at.desc()
+        ).limit(50).all()
+        
+        # Calculate statistics
+        total_requests = AIAccessLog.query.count()
+        successful_requests = AIAccessLog.query.filter_by(success=True).count()
+        failed_requests = AIAccessLog.query.filter_by(success=False).count()
+        
+        # Get unique consumers
+        unique_consumers = db.session.query(
+            AIAccessLog.consumer
+        ).distinct().count()
+        
+        stats = {
+            'total_requests': total_requests,
+            'successful_requests': successful_requests,
+            'failed_requests': failed_requests,
+            'success_rate': round((successful_requests / total_requests * 100) if total_requests > 0 else 0, 1),
+            'unique_consumers': unique_consumers
+        }
+        
+        return render_template('ai/report.html', logs=recent_logs, stats=stats)

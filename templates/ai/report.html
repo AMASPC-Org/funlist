@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}AI Access Report - FunList.ai{% endblock %}
+
+{% block content %}
+<!-- Admin Header -->
+<section class="ai-portal-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto text-center">
+                <div class="mb-3">
+                    <i data-feather="activity" style="width: 64px; height: 64px; stroke: white;"></i>
+                </div>
+                <h1 class="display-4 mb-3" style="color: white;">AI Access Report</h1>
+                <p class="lead mb-4" style="color: rgba(255,255,255,0.9);">Monitor API usage and access patterns</p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <a href="{{ url_for('ai_gateway') }}" class="btn btn-light btn-lg">
+                        <i data-feather="cpu" class="me-2"></i>AI Gateway
+                    </a>
+                    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-light btn-lg">
+                        <i data-feather="settings" class="me-2"></i>Admin Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Statistics Cards -->
+<section class="py-4">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i data-feather="server" style="width: 32px; height: 32px; stroke: var(--primary-orange);" class="mb-2"></i>
+                        <h3 class="mb-0">{{ stats.total_requests }}</h3>
+                        <p class="text-muted mb-0">Total Requests</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i data-feather="check-circle" style="width: 32px; height: 32px; stroke: #28a745;" class="mb-2"></i>
+                        <h3 class="mb-0">{{ stats.successful_requests }}</h3>
+                        <p class="text-muted mb-0">Successful</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i data-feather="x-circle" style="width: 32px; height: 32px; stroke: #dc3545;" class="mb-2"></i>
+                        <h3 class="mb-0">{{ stats.failed_requests }}</h3>
+                        <p class="text-muted mb-0">Failed</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i data-feather="users" style="width: 32px; height: 32px; stroke: var(--primary-orange);" class="mb-2"></i>
+                        <h3 class="mb-0">{{ stats.unique_consumers }}</h3>
+                        <p class="text-muted mb-0">Unique Consumers</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Success Rate -->
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <h5 class="mb-0">Success Rate</h5>
+                            <span class="badge {% if stats.success_rate >= 90 %}bg-success{% elif stats.success_rate >= 70 %}bg-warning{% else %}bg-danger{% endif %}">
+                                {{ stats.success_rate }}%
+                            </span>
+                        </div>
+                        <div class="progress mt-2" style="height: 10px;">
+                            <div class="progress-bar {% if stats.success_rate >= 90 %}bg-success{% elif stats.success_rate >= 70 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                 role="progressbar" 
+                                 style="width: {{ stats.success_rate }}%;" 
+                                 aria-valuenow="{{ stats.success_rate }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Access Logs Table -->
+<section class="py-4">
+    <div class="container">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom">
+                <div class="d-flex align-items-center justify-content-between">
+                    <h4 class="mb-0">Recent Access Logs (Last 50)</h4>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="window.location.reload();">
+                        <i data-feather="refresh-cw" class="me-1"></i>Refresh
+                    </button>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Consumer</th>
+                                <th>Purpose</th>
+                                <th>Path</th>
+                                <th>IP Address</th>
+                                <th>API Key</th>
+                                <th>Status</th>
+                                <th>Error</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in logs %}
+                            <tr>
+                                <td class="text-nowrap">
+                                    <small>{{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') if log.created_at else 'N/A' }}</small>
+                                </td>
+                                <td>
+                                    <strong>{{ log.consumer }}</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ log.purpose }}</span>
+                                </td>
+                                <td>
+                                    <code>{{ log.path }}</code>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ log.ip_address }}</small>
+                                </td>
+                                <td>
+                                    <code>****{{ log.api_key[-4:] if log.api_key and len(log.api_key) > 4 else '****' }}</code>
+                                </td>
+                                <td>
+                                    {% if log.success %}
+                                        <span class="badge bg-success">
+                                            <i data-feather="check" style="width: 12px; height: 12px;"></i> Success
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger">
+                                            <i data-feather="x" style="width: 12px; height: 12px;"></i> Failed
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if log.error_message %}
+                                        <small class="text-danger">{{ log.error_message }}</small>
+                                    {% else %}
+                                        <small class="text-muted">-</small>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center py-4 text-muted">
+                                    <i data-feather="inbox" style="width: 48px; height: 48px;" class="mb-3"></i>
+                                    <p>No access logs yet</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- User Agent Details (Optional) -->
+{% if logs %}
+<section class="py-4">
+    <div class="container">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom">
+                <h5 class="mb-0">User Agent Analysis</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Consumer</th>
+                                <th>User Agent</th>
+                                <th>Last Access</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in logs[:10] %}
+                            {% if log.user_agent %}
+                            <tr>
+                                <td><strong>{{ log.consumer }}</strong></td>
+                                <td><small class="text-muted">{{ log.user_agent[:100] }}{% if log.user_agent|length > 100 %}...{% endif %}</small></td>
+                                <td><small>{{ log.created_at.strftime('%Y-%m-%d %H:%M') if log.created_at else 'N/A' }}</small></td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Help Section -->
+<section class="bg-light py-4">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <i data-feather="help-circle" style="width: 48px; height: 48px; stroke: var(--primary-orange);" class="mb-3"></i>
+                <h4 class="mb-3">Understanding the Report</h4>
+                <p class="text-muted mb-4">
+                    This report shows all API access attempts to the AI feed endpoints. Monitor for unusual patterns, 
+                    excessive requests from single consumers, or repeated authentication failures that might indicate 
+                    unauthorized access attempts.
+                </p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <a href="{{ url_for('ai_feed_guide') }}" class="btn btn-outline-primary">
+                        <i data-feather="book" class="me-2"></i>API Documentation
+                    </a>
+                    <a href="{{ url_for('ai_policy') }}" class="btn btn-outline-primary">
+                        <i data-feather="shield" class="me-2"></i>Access Policy
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,8 +1,10 @@
 
 import os
 import logging
-from flask import Blueprint, request, jsonify
-from models import Event
+from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
+from flask_login import login_required, current_user
+from models import Event, AIAccessLog
+from db_init import db
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
@@ -30,16 +32,51 @@ def ai_feed():
     consumer = request.headers.get('X-AI-Consumer')
     purpose = request.headers.get('X-AI-Purpose')
     
+    # Get IP address (accounting for proxy)
+    ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
+    if ip_address and ',' in ip_address:
+        ip_address = ip_address.split(',')[0].strip()
+    
+    user_agent = request.headers.get('User-Agent', '')
+    
     # Check API key first
     if not api_key:
-        logger.warning(f"AI Feed access attempt without API key from {request.remote_addr}")
+        logger.warning(f"AI Feed access attempt without API key from {ip_address}")
+        # Log failed attempt
+        log_entry = AIAccessLog(
+            consumer=consumer or 'unknown',
+            purpose=purpose or 'unknown',
+            api_key='****',
+            path=request.path,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            success=False,
+            error_message='Missing API key'
+        )
+        db.session.add(log_entry)
+        db.session.commit()
+        
         return jsonify({
             "error": "Missing X-AI-Key header",
             "message": "API key is required for authentication"
         }), 401
     
     if api_key not in VALID_API_KEYS:
-        logger.warning(f"AI Feed access attempt with invalid API key from {request.remote_addr}")
+        logger.warning(f"AI Feed access attempt with invalid API key from {ip_address}")
+        # Log failed attempt
+        log_entry = AIAccessLog(
+            consumer=consumer or 'unknown',
+            purpose=purpose or 'unknown',
+            api_key=api_key[-4:] if len(api_key) > 4 else '****',
+            path=request.path,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            success=False,
+            error_message='Invalid API key'
+        )
+        db.session.add(log_entry)
+        db.session.commit()
+        
         return jsonify({
             "error": "Invalid API key",
             "message": "The provided API key is not valid"

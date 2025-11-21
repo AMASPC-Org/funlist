@@ -1,0 +1,283 @@
+
+# AI Gateway System Documentation
+
+## Overview
+The AI Gateway system provides a structured, policy-driven approach for AI systems and developers to access American Marketing Alliance's public data while maintaining security, attribution, and usage controls.
+
+---
+
+## Page Inventory & Descriptions
+
+### 1. AI Gateway (`/ai-gateway`)
+**Template:** `templates/ai_gateway.html`  
+**Route:** `routes/public_routes.py` - `@public_bp.route('/ai-gateway')`
+
+**Purpose:**  
+Central hub and developer quickstart guide for the Community AI Gateway. Serves as the main landing page for AI developers and systems wanting to access AMA data.
+
+**Key Functions:**
+- Provides a 3-step developer quickstart guide
+- Lists all available endpoints with descriptions
+- Shows example curl commands with required headers
+- Links to policy documentation
+- Displays rate limits and access requirements
+
+**User Audience:** AI developers, system integrators, partner organizations
+
+---
+
+### 2. AI Access Policy (`/ai-policy`)
+**Template:** `templates/ai_policy.html`  
+**Route:** `routes/public_routes.py` - `@public_bp.route('/ai-policy')`
+
+**Purpose:**  
+Human-readable HTML page explaining AMA's AI access rules, restrictions, and licensing requirements. This is the policy in plain language for people to read and understand.
+
+**Key Functions:**
+- Explains training use prohibition (requires written license)
+- Details attribution requirements
+- Specifies commercial use restrictions
+- Documents gateway access requirements
+- Provides rate limit information
+- Lists contact information for licensing inquiries
+
+**User Audience:** Business stakeholders, legal teams, AI product managers, anyone evaluating compliance requirements
+
+---
+
+### 3. AI Data License (`/ai-license`)
+**Template:** `templates/ai_license.html`  
+**Route:** `routes/public_routes.py` - `@public_bp.route('/ai-license')`
+
+**Purpose:**  
+Detailed licensing terms governing the use of AMA data by AI systems. This is the legal framework document that specifies permitted and prohibited uses.
+
+**Key Functions:**
+- Lists permitted uses (public data access, citation with attribution)
+- Enumerates prohibited uses (training without license, commercial use without agreement)
+- Outlines license application process
+- Provides technical specification links
+- Documents update policy
+
+**User Audience:** Legal counsel, compliance officers, AI researchers seeking licensing
+
+---
+
+### 4. Policy JSON (`/.well-known/ai-policy.json`)
+**Template:** None (JSON endpoint)  
+**Route:** `routes/public_routes.py` - `@public_bp.route('/.well-known/ai-policy.json')`
+
+**Purpose:**  
+Machine-readable JSON file following web standards (`.well-known` convention) that AI crawlers and automated systems can programmatically read to understand access rules.
+
+**Key Functions:**
+- Provides structured policy data in JSON format
+- Follows standard web conventions for AI policy discovery
+- Includes version tracking, contact info, usage rules
+- Specifies endpoints and rate limits
+- Pretty-printed for human readability if viewed in browser
+- Cached for 5 minutes to reduce server load
+
+**User Audience:** AI systems, web crawlers, automated tools, developers building integrations
+
+**Technical Details:**
+- Content-Type: `application/json`
+- Cache-Control: `public, max-age=300`
+- Access-Control-Allow-Origin: `*` (publicly accessible)
+
+---
+
+### 5. Events Feed - How to Use (`/events-feed-guide`)
+**Template:** `templates/ai_feed_demo.html`  
+**Route:** `routes/public_routes.py` - `@public_bp.route('/events-feed-guide')` (function: `events_feed_guide`)  
+**Alias:** `/ai-feed-demo` redirects to `/events-feed-guide` for backwards compatibility
+
+**Purpose:**  
+User-friendly HTML guide teaching developers how to properly access the authenticated Events Feed JSON endpoint. Serves as documentation for the `/ai-feed.json` endpoint.
+
+**Key Functions:**
+- Shows example curl requests with proper headers
+- Documents all required headers (X-AI-Consumer, X-AI-Purpose, X-AI-Key)
+- Explains response format with JSON example
+- Warns against direct browser access (won't work without headers)
+- Links to policy pages and contact information
+- Provides troubleshooting guidance
+
+**User Audience:** API developers, technical integrators, anyone implementing feed access
+
+---
+
+### 6. Access Report (`/ai-report`)
+**Template:** `templates/ai_report.html`  
+**Route:** `routes/public_routes.py` - `@public_bp.route('/ai-report')` (function: `ai_access_report`)  
+**Note:** Use `url_for('public.ai_access_report')` for links (function name, not route path)
+
+**Purpose:**  
+Admin-only dashboard for monitoring AI feed access patterns, tracking usage, and identifying potential abuse or anomalies.
+
+**Key Functions:**
+- Displays recent access logs (when AIAccessLog model is implemented)
+- Shows consumer, purpose, path, IP address, timestamp
+- Provides access statistics and patterns
+- Helps identify unauthorized or suspicious access
+- Supports compliance monitoring and reporting
+
+**User Audience:** AMA administrators, security team, compliance officers
+
+**Security:**
+- Protected by `@login_required` decorator
+- Requires `current_user.is_admin` privilege
+- Returns 403 error for non-admin users
+
+---
+
+## System Architecture: How Pages Work Together
+
+### Information Flow
+
+```
+Developer Journey:
+1. AI Gateway (/ai-gateway)
+   ↓ Learn about system
+2. AI Access Policy (/ai-policy) + AI Data License (/ai-license)
+   ↓ Understand rules
+3. Events Feed Guide (/ai-feed-demo)
+   ↓ Implementation details
+4. Policy JSON (/.well-known/ai-policy.json)
+   ↓ Machine-readable rules
+5. Events Feed (/ai-feed.json) - AUTHENTICATED ACCESS
+   ↓ Actual data consumption
+6. Access Report (/ai-report) - ADMIN MONITORING
+```
+
+### Integration Points
+
+**Frontend Navigation:**
+- **Footer AI & Developers Section:** Dedicated footer column with all AI Gateway links:
+  - AI Gateway (main hub)
+  - AI Access Policy (human-readable rules)
+  - AI Data License (legal terms)
+  - Policy JSON (machine-readable)
+  - Events Feed Guide (implementation help)
+  - Access Report (admin monitoring)
+- Each page cross-links to related pages
+- Consistent navigation encourages exploration of full policy suite
+- Footer is globally accessible from every page
+
+**Backend Integration:**
+- All routes in `routes/public_routes.py`
+- Shared base template (`templates/base.html`)
+- Consistent chapter data loading for navigation
+- Common logging infrastructure
+
+**Security Layer:**
+- Public pages: Gateway, Policy, License, Feed Guide, Policy JSON
+- Authenticated endpoint: `/ai-feed.json` (requires headers)
+- Admin-only: Access Report (requires login + admin role)
+
+### Data Flow
+
+1. **Policy Definition** (Policy JSON) → Sets the rules
+2. **Human Documentation** (Policy, License, Gateway) → Explains the rules
+3. **Implementation Guide** (Feed Guide) → Shows how to follow the rules
+4. **Enforcement** (Events Feed endpoint) → Validates headers, logs access
+5. **Monitoring** (Access Report) → Tracks compliance and usage
+
+### Technical Dependencies
+
+**Templates:**
+- All extend `base.html`
+- All load chapter data for navigation
+- Consistent styling via shared CSS
+
+**Routes:**
+- All defined in `routes/public_routes.py`
+- Use Flask blueprints (`public_bp`)
+- Share logging configuration
+
+**Data Sources:**
+- Policy JSON: Static structured data
+- Events Feed: `FeedItem` model from database
+- Access Report: `AIAccessLog` model (when implemented)
+
+---
+
+## Usage Scenarios
+
+### Scenario 1: AI Developer Integration
+1. Visits AI Gateway to understand system
+2. Reads AI Policy to know restrictions
+3. Reviews AI License for legal requirements
+4. Follows Feed Guide to implement access
+5. Tests with Policy JSON for validation
+6. Accesses Events Feed with proper headers
+
+### Scenario 2: Legal Compliance Review
+1. Reviews AI Policy for business rules
+2. Examines AI License for legal terms
+3. Checks Policy JSON for technical specifications
+4. Validates against company policies
+
+### Scenario 3: Administrator Monitoring
+1. Logs into admin account
+2. Views Access Report for usage patterns
+3. Identifies suspicious activity
+4. Takes action (revoke keys, block IPs)
+5. Updates Policy JSON if needed
+
+---
+
+## Key Design Principles
+
+**Progressive Disclosure:**
+- Start with human-friendly overview (Gateway)
+- Provide detailed policy (Policy, License)
+- Offer technical implementation (Feed Guide)
+- Machine-readable validation (Policy JSON)
+
+**Security in Depth:**
+- Public documentation (educate users)
+- Header-based authentication (validate access)
+- Access logging (track usage)
+- Admin monitoring (detect abuse)
+
+**Standards Compliance:**
+- `.well-known` convention for policy discovery
+- Standard HTTP headers for authentication
+- JSON format for machine readability
+- Semantic HTML for accessibility
+
+---
+
+## Future Enhancements
+
+**Implemented:**
+1. ✓ `AIAccessLog` model for database logging (tracks consumer, purpose, IP, timestamp)
+
+**Needed Implementations:**
+1. Automated key generation system
+2. Rate limiting enforcement (currently documented but not enforced)
+3. Analytics dashboard integration (basic reporting exists in `/ai-report`)
+4. Automated abuse detection
+5. Email notifications for policy violations
+6. API key management interface
+
+**Potential Additions:**
+1. API documentation with Swagger/OpenAPI
+2. SDK libraries for common languages
+3. Webhook support for real-time updates
+4. GraphQL endpoint option
+5. Developer sandbox environment
+
+---
+
+## Contact Information
+
+- **Policy Questions:** policy@amaspc.com
+- **Technical Support:** contact@amaspc.com
+- **License Applications:** policy@amaspc.com
+
+---
+
+*Last Updated: November 9, 2025*
+*Version: 1.0*

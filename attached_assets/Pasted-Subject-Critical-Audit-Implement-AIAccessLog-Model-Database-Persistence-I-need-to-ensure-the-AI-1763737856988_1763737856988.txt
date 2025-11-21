@@ -1,0 +1,28 @@
+Subject: Critical Audit: Implement AIAccessLog Model & Database Persistence
+I need to ensure the AI Feed is not just returning JSON, but actually logging access to the database as required by our governance policy.
+Please perform the following 3-step audit and fix any gaps immediately.
+Step 1: Verify/Create the Database Model
+Open models.py. Check for the AIAccessLog class.
+If missing, create it:
+code
+Python
+class AIAccessLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    consumer = db.Column(db.String(100))  # From X-AI-Consumer header
+    purpose = db.Column(db.String(100))   # Fr[[1](https://www.google.com/url?sa=E&q=https%3A%2F%2Fvertexaisearch.cloud.google.com%2Fgrounding-api-redirect%2FAUZIYQGmffM5YL1T5ydnPVZhJ447X07lRTnpDK0n-S0t8ie5vgj1jYJdDB5UMtBQCdgAOSKzz0G8sRxyCcG93vkAsvWM6s8RQtmPFZld-Ijx5VF86BgvknWfEktx8ePlPuRWbGDg3U5ZEShgX1nafwWEUKlYSHWyipQyg8ppdat8hKkvL0NYY4FS-k-L72xseHFm1jZ6CUwE4zPh_rFIfsVCbYGis49Env-KLo21R3FQasz0)]om X-AI-Purpose header
+    api_key = db.Column(db.String(100))   # From X-AI-Key header
+    path = db.Column(db.String(255))      # The endpoint accessed
+    ip_address = db.Column(db.String(50)) # Requestor IP
+    user_agent = db.Column(db.String(255))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+Step 2: Ensure Database Migration
+The code might be there, but the table might not exist in the SQLite database yet.
+Action: Check if the ai_access_log table exists.
+Fix: If not, run the necessary commands (or create a migration script) to apply this schema change to the local database so we don't get "Table not found" errors.
+Step 3: Link Route to Database
+Open routes/ai_routes.py (or routes_ai.py).
+Audit: Look at the ai_feed_json function.
+Fix: Ensure it actually imports AIAccessLog and performs a db.session.add() and db.session.commit() for every request.
+Constraint: It should log before returning the JSON response.
+Final Verification:
+Once you confirm the Model, the Table, and the Route logic are present, run a test request using curl (or the browser) and confirm that a new row was added to the database.
