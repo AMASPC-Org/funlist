@@ -1669,9 +1669,9 @@ main {
     bottom: 2.5rem; /* Increased from 1.5rem to provide more space */
     right: 1.5rem; /* Position container on the right side */
     display: flex;
-    flex-direction: column; /* Stack buttons vertically */
-    align-items: flex-end; /* Align buttons to right */
-    gap: 0.75rem; /* Space between stacked buttons */
+    flex-direction: row; /* Changed to horizontal alignment */
+    align-items: center; /* Align buttons horizontally */
+    gap: 1rem; /* Space between buttons */
     z-index: 1040; /* Below modals (1050) but above most content */
     pointer-events: none; /* Allow clicks to pass through the container */
     transition: opacity 0.3s ease, transform 0.3s ease;
@@ -1746,7 +1746,8 @@ body.user-logged-in .floating-button {
     .floating-buttons-container {
         bottom: 1.5rem; /* Adjust position for mobile */
         right: 1rem; /* Slightly closer to edge on mobile */
-        gap: 0.75rem; /* Increased space between buttons on mobile */
+        gap: 0.5rem; /* Reduced space between buttons on mobile for horizontal layout */
+        flex-direction: row; /* Keep horizontal on mobile */
     }
 
     .floating-button {
@@ -1798,12 +1799,12 @@ body.user-logged-in .floating-button {
 
 /* Adjust when cookie consent is visible */
 body.cookie-consent-visible .floating-buttons-container {
-    bottom: 4.5rem; /* Move up to avoid overlapping with cookie banner */
+    bottom: 5.5rem; /* Increased space to avoid overlapping with cookie banner */
 }
 
 @media (max-width: 768px) {
     body.cookie-consent-visible .floating-buttons-container {
-        bottom: 6rem; /* More space on mobile for the cookie banner */
+        bottom: 7rem; /* More space on mobile for the cookie banner */
     }
 }
 
