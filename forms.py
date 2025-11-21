@@ -60,9 +60,11 @@ class LoginForm(FlaskForm):
 
 class ProfileForm(FlaskForm):
     # Personal Information
+    username = StringField('Username', validators=[Optional(), Length(max=80)])
     first_name = StringField('First Name', validators=[Optional(), Length(max=50)])
     last_name = StringField('Last Name', validators=[Optional(), Length(max=50)])
     title = StringField('Your Title', validators=[Optional(), Length(max=100)])
+    phone = StringField('Phone Number', validators=[Optional(), Length(max=20)])
     event_focus = SelectMultipleField(
         "Tell Us About Yourself", 
         choices=[
@@ -87,6 +89,8 @@ class ProfileForm(FlaskForm):
         description="Enter interests separated by commas (e.g., sports,music,outdoors)",
         validators=[Optional(), Length(max=255)]
     )
+    newsletter_opt_in = BooleanField('Send me FunList news and inspiration', default=True)
+    marketing_opt_in = BooleanField('Send me curated partner opportunities', default=False)
     
     # User Role Management
     enable_event_creator = BooleanField('I want to create/list events', validators=[Optional()])
@@ -111,6 +115,8 @@ class ProfileForm(FlaskForm):
     business_zip = StringField('ZIP Code', validators=[Optional(), Length(max=20)])
     business_phone = StringField('Business Phone', validators=[Optional(), Length(max=20)])
     business_email = StringField('Business Email', validators=[Optional(), Email(), Length(max=120)])
+    advertising_opportunities = TextAreaField('Advertising Opportunities', validators=[Optional(), Length(max=500)])
+    sponsorship_opportunities = TextAreaField('Sponsorship Opportunities', validators=[Optional(), Length(max=500)])
     
     # Vendor Information
     vendor_type = SelectField('Vendor Type', choices=[
@@ -133,11 +139,20 @@ class ProfileForm(FlaskForm):
     
     submit = SubmitField('Update Profile')
 
+    def __init__(self, *args, **kwargs):
+        self.user_id = kwargs.pop('user_id', None)
+        super().__init__(*args, **kwargs)
+
     def validate_username(self, username):
         if username.data:
             user = User.query.filter_by(username=username.data).first()
             if user and user.id != self.user_id:
                 raise ValidationError('This username is already taken. Please choose another one.')
+
+    @property
+    def business_name(self):
+        # Legacy alias for templates/routes expecting business_name
+        return self.company_name
 
 class VenueForm(FlaskForm):
     name = StringField('Venue Name', validators=[DataRequired()])
@@ -193,9 +208,9 @@ class EventForm(FlaskForm):
     is_venue_owner = BooleanField('I am an owner, manager, or authorized representative of this venue')
 
     street = StringField('Street Address', validators=[Optional()])
-    city = StringField('City', validators=[DataRequired()])
-    state = StringField('State', validators=[DataRequired()])
-    zip_code = StringField('ZIP Code', validators=[DataRequired()])
+    city = StringField('City', validators=[Optional()])
+    state = StringField('State', validators=[Optional()])
+    zip_code = StringField('ZIP Code', validators=[Optional()])
 
     category = SelectField('Event Category', choices=[
         ('', 'Select Category'),
@@ -210,7 +225,17 @@ class EventForm(FlaskForm):
         ('Other', 'Other')
     ], validators=[DataRequired()])
 
-    target_audience = StringField('Target Audience', validators=[Optional()])
+    target_audience = SelectField('Target Audience', choices=[
+        ('', 'Select target audience'),
+        ('everyone', 'Open to Everyone'),
+        ('families', 'Families & Kids'),
+        ('adults', 'Adults 21+'),
+        ('students', 'Students'),
+        ('professionals', 'Professionals & Networking'),
+        ('seniors', 'Seniors'),
+        ('teens', 'Teens'),
+        ('performers', 'Performers & Creators')
+    ], validators=[Optional()])
     fun_meter = RadioField('Fun Meter (1-5)', choices=[
         ('1', '1 - Not Fun'),
         ('2', '2 - Somewhat Fun'),
@@ -236,7 +261,13 @@ class EventForm(FlaskForm):
     recurrence_end_date = DateField('Recurring Until', format='%Y-%m-%d', validators=[Optional()])
 
     is_sub_event = BooleanField('This is a sub-event of another event')
-    parent_event = SelectField('Parent Event', choices=[], validators=[Optional()])
+    parent_event = SelectField(
+        'Parent Event',
+        choices=[(0, 'No parent event')],
+        validators=[Optional()],
+        coerce=int,
+        default=0
+    )
 
     ticket_url = StringField('Ticket URL', validators=[Optional(), URL()])
     network_opt_out = BooleanField('Opt out of the event network')
@@ -270,6 +301,15 @@ class EventForm(FlaskForm):
             self.venue_type_id.choices = [(0, 'Select Venue Type')] + [(vt.id, vt.name) for vt in venue_types]
         except Exception as e:
             self.venue_type_id.choices = [(0, 'Select Venue Type')]
+
+        try:
+            from models import Event
+            parent_events = Event.query.order_by(Event.start_date.desc()).limit(50).all()
+            self.parent_event.choices = [(0, 'No parent event')] + [
+                (event.id, event.title or f"Event #{event.id}") for event in parent_events
+            ]
+        except Exception:
+            self.parent_event.choices = [(0, 'No parent event')]
 
 
 class OrganizerProfileForm(FlaskForm):
@@ -316,6 +356,22 @@ class ResetPasswordForm(FlaskForm):
         EqualTo('password', message='Passwords do not match. Please try again.')
     ])
     submit = SubmitField('Reset Password')
+
+class ChangePasswordForm(FlaskForm):
+    current_password = PasswordField('Current Password', validators=[
+        DataRequired(message="Please enter your current password")
+    ])
+    new_password = PasswordField('New Password', validators=[
+        DataRequired(message="Please enter your new password"),
+        Length(min=8, max=128, message="Password must be between 8 and 128 characters long"),
+        Regexp(r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]+$',
+               message="Password must contain at least one letter, one number, and one special character")
+    ])
+    confirm_password = PasswordField('Confirm New Password', validators=[
+        DataRequired(message="Please confirm your new password"),
+        EqualTo('new_password', message='Passwords do not match. Please try again.')
+    ])
+    submit = SubmitField('Update Password')
 
 class ContactForm(FlaskForm):
     name = StringField('Your Name', validators=[

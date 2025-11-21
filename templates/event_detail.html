@@ -49,10 +49,10 @@
                     <div class="event-details">
                         <h4>Event Details</h4>
                         <ul class="list-unstyled">
-                            <li><i class="fas fa-calendar"></i> Start: {{ event.start_date.strftime('%B %d, %Y') }}
-                                {% if event.start_time %}at {{ event.start_time.strftime('%I:%M %p') }}{% endif %}</li>
-                            <li><i class="fas fa-calendar-check"></i> End: {{ event.end_date.strftime('%B %d, %Y') }}
-                                {% if event.end_time %}at {{ event.end_time.strftime('%I:%M %p') }}{% endif %}</li>
+                            <li><i class="fas fa-calendar"></i> Start: {{ event.start_date|format_datetime }}
+                                {% if event.start_time %}at {{ event.start_time|format_time }}{% endif %}</li>
+                            <li><i class="fas fa-calendar-check"></i> End: {{ event.end_date|format_datetime }}
+                                {% if event.end_time %}at {{ event.end_time|format_time }}{% endif %}</li>
                             <li><i class="fas fa-map-marker-alt"></i> {{ event.street }}, {{ event.city }}, {{ event.state }} {{ event.zip_code }}</li>
                         </ul>
                     </div>

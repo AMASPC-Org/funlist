@@ -2,7 +2,7 @@ import os
 import sys
 import logging
 import traceback
-from datetime import timedelta
+from datetime import timedelta, datetime
 from flask import Flask, session, request, render_template, redirect, url_for, jsonify
 from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect
@@ -11,6 +11,9 @@ from flask_migrate import Migrate
 from werkzeug.exceptions import RequestTimeout
 from functools import wraps
 import time
+
+from config import settings
+from sqlalchemy.exc import IntegrityError
 
 # Configure logging
 logging.basicConfig(
@@ -25,11 +28,11 @@ def create_app():
     app = Flask(__name__, static_folder='static')
 
     # Production configurations
-    app.config["SECRET_KEY"] = os.environ.get("FLASK_SECRET_KEY")
+    app.config["SECRET_KEY"] = os.environ.get("SESSION_SECRET")
     if not app.config["SECRET_KEY"]:
-        raise ValueError("FLASK_SECRET_KEY environment variable must be set")
+        raise ValueError("SESSION_SECRET environment variable must be set")
     
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+    app.config["SQLALCHEMY_DATABASE_URI"] = settings.get("DATABASE_URL")
     if not app.config["SQLALCHEMY_DATABASE_URI"]:
         raise ValueError("DATABASE_URL environment variable must be set")
     
@@ -37,7 +40,7 @@ def create_app():
     app.config["APPLICATION_ROOT"] = "/"
     app.config["PREFERRED_URL_SCHEME"] = "https"
     
-    app.config["GOOGLE_MAPS_API_KEY"] = os.environ.get("GOOGLE_MAPS_API_KEY")
+    app.config["GOOGLE_MAPS_API_KEY"] = settings.get("GOOGLE_MAPS_API_KEY", required=True)
     if not app.config["GOOGLE_MAPS_API_KEY"]:
         raise ValueError("GOOGLE_MAPS_API_KEY environment variable must be set")
 
@@ -50,22 +53,57 @@ def create_app():
             "connect_timeout": 10
         }
     }
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     # Simple session configuration using Flask's default signed cookie sessions
-    app.config['SESSION_COOKIE_NAME'] = '__Host-funlist'
+    secure_session_cookie = settings.get_bool("SESSION_COOKIE_SECURE", True)
+    if os.environ.get('PROD'):
+        secure_session_cookie = True
+    app.config['SESSION_COOKIE_SECURE'] = secure_session_cookie
+    app.config['SESSION_COOKIE_NAME'] = '__Host-funlist' if secure_session_cookie else 'funlist_session'
+
+    # Production session configuration (database-backed for Cloud Run)
+    app.config['SESSION_TYPE'] = 'sqlalchemy'
+    app.config['SESSION_SQLALCHEMY'] = db
+    app.config['SESSION_SQLALCHEMY_TABLE'] = 'flask_sessions'  # Use unique table name
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-    app.config['SESSION_COOKIE_SECURE'] = bool(os.environ.get('PROD', ''))
-    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    try:
+        logger.info("Importing models...")
+        import models  # noqa: F401 (imported for side effects)
+        User = models.User  # Used by login manager below
+    except Exception as e:
+        logger.error(f"Failed to import models: {str(e)}", exc_info=True)
+        raise
+
+    try:
+        logger.info("Importing models...")
+        import models  # noqa: F401 (imported for side effects)
+        User = models.User  # Used by login manager below
+    except Exception as e:
+        logger.error(f"Failed to import models: {str(e)}", exc_info=True)
+        raise
 
     try:
         logger.info("Initializing database...")
         db.init_app(app)
         with app.app_context():
-            db.create_all()
-            logger.info("Database tables created successfully")
+            try:
+                db.create_all()
+                logger.info("Database tables created successfully")
+            except IntegrityError as integrity_error:
+                db.session.rollback()
+                error_text = str(integrity_error)
+                if "pg_type_typname_nsp_index" in error_text or "already exists" in error_text:
+                    logger.warning(
+                        "Database already had required tables/types. "
+                        "Continuing startup after IntegrityError: %s",
+                        error_text
+                    )
+                else:
+                    raise
     except Exception as e:
         logger.error(f"Failed to initialize database: {str(e)}", exc_info=True)
         raise
@@ -93,7 +131,7 @@ def create_app():
         logger.info("Setting up login manager...")
         login_manager = LoginManager()
         login_manager.init_app(app)
-        login_manager.login_view = "login"
+        login_manager.login_view: str = "login"
         login_manager.login_message = "Please log in to access this page."
         login_manager.login_message_category = "info"
         login_manager.session_protection = "strong"
@@ -129,13 +167,6 @@ def create_app():
         response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
         return response
 
-    try:
-        logger.info("Importing User model...")
-        from models import User
-    except Exception as e:
-        logger.error(f"Failed to import User model: {str(e)}", exc_info=True)
-        raise
-
     @login_manager.user_loader
     def load_user(user_id):
         try:
@@ -144,80 +175,6 @@ def create_app():
             logger.error(f"Error loading user {user_id}: {str(e)}", exc_info=True)
             return None
 
-    # Define a dummy get_events function for testing
-    def get_events():
-        return [
-            {
-                'id': 1,
-                'title': 'Thurston County Fair',
-                'description': 'A fun county fair with rides, games, and food.',
-                'start_date': '2025-03-25',
-                'latitude': 47.0379,
-                'longitude': -122.9007,
-                'category': 'Other',
-                'fun_rating': 4
-            },
-            {
-                'id': 2,
-                'title': 'Olympia Music Festival',
-                'description': 'Live music performances by local bands.',
-                'start_date': '2025-03-26',
-                'latitude': 47.0380,
-                'longitude': -122.9008,
-                'category': 'Music',
-                'fun_rating': 5
-            },
-            {
-                'id': 3,
-                'title': 'Art Walk Downtown',
-                'description': 'Explore local art galleries and street performances.',
-                'start_date': '2025-03-27',
-                'latitude': 47.0381,
-                'longitude': -122.9009,
-                'category': 'Arts',
-                'fun_rating': 3
-            },
-            {
-                'id': 4,
-                'title': 'Food Truck Rally',
-                'description': 'A gathering of food trucks with diverse cuisines.',
-                'start_date': '2025-03-28',
-                'latitude': 47.0382,
-                'longitude': -122.9010,
-                'category': 'Food',
-                'fun_rating': 4
-            },
-            {
-                'id': 5,
-                'title': 'Soccer Tournament',
-                'description': 'Local teams compete in a soccer tournament.',
-                'start_date': '2025-03-29',
-                'latitude': 47.0383,
-                'longitude': -122.9011,
-                'category': 'Sports',
-                'fun_rating': 4
-            },
-            {
-                'id': 6,
-                'title': 'Farmers Market',
-                'description': 'Fresh produce and handmade goods.',
-                'start_date': '2025-03-30',
-                'latitude': 47.0384,
-                'longitude': -122.9012,
-                'category': 'Other',
-                'fun_rating': 3
-            },
-            {
-                'id': 7,
-                'title': 'Jazz Night',
-                'description': 'An evening of jazz music at a local venue.',
-                'start_date': '2025-03-31',
-                'latitude': 47.0385,
-                'longitude': -122.9013,
-                'category': 'Music',
-                'fun_rating': 5
-            }
-        ]
 
     # Add route to accept cookies
     @app.route('/accept-cookies', methods=['POST'])
@@ -298,10 +255,48 @@ def create_app():
     def to_json(value):
         import json
         return json.dumps(value, default=lambda o: o.to_dict() if hasattr(o, 'to_dict') else str(o))
+    
+    @app.template_filter('format_datetime')
+    def format_datetime(value, fmt='%B %d, %Y'):
+        """Format datetime or ISO strings gracefully in templates."""
+        if not value:
+            return 'TBA'
+        if hasattr(value, 'strftime'):
+            return value.strftime(fmt)
+        if isinstance(value, str):
+            for date_format in ('%Y-%m-%dT%H:%M:%S', '%Y-%m-%d %H:%M:%S', '%Y-%m-%d'):
+                try:
+                    parsed = datetime.strptime(value, date_format)
+                    return parsed.strftime(fmt)
+                except ValueError:
+                    continue
+            try:
+                parsed = datetime.fromisoformat(value)
+                return parsed.strftime(fmt)
+            except ValueError:
+                return value
+        return str(value)
+    
+    @app.template_filter('format_time')
+    def format_time(value, fmt='%I:%M %p'):
+        """Format time objects or HH:MM strings without errors."""
+        if not value:
+            return ''
+        if hasattr(value, 'strftime'):
+            return value.strftime(fmt)
+        if isinstance(value, str):
+            for time_format in ('%H:%M:%S', '%H:%M'):
+                try:
+                    parsed = datetime.strptime(value, time_format)
+                    return parsed.strftime(fmt)
+                except ValueError:
+                    continue
+        return str(value)
         
     logger.info("Application creation completed successfully")
     return app
 
+app = create_app()
+
 if __name__ == "__main__":
-    app = create_app()
     app.run(host="0.0.0.0", port=8080)

@@ -29,6 +29,7 @@ class User(db.Model, UserMixin):
 
     id = Column(Integer, primary_key=True)
     email = Column(String(120), unique=True, nullable=False)
+    username = Column(String(80), unique=True, nullable=True)
     password_hash = Column(String(256), nullable=False)
     first_name = Column(String(120), nullable=True)
     last_name = Column(String(120), nullable=True)
@@ -40,6 +41,7 @@ class User(db.Model, UserMixin):
     is_organizer = Column(Boolean, default=False)
     is_vendor = Column(Boolean, default=False)
     is_sponsor = Column(Boolean, default=False)  # Added per requirements
+    is_investor = Column(Boolean, default=False)  # Investor role field
     vendor_type = Column(String(50), nullable=True)
     vendor_description = Column(Text, nullable=True)
     vendor_profile_updated_at = Column(DateTime, nullable=True)
