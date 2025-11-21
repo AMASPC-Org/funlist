@@ -1,0 +1,30 @@
+Subject: Critical UI Fixes, CSP Errors, and Cookie Banner Repair
+I have analyzed the current deployment and found several critical issues that need immediate attention. Please execute the following plan to fix the Content Security Policy errors, revert the UI changes regarding the "Fun Assistant" button, and fix the broken Cookie Banner.
+Phase 1: Fix Console & Security Errors (CSP)
+Look at the browser console logs. We are getting multiple Content Security Policy violations blocking our external libraries.
+Action: Update the <meta http-equiv="Content-Security-Policy"...> tag in templates/base.html.
+Fix: You must explicitly add the following domains to the style-src, script-src, and font-src directives:
+https://cdnjs.cloudflare.com (for FontAwesome)
+https://unpkg.com (for Feather icons/Leaflet)
+https://cdn.jsdelivr.net (for Bootstrap)
+Phase 2: Revert UI & Restore Floating Buttons
+The current "Try Fun Assistant Now" full-width button is incorrect and was not requested. It looks bad and breaks the layout.
+Action: Remove the large "Try Fun Assistant Now" block entirely.
+Action: Restore the previous Floating Button design. We want two small, circular/pill-shaped buttons fixed to the bottom corners of the screen:
+Left Corner: "Feedback" button.
+Right Corner: "Fun Assistant" button.
+File Check: Check templates/partials/floating_buttons.html and static/css/style.css. Ensure they use position: fixed; bottom: 20px; logic.
+Phase 3: Fix Cookie Banner Functionality
+The "Accept All" and "Reject Non-Essential" buttons are currently unresponsive when clicked.
+Action: Debug static/js/main.js. The event listeners for these buttons are likely not attaching correctly, or the function hideCookieConsent() is failing.
+Fix: Ensure the buttons have the correct IDs (#acceptAllCookies, #rejectNonEssentialCookies) and that the JavaScript successfully sets the cookie and removes the .show class from the banner.
+Phase 4: UI Polish & Z-Index Management (Desktop & Mobile)
+The Cookie Banner must not overlap the Floating Buttons, and the Floating Buttons must not cover the Cookie text.
+Mobile Plan:
+Cookie Banner: Pin to bottom (bottom: 0).
+Floating Buttons: Set bottom: 90px (or higher) so they sit above the cookie banner when it is visible.
+Desktop Plan:
+Cookie Banner: Small horizontal strip at the bottom.
+Floating Buttons: bottom: 20px.
+Z-Index: Ensure the Cookie Banner has a higher Z-Index than the footer, but the Floating Buttons have a higher Z-Index than the Cookie Banner so they remain clickable.
+Execute this plan now.

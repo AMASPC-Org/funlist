@@ -11,6 +11,9 @@
     <meta name="keywords" content="{% block keywords %}events near me, local events, community events, festivals, concerts, activities, event discovery, fun events, {{ 'Olympia events' if request.endpoint == 'map' else 'Washington events' }}{% endblock %}">
     <meta name="author" content="FunList.ai">
     <meta name="robots" content="index, follow">
+    
+    <!-- Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://cdnjs.cloudflare.com https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com; img-src 'self' data: https: http:; frame-src 'self' https://www.google.com;">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="{% block og_type %}website{% endblock %}">
@@ -193,11 +196,11 @@
             left: 0;
             right: 0;
             background-color: #f8f9fa;
-            padding: 20px 15px;
+            padding: 15px;
             text-align: center;
             box-shadow: 0 -2px 10px rgba(0,0,0,0.15);
-            z-index: 1000;
-            max-height: 200px;
+            z-index: 1048;
+            max-height: 120px;
             overflow-y: auto;
         }
         .cookie-content {
@@ -237,11 +240,17 @@
         .floating-buttons-container {
             position: fixed;
             right: 20px;
-            bottom: 100px;
+            bottom: 140px;
             display: flex;
             flex-direction: column;
             gap: 12px;
-            z-index: 999;
+            z-index: 1060;
+        }
+        
+        @media (max-width: 768px) {
+            .floating-buttons-container {
+                bottom: 135px;
+            }
         }
         .floating-button {
             display: flex;
@@ -255,16 +264,25 @@
             cursor: pointer;
             font-size: 14px;
             font-weight: 500;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
             transition: all 0.3s ease;
             text-decoration: none;
             white-space: nowrap;
         }
-        .floating-button:hover {
-            background-color: #0056b3;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            transform: translateY(-2px);
+        
+        .floating-button:first-child {
+            background-color: #4e66f8;
         }
+        
+        .floating-button:last-child {
+            background-color: #28a745;
+        }
+        
+        .floating-button:hover {
+            box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+            transform: translateY(-3px);
+        }
+        
         .floating-button i {
             font-size: 16px;
         }
