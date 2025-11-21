@@ -1,0 +1,151 @@
+Objective: Implement the frontend AI Gateway pages and navigation for ThurstonAI, using the existing backend endpoints (/api/ai/feed, /api/.well-known/ai-policy.json, /.well-known/ai-policy.json, /api/ai/report).
+Instructions:
+
+Open the ThurstonAI project’s client code (React + wouter).
+
+Create the following page components in client/src/pages/ (or the appropriate pages directory), using existing pages like Privacy.tsx and AiSafety.tsx for layout/style reference (shadcn Cards, Buttons, etc.):
+
+AiGateway.tsx
+
+Route: /ai-gateway
+
+Content:
+
+Hero: “ThurstonAI Community AI Gateway” with short description.
+
+“Developer Quickstart” 3-step list:
+
+Read AI Policy & Data License.
+
+Request API key at api@thurstonai.com.
+
+Call /api/ai/feed with X-AI-Key, X-AI-Consumer, X-AI-Purpose.
+
+“Available Endpoints” section listing:
+
+/api/ai/feed – Authenticated AI feed.
+
+/.well-known/ai-policy.json – Machine-readable policy.
+
+/ai-policy – Human-readable AI policy.
+
+/ai-license – AI data license.
+
+/ai-feed-guide – How to use the feed.
+
+/api/ai/report – Admin-only access logs API.
+
+Link buttons to /ai-policy, /ai-license, /ai-feed-guide.
+
+AiPolicy.tsx
+
+Route: /ai-policy
+
+Layout similar to Privacy.tsx (Back to Home button, Card).
+
+Include headings and placeholder text for: Scope, Allowed Uses, Prohibited Uses, Attribution, Rate Limits, Contact.
+
+Mention that the machine-readable version lives at /.well-known/ai-policy.json.
+
+AiLicense.tsx
+
+Route: /ai-license
+
+Layout similar to AiPolicy.tsx.
+
+Placeholder sections: License Grant, Restrictions, Commercial Use, Update Policy, Contact.
+
+AiFeedGuide.tsx
+
+Route: /ai-feed-guide
+
+Layout with:
+
+Info alert: “The AI feed requires authentication headers; browser access without headers will fail.”
+
+Example curl snippet calling https://thurstonai.com/api/ai/feed with headers:
+
+X-AI-Consumer: your-app-name
+
+X-AI-Purpose: search
+
+X-AI-Key: <YOUR_API_KEY>
+
+Table describing required headers and examples.
+
+Example JSON response structure (e.g., { version, generatedAt, items: [...] }), matching current llm-feed.json shape.
+
+Links to /ai-gateway, /ai-policy, /ai-license.
+
+AiReport.tsx
+
+Route: /ai-report (SPA page).
+
+Behavior:
+
+On mount, fetch /api/me to confirm signedIn and roles includes 'admin'.
+
+If not admin, render an “Access denied / Admin only” message.
+
+If admin, call /api/ai/report and display:
+
+Summary cards: total requests, successful, failed, success rate.
+
+Table of recent logs: ts, consumer, purpose, path, success, errorMessage (if any).
+
+Use existing UI components (Cards, Table, Skeleton/Spinner) as needed.
+
+Update the main router (client/src/App.tsx or equivalent) to register these routes:
+
+/ai-gateway → AiGateway
+
+/ai-policy → AiPolicy
+
+/ai-license → AiLicense
+
+/ai-feed-guide → AiFeedGuide
+
+/ai-report → AiReport
+
+Update Navigation component (client/src/components/Navigation.tsx):
+
+Under the appropriate “Resources” or similar menu, add an item:
+
+Label: AI Gateway
+
+href: /ai-gateway
+
+Description: Programmatic access for AI systems.
+
+Update Footer component (client/src/components/Footer.tsx):
+
+Add a new column titled “AI & Developers” with links:
+
+/ai-gateway – AI Gateway
+
+/ai-policy – AI Access Policy
+
+/ai-license – AI Data License
+
+/.well-known/ai-policy.json – Policy JSON (use <a href> rather than Link so it hits the root path).
+
+/ai-feed-guide – AI Feed Guide
+
+/ai-report – AI Access Report (we can show this link to everyone; the API/page will still enforce admin).
+
+Run npm run dev (or the relevant dev command) and verify:
+
+Each new route renders without errors.
+
+Navigation item “AI Gateway” appears and links to /ai-gateway.
+
+Footer “AI & Developers” column appears with working links.
+
+Return:
+
+The new page component source files.
+
+The updated App.tsx, Navigation.tsx, and Footer.tsx snippets.
+
+Screenshots or text confirmation that all new routes load correctly in the browser.
+Expected Evidence: Diffs or code blocks for the new pages and router/nav/footer changes, plus a brief note that all 5 SPA routes render successfully.

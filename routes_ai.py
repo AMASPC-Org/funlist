@@ -250,3 +250,66 @@ def ai_access_report():
     }
 
     return render_template('ai/report.html', logs=recent_logs, stats=stats)
+
+
+@ai_routes.route('/ai-gateway')
+def ai_gateway():
+    """Main AI Gateway landing page"""
+    return render_template('ai/gateway.html')
+
+
+@ai_routes.route('/ai-policy')
+def ai_policy():
+    """AI Access Policy page - human-readable rules and restrictions"""
+    return render_template('ai/policy.html')
+
+
+@ai_routes.route('/ai-data-license')
+def ai_data_license():
+    """AI Data License page - legal terms governing data usage"""
+    return render_template('ai/license.html')
+
+
+@ai_routes.route('/ai-feed-guide')
+def ai_feed_guide():
+    """AI Feed Guide - technical documentation for using the AI feed"""
+    return render_template('ai/feed_guide.html')
+
+
+@ai_routes.route('/.well-known/ai-policy.json')
+def ai_policy_json():
+    """Machine-readable AI policy JSON document"""
+    policy = {
+        "version": "1.0",
+        "lastUpdated": "2025-11-21",
+        "provider": "FunList.ai",
+        "dataTypes": ["events", "venues", "organizers"],
+        "allowedUses": [
+            "search",
+            "citation",
+            "analysis",
+            "summarization"
+        ],
+        "prohibitedUses": [
+            "training",
+            "model_development",
+            "commercial_redistribution"
+        ],
+        "attribution": {
+            "required": True,
+            "format": "Data provided by FunList.ai"
+        },
+        "rateLimits": {
+            "perMinute": 60,
+            "perHour": 1000,
+            "perDay": 10000
+        },
+        "authentication": {
+            "required": True,
+            "type": "api_key",
+            "headers": ["X-AI-Key", "X-AI-Consumer", "X-AI-Purpose"]
+        },
+        "contact": "legal@funlist.ai",
+        "licenseUrl": "https://funlist.ai/ai-data-license"
+    }
+    return jsonify(policy)
