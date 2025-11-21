@@ -1713,6 +1713,9 @@ body.is-scrolled .floating-buttons-container {
 
 .feedback-button {
     background-color: #5d78ff;
+    display: flex;
+    align-items: center;
+    height: auto;
 }
 
 .subscribe-button {
@@ -1722,6 +1725,9 @@ body.is-scrolled .floating-buttons-container {
 .fun-assistant-button {
     background-color: #FF8A00; /* Primary brand color */
     animation: pulse-light 2s infinite;
+    display: flex;
+    align-items: center;
+    height: auto;
 }
 
 @keyframes pulse-light {
