@@ -837,6 +837,16 @@ def init_routes(app):
     except Exception as e:
         print(f"⚠️ OAuth blueprints registration failed: {str(e)}")
     
+    # Register AI routes blueprint
+    try:
+        from routes_ai import ai_routes
+        app.register_blueprint(ai_routes)
+        print("✅ AI routes registered successfully")
+    except ImportError as e:
+        print(f"⚠️ AI routes not available: {str(e)}")
+    except Exception as e:
+        print(f"⚠️ AI routes registration failed: {str(e)}")
+    
     # Register all routes with the app instance
     app.route("/")(index)
     app.route("/map")(map)
