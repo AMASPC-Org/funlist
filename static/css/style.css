@@ -271,15 +271,15 @@ a:hover {
     .hero-section {
         height: 300px;
     }
-    
+
     .hero-content h1 {
         font-size: 2rem;
     }
-    
+
     .rating-scale {
         flex-direction: column;
     }
-    
+
     .rating-item {
         margin-bottom: 1rem;
     }
