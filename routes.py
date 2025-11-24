@@ -231,7 +231,12 @@ def map():
         chapters = Chapter.query.all() # Pass chapters if needed in base.html
         
         # Convert events to dictionary format for JavaScript
-        events_for_map = [event.to_dict() for event in events]
+        events_for_map = []
+        for event in events:
+            event_data = event.to_dict()
+            event_data["fun_rating"] = event.fun_rating if event.fun_rating is not None else event.fun_meter
+            event_data["detail_url"] = url_for("event_detail", event_id=event.id)
+            events_for_map.append(event_data)
         
         return render_template("map.html", events=events, events_json=events_for_map, chapters=chapters)
     except Exception as e:

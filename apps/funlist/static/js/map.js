@@ -1,131 +1,169 @@
-// Global FunlistMap module for the map functionality
-const FunlistMap = {
-    map: null,
-    markers: {},
-    infoWindow: null,
-    events: [],
+/* global google */
+window.FunlistMap = (function() {
+    const defaultCenter = { lat: 47.0379, lng: -122.9007 };
 
-    // Initialize the map
-    init: function(containerId) {
-        console.log("Initializing map...");
-
-        // Get the map container
-        const mapContainer = document.getElementById(containerId);
-        if (!mapContainer) {
-            console.error("Map container not found");
-            return null;
+    function parseEventsFromDataset() {
+        const dataElement = document.getElementById('map-data');
+        if (dataElement && dataElement.dataset.events) {
+            try {
+                const parsed = JSON.parse(dataElement.dataset.events);
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (error) {
+                console.error("Error parsing events data:", error);
+            }
         }
+        return [];
+    }
 
-        try {
-            // Try to get events data from the hidden element
-            const eventsDataElement = document.getElementById('map-data');
-            if (eventsDataElement && eventsDataElement.dataset.events) {
-                try {
-                    this.events = JSON.parse(eventsDataElement.dataset.events);
-                    console.log(`Loaded ${this.events.length} events`);
-                } catch (e) {
-                    console.error("Error parsing events data:", e);
-                    this.events = [];
-                }
-            } else {
-                console.warn("No events data found in map-data element");
-                // Fallback: try to get events from the event cards on the page
-                this.events = this.extractEventsFromDOM();
+    function escapeHtml(value) {
+        if (value === null || value === undefined) {
+            return "";
+        }
+        return String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+    }
+
+    return {
+        map: null,
+        markers: {},
+        infoWindow: null,
+        events: [],
+
+        init: function(containerId, options = {}) {
+            const mapContainer = document.getElementById(containerId);
+            if (!mapContainer) {
+                console.error("Map container not found");
+                return null;
             }
 
-            // Debug log
-            console.log("Events for map:", this.events);
+            this.events = options.events && options.events.length ? options.events : parseEventsFromDataset();
 
-            // Initialize the map
-            this.initializeMap(containerId);
-
-            // Add events to the map
-            this.addEventsToMap();
-
-            return this.map;
-        } catch (error) {
-            console.error("Error initializing map:", error);
-            return null;
-        }
-    },
-
-    // Initialize the map
-    initializeMap: function(containerId) {
-        // Default location (Olympia, WA)
-        const defaultLocation = [47.0379, -122.9007];
-        this.map = L.map(containerId).setView(defaultLocation, 13);
-
-        // Add tile layer
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(this.map);
-
-        // Create info window
-        this.infoWindow = L.popup();
-
-        return this.map;
-    },
-
-    // Add events to the map
-    addEventsToMap: function() {
-        if (!this.events || !this.events.length) {
-            console.log("No events to add to map");
-            return;
-        }
-
-        console.log(`Adding ${this.events.length} events to map`);
-
-        this.events.forEach(event => {
-            if (event.latitude && event.longitude) {
-                // Create marker
-                const marker = L.marker([event.latitude, event.longitude])
-                    .addTo(this.map)
-                    .bindPopup(`
-                        <strong>${event.title}</strong><br>
-                        ${event.description ? event.description.substring(0, 100) + '...' : ''}<br>
-                        ${event.start_date ? 'Date: ' + event.start_date : ''}<br>
-                        Fun Rating: ${event.fun_meter}/5
-                    `);
-
-                // Store marker
-                this.markers[event.id] = marker;
-            }
-        });
-    },
-
-    // Extracts event data from event cards in the DOM.  This is a placeholder and
-    // needs to be adapted to the actual structure of your event cards.
-    extractEventsFromDOM: function() {
-        const eventCards = document.querySelectorAll('.event-card');
-        const events = [];
-        eventCards.forEach(card => {
-            const title = card.querySelector('.event-title').textContent;
-            const description = card.querySelector('.event-description').textContent;
-            const startDate = card.querySelector('.event-date').textContent;
-            const funMeter = parseInt(card.querySelector('.event-fun-meter').textContent, 10);
-            const latitude = parseFloat(card.dataset.latitude);
-            const longitude = parseFloat(card.dataset.longitude);
-            const eventId = card.dataset.id;
-
-            events.push({
-                id: eventId,
-                title: title,
-                description: description,
-                start_date: startDate,
-                fun_meter: funMeter,
-                latitude: latitude,
-                longitude: longitude
+            this.map = new google.maps.Map(mapContainer, {
+                center: options.defaultCenter || defaultCenter,
+                zoom: options.zoom || 13,
+                mapTypeControl: false,
+                streetViewControl: false,
+                fullscreenControl: true
             });
-        });
-        return events;
-    }
-};
 
-// Event listeners
-document.addEventListener('DOMContentLoaded', function() {
-    // Map will be initialized by the page that includes this script
-    const mapContainer = document.getElementById('map');
-    if (mapContainer) {
-        FunlistMap.init('map');
-    }
-});
+            this.infoWindow = new google.maps.InfoWindow();
+
+            this.addEventsToMap(options.onMarkerClick, options.infoContentBuilder);
+            return this.map;
+        },
+
+        addEventsToMap: function(onMarkerClick, infoContentBuilder) {
+            this.clearMarkers();
+
+            this.events.forEach(event => {
+                const lat = parseFloat(event.latitude);
+                const lng = parseFloat(event.longitude);
+
+                if (Number.isNaN(lat) || Number.isNaN(lng)) {
+                    return;
+                }
+
+                const marker = new google.maps.Marker({
+                    position: { lat, lng },
+                    map: this.map,
+                    title: event.title || "Event"
+                });
+
+                marker.eventId = String(event.id);
+                marker.eventData = event;
+
+                marker.addListener("click", () => {
+                    const content = typeof infoContentBuilder === "function"
+                        ? infoContentBuilder(event)
+                        : this.buildInfoContent(event);
+                    this.infoWindow.setContent(content);
+                    this.infoWindow.open(this.map, marker);
+
+                    if (typeof onMarkerClick === "function") {
+                        onMarkerClick(marker.eventId, marker);
+                    }
+                });
+
+                this.markers[marker.eventId] = marker;
+            });
+        },
+
+        buildInfoContent: function(event) {
+            const title = escapeHtml(event.title || "Event");
+            const description = escapeHtml(event.description ? event.description.substring(0, 140) : "");
+            const startDate = escapeHtml(event.start_date || "");
+            const ratingValue = event.fun_rating ?? event.fun_meter;
+            const rating = Number.isFinite(ratingValue) ? `${ratingValue}/5` : "N/A";
+            const link = event.detail_url
+                ? `<div class="mt-2"><a class="btn btn-sm btn-primary" href="${event.detail_url}">View Details</a></div>`
+                : "";
+
+            return `
+                <div class="event-popup">
+                    <strong>${title}</strong><br>
+                    ${startDate ? `Date: ${startDate}<br>` : ""}
+                    ${description ? `${description}...<br>` : ""}
+                    Fun Rating: ${rating}
+                    ${link}
+                </div>
+            `;
+        },
+
+        clearMarkers: function() {
+            Object.values(this.markers).forEach(marker => marker.setMap(null));
+            this.markers = {};
+        },
+
+        getVisibleEventIds: function() {
+            if (!this.map) {
+                return [];
+            }
+
+            const bounds = this.map.getBounds();
+            if (!bounds) {
+                return [];
+            }
+
+            const visibleIds = [];
+            Object.entries(this.markers).forEach(([eventId, marker]) => {
+                if (marker.getVisible() && bounds.contains(marker.getPosition())) {
+                    visibleIds.push(eventId);
+                }
+            });
+
+            return visibleIds;
+        },
+
+        highlightMarker: function(eventId, infoContentBuilder) {
+            const marker = this.markers[eventId];
+            if (!marker || !this.map) {
+                return null;
+            }
+
+            const content = typeof infoContentBuilder === "function"
+                ? infoContentBuilder(marker.eventData)
+                : this.buildInfoContent(marker.eventData);
+
+            this.infoWindow.setContent(content);
+            this.infoWindow.open(this.map, marker);
+            this.map.panTo(marker.getPosition());
+
+            return marker;
+        },
+
+        filterMarkers: function(predicate) {
+            Object.entries(this.markers).forEach(([eventId, marker]) => {
+                const visible = predicate ? !!predicate(marker.eventData || {}, marker) : true;
+                marker.setVisible(visible);
+            });
+
+            return this.getVisibleEventIds();
+        },
+
+        loadEventsFromDataset: parseEventsFromDataset
+    };
+})();
