@@ -44,6 +44,18 @@ def create_app():
     if not app.config["GOOGLE_MAPS_API_KEY"]:
         raise ValueError("GOOGLE_MAPS_API_KEY environment variable must be set")
 
+    # Default map bounds (fallback to WA/PNW region). Values can be overridden via env.
+    def _get_float(key: str, default: float) -> float:
+        try:
+            return float(settings.get(key, default))
+        except (TypeError, ValueError):
+            return float(default)
+
+    app.config["MAP_BOUNDS_NORTH"] = _get_float("MAP_BOUNDS_NORTH", 49.0)
+    app.config["MAP_BOUNDS_SOUTH"] = _get_float("MAP_BOUNDS_SOUTH", 45.5)
+    app.config["MAP_BOUNDS_WEST"] = _get_float("MAP_BOUNDS_WEST", -124.8)
+    app.config["MAP_BOUNDS_EAST"] = _get_float("MAP_BOUNDS_EAST", -116.9)
+
     # Database configuration
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
         "pool_recycle": 300,

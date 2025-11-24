@@ -189,7 +189,12 @@
 
 <script>
 (function() {
-    const DEFAULT_CENTER = { lat: 47.0379, lng: -122.9007 };
+    const MAP_BOUNDS = {
+        north: parseFloat('{{ config.MAP_BOUNDS_NORTH|default(49.0)|float }}'),
+        south: parseFloat('{{ config.MAP_BOUNDS_SOUTH|default(45.5)|float }}'),
+        west: parseFloat('{{ config.MAP_BOUNDS_WEST|default(-124.8)|float }}'),
+        east: parseFloat('{{ config.MAP_BOUNDS_EAST|default(-116.9)|float }}')
+    };
     let visibleEventIds = [];
     let userMarker = null;
 
@@ -437,7 +442,7 @@
 
         const map = FunlistMap.init('map', {
             events: eventsData,
-            defaultCenter: DEFAULT_CENTER,
+            defaultBounds: MAP_BOUNDS,
             onMarkerClick: highlightEventCard,
             infoContentBuilder: buildInfoContent
         });
@@ -455,7 +460,6 @@
 
         wireEventCardClicks();
         updateVisibleEvents();
-        getUserLocation(map);
     }
 
     window.initMap = function() {

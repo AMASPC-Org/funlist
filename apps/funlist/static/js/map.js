@@ -42,15 +42,27 @@ window.FunlistMap = (function() {
 
             this.events = options.events && options.events.length ? options.events : parseEventsFromDataset();
 
+            // Derive an initial center; prefer bounds center when provided.
+            let initialCenter = options.defaultCenter || defaultCenter;
+            let initialBounds = null;
+            if (options.defaultBounds) {
+                initialBounds = new google.maps.LatLngBounds(options.defaultBounds);
+                initialCenter = initialBounds.getCenter().toJSON();
+            }
+
             this.map = new google.maps.Map(mapContainer, {
-                center: options.defaultCenter || defaultCenter,
-                zoom: options.zoom || 13,
+                center: initialCenter,
+                zoom: options.zoom || 10,
                 mapTypeControl: false,
                 streetViewControl: false,
                 fullscreenControl: true
             });
 
             this.infoWindow = new google.maps.InfoWindow();
+
+            if (initialBounds) {
+                this.map.fitBounds(initialBounds);
+            }
 
             this.addEventsToMap(options.onMarkerClick, options.infoContentBuilder);
             return this.map;
