@@ -25,6 +25,36 @@
         position: relative;
     }
 
+    .map-wrapper {
+        position: relative;
+    }
+
+    .map-drawing-controls {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        display: flex;
+        gap: 10px;
+        z-index: 2;
+    }
+
+    .map-drawing-controls .btn {
+        border-radius: 999px;
+        padding: 10px 18px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    #clear-drawing-btn {
+        background-color: #334155;
+        border-color: #334155;
+        color: #fff;
+        opacity: 0.95;
+    }
+
+    #clear-drawing-btn:disabled {
+        opacity: 0.5;
+    }
+
     .user-location-button {
         position: absolute;
         top: 10px;
@@ -120,7 +150,13 @@
 
   <div class="row">
     <div class="col-lg-8">
-        <div id="map" class="map-container shadow"></div>
+        <div class="map-wrapper">
+            <div id="map" class="map-container shadow"></div>
+            <div class="map-drawing-controls">
+                <button id="draw-area-btn" class="btn btn-primary">Draw Search Area</button>
+                <button id="clear-drawing-btn" class="btn btn-secondary" disabled>Clear Drawing</button>
+            </div>
+        </div>
     </div>
 
     <div class="col-lg-4">
@@ -197,6 +233,8 @@
     };
     let visibleEventIds = [];
     let userMarker = null;
+    let drawAreaBtn = null;
+    let clearDrawingBtn = null;
 
     function getEventsData() {
         if (window.FunlistMap && typeof FunlistMap.loadEventsFromDataset === "function") {
@@ -301,6 +339,19 @@
         updateVisibleEvents();
     }
 
+    function setDrawingButtonsState({ drawing = false, hasShape = false } = {}) {
+        if (drawAreaBtn) {
+            drawAreaBtn.textContent = drawing ? 'Cancel Drawing' : 'Draw Search Area';
+            drawAreaBtn.dataset.drawing = drawing ? 'true' : 'false';
+            drawAreaBtn.classList.toggle('btn-danger', drawing);
+            drawAreaBtn.classList.toggle('btn-primary', !drawing);
+        }
+
+        if (clearDrawingBtn) {
+            clearDrawingBtn.disabled = !hasShape;
+        }
+    }
+
     function updateVisibleEvents() {
         if (!window.FunlistMap) return;
 
@@ -397,6 +448,44 @@
         });
     }
 
+    function wireDrawingControls() {
+        drawAreaBtn = document.getElementById('draw-area-btn');
+        clearDrawingBtn = document.getElementById('clear-drawing-btn');
+
+        if (drawAreaBtn) {
+            drawAreaBtn.addEventListener('click', () => {
+                if (!window.FunlistMap) return;
+
+                const currentlyDrawing = drawAreaBtn.dataset.drawing === 'true';
+                if (currentlyDrawing) {
+                    FunlistMap.cancelFreehandDrawing();
+                    setDrawingButtonsState({ drawing: false, hasShape: !!FunlistMap.activePolygon });
+                    return;
+                }
+
+                setDrawingButtonsState({ drawing: true, hasShape: !!FunlistMap.activePolygon });
+                FunlistMap.startFreehandDrawing(polygon => {
+                    setDrawingButtonsState({ drawing: false, hasShape: !!(polygon || FunlistMap.activePolygon) });
+                    filterMarkers();
+                });
+            });
+        }
+
+        if (clearDrawingBtn) {
+            clearDrawingBtn.addEventListener('click', () => {
+                if (!window.FunlistMap) return;
+                FunlistMap.clearFreehandDrawing();
+                setDrawingButtonsState({ drawing: false, hasShape: false });
+                filterMarkers();
+            });
+        }
+
+        setDrawingButtonsState({
+            drawing: false,
+            hasShape: !!(window.FunlistMap && FunlistMap.activePolygon)
+        });
+    }
+
     function getUserLocation(map) {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
@@ -458,6 +547,7 @@
             filterButton.addEventListener('click', filterMarkers);
         }
 
+        wireDrawingControls();
         wireEventCardClicks();
         updateVisibleEvents();
     }
@@ -472,5 +562,5 @@
 })();
 </script>
 
-<script src="https://maps.googleapis.com/maps/api/js?key={{ config.GOOGLE_MAPS_API_KEY }}&callback=initMap" async defer></script>
+<script src="https://maps.googleapis.com/maps/api/js?key={{ config.GOOGLE_MAPS_API_KEY }}&libraries=geometry,drawing&callback=initMap" async defer></script>
 {% endblock %}

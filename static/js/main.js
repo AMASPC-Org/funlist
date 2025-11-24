@@ -517,6 +517,12 @@ function setupLocationServices() {
         return;
     }
 
+    // If the map page is already managed by FunlistMap (custom map logic), avoid re-initializing
+    if (document.getElementById('map-data') || (window.FunlistMap && window.FunlistMap.map)) {
+        console.log('Funlist map is managing this map; skipping location services map reinit.');
+        return;
+    }
+
     console.log('Setting up location services');
 
     try {
