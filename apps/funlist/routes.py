@@ -514,7 +514,7 @@ def fun_assistant_chat():
                 Event.start_date >= current_date
             ).order_by(Event.start_date).limit(15).all()
 
-            # 3. Events with highest fun ratings
+            # 3. Events with highest Funalytics™ Scores
             top_rated_events = Event.query.filter(
                 Event.start_date >= current_date,
                 Event.fun_meter >= 4
@@ -524,7 +524,7 @@ def fun_assistant_chat():
             event_context = "\nUpcoming events:\n"
             if relevant_events:
                 for event in relevant_events:
-                     event_context += f"- {event.title} on {event.start_date.strftime('%Y-%m-%d')} at {event.location or 'Venue TBA'} (Fun Score: {event.fun_meter}/5): {event.description[:100]}...\n"
+                     event_context += f"- {event.title} on {event.start_date.strftime('%Y-%m-%d')} at {event.location or 'Venue TBA'} (Funalytics™ Score: {event.fun_meter}/5): {event.description[:100]}...\n"
             else:
                 event_context = "\nNo specific upcoming events found in the database right now.\n"
 
@@ -532,7 +532,7 @@ def fun_assistant_chat():
                 event_context += "\nTop-rated events:\n"
                 for event in top_rated_events:
                     if event not in relevant_events:  # Avoid duplicates
-                        event_context += f"- {event.title} on {event.start_date.strftime('%Y-%m-%d')} at {event.location or 'Venue TBA'} (Fun Score: {event.fun_meter}/5): {event.description[:100]}...\n"
+                        event_context += f"- {event.title} on {event.start_date.strftime('%Y-%m-%d')} at {event.location or 'Venue TBA'} (Funalytics™ Score: {event.fun_meter}/5): {event.description[:100]}...\n"
 
             # --- Construct Prompt ---
             prompt = f"""You are Fun Assistant, a friendly and helpful AI guide for the FunList.ai platform. Your goal is to help users discover fun local events based on their preferences.
@@ -546,7 +546,7 @@ def fun_assistant_chat():
 
             User Query: "{user_message}"
 
-            Based ONLY on the provided user profile and event context, answer the user's query. Recommend events from the list if they match the user's interests or location. If no listed events match, suggest general types of fun activities relevant to their interests. Mention the Fun Score when recommending specific events.
+            Based ONLY on the provided user profile and event context, answer the user's query. Recommend events from the list if they match the user's interests or location. If no listed events match, suggest general types of fun activities relevant to their interests. Mention the Funalytics™ Score when recommending specific events.
 
             If the user is not logged in, gently encourage them to create an account for more personalized recommendations while still providing useful information. 
 
@@ -555,7 +555,7 @@ def fun_assistant_chat():
             2. Friendly and enthusiastic 
             3. Focused on actual events in the database
             4. Personalized based on user interests if available
-            5. Include specific event details when recommending (date, fun score)
+            5. Include specific event details when recommending (date, Funalytics™ Score)
 
             Do not invent events not listed above. If you don't have enough information, politely ask for clarification.
             """

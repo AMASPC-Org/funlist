@@ -140,7 +140,7 @@ The admin dashboard provides insights into event statistics and can be used to m
 
 1. View pending events
 2. Approve or reject events
-3. Edit event details including fun ratings
+3. Edit event details including Funalytics™ Scores
 4. Mark events as featured
 
 ## Prohibited Advertisers Feature

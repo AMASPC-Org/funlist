@@ -123,7 +123,7 @@ def generate_faq_data():
                 "name": "How does the Funalytics scoring system work?",
                 "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "Funalytics is our breakthrough AI scoring methodology that evaluates events across two key dimensions: CommunityVibe (0-10 scale measuring sense of togetherness, local flavor, and inclusivity) and FamilyFun (0-10 scale evaluating suitability for families and children). The overall fun rating combines these metrics to help you quickly identify the most enjoyable events."
+                    "text": "Funalytics is our breakthrough AI scoring methodology that evaluates events across two key dimensions: CommunityVibe (0-10 scale measuring sense of togetherness, local flavor, and inclusivity) and FamilyFun (0-10 scale evaluating suitability for families and children). The overall Funalytics™ Score combines these metrics to help you quickly identify the most enjoyable events."
                 }
             },
             {
@@ -131,7 +131,7 @@ def generate_faq_data():
                 "name": "What types of events can I find on FunList.ai?",
                 "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "FunList.ai features community events across Washington State including festivals, concerts, food events, family activities, educational workshops, arts and culture events, sports activities, and seasonal celebrations. All events are curated with our AI-powered fun rating system to ensure quality experiences."
+                    "text": "FunList.ai features community events across Washington State including festivals, concerts, food events, family activities, educational workshops, arts and culture events, sports activities, and seasonal celebrations. All events are curated with our AI-powered Funalytics™ Score system to ensure quality experiences."
                 }
             },
             {
@@ -139,7 +139,7 @@ def generate_faq_data():
                 "name": "How do I find events near me?",
                 "acceptedAnswer": {
                     "@type": "Answer", 
-                    "text": "Use our interactive map feature or browse events by location. You can search by city, state, or zip code, and filter results by category, date, and fun rating. Our AI system also provides personalized recommendations based on your interests and location preferences."
+                    "text": "Use our interactive map feature or browse events by location. You can search by city, state, or zip code, and filter results by category, date, and Funalytics™ Score. Our AI system also provides personalized recommendations based on your interests and location preferences."
                 }
             },
             {
@@ -165,12 +165,12 @@ def get_page_metadata(page_type='default', **kwargs):
         },
         'event_detail': {
             'title': f"{kwargs.get('event_title', 'Event')} | {base_title}",
-            'description': f"Join {kwargs.get('event_title', 'this amazing event')} - {kwargs.get('event_description', 'A fun community event')}. Fun rated {kwargs.get('fun_rating', 'highly')} by our Funalytics AI system.",
+            'description': f"Join {kwargs.get('event_title', 'this amazing event')} - {kwargs.get('event_description', 'A fun community event')}. Funalytics™ Score rated {kwargs.get('fun_rating', 'highly')} by our Funalytics AI system.",
             'keywords': f"event, {kwargs.get('event_category', 'community')}, {kwargs.get('event_city', 'Washington')}, local events, fun activities"
         },
         'events_list': {
             'title': f"Browse All Events | {base_title}",
-            'description': "Browse our complete collection of AI-rated community events. Filter by location, category, and fun rating to find the perfect activities for you and your family.",
+            'description': "Browse our complete collection of AI-rated community events. Filter by location, category, and Funalytics™ Score to find the perfect activities for you and your family.",
             'keywords': "events list, browse events, community calendar, local activities, Washington events, family events"
         },
         'map': {

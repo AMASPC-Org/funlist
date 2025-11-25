@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def update_event_model():
-    """Update the Event model with new fields for fun rating justification and target audience description"""
+    """Update the Event model with new fields for Funalytics™ Score justification and target audience description"""
     app = create_app()
 
     with app.app_context():

@@ -94,7 +94,7 @@ The overall score represents the **general fun potential** of an event, balancin
   - Total: 8
 
 - **Overall Score**: 8 (Excellent community family event)
-- **Reasoning**: "High fun score because of strong community vibes, family-friendly activities, local focus."
+- **Reasoning**: "High Funalytics™ Score because of strong community vibes, family-friendly activities, local focus."
 
 ### Example 2: Downtown Business Mixer
 **Event**: "Professional Networking Happy Hour - 21+ Only"
@@ -111,7 +111,7 @@ The overall score represents the **general fun potential** of an event, balancin
   - Total: 2 (clamped to minimum)
 
 - **Overall Score**: 3 (Limited appeal for FunList audience)
-- **Reasoning**: "Lower fun score due to adult-only restrictions and limited community focus."
+- **Reasoning**: "Lower Funalytics™ Score due to adult-only restrictions and limited community focus."
 
 ### Example 3: Neighborhood Block Party
 **Event**: "Annual Maple Street Block Party - All Ages Welcome!"
@@ -130,7 +130,7 @@ The overall score represents the **general fun potential** of an event, balancin
   - Total: 8
 
 - **Overall Score**: 9 (Exceptional community fun)
-- **Reasoning**: "Exceptional fun score because of strong community vibes, family-friendly activities."
+- **Reasoning**: "Exceptional Funalytics™ Score because of strong community vibes, family-friendly activities."
 
 ## ❓ Frequently Asked Questions
 
@@ -198,7 +198,7 @@ GET /funalytics/latest?entityType=event&limit=10
       "communityVibe": 9,
       "familyFun": 8
     },
-    "reasoning": "High fun score because of strong community vibes, family-friendly activities.",
+    "reasoning": "High Funalytics™ Score because of strong community vibes, family-friendly activities.",
     "computedAt": "2025-09-15T20:30:00Z",
     "fun_rating": 8.5,
     "fun_meter": 9
