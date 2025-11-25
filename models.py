@@ -176,6 +176,40 @@ class Event(db.Model):
     fun_meter = Column(Integer, default=3)  # Legacy field - use Funalytics™ scores instead
     status = Column(String(50), default="pending")
     network_opt_out = Column(Boolean, default=False)
+    
+    # Funalytics™ Scoring Fields
+    event_frequency = Column(String(50), default="once")  # daily, weekly, monthly, yearly, once
+    frequency_deduction = Column(Float, default=0.0)  # Points deducted based on frequency
+    
+    # Event Processing Fields
+    rsvp_required = Column(Boolean, default=False)
+    ticket_required = Column(Boolean, default=False)
+    ticket_purchase_url = Column(String(500), nullable=True)
+    ticket_must_purchase_ahead = Column(Boolean, default=False)
+    ticket_can_purchase_at_event = Column(Boolean, default=False)
+    
+    # Special Instructions (JSON format)
+    special_instructions = Column(Text, nullable=True)  # JSON: parking, wheelchair_access, payment_methods, etc.
+    
+    # Event Type & Access
+    is_public_event = Column(Boolean, default=True)
+    membership_required = Column(Boolean, default=False)
+    membership_type = Column(String(255), nullable=True)
+    
+    # Host/Organizer Info
+    host_name = Column(String(255), nullable=True)
+    host_website = Column(String(500), nullable=True)
+    host_social_media = Column(Text, nullable=True)  # JSON: facebook, instagram, twitter, etc.
+    
+    # Venue Info
+    venue_website = Column(String(500), nullable=True)
+    venue_social_media = Column(Text, nullable=True)  # JSON: facebook, instagram, twitter, etc.
+    
+    # Event Submission Tracking
+    event_submitted_timestamp = Column(DateTime, default=datetime.utcnow)
+    event_source = Column(String(50), nullable=True)  # 'screenshot', 'image', 'form', 'api'
+    disclaimer_checked = Column(Boolean, default=False)
+    
     prohibited_advertisers = relationship(
         'ProhibitedAdvertiserCategory',
         secondary=event_prohibited_advertisers,
@@ -194,6 +228,36 @@ class Event(db.Model):
 
     def get_prohibited_category_ids(self):
         return [cat.id for cat in self.prohibited_advertisers]
+    
+    def get_special_instructions(self):
+        """Parse special instructions JSON"""
+        if self.special_instructions:
+            return json.loads(self.special_instructions)
+        return {}
+    
+    def set_special_instructions(self, instructions_dict):
+        """Store special instructions as JSON"""
+        self.special_instructions = json.dumps(instructions_dict)
+    
+    def get_host_social_media(self):
+        """Parse host social media JSON"""
+        if self.host_social_media:
+            return json.loads(self.host_social_media)
+        return {}
+    
+    def set_host_social_media(self, socials_dict):
+        """Store host social media as JSON"""
+        self.host_social_media = json.dumps(socials_dict)
+    
+    def get_venue_social_media(self):
+        """Parse venue social media JSON"""
+        if self.venue_social_media:
+            return json.loads(self.venue_social_media)
+        return {}
+    
+    def set_venue_social_media(self, socials_dict):
+        """Store venue social media as JSON"""
+        self.venue_social_media = json.dumps(socials_dict)
         
     def to_dict(self):
         """Convert Event object to dictionary for JSON serialization"""
@@ -366,6 +430,113 @@ class AIAccessLog(db.Model):
             'success': self.success,
             'error_message': self.error_message
         }
+
+
+class EventExclusionRule(db.Model):
+    """Global exclusion rules for event categories and keywords"""
+    __tablename__ = 'event_exclusion_rules'
+    __table_args__ = {'extend_existing': True}
+    
+    id = Column(Integer, primary_key=True)
+    exclusion_id = Column(String(50), unique=True, nullable=False, index=True)  # EXCL_001, EXCL_002, etc.
+    category_to_exclude = Column(String(255), nullable=False)  # Event category or type to exclude
+    exclusion_reason = Column(String(500), nullable=False)  # Why this is excluded
+    keywords_for_exclusion = Column(Text, nullable=True)  # Comma-separated keywords
+    status = Column(String(50), default='active', nullable=False)  # 'active' or 'inactive'
+    date_added = Column(DateTime, default=datetime.utcnow, nullable=False)
+    notes = Column(Text, nullable=True)  # Additional clarification
+    created_by_user_id = Column(Integer, ForeignKey('users.id'), nullable=True)
+    
+    created_by = relationship("User", foreign_keys=[created_by_user_id], backref="created_exclusion_rules")
+    
+    def __repr__(self):
+        return f"<EventExclusionRule {self.exclusion_id} - {self.category_to_exclude}>"
+    
+    def get_keywords_list(self):
+        """Parse comma-separated keywords into a list"""
+        if self.keywords_for_exclusion:
+            return [kw.strip().lower() for kw in self.keywords_for_exclusion.split(',')]
+        return []
+    
+    def matches_event(self, event_category, event_description):
+        """Check if an event matches this exclusion rule"""
+        if self.status != 'active':
+            return False
+        
+        # Check category match
+        if event_category and self.category_to_exclude.lower() in event_category.lower():
+            return True
+        
+        # Check keyword match
+        keywords = self.get_keywords_list()
+        if keywords and event_description:
+            event_desc_lower = event_description.lower()
+            for keyword in keywords:
+                if keyword in event_desc_lower:
+                    return True
+        
+        return False
+
+
+class OrganizerMaster(db.Model):
+    """Master list of event organizers and hosts"""
+    __tablename__ = 'organizer_master'
+    __table_args__ = {'extend_existing': True}
+    
+    id = Column(Integer, primary_key=True)
+    name = Column(String(255), nullable=False, unique=True, index=True)
+    description = Column(Text, nullable=True)
+    website = Column(String(500), nullable=True)
+    phone = Column(String(20), nullable=True)
+    email = Column(String(120), nullable=True)
+    
+    # Social media links
+    facebook_url = Column(String(255), nullable=True)
+    instagram_url = Column(String(255), nullable=True)
+    twitter_url = Column(String(255), nullable=True)
+    linkedin_url = Column(String(255), nullable=True)
+    tiktok_url = Column(String(255), nullable=True)
+    
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    is_verified = Column(Boolean, default=False)
+    
+    def __repr__(self):
+        return f"<OrganizerMaster {self.name}>"
+
+
+class VenueMaster(db.Model):
+    """Master list of venues with tracking"""
+    __tablename__ = 'venue_master'
+    __table_args__ = {'extend_existing': True}
+    
+    id = Column(Integer, primary_key=True)
+    name = Column(String(255), nullable=False, unique=True, index=True)
+    street = Column(String(255), nullable=True)
+    city = Column(String(100), nullable=True)
+    state = Column(String(50), nullable=True)
+    zip_code = Column(String(20), nullable=True)
+    website = Column(String(500), nullable=True)
+    phone = Column(String(20), nullable=True)
+    email = Column(String(120), nullable=True)
+    
+    # Social media links
+    facebook_url = Column(String(255), nullable=True)
+    instagram_url = Column(String(255), nullable=True)
+    twitter_url = Column(String(255), nullable=True)
+    linkedin_url = Column(String(255), nullable=True)
+    
+    # Accessibility info
+    wheelchair_accessible = Column(Boolean, default=False)
+    parking_available = Column(Boolean, default=False)
+    parking_notes = Column(Text, nullable=True)
+    
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    is_verified = Column(Boolean, default=False)
+    
+    def __repr__(self):
+        return f"<VenueMaster {self.name}>"
 
 
 # class CharterMember(db.Model):

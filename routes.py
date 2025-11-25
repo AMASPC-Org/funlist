@@ -8,7 +8,7 @@ from flask_login import current_user, login_required, login_user, logout_user
 from forms import (SignupForm, LoginForm, ProfileForm, EventForm,
                    ResetPasswordRequestForm, ResetPasswordForm, ChangePasswordForm,
                    VenueForm, ContactForm, SearchForm) # Added ContactForm, SearchForm
-from models import User, Event, Subscriber, Chapter, HelpArticle, Venue, ProhibitedAdvertiserCategory # Added HelpArticle, CharterMember
+from models import User, Event, Subscriber, Chapter, HelpArticle, Venue, ProhibitedAdvertiserCategory, EventExclusionRule, OrganizerMaster, VenueMaster # Added HelpArticle, CharterMember
 from db_init import db
 # Removed direct import of geocode_address, assume it's in utils.utils now
 from sqlalchemy import func, text
@@ -19,6 +19,16 @@ import openai # Import OpenAI library
 import anthropic # Import Anthropic library - using python_anthropic integration
 from google import genai # Import Google Gemini - using python_gemini integration
 from flask_wtf.csrf import CSRFProtect # Use only CSRFProtect
+from funalytics_scoring import (
+    calculate_frequency_deduction, 
+    is_event_appropriate_for_audience,
+    calculate_audience_specific_score,
+    apply_frequency_deduction,
+    get_audience_recommendations,
+    validate_event_exclusions,
+    generate_event_disclaimer,
+    TARGET_AUDIENCES
+)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)

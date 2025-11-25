@@ -1,0 +1,86 @@
+funlist.ai is the B2C "Town Square" of the AMA Digital Metropolis. It attracts a consumer audience, which generates engagement data and identifies event organizers. This data directly feeds the B2B LocalMarketingTool.ai (LMT.ai) platform, where organizers become sellers, creating the "Data Flywheel" that is the core of AMA's business model. The Personal Fun Assistant agent is a key differentiator for the user experience and must be treated as a mission-critical component.
+
+Funalytics™ Scoring Rules and Guidelines
+
+Make sure that you change the tense in the description to not be first person.  
+
+Reasons to deduct points from an event
+It happens each day (losses more than those below it)
+It happens each week (losses more than those below it)
+It happens each month (Losses more than those below it)
+It happens each year
+
+QUESTIONS
+What If It happens more than once a year and it doesn’t fall into one of the above categories?  For example, The Puyallup Fair goes on for three weeks.
+
+Likes an Dislikes
+
+Rules for processing events submitted via screenshot or image
+
+One of the steps is to look for the host website and the venue website if it is different than the host.
+
+Then the next step is to find them social media
+
+So as part of that, the agent will first need to figure out if it’s a new venue or host.
+	If it is then search for website and socials
+	If it isn’t then refer to the master list of venues and organizers
+
+All that to say that we are timestamping the event and giving a disclaimor that the event is subject to change or be canclled and to check website and socials for the latest updates.
+
+For every event or activity look for RSVP Requirment, whether you have to purchase tickets ahead of time, if you have to purchase the tickets at the event when it happens, etc….
+
+Then you need to find the url where the tickets can be purchased or rsvp can be made etc…
+
+So basically, I am thinking maybe we need a special instructions section for each event/activity.
+	What are things that go in special instructions?
+		Parking specifics
+		Wheelchair or handicap access
+		Cash Only or Credit Card only
+Also
+
+Is this a public event or private event?
+Is membership required?
+
+
+The host can also be considered the event organizer.
+
+Not all activities are events but all events have activities
+
+
+
+Column Header
+Data Type
+Description
+Example
+A: Exclusion_ID
+String
+Unique ID for this exclusion rule.
+EXCL_001, EXCL_002
+B: Category_To_Exclude
+String
+The Primary_Event_Category (or specific Event Type from Taxonomy) that should be globally excluded.
+Internal Business Meeting, Personal Private Occasion, Illegal Activity
+C: Exclusion_Reason
+String
+Brief reason why this category is excluded.
+Not open to public, Irrelevant to platform scope, Prohibited content
+D: Keywords_For_Exclusion
+String
+(Optional) Comma-separated keywords that, if found alongside a category, might confirm its exclusion.
+For Internal Business Meeting: "AGM", "staff only", "internal sync"
+E: Status
+String
+Active, Inactive
+Active
+F: Date_Added
+Date
+Date this rule was added.
+2025-05-23
+G: Notes
+String
+Any additional clarification.
+
+
+
+
+
