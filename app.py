@@ -32,7 +32,25 @@ def create_app():
     if not app.config["SECRET_KEY"]:
         raise ValueError("SESSION_SECRET environment variable must be set")
     
-    app.config["SQLALCHEMY_DATABASE_URI"] = settings.get("DATABASE_URL")
+    # Get DATABASE_URL, but check if it's using old SQLite config
+    database_url = settings.get("DATABASE_URL")
+    
+    # If DATABASE_URL is SQLite (from old .env), construct PostgreSQL URL from PG* env vars
+    if database_url and database_url.startswith("sqlite://"):
+        logger.info("Detected old SQLite DATABASE_URL, attempting to construct PostgreSQL URL from environment variables")
+        pg_user = os.environ.get("PGUSER")
+        pg_password = os.environ.get("PGPASSWORD")
+        pg_host = os.environ.get("PGHOST")
+        pg_port = os.environ.get("PGPORT", "5432")
+        pg_database = os.environ.get("PGDATABASE")
+        
+        if all([pg_user, pg_password, pg_host, pg_database]):
+            database_url = f"postgresql://{pg_user}:{pg_password}@{pg_host}:{pg_port}/{pg_database}"
+            logger.info("Constructed PostgreSQL DATABASE_URL from environment variables")
+        else:
+            logger.warning("SQLite URL detected but cannot construct PostgreSQL URL (missing PG* env vars)")
+    
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     if not app.config["SQLALCHEMY_DATABASE_URI"]:
         raise ValueError("DATABASE_URL environment variable must be set")
     
