@@ -172,8 +172,8 @@ class Event(db.Model):
     attendance_count = Column(Integer, default=0)
     views_count = Column(Integer, default=0)
     featured = Column(Boolean, default=False)
-    fun_rating = Column(Integer, default=3)
-    fun_meter = Column(Integer, default=3)
+    fun_rating = Column(Integer, default=3)  # Legacy field - use Funalytics™ scores instead
+    fun_meter = Column(Integer, default=3)  # Legacy field - use Funalytics™ scores instead
     status = Column(String(50), default="pending")
     network_opt_out = Column(Boolean, default=False)
     prohibited_advertisers = relationship(

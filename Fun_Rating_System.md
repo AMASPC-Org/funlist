@@ -1,31 +1,33 @@
 
-# FunList.ai Fun Rating System
+# FunList.ai Funalytics™ Scoring System
 
 ## Overview
 
-The FunList.ai platform uses a sophisticated algorithm to help users discover and filter events based on their potential for fun. This document outlines the core logic and methodologies that power our event discovery and rating system.
+The FunList.ai platform uses Funalytics™, a sophisticated AI-powered scoring algorithm, to help users discover and filter events based on their potential for fun. This document outlines the core logic and methodologies that power our event discovery and scoring system.
 
-## Fun Rating Basics
+## Funalytics™ Score Basics
 
-Events in FunList.ai are assigned a "Fun Rating" on a scale of 1-5, where:
+Events in FunList.ai are assigned a "Funalytics™ Score" on a scale of 0-10, where:
 
-- ⭐ (1): Mildly entertaining
-- ⭐⭐ (2): Enjoyable
-- ⭐⭐⭐ (3): Fun
-- ⭐⭐⭐⭐ (4): Very fun
-- ⭐⭐⭐⭐⭐ (5): Exceptionally fun
+- 1-2: Low fun potential
+- 3-4: Fair fun
+- 5-6: Good fun
+- 7-8: Great fun
+- 9-10: Exceptional fun
 
-## Rating Assignment Process
+For more details, see [Funalytics Documentation](docs/FUNALYTICS_DOCS.md).
 
-1. **Initial Rating**: Event organizers provide an initial self-assessment of their event's fun factor during submission
-2. **Rating Verification**: Admin review may adjust ratings based on event details and category norms
-3. **Featured Status**: Events with high fun ratings can be marked as "featured" by administrators
+## Score Assignment Process
+
+1. **Initial Score**: Funalytics™ automatically computes scores based on event details, category, and keywords
+2. **Score Verification**: Admin review may trigger score recomputation based on updated event details
+3. **Featured Status**: Events with high Funalytics™ scores can be marked as "featured" by administrators
 
 ## Search and Discovery Algorithm
 
 ### Featured Events API
 
-The platform includes an API endpoint (`/api/featured-events`) that leverages fun ratings to enhance event discovery:
+The platform includes an API endpoint (`/api/featured-events`) that leverages Funalytics™ scores to enhance event discovery:
 
 ```python
 # From routes.py - Featured Events API
@@ -42,7 +44,7 @@ def featured_events_api():
     events = Event.query.filter(
         Event.latitude.isnot(None),
         Event.longitude.isnot(None),
-        Event.fun_meter >= 4,       # Only events with fun rating of 4 or higher
+        Event.fun_meter >= 4,       # Only events with Funalytics™ score of 4 or higher
         Event.status == "approved",
     ).all()
 
@@ -65,7 +67,7 @@ def featured_events_api():
                 "distance": round(distance, 1)
             })
 
-    # Return events sorted by fun rating (highest first) and then by date
+    # Return events sorted by Funalytics™ score (highest first) and then by date
     return jsonify({
         "success": True,
         "events": sorted(featured, key=lambda x: (-x["fun_meter"], x["date"]))[:5]
@@ -74,7 +76,7 @@ def featured_events_api():
 
 ### Event Filtering Logic
 
-The map and events pages implement client-side filtering based on fun ratings:
+The map and events pages implement client-side filtering based on Funalytics™ scores:
 
 1. **Map Filtering**: 
    ```javascript
@@ -87,7 +89,7 @@ The map and events pages implement client-side filtering based on fun ratings:
    ```
 
 2. **Events Page Filtering**:
-   Fun rating filters provide users with direct control, allowing them to find events meeting their minimum fun threshold.
+   Funalytics™ score filters provide users with direct control, allowing them to find events meeting their minimum fun threshold.
 
 ## Geographic Relevance
 
@@ -147,11 +149,13 @@ FunList.ai also includes the ability for event organizers to specify prohibited 
 
 ## Conclusion
 
-The FunList.ai Fun Rating System is designed to surface the most enjoyable events to users based on a combination of:
+The FunList.ai Funalytics™ Scoring System is designed to surface the most enjoyable events to users based on a combination of:
 
-- Explicit fun ratings
+- AI-powered Funalytics™ scores (CommunityVibe™ + FamilyFun™)
 - Geographic relevance
 - Event attributes matching
 - Administrative curation
 
 This multi-faceted approach ensures that users can quickly discover events that match their interests and location while prioritizing those with the highest potential for enjoyment.
+
+For complete technical documentation, see [Funalytics™ Documentation](docs/FUNALYTICS_DOCS.md).

@@ -87,8 +87,8 @@
                                             {% endif %}
                                         </div>
                                     {% elif event.fun_meter or event.fun_rating %}
-                                        <!-- Fallback to standard rating -->
-                                        <span class="ms-2" title="Fun rating">
+                                        <!-- Fallback to Funalytics score -->
+                                        <span class="ms-2" title="Funalytics™ Score">
                                             {% for i in range(1, (event.fun_meter or event.fun_rating or 3)|int + 1) %}
                                                 ⭐
                                             {% endfor %}
