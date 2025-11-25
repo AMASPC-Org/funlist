@@ -47,7 +47,8 @@ def create_app():
     # Default map bounds (fallback to WA/PNW region). Values can be overridden via env.
     def _get_float(key: str, default: float) -> float:
         try:
-            return float(settings.get(key, default))
+            value = settings.get(key)
+            return float(value) if value else default
         except (TypeError, ValueError):
             return float(default)
 
@@ -60,10 +61,7 @@ def create_app():
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
         "pool_recycle": 300,
         "pool_pre_ping": True,
-        "pool_timeout": 30,
-        "connect_args": {
-            "connect_timeout": 10
-        }
+        "pool_timeout": 30
     }
 
     # Simple session configuration using Flask's default signed cookie sessions
@@ -81,14 +79,6 @@ def create_app():
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-
-    try:
-        logger.info("Importing models...")
-        import models  # noqa: F401 (imported for side effects)
-        User = models.User  # Used by login manager below
-    except Exception as e:
-        logger.error(f"Failed to import models: {str(e)}", exc_info=True)
-        raise
 
     try:
         logger.info("Importing models...")
@@ -143,7 +133,7 @@ def create_app():
         logger.info("Setting up login manager...")
         login_manager = LoginManager()
         login_manager.init_app(app)
-        login_manager.login_view: str = "login"
+        login_manager.login_view = "login"  # type: ignore
         login_manager.login_message = "Please log in to access this page."
         login_manager.login_message_category = "info"
         login_manager.session_protection = "strong"
