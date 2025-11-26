@@ -40,8 +40,7 @@ class User(db.Model, UserMixin):
     _is_event_creator = Column('is_event_creator', Boolean, default=False)
     is_organizer = Column(Boolean, default=False)
     is_vendor = Column(Boolean, default=False)
-    is_sponsor = Column(Boolean, default=False)
-    is_investor = Column(Boolean, default=False)
+    is_sponsor = Column(Boolean, default=False)  # Added per requirements
     vendor_type = Column(String(50), nullable=True)
     vendor_description = Column(Text, nullable=True)
     vendor_profile_updated_at = Column(DateTime, nullable=True)
@@ -90,6 +89,15 @@ class User(db.Model, UserMixin):
     @is_event_creator.setter
     def is_event_creator(self, value):
         self._is_event_creator = value
+
+    @property
+    def is_investor(self):
+        # Placeholder role flag; not persisted while investor role is disabled
+        return getattr(self, "_is_investor_flag", False)
+
+    @is_investor.setter
+    def is_investor(self, value):
+        self._is_investor_flag = bool(value)
 
     events = relationship("Event", back_populates="user", cascade="all, delete-orphan")
 

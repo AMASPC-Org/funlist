@@ -72,6 +72,15 @@ class User(db.Model, UserMixin):
     def is_event_creator(self, value):
         self._is_event_creator = value
 
+    @property
+    def is_investor(self):
+        # Placeholder role flag; not persisted while investor role is disabled
+        return getattr(self, "_is_investor_flag", False)
+
+    @is_investor.setter
+    def is_investor(self, value):
+        self._is_investor_flag = bool(value)
+
     events = relationship("Event", back_populates="user", cascade="all, delete-orphan")
 
     def set_password(self, password):
