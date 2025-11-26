@@ -73,7 +73,7 @@
         {% endif %}
         {% if current_user.is_authenticated and current_user.is_vendor %}
         <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('vendor_profile') }}">Vendor Profile</a>
+          <a class="nav-link" href="{{ url_for('edit_profile') }}">Vendor Profile</a>
         </li>
         {% endif %}
         {# Removed Organizer Profile link as it's now part of the My Profile page #}
