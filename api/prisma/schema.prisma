@@ -1,94 +1,96 @@
-generator client {
-  provider = "prisma-client-js"
-  output   = "../generated/prisma"
-}
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-model Event {
-  id            Int        @id @default(autoincrement())
-  title         String
-  description   String?
-  startTime     DateTime
-  endTime       DateTime?
-  location      String?
-  city          String?
-  state         String?
-  zipCode       String?
-  latitude      Float?
-  longitude     Float?
-  category      String?
-  organizerId   Int?
-  venueId       Int?
-  status        String?    @default("pending")
-  created_at    DateTime?  @default(now())
-  updated_at    DateTime?  @default(now())
-  
-  // Relations
-  organizer     User?      @relation(fields: [organizerId], references: [id])
-  venue         Venue?     @relation(fields: [venueId], references: [id])
-  funalytics    FunalyticsScore[]
-  
-  @@map("events")
+generator client {
+  provider = "prisma-client-js"
 }
 
 model User {
-  id            Int      @id @default(autoincrement())
-  first_name    String?
-  last_name     String?
-  company_name  String?
-  email         String   @unique
-  password_hash String?
-  phone         String?
-  is_organizer  Boolean? @default(false)
-  is_sponsor    Boolean? @default(false)
-  is_vendor     Boolean? @default(false)
-  is_admin      Boolean? @default(false)
-  is_active     Boolean? @default(true)
-  created_at    DateTime? @default(now())
-  updated_at    DateTime? @default(now())
-  
-  // Relations
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password_hash String
+  role          Role      @default(attendee)
+  display_name  String?
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
   events        Event[]
-  
-  @@map("users")
+  favorites     Favorite[]
+  audit_logs    AuditLog[]
 }
 
 model Venue {
-  id              Int      @id @default(autoincrement())
-  name            String?
-  address         String?
-  city            String?
-  state           String?
-  zip_code        String?
-  latitude        Float?
-  longitude       Float?
-  capacity        Int?
-  venue_type_id   Int?
-  created_at      DateTime? @default(now())
-  updated_at      DateTime? @default(now())
-  
-  // Relations
-  events          Event[]
-  
-  @@map("venues")
+  id         String   @id @default(uuid())
+  name       String
+  address    String?
+  city       String?
+  state      String?
+  zip        String?
+  latitude   Float?
+  longitude  Float?
+  created_at DateTime @default(now())
+  events     Event[]
+}
+
+model Event {
+  id           String      @id @default(uuid())
+  title        String
+  description  String?
+  start_time   DateTime
+  end_time     DateTime
+  venue_id     String?
+  venue        Venue?      @relation(fields: [venue_id], references: [id])
+  organizer_id String?
+  organizer    User?       @relation(fields: [organizer_id], references: [id])
+  status       Status      @default(pending)
+  created_at   DateTime    @default(now())
+  updated_at   DateTime    @updatedAt
+  funalytics   FunalyticsScore[]
+  favorites    Favorite[]
 }
 
 model FunalyticsScore {
-  id            String    @id @default(dbgenerated("gen_random_uuid()"))
-  eventId       Int       @map("event_id")
-  communityVibe Int?      @map("community_vibe")
-  familyFun     Int?      @map("family_fun")
-  overallScore  Int?      @map("overall_score")
-  reasoning     String?
-  computedAt    DateTime  @default(now()) @map("computed_at")
-  
-  // Relations
-  event         Event     @relation(fields: [eventId], references: [id])
-  
-  @@map("funalytics_scores")
-  @@index([eventId, computedAt(sort: Desc)])
+  id              String   @id @default(uuid())
+  event_id        String
+  event           Event    @relation(fields: [event_id], references: [id])
+  community_vibe  Int
+  family_fun      Int
+  overall_score   Int
+  reasoning       String?
+  computed_at     DateTime @default(now())
+}
+
+model Favorite {
+  user_id  String
+  user     User   @relation(fields: [user_id], references: [id])
+  event_id String
+  event    Event  @relation(fields: [event_id], references: [id])
+  created_at DateTime @default(now())
+
+  @@id([user_id, event_id])
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  user_id     String?
+  user        User?    @relation(fields: [user_id], references: [id])
+  action      String
+  target_type String?
+  target_id   String?
+  timestamp   DateTime @default(now())
+}
+
+enum Role {
+  attendee
+  organizer
+  admin
+}
+
+enum Status {
+  draft
+  pending
+  approved
+  rejected
 }
