@@ -265,6 +265,11 @@ def create_app():
         from routes_debug import debug
         app.register_blueprint(debug)
         
+        # Register Google OAuth blueprint
+        from google_auth import google_auth
+        app.register_blueprint(google_auth)
+        logger.info("Google OAuth blueprint registered successfully")
+        
         # Register AI routes blueprint
         from routes_ai import ai_routes
         app.register_blueprint(ai_routes)
