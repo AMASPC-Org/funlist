@@ -1,7 +1,7 @@
 
 #!/usr/bin/env python3
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 import random
 from models import Event, User
 from db_init import db
@@ -78,12 +78,22 @@ def add_sample_events():
         ]
 
         # Add events to database
-        for event_data in events:
+        time_slots = [
+            (time(10, 0), time(18, 0)),  # 10 AM - 6 PM
+            (time(14, 0), time(22, 0)),  # 2 PM - 10 PM
+            (time(9, 0), time(17, 0)),   # 9 AM - 5 PM
+            (time(11, 0), time(20, 0))   # 11 AM - 8 PM
+        ]
+        
+        for idx, event_data in enumerate(events):
+            start_time, end_time = time_slots[idx % len(time_slots)]
             event = Event(
                 title=event_data["title"],
                 description=event_data["description"],
                 start_date=event_data["date"],
                 end_date=event_data["date"],
+                start_time=start_time,
+                end_time=end_time,
                 street=event_data["street"],
                 city=event_data["city"],
                 state=event_data["state"],
