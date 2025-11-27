@@ -113,6 +113,21 @@ def create_app():
             try:
                 db.create_all()
                 logger.info("Database tables created successfully")
+
+                if settings.get_bool("SEED_ON_START", True):
+                    try:
+                        from seed import seed as run_seed
+
+                        seed_result = run_seed(app) or {}
+                        logger.info(
+                            "Seed-on-start completed: %s chapters, %s events",
+                            seed_result.get("chapters"),
+                            seed_result.get("events"),
+                        )
+                    except Exception as seed_error:  # noqa: BLE001
+                        logger.error(
+                            "Seed-on-start failed: %s", seed_error, exc_info=True
+                        )
             except IntegrityError as integrity_error:
                 db.session.rollback()
                 error_text = str(integrity_error)

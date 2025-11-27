@@ -458,6 +458,25 @@ def analyze_event():
 def admin_dashboard():
     return render_template('admin_dashboard.html', chapters=Chapter.query.all(), stats={}, events=[], recent_activity=[])
 
+
+@login_required
+@admin_required
+def run_seed_script():
+    """Trigger the seed script from an authenticated admin session."""
+    try:
+        from seed import seed as run_seed  # Imported here to avoid circular imports during app setup
+
+        result = run_seed(current_app._get_current_object()) or {}
+        return jsonify({
+            "status": "success",
+            "seeded_events": result.get("events"),
+            "seeded_chapters": result.get("chapters"),
+        }), 200
+    except Exception as exc:  # noqa: BLE001
+        logger.error(f"Error running seed script: {exc}", exc_info=True)
+        db.session.rollback()
+        return jsonify({"status": "error", "message": "Failed to run seed script"}), 500
+
 def api_health_check(): return "", 200
 def health_check(): return jsonify({"status": "healthy"}), 200
 def submit_feedback(): return jsonify({"status": "success"}), 200
@@ -517,6 +536,7 @@ def register_ai_governance_routes(app):
 
 def init_routes(app):
     csrf = CSRFProtect(app)
+    csrf.exempt(run_seed_script)
     app.route("/")(index)
     app.route("/map")(map)
     app.route("/events")(events)
@@ -553,6 +573,7 @@ def init_routes(app):
     app.route('/api/fun-assistant/chat', methods=['POST'])(fun_assistant_chat)
     app.route('/api/analyze-event', methods=['POST'])(analyze_event)
     app.route('/sitemap.xml')(sitemap)
+    app.route('/admin/seed', methods=['POST'])(run_seed_script)
     app.route('/admin/dashboard')(admin_dashboard)
     app.route("/api/feedback", methods=['POST'])(submit_feedback)
     app.route("/search", methods=["GET", "POST"])(search)
