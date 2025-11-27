@@ -1,18 +1,52 @@
 {% extends "base.html" %}
 {% set prefs = (preferences if preferences is defined else {}) %}
 
+{% block head %}
+<style>
+.profile-hero {
+    background: linear-gradient(135deg, #FFE8DC, #FFF9F5) !important;
+    color: var(--text-navy, #1a2332);
+    border: 1px solid rgba(255, 107, 53, 0.18);
+    box-shadow: 0 18px 50px rgba(255, 107, 53, 0.18);
+}
+
+.profile-hero .hero-meta {
+    color: var(--text-secondary, #4a5568);
+}
+
+.profile-hero .avatar-initials {
+    color: var(--primary-orange, #FF6B35);
+}
+
+.profile-hero .btn-primary {
+    background: var(--primary-orange, #FF6B35);
+    border-color: var(--primary-orange, #FF6B35);
+}
+
+.profile-hero .btn-outline-primary,
+.profile-hero .btn-outline-light {
+    color: var(--primary-orange, #FF6B35);
+    border-color: rgba(255, 107, 53, 0.35);
+}
+
+.profile-hero .btn-outline-light:hover {
+    background: rgba(255, 107, 53, 0.08);
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container py-4">
-    <div class="profile-hero bg-gradient rounded-4 text-white p-4 p-md-5 shadow-sm" style="background: linear-gradient(120deg, #5f72ff, #8e2de2);">
+    <div class="profile-hero bg-gradient rounded-4 p-4 p-md-5 shadow-sm">
         <div class="row g-4 align-items-center">
             <div class="col-lg-8">
                 <div class="d-flex align-items-center gap-3">
                     <div class="avatar avatar-xl bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width:70px;height:70px;">
-                        <span class="fs-3 fw-bold">{{ (user.first_name or user.username or user.email)[0] }}</span>
+                        <span class="fs-3 fw-bold avatar-initials">{{ (user.first_name or user.username or user.email)[0] }}</span>
                     </div>
                     <div>
                         <h1 class="h3 mb-1">{{ user.first_name or user.username or user.email }}</h1>
-                        <p class="mb-0 text-white-50">
+                        <p class="mb-0 text-muted">
                             {{ user.title or 'FunList Community Member' }}
                         </p>
                         <div class="d-flex flex-wrap gap-2 mt-2">
@@ -26,17 +60,17 @@
             </div>
             <div class="col-lg-4 text-lg-end">
                 <div class="d-flex flex-wrap justify-content-lg-end gap-2">
-                    <a href="{{ url_for('edit_profile') }}" class="btn btn-light text-primary">
+                    <a href="{{ url_for('edit_profile') }}" class="btn btn-primary">
                         <i class="fas fa-user-edit me-2"></i>Edit Profile
                     </a>
-                    <a href="{{ url_for('change_password') }}" class="btn btn-outline-light">
+                    <a href="{{ url_for('change_password') }}" class="btn btn-outline-primary">
                         <i class="fas fa-key me-2"></i>Password
                     </a>
                     <a href="{{ url_for('submit_event') }}" class="btn btn-success">
                         <i class="fas fa-plus-circle me-2"></i>Add Event
                     </a>
                 </div>
-                <div class="text-white-50 small mt-3">
+                <div class="hero-meta small mt-3">
                     Member since {{ user.created_at.strftime('%B %Y') }} ·
                     Last active {{ user.last_login.strftime('%b %d, %Y') if user.last_login else 'recently' }}
                 </div>
