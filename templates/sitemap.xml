@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  {% for page in pages %}
+  <url>
+    <loc>{{ page.loc }}</loc>
+    {% if page.lastmod %}<lastmod>{{ page.lastmod }}</lastmod>{% endif %}
+    {% if page.changefreq %}<changefreq>{{ page.changefreq }}</changefreq>{% endif %}
+    {% if page.priority is not none %}<priority>{{ "%.1f"|format(page.priority) }}</priority>{% endif %}
+  </url>
+  {% endfor %}
+
+  {% for chapter in chapter_urls %}
+  <url>
+    <loc>{{ chapter.loc }}</loc>
+    {% if chapter.lastmod %}<lastmod>{{ chapter.lastmod }}</lastmod>{% endif %}
+    {% if chapter.changefreq %}<changefreq>{{ chapter.changefreq }}</changefreq>{% endif %}
+    {% if chapter.priority is not none %}<priority>{{ "%.1f"|format(chapter.priority) }}</priority>{% endif %}
+  </url>
+  {% endfor %}
+
+  {% for event in event_urls %}
+  <url>
+    <loc>{{ event.loc }}</loc>
+    {% if event.lastmod %}<lastmod>{{ event.lastmod }}</lastmod>{% endif %}
+    {% if event.changefreq %}<changefreq>{{ event.changefreq }}</changefreq>{% endif %}
+    {% if event.priority is not none %}<priority>{{ "%.1f"|format(event.priority) }}</priority>{% endif %}
+  </url>
+  {% endfor %}
+</urlset>

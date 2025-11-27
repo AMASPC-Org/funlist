@@ -1,7 +1,7 @@
 import os
 import logging
 import requests
-from flask import render_template, flash, redirect, url_for, request, session, jsonify, current_app
+from flask import render_template, flash, redirect, url_for, request, session, jsonify, current_app, Response
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user, login_required, login_user, logout_user
@@ -463,6 +463,55 @@ def health_check(): return jsonify({"status": "healthy"}), 200
 def submit_feedback(): return jsonify({"status": "success"}), 200
 def search(): return render_template("search.html", form=SearchForm(), chapters=Chapter.query.all())
 
+def sitemap():
+    """Generate an XML sitemap for search engines."""
+    today = datetime.utcnow().date().isoformat()
+
+    static_pages = [
+        {"loc": url_for('index', _external=True), "changefreq": "daily", "priority": 1.0, "lastmod": today},
+        {"loc": url_for('map', _external=True), "changefreq": "daily", "priority": 0.9, "lastmod": today},
+        {"loc": url_for('events', _external=True), "changefreq": "daily", "priority": 0.9, "lastmod": today},
+        {"loc": url_for('chapters_page', _external=True), "changefreq": "weekly", "priority": 0.7, "lastmod": today},
+        {"loc": url_for('venues', _external=True), "changefreq": "weekly", "priority": 0.7, "lastmod": today},
+        {"loc": url_for('about', _external=True), "changefreq": "monthly", "priority": 0.5, "lastmod": today},
+        {"loc": url_for('contact', _external=True), "changefreq": "monthly", "priority": 0.5, "lastmod": today},
+        {"loc": url_for('help', _external=True), "changefreq": "monthly", "priority": 0.5, "lastmod": today},
+        {"loc": url_for('fun_assistant_page', _external=True), "changefreq": "weekly", "priority": 0.6, "lastmod": today},
+        {"loc": url_for('terms', _external=True), "changefreq": "yearly", "priority": 0.3, "lastmod": today},
+        {"loc": url_for('privacy', _external=True), "changefreq": "yearly", "priority": 0.3, "lastmod": today},
+        {"loc": url_for('definitions', _external=True), "changefreq": "yearly", "priority": 0.3, "lastmod": today},
+    ]
+
+    chapter_urls = []
+    for chapter in Chapter.query.filter_by(is_active=True).order_by(Chapter.name.asc()).all():
+        chapter_lastmod = chapter.created_at.date().isoformat() if chapter.created_at else today
+        chapter_urls.append({
+            "loc": url_for('chapter', slug=chapter.slug, _external=True),
+            "changefreq": "weekly",
+            "priority": 0.6,
+            "lastmod": chapter_lastmod
+        })
+
+    event_urls = []
+    approved_events = (
+        Event.query.filter(func.lower(Event.status) == 'approved', Event.is_public_event.is_(True))
+        .order_by(Event.start_date.desc())
+        .limit(2000)
+        .all()
+    )
+    for event in approved_events:
+        lastmod_source = event.end_date or event.start_date or event.created_at
+        lastmod = lastmod_source.date().isoformat() if lastmod_source else None
+        event_urls.append({
+            "loc": url_for('event_detail', event_id=event.id, _external=True),
+            "changefreq": "weekly",
+            "priority": 0.5,
+            "lastmod": lastmod
+        })
+
+    sitemap_xml = render_template("sitemap.xml", pages=static_pages, chapter_urls=chapter_urls, event_urls=event_urls)
+    return Response(sitemap_xml, mimetype="application/xml")
+
 def register_ai_governance_routes(app):
     pass
 
@@ -503,6 +552,7 @@ def init_routes(app):
     app.route('/health', methods=['GET'])(health_check)
     app.route('/api/fun-assistant/chat', methods=['POST'])(fun_assistant_chat)
     app.route('/api/analyze-event', methods=['POST'])(analyze_event)
+    app.route('/sitemap.xml')(sitemap)
     app.route('/admin/dashboard')(admin_dashboard)
     app.route("/api/feedback", methods=['POST'])(submit_feedback)
     app.route("/search", methods=["GET", "POST"])(search)
