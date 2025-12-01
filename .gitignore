@@ -170,6 +170,7 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 .env
+.env.*
 
 flask_session/
 firebase-service-account.json
