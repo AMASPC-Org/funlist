@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}FunList Chapters{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h1 class="h3 mb-1">Chapters & Organizations</h1>
+            <p class="text-muted mb-0">Browse the chapters stewarding local fun across regions.</p>
+        </div>
+        <a class="btn btn-outline-primary" href="{{ url_for('map') }}">
+            <i class="bi bi-map"></i> View map
+        </a>
+    </div>
+
+    {% if chapters %}
+    <div class="row g-3">
+        {% for chapter in chapters %}
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h5 class="card-title mb-1">{{ chapter.name }}</h5>
+                            <p class="text-muted small mb-1">
+                                {{ [chapter.city, chapter.state, chapter.country]|select|join(', ') or 'Location TBA' }}
+                            </p>
+                            {% if chapter.description %}
+                            <p class="text-muted small mb-0">{{ chapter.description }}</p>
+                            {% endif %}
+                        </div>
+                        <span class="badge bg-{% if chapter.is_active %}success{% else %}secondary{% endif %}">
+                            {{ 'Active' if chapter.is_active else 'Inactive' }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-footer d-flex justify-content-between align-items-center">
+                    <small class="text-muted">Slug: {{ chapter.slug }}</small>
+                    <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('chapter', slug=chapter.slug) }}">View</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">No chapters found yet.</div>
+    {% endif %}
+</div>
+{% endblock %}
