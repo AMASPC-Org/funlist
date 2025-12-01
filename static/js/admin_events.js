@@ -27,14 +27,25 @@ function handleResponse(response) {
   return response.json();
 }
 
+function buildJsonHeaders() {
+  const headers = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  };
+  const csrf = getCsrfToken();
+  if (csrf) {
+    headers['X-CSRFToken'] = csrf;
+    headers['X-CSRF-Token'] = csrf;
+  }
+  return headers;
+}
+
 // Define window functions for event management
 window.approveEvent = function(eventId) {
   if (confirm('Are you sure you want to approve this event?')) {
     fetch(`/admin/event/${eventId}/approve`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      }
+      headers: buildJsonHeaders()
     })
     .then(handleResponse)
     .then(data => {
@@ -56,33 +67,7 @@ window.rejectEvent = function(eventId) {
   if (confirm('Are you sure you want to reject this event?')) {
     fetch(`/admin/event/${eventId}/reject`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
-    .then(handleResponse)
-    .then(data => {
-      if (data.success) {
-        showToast(data.message, 'success');
-        setTimeout(() => { window.location.reload(); }, 1000);
-      } else {
-        showToast('Error: ' + data.message, 'danger');
-      }
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      showToast('Error: ' + error.message, 'danger');
-    });
-  }
-};
-
-window.deleteEvent = function(eventId) {
-  if (confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
-    fetch(`/admin/event/${eventId}/delete`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      }
+      headers: buildJsonHeaders()
     })
     .then(handleResponse)
     .then(data => {
@@ -101,11 +86,11 @@ window.deleteEvent = function(eventId) {
 };
 
 window.viewEvent = function(eventId) {
-  window.location.href = `/event/${eventId}`;
+  window.location.href = `/events/${eventId}`;
 };
 
 window.editEvent = function(eventId) {
-  window.location.href = `/admin/events/${eventId}/edit`;
+  window.location.href = `/events/${eventId}/edit`;
 };
 
 window.deleteEvent = function(eventId) {
@@ -117,9 +102,7 @@ window.deleteEvent = function(eventId) {
   
   fetch(`/admin/event/${eventId}/delete`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    }
+    headers: buildJsonHeaders()
   })
   .then(handleResponse)
   .then(data => {
@@ -151,9 +134,7 @@ window.toggleFeature = function(eventId, featured) {
   
   fetch(`/admin/event/${eventId}/toggle-feature`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
+    headers: buildJsonHeaders(),
     body: JSON.stringify({
       featured: featured
     })

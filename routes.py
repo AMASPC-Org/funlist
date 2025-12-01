@@ -156,6 +156,118 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def _prefers_json_response():
+    """Return True when the client is expecting JSON (fetch/AJAX)."""
+    accept_header = (request.headers.get("Accept") or "").lower()
+    return (
+        request.is_json
+        or "application/json" in accept_header
+        or request.headers.get("X-Requested-With") == "XMLHttpRequest"
+    )
+
+def _event_action_response(event, success, message, status_code=200, redirect_url=None):
+    """Return JSON for fetch requests; otherwise flash and redirect."""
+    if _prefers_json_response():
+        payload = {"success": success, "message": message}
+        if event:
+            payload.update({"event_id": event.id, "status": event.status, "featured": event.featured})
+        return jsonify(payload), status_code
+
+    flash(message, "success" if success else "danger")
+    fallback = redirect_url
+    if not fallback:
+        if event:
+            fallback = url_for("event_detail", event_id=event.id)
+        else:
+            fallback = url_for("admin_dashboard", section="events", status="pending")
+    return redirect(request.referrer or fallback)
+
+def _update_event_status(event_id, new_status):
+    event = Event.query.get_or_404(event_id)
+    previous_status = (event.status or "").lower()
+    if previous_status == new_status:
+        return _event_action_response(
+            event,
+            True,
+            f"Event is already {new_status}.",
+        )
+
+    try:
+        event.status = new_status
+        db.session.commit()
+        return _event_action_response(
+            event,
+            True,
+            f"Event '{event.title}' marked as {new_status}.",
+        )
+    except Exception as exc:  # noqa: BLE001
+        db.session.rollback()
+        logger.error("Error updating status for event %s: %s", event_id, exc, exc_info=True)
+        return _event_action_response(
+            event,
+            False,
+            "Could not update event status.",
+            status_code=500,
+        )
+
+@login_required
+@admin_required
+def admin_approve_event(event_id):
+    return _update_event_status(event_id, "approved")
+
+@login_required
+@admin_required
+def admin_reject_event(event_id):
+    return _update_event_status(event_id, "rejected")
+
+@login_required
+@admin_required
+def admin_toggle_event_feature(event_id):
+    event = Event.query.get_or_404(event_id)
+    payload = request.get_json(silent=True) or {}
+    featured_value = payload.get("featured", request.form.get("featured"))
+    featured = str(featured_value).lower() in {"true", "1", "yes", "on"}
+    try:
+        event.featured = featured
+        db.session.commit()
+        return _event_action_response(
+            event,
+            True,
+            f"Event '{event.title}' {'featured' if featured else 'unfeatured'}.",
+        )
+    except Exception as exc:  # noqa: BLE001
+        db.session.rollback()
+        logger.error("Error toggling featured for event %s: %s", event_id, exc, exc_info=True)
+        return _event_action_response(
+            event,
+            False,
+            "Could not update featured state.",
+            status_code=500,
+        )
+
+@login_required
+@admin_required
+def admin_delete_event(event_id):
+    event = Event.query.get_or_404(event_id)
+    try:
+        db.session.delete(event)
+        db.session.commit()
+        return _event_action_response(
+            None,
+            True,
+            "Event deleted.",
+            redirect_url=url_for("admin_dashboard", section="events", status="pending"),
+        )
+    except Exception as exc:  # noqa: BLE001
+        db.session.rollback()
+        logger.error("Error deleting event %s: %s", event_id, exc, exc_info=True)
+        return _event_action_response(
+            event,
+            False,
+            "Could not delete event.",
+            status_code=500,
+        )
+
 def index():
     chapters = Chapter.query.all()
     new_signup = session.pop('new_signup', False)
@@ -951,6 +1063,10 @@ def init_routes(app):
     app.route("/events/<int:event_id>")(event_detail)
     app.route("/events/<int:event_id>/edit", methods=["GET", "POST"])(edit_event)
     app.route("/events/<int:event_id>/delete", methods=["POST"])(delete_event)
+    app.route("/admin/event/<int:event_id>/approve", methods=["POST"])(admin_approve_event)
+    app.route("/admin/event/<int:event_id>/reject", methods=["POST"])(admin_reject_event)
+    app.route("/admin/event/<int:event_id>/toggle-feature", methods=["POST"])(admin_toggle_event_feature)
+    app.route("/admin/event/<int:event_id>/delete", methods=["POST"])(admin_delete_event)
     app.route("/admin/recompute-funalytics/<int:event_id>", methods=["POST"])(admin_recompute_funalytics)
     app.route("/submit-event", methods=["GET", "POST"])(submit_event)
     app.route('/login', methods=['GET', 'POST'])(login)
