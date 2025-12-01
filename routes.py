@@ -429,13 +429,161 @@ def profile():
 
 @login_required
 def edit_profile():
-    form = ProfileForm(obj=current_user)
+    form = ProfileForm(obj=current_user, user_id=current_user.id)
+    chapters = Chapter.query.all()
+    try:
+        preferences = current_user.get_preferences() or {}
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Corrupt preferences JSON for user %s: %s", current_user.id, exc)
+        preferences = {}
+
+    def _coerce_list(value):
+        if not value:
+            return []
+        if isinstance(value, str):
+            return [item.strip() for item in value.split(",") if item.strip()]
+        return value
+
+    # Quick role activation buttons (kept for convenience, but now persist correctly)
+    if request.method == "POST" and request.form.get("activate_role"):
+        role_to_activate = request.form.get("activate_role")
+        role_applied = False
+
+        if role_to_activate == "organizer":
+            if not current_user.is_organizer:
+                current_user.is_organizer = True
+                role_applied = True
+            if not current_user.is_event_creator:
+                current_user.is_event_creator = True
+                role_applied = True
+        elif role_to_activate == "event_creator" and not current_user.is_event_creator:
+            current_user.is_event_creator = True
+            role_applied = True
+        elif role_to_activate == "vendor" and not current_user.is_vendor:
+            current_user.is_vendor = True
+            role_applied = True
+        elif role_to_activate == "sponsor" and not current_user.is_sponsor:
+            current_user.is_sponsor = True
+            role_applied = True
+
+        if role_applied:
+            current_user.roles_last_updated = datetime.utcnow()
+            db.session.add(current_user)
+            db.session.commit()
+            flash(
+                f"{role_to_activate.replace('_', ' ').title()} enabled. Complete the details below and save your profile.",
+                "success",
+            )
+        else:
+            flash("That capability is already enabled on your account.", "info")
+
+        form.enable_event_creator.data = current_user.is_event_creator
+        form.enable_organizer.data = current_user.is_organizer
+        form.enable_vendor.data = current_user.is_vendor
+        form.enable_sponsor.data = current_user.is_sponsor
+        form.event_focus.data = _coerce_list(preferences.get("event_focus", []))
+        form.preferred_locations.data = preferences.get("preferred_locations", "")
+        form.event_interests.data = preferences.get("event_interests", "")
+        return render_template("edit_profile.html", form=form, chapters=chapters)
+
+    if request.method == "GET":
+        form.event_focus.data = _coerce_list(preferences.get("event_focus", []))
+        form.preferred_locations.data = preferences.get("preferred_locations", "")
+        form.event_interests.data = preferences.get("event_interests", "")
+        form.enable_event_creator.data = current_user.is_event_creator
+        form.enable_organizer.data = current_user.is_organizer
+        form.enable_vendor.data = current_user.is_vendor
+        form.enable_sponsor.data = current_user.is_sponsor
+
+    previous_roles = {
+        "event_creator": current_user.is_event_creator,
+        "organizer": current_user.is_organizer,
+        "vendor": current_user.is_vendor,
+        "sponsor": current_user.is_sponsor,
+    }
+
     if form.validate_on_submit():
-        current_user.first_name = form.first_name.data
-        current_user.last_name = form.last_name.data
-        db.session.commit()
-        return redirect(url_for('profile'))
-    return render_template('edit_profile.html', form=form, chapters=Chapter.query.all())
+        current_user.username = form.username.data or None
+        current_user.first_name = form.first_name.data or None
+        current_user.last_name = form.last_name.data or None
+        current_user.title = form.title.data or None
+        current_user.phone = form.phone.data or None
+        current_user.newsletter_opt_in = bool(form.newsletter_opt_in.data)
+        current_user.marketing_opt_in = bool(form.marketing_opt_in.data)
+
+        # Save preference-style fields in the JSON column
+        preferences.update(
+            {
+                "event_focus": form.event_focus.data or [],
+                "preferred_locations": form.preferred_locations.data or "",
+                "event_interests": form.event_interests.data or "",
+            }
+        )
+        current_user.set_preferences(preferences)
+
+        # Role toggles
+        current_user.is_event_creator = bool(form.enable_event_creator.data)
+        current_user.is_organizer = bool(form.enable_organizer.data)
+        current_user.is_vendor = bool(form.enable_vendor.data)
+        current_user.is_sponsor = bool(form.enable_sponsor.data)
+
+        # Organizers can always create events
+        if current_user.is_organizer and not current_user.is_event_creator:
+            current_user.is_event_creator = True
+
+        # Social links
+        current_user.facebook_url = form.facebook_url.data or None
+        current_user.instagram_url = form.instagram_url.data or None
+        current_user.twitter_url = form.twitter_url.data or None
+        current_user.linkedin_url = form.linkedin_url.data or None
+        current_user.tiktok_url = form.tiktok_url.data or None
+
+        # Organizer profile (only update when organizer is enabled)
+        if current_user.is_organizer:
+            current_user.company_name = form.company_name.data or None
+            current_user.organizer_description = form.organizer_description.data or None
+            current_user.organizer_website = form.organizer_website.data or None
+            current_user.business_street = form.business_street.data or None
+            current_user.business_city = form.business_city.data or None
+            current_user.business_state = form.business_state.data or None
+            current_user.business_zip = form.business_zip.data or None
+            current_user.business_phone = form.business_phone.data or None
+            current_user.business_email = form.business_email.data or None
+            current_user.advertising_opportunities = (
+                form.advertising_opportunities.data or None
+            )
+
+        # Vendor profile
+        if current_user.is_vendor:
+            current_user.vendor_type = form.vendor_type.data or None
+            current_user.vendor_description = form.vendor_description.data or None
+
+        # Sponsorship preferences (shared between organizer + sponsor views)
+        if current_user.is_sponsor or current_user.is_organizer:
+            current_user.sponsorship_opportunities = (
+                form.sponsorship_opportunities.data or None
+            )
+
+        if any(
+            previous_roles[key] != getattr(current_user, f"is_{key}")
+            for key in previous_roles
+        ):
+            current_user.roles_last_updated = datetime.utcnow()
+
+        try:
+            db.session.add(current_user)
+            db.session.commit()
+            flash("Profile updated successfully.", "success")
+            return redirect(url_for("profile"))
+        except Exception as exc:  # noqa: BLE001
+            logger.error(f"Error updating profile: {exc}", exc_info=True)
+            db.session.rollback()
+            flash("Could not update profile. Please try again.", "danger")
+
+    if form.errors:
+        flash("Please fix the highlighted fields before saving.", "warning")
+
+    return render_template("edit_profile.html", form=form, chapters=chapters)
 
 def about(): return render_template('about.html', chapters=Chapter.query.all())
 def contact(): return render_template('contact.html', form=ContactForm(), chapters=Chapter.query.all())

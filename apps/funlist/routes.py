@@ -291,86 +291,7 @@ def reset_password(token):
 
 
 # --- User Profile & Settings ---
-@login_required
-def profile():
-     # Simple profile view page
-     chapters = Chapter.query.all()
-     return render_template('profile.html', user=current_user, chapters=chapters)
-
-@login_required
-def edit_profile():
-    form = ProfileForm(obj=current_user, user_id=current_user.id) # Pre-populate form
-
-     if request.method == 'POST':
-         # Handle role activation
-         role_to_activate = request.form.get('activate_role')
-         if role_to_activate:
-             if role_to_activate == 'organizer':
-                 current_user.is_organizer = True
-                 current_user.is_event_creator = True # Organizers can also create
-             elif role_to_activate == 'vendor':
-                 current_user.is_vendor = True
-             elif role_to_activate == 'event_creator':
-                  current_user.is_event_creator = True
-             # Add other roles if needed (e.g., sponsor)
-
-             try:
-                 db.session.commit()
-                 flash(f"Your {role_to_activate.capitalize()} features are now active! Please complete the relevant profile section below.", "success")
-                 # Re-render the form to show new sections immediately
-                 return render_template('edit_profile.html', form=form, chapters=Chapter.query.all())
-             except Exception as e:
-                 db.session.rollback()
-                 logger.error(f"Error activating role: {str(e)}")
-                 flash("Could not activate role. Please try again.", "danger")
-
-         # Handle profile data submission if not activating role
-         elif form.validate_on_submit():
-             # Update standard profile fields
-             current_user.username = form.username.data
-             current_user.first_name = form.first_name.data
-             current_user.last_name = form.last_name.data
-             # ... (update other personal/social fields) ...
-
-             # Update role flags based on checkboxes
-             current_user.is_event_creator = form.enable_event_creator.data
-             current_user.is_organizer = form.enable_organizer.data
-             current_user.is_vendor = form.enable_vendor.data
-             if current_user.is_organizer: # Ensure organizers can create events
-                current_user.is_event_creator = True
-
-             # Update organizer/vendor fields *if* role is enabled
-            if current_user.is_organizer:
-                 current_user.company_name = form.company_name.data
-                 current_user.organizer_description = form.organizer_description.data
-                 current_user.organizer_website = form.organizer_website.data
-                 current_user.business_street = form.business_street.data
-                 current_user.business_city = form.business_city.data
-                 current_user.business_state = form.business_state.data
-                 current_user.business_zip = form.business_zip.data
-                 current_user.business_phone = form.business_phone.data
-                 current_user.business_email = form.business_email.data
-             if current_user.is_vendor:
-                  # current_user.vendor_type = form.vendor_type.data # Assuming vendor_type is added back later
-                  pass # Add vendor field updates here
-
-             try:
-                 db.session.commit()
-                 flash('Profile updated successfully!', 'success')
-                 return redirect(url_for('profile')) # Redirect to view profile page
-             except Exception as e:
-                 db.session.rollback()
-                 logger.error(f"Error updating profile: {str(e)}")
-                 flash("Could not update profile. Please try again.", "danger")
-
-     # Pre-populate checkboxes on GET request
-     elif request.method == "GET":
-         form.enable_event_creator.data = current_user.is_event_creator
-         form.enable_organizer.data = current_user.is_organizer
-         form.enable_vendor.data = current_user.is_vendor
-
-     chapters = Chapter.query.all()
-     return render_template('edit_profile.html', form=form, chapters=chapters)
+# Legacy handlers are superseded by the modernized versions defined later in this file.
 
 # --- Static Pages & Other ---
 def about():
@@ -1334,6 +1255,11 @@ def profile():  # type: ignore[redefinition]
 @login_required
 def edit_profile():  # type: ignore[redefinition]
     form = ProfileForm(obj=current_user, user_id=current_user.id)
+    try:
+        preferences = current_user.get_preferences() or {}
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Corrupt preferences JSON for user %s: %s", current_user.id, exc)
+        preferences = {}
 
     if request.method == 'POST':
         role_to_activate = request.form.get('activate_role')
@@ -1347,8 +1273,12 @@ def edit_profile():  # type: ignore[redefinition]
                 current_user.is_event_creator = True
             elif role_to_activate == 'sponsor':
                 current_user.is_sponsor = True
+            if current_user.is_organizer and not current_user.is_event_creator:
+                current_user.is_event_creator = True
+            current_user.roles_last_updated = datetime.utcnow()
 
             try:
+                db.session.add(current_user)
                 db.session.commit()
                 flash(f"Your {role_to_activate.capitalize()} features are now active! Please complete the relevant profile section below.", "success")
                 return render_template('edit_profile.html', form=form, chapters=Chapter.query.all())
@@ -1396,7 +1326,6 @@ def edit_profile():  # type: ignore[redefinition]
             if current_user.is_sponsor and not current_user.is_organizer:
                 current_user.sponsorship_opportunities = form.sponsorship_opportunities.data
 
-            preferences = current_user.get_preferences()
             preferences.update({
                 "event_focus": form.event_focus.data or [],
                 "preferred_locations": form.preferred_locations.data,
@@ -1404,7 +1333,9 @@ def edit_profile():  # type: ignore[redefinition]
             })
             current_user.set_preferences(preferences)
 
+            current_user.roles_last_updated = datetime.utcnow()
             try:
+                db.session.add(current_user)
                 db.session.commit()
                 flash('Profile updated successfully!', 'success')
                 return redirect(url_for('profile'))
@@ -1412,12 +1343,13 @@ def edit_profile():  # type: ignore[redefinition]
                 db.session.rollback()
                 logger.error(f"Error updating profile: {str(e)}")
                 flash("Could not update profile. Please try again.", "danger")
+        else:
+            flash("Please fix the highlighted fields before saving.", "warning")
     else:
         form.enable_event_creator.data = current_user.is_event_creator
         form.enable_organizer.data = current_user.is_organizer
         form.enable_vendor.data = current_user.is_vendor
         form.enable_sponsor.data = current_user.is_sponsor
-        preferences = current_user.get_preferences()
         form.event_focus.data = preferences.get("event_focus", [])
         form.preferred_locations.data = preferences.get("preferred_locations", "")
         form.event_interests.data = preferences.get("event_interests", "")
