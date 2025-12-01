@@ -111,6 +111,12 @@ def create_app():
         db.init_app(app)
         with app.app_context():
             try:
+                drop_and_recreate = settings.get_bool("DROP_AND_RECREATE_DB", False) or os.environ.get("DROP_AND_RECREATE_DB") in {"1", "true", "True"}
+                if drop_and_recreate:
+                    logger.warning("DROP_AND_RECREATE_DB enabled: dropping all tables before recreate.")
+                    db.drop_all()
+                    db.session.commit()
+
                 db.create_all()
                 logger.info("Database tables created successfully")
 
