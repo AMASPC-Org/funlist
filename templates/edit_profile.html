@@ -29,50 +29,102 @@
                         <p class="text-muted mb-0">Enable the experiences you want to unlock inside FunList.</p>
                     </div>
                     <div class="card-body">
-                        <div class="d-flex flex-wrap gap-2 mb-4">
-                            <button type="submit" name="activate_role" value="event_creator" class="btn btn-outline-success btn-sm">
-                                <i class="fas fa-calendar-plus me-1"></i>Become an Event Creator
-                            </button>
-                            <button type="submit" name="activate_role" value="organizer" class="btn btn-outline-primary btn-sm">
-                                <i class="fas fa-building me-1"></i>Organizer Access
-                            </button>
-                            <button type="submit" name="activate_role" value="vendor" class="btn btn-outline-warning btn-sm">
-                                <i class="fas fa-store me-1"></i>Vendor Tools
-                            </button>
-                            <button type="submit" name="activate_role" value="sponsor" class="btn btn-outline-danger btn-sm">
-                                <i class="fas fa-handshake me-1"></i>Sponsor Mode
-                            </button>
+                        <div class="alert alert-light border rounded-4 mb-3 d-flex align-items-start gap-2">
+                            <i class="fas fa-toggle-on text-primary mt-1"></i>
+                            <div>
+                                <div class="fw-semibold">Pick your capabilities with the switches below.</div>
+                                <div class="text-muted small">Organizer automatically includes Event Creator. Turn on what you need, complete the matching fields that appear, then click Save.</div>
+                            </div>
                         </div>
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <div class="form-check card h-100 border rounded-4 p-3">
-                                    {{ form.enable_event_creator(class="form-check-input", id="enable_event_creator") }}
-                                    <label class="form-check-label fw-semibold" for="enable_event_creator">Event Creator</label>
-                                    <p class="text-muted small mb-0">List, manage, and highlight your events.</p>
+                                {% set event_creator_on = form.enable_event_creator.data %}
+                                <div class="border rounded-4 h-100 p-3">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="d-flex gap-2">
+                                            <i class="fas fa-calendar-plus text-success mt-1"></i>
+                                            <div>
+                                                <label class="fw-semibold d-block" for="enable_event_creator">Event Creator</label>
+                                                <p class="text-muted small mb-2">List, manage, and highlight your events.</p>
+                                                <span class="badge rounded-pill {{ 'bg-success text-white' if event_creator_on else 'bg-light text-muted' }}">
+                                                    {{ 'On' if event_creator_on else 'Off' }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="form-check form-switch mb-0">
+                                            {{ form.enable_event_creator(class="form-check-input", id="enable_event_creator") }}
+                                            <label class="form-check-label visually-hidden" for="enable_event_creator">Enable event creator</label>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="form-check card h-100 border rounded-4 p-3">
-                                    {{ form.enable_organizer(class="form-check-input", id="enable_organizer") }}
-                                    <label class="form-check-label fw-semibold" for="enable_organizer">Organizer</label>
-                                    <p class="text-muted small mb-0">Tell your venue or org story, add venues, and promote experiences.</p>
+                                {% set organizer_on = form.enable_organizer.data %}
+                                <div class="border rounded-4 h-100 p-3">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="d-flex gap-2">
+                                            <i class="fas fa-building text-primary mt-1"></i>
+                                            <div>
+                                                <label class="fw-semibold d-block" for="enable_organizer">Organizer</label>
+                                                <p class="text-muted small mb-2">Tell your venue or org story, add venues, and promote experiences.</p>
+                                                <span class="badge rounded-pill {{ 'bg-success text-white' if organizer_on else 'bg-light text-muted' }}">
+                                                    {{ 'On' if organizer_on else 'Off' }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="form-check form-switch mb-0">
+                                            {{ form.enable_organizer(class="form-check-input", id="enable_organizer") }}
+                                            <label class="form-check-label visually-hidden" for="enable_organizer">Enable organizer</label>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="form-check card h-100 border rounded-4 p-3">
-                                    {{ form.enable_vendor(class="form-check-input", id="enable_vendor") }}
-                                    <label class="form-check-label fw-semibold" for="enable_vendor">Vendor</label>
-                                    <p class="text-muted small mb-0">Promote services such as catering, AV, or entertainment.</p>
+                                {% set vendor_on = form.enable_vendor.data %}
+                                <div class="border rounded-4 h-100 p-3">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="d-flex gap-2">
+                                            <i class="fas fa-store text-warning mt-1"></i>
+                                            <div>
+                                                <label class="fw-semibold d-block" for="enable_vendor">Vendor</label>
+                                                <p class="text-muted small mb-2">Promote services such as catering, AV, or entertainment.</p>
+                                                <span class="badge rounded-pill {{ 'bg-success text-white' if vendor_on else 'bg-light text-muted' }}">
+                                                    {{ 'On' if vendor_on else 'Off' }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="form-check form-switch mb-0">
+                                            {{ form.enable_vendor(class="form-check-input", id="enable_vendor") }}
+                                            <label class="form-check-label visually-hidden" for="enable_vendor">Enable vendor</label>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="form-check card h-100 border rounded-4 p-3">
-                                    {{ form.enable_sponsor(class="form-check-input", id="enable_sponsor") }}
-                                    <label class="form-check-label fw-semibold" for="enable_sponsor">Sponsor</label>
-                                    <p class="text-muted small mb-0">Share your ideal sponsorship opportunities.</p>
+                                {% set sponsor_on = form.enable_sponsor.data %}
+                                <div class="border rounded-4 h-100 p-3">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="d-flex gap-2">
+                                            <i class="fas fa-handshake text-danger mt-1"></i>
+                                            <div>
+                                                <label class="fw-semibold d-block" for="enable_sponsor">Sponsor</label>
+                                                <p class="text-muted small mb-2">Share your ideal sponsorship opportunities.</p>
+                                                <span class="badge rounded-pill {{ 'bg-success text-white' if sponsor_on else 'bg-light text-muted' }}">
+                                                    {{ 'On' if sponsor_on else 'Off' }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="form-check form-switch mb-0">
+                                            {{ form.enable_sponsor(class="form-check-input", id="enable_sponsor") }}
+                                            <label class="form-check-label visually-hidden" for="enable_sponsor">Enable sponsor</label>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                        <p class="text-muted small mt-3 mb-0">
+                            <i class="fas fa-info-circle me-1"></i>Organizer automatically turns on Event Creator. Vendor and sponsor details show up below only when their switches are on.
+                        </p>
                     </div>
                 </div>
 

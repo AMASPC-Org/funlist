@@ -166,6 +166,16 @@
                         </div>
 
                         <div id="new-venue-section" {% if form.venue_selection_type.data != 'new' %}style="display: none;"{% endif %}>
+                            <div class="mb-3">
+                                <label class="form-label">Find the venue with maps</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-map-marker-alt text-danger"></i></span>
+                                    <input type="text" id="venuePlaceSearch" class="form-control" placeholder="Search for an address or venue">
+                                    <button type="button" class="btn btn-outline-secondary" id="clearVenueSearch">Clear</button>
+                                </div>
+                                <small class="text-muted d-block mt-1">Pick a place to auto-fill the venue address fields below.</small>
+                                <div id="venueMap" class="mt-3 border rounded" style="height: 260px;"></div>
+                            </div>
                             <div class="row">
                                 <div class="col-md-12">
                                     {{ render_field(form.venue_name, class="form-control") }}
@@ -396,6 +406,7 @@ window.toggleVenueSelection = function() {
     const existingVenueRadio = document.getElementById('venue_selection_existing');
     const existingVenueSection = document.getElementById('existing-venue-section');
     const newVenueSection = document.getElementById('new-venue-section');
+    const mapSearchInput = document.getElementById('venuePlaceSearch');
 
     if (!existingVenueRadio || !existingVenueSection || !newVenueSection) {
         return;
@@ -407,8 +418,192 @@ window.toggleVenueSelection = function() {
     } else {
         existingVenueSection.style.display = 'none';
         newVenueSection.style.display = 'block';
+        if (typeof window.ensureVenueMap === 'function') {
+            window.ensureVenueMap();
+        }
+        if (mapSearchInput) {
+            try {
+                mapSearchInput.focus({ preventScroll: true });
+            } catch (focusError) {
+                mapSearchInput.focus();
+            }
+        }
+        if (venueMapInstance && window.google && google.maps) {
+            setTimeout(() => {
+                try {
+                    google.maps.event.trigger(venueMapInstance, 'resize');
+                    venueMapInstance.setCenter(venueMapInstance.getCenter() || VENUE_MAP_DEFAULT_CENTER);
+                } catch (err) {
+                    console.warn('Could not refresh venue map view', err);
+                }
+            }, 150);
+        }
     }
 };
+
+const VENUE_MAP_DEFAULT_CENTER = { lat: 47.0379, lng: -122.9007 };
+let venueMapInstance = null;
+let venueMapMarker = null;
+let venueMapAutocomplete = null;
+let venueMapGeocoder = null;
+let venueMapInitialized = false;
+
+const getVenueFieldValue = (id) => {
+    const el = document.getElementById(id);
+    return el ? el.value.trim() : '';
+};
+
+const setVenueFieldValue = (id, value) => {
+    const el = document.getElementById(id);
+    if (!el || value === undefined || value === null) return;
+    el.value = value;
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+};
+
+const parseVenueAddressComponents = (components = []) => {
+    const parsed = { street: '', city: '', state: '', zip: '' };
+    let streetNumber = '';
+    let route = '';
+
+    components.forEach(component => {
+        if (!component || !component.types) return;
+        if (component.types.includes('street_number')) streetNumber = component.long_name;
+        if (component.types.includes('route')) route = component.long_name;
+        if (component.types.includes('locality') && !parsed.city) parsed.city = component.long_name;
+        if (component.types.includes('postal_town') && !parsed.city) parsed.city = component.long_name;
+        if (component.types.includes('administrative_area_level_2') && !parsed.city) parsed.city = component.long_name;
+        if (component.types.includes('administrative_area_level_1')) parsed.state = component.short_name || component.long_name;
+        if (component.types.includes('postal_code')) parsed.zip = component.long_name;
+    });
+
+    parsed.street = [streetNumber, route].filter(Boolean).join(' ').trim();
+    return parsed;
+};
+
+const placeVenueMarker = (location, title = 'Selected location') => {
+    if (!location || !venueMapInstance || !window.google || !google.maps) return;
+    if (venueMapMarker) {
+        venueMapMarker.setMap(null);
+    }
+    venueMapMarker = new google.maps.Marker({
+        position: location,
+        map: venueMapInstance,
+        title
+    });
+    venueMapInstance.panTo(location);
+};
+
+const applyPlaceToVenueForm = (place) => {
+    if (!place) return;
+    const address = parseVenueAddressComponents(place.address_components || []);
+    const currentName = getVenueFieldValue('venue_name');
+
+    if (place.name && !currentName) {
+        setVenueFieldValue('venue_name', place.name);
+    } else if (!currentName && place.formatted_address) {
+        setVenueFieldValue('venue_name', place.formatted_address);
+    }
+    if (address.street) setVenueFieldValue('venue_street', address.street);
+    if (address.city) setVenueFieldValue('venue_city', address.city);
+    if (address.state) setVenueFieldValue('venue_state', address.state);
+    if (address.zip) setVenueFieldValue('venue_zip', address.zip);
+    if (!address.street && place.formatted_address) {
+        setVenueFieldValue('venue_street', place.formatted_address);
+    }
+
+    if (place.geometry && place.geometry.location) {
+        const loc = place.geometry.location;
+        const coords = typeof loc.lat === 'function'
+            ? { lat: loc.lat(), lng: loc.lng() }
+            : loc;
+        placeVenueMarker(coords, place.name || 'Selected location');
+    }
+};
+
+const reverseLookupVenueLocation = (latLng) => {
+    if (!venueMapGeocoder || !latLng) return;
+    venueMapGeocoder.geocode({ location: latLng }, (results, status) => {
+        if (status === 'OK' && results && results[0]) {
+            const result = results[0];
+            applyPlaceToVenueForm({
+                ...result,
+                geometry: { location: latLng }
+            });
+            setVenueFieldValue('venuePlaceSearch', result.formatted_address || '');
+        } else {
+            placeVenueMarker(latLng);
+        }
+    });
+};
+
+const initVenueMapSelector = () => {
+    if (venueMapInitialized) return;
+    const mapElement = document.getElementById('venueMap');
+    const searchInput = document.getElementById('venuePlaceSearch');
+    if (!mapElement || !searchInput) return;
+
+    venueMapGeocoder = new google.maps.Geocoder();
+    venueMapInstance = new google.maps.Map(mapElement, {
+        center: VENUE_MAP_DEFAULT_CENTER,
+        zoom: 12,
+        streetViewControl: false,
+        mapTypeControl: false,
+        fullscreenControl: true
+    });
+
+    venueMapAutocomplete = new google.maps.places.Autocomplete(searchInput, {
+        fields: ['address_components', 'formatted_address', 'geometry', 'name'],
+        types: ['geocode', 'establishment']
+    });
+    venueMapAutocomplete.addListener('place_changed', () => {
+        const place = venueMapAutocomplete.getPlace();
+        if (!place || !place.geometry) {
+            return;
+        }
+        applyPlaceToVenueForm(place);
+    });
+
+    venueMapInstance.addListener('click', event => {
+        const clickedLocation = event.latLng;
+        if (!clickedLocation) return;
+        placeVenueMarker({ lat: clickedLocation.lat(), lng: clickedLocation.lng() });
+        reverseLookupVenueLocation(clickedLocation);
+    });
+
+    venueMapInitialized = true;
+};
+
+const loadGooglePlacesForVenue = () => {
+    if (venueMapInitialized) return;
+    const startInit = () => {
+        if (!venueMapInitialized) {
+            initVenueMapSelector();
+        }
+    };
+
+    if (window.google && google.maps && google.maps.places) {
+        startInit();
+        return;
+    }
+
+    const existingScript = document.querySelector('script[data-venue-places-loader]');
+    if (existingScript) {
+        existingScript.addEventListener('load', startInit, { once: true });
+        return;
+    }
+
+    const script = document.createElement('script');
+    script.src = "https://maps.googleapis.com/maps/api/js?key={{ config.GOOGLE_MAPS_API_KEY }}&libraries=places";
+    script.async = true;
+    script.defer = true;
+    script.setAttribute('data-venue-places-loader', 'true');
+    script.onload = startInit;
+    script.onerror = () => console.error('Failed to load Google Maps');
+    document.head.appendChild(script);
+};
+
+window.ensureVenueMap = loadGooglePlacesForVenue;
 
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('eventForm');
@@ -432,6 +627,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const targetAudienceField = document.getElementById('target_audience');
     const venueSelect = document.getElementById('venue_id');
     const venueNameInput = document.getElementById('venue_name');
+    const venuePlaceSearch = document.getElementById('venuePlaceSearch');
+    const clearVenueSearchBtn = document.getElementById('clearVenueSearch');
+    const newVenueRadio = document.getElementById('venue_selection_new');
     const isRecurringCheckbox = document.getElementById('is_recurring');
     const recurrenceFields = document.getElementById('recurrenceFields');
     const recurrenceType = document.getElementById('recurrence_type');
@@ -730,6 +928,28 @@ document.addEventListener('DOMContentLoaded', function() {
         isSubEventCheckbox.addEventListener('change', updateSubEventVisibility);
     }
     updateSubEventVisibility();
+
+    if (venuePlaceSearch) {
+        venuePlaceSearch.addEventListener('focus', () => {
+            if (typeof window.ensureVenueMap === 'function') {
+                window.ensureVenueMap();
+            }
+        });
+    }
+
+    if (clearVenueSearchBtn && venuePlaceSearch) {
+        clearVenueSearchBtn.addEventListener('click', () => {
+            venuePlaceSearch.value = '';
+            if (venueMapMarker) {
+                venueMapMarker.setMap(null);
+                venueMapMarker = null;
+            }
+        });
+    }
+
+    if (newVenueRadio && newVenueRadio.checked && typeof window.ensureVenueMap === 'function') {
+        window.ensureVenueMap();
+    }
 
     toggleVenueSelection();
     syncEndDate();
