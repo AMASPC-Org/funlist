@@ -167,7 +167,12 @@ def map():
             Event.query
             .join(Venue)
             .options(joinedload(Event.venue))
-            .filter(Venue.latitude.isnot(None), Venue.longitude.isnot(None))
+            .filter(
+                func.lower(Event.status) == 'approved',
+                Event.is_public_event.is_(True),
+                Venue.latitude.isnot(None),
+                Venue.longitude.isnot(None),
+            )
             .all()
         )
         chapters = Chapter.query.all()
@@ -191,7 +196,12 @@ def map():
 
 def events():
     try:
-        events = Event.query.order_by(Event.start_date.desc()).all()
+        events = (
+            Event.query
+            .order_by(Event.start_date.desc())
+            .filter(func.lower(Event.status) == 'approved', Event.is_public_event.is_(True))
+            .all()
+        )
         chapters = Chapter.query.all()
         try:
             funalytics_scores = get_funalytics_scores()
