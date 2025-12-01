@@ -5,25 +5,35 @@
 {% block content %}
 <div class="container mt-4">
     <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <h2>Add a New Venue</h2>
-            <p class="text-muted">Add a venue to our database for events and activities.</p>
+        <div class="col-lg-10 offset-lg-1">
+            <h2 class="mb-1">Add a New Venue</h2>
+            <p class="text-muted mb-4">Use the map search to auto-fill the address just like when creating an event.</p>
             
-            <div class="card">
+            <div class="card mb-3">
                 <div class="card-body">
-                    <form method="POST" enctype="multipart/form-data">
+                    <form method="POST" enctype="multipart/form-data" id="addVenueForm">
                         {{ form.hidden_tag() }}
                         
                         <div class="mb-4">
-                            <h5>Venue Information</h5>
-                            <div class="row">
+                            <h5 class="mb-2">Venue Information</h5>
+                            <div class="mb-3">
+                                <label class="form-label">Find the venue with maps</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-map-marker-alt text-danger"></i></span>
+                                    <input type="text" id="venuePlaceSearch" class="form-control" placeholder="Search for an address or venue">
+                                    <button type="button" class="btn btn-outline-secondary" id="clearVenueSearch">Clear</button>
+                                </div>
+                                <small class="text-muted d-block mt-1">Pick a place to auto-fill the venue address fields below.</small>
+                                <div id="venueMap" class="mt-3 border rounded" style="height: 260px;"></div>
+                            </div>
+                            <div class="row g-3">
                                 <div class="col-md-12">
                                     {{ render_field(form.name, class="form-control") }}
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-12">
                                     {{ render_field(form.street, class="form-control") }}
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     {{ render_field(form.city, class="form-control") }}
                                 </div>
                                 <div class="col-md-4">
@@ -35,18 +45,18 @@
                                 <div class="col-md-4">
                                     {{ render_field(form.country, class="form-control") }}
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     {{ render_field(form.latitude, class="form-control", placeholder="47.0379") }}
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     {{ render_field(form.longitude, class="form-control", placeholder="-122.9007") }}
                                 </div>
                             </div>
                         </div>
                         
                         <div class="mb-4">
-                            <h5>Venue Type & Description</h5>
-                            <div class="row">
+                            <h5 class="mb-2">Venue Type & Description</h5>
+                            <div class="row g-3">
                                 <div class="col-md-6">
                                     {{ render_field(form.venue_type_id, class="form-select") }}
                                 </div>
@@ -57,8 +67,8 @@
                         </div>
                         
                         <div class="mb-4">
-                            <h5>Contact Information</h5>
-                            <div class="row">
+                            <h5 class="mb-2">Contact Information</h5>
+                            <div class="row g-3">
                                 <div class="col-md-6">
                                     {{ render_field(form.phone, class="form-control") }}
                                 </div>
@@ -72,8 +82,8 @@
                         </div>
                         
                         <div class="mb-4">
-                            <h5>Primary Contact Person</h5>
-                            <div class="row">
+                            <h5 class="mb-2">Primary Contact Person</h5>
+                            <div class="row g-3">
                                 <div class="col-md-12">
                                     {{ render_field(form.contact_name, class="form-control") }}
                                 </div>
@@ -106,4 +116,174 @@
         </div>
     </div>
 </div>
+
+<script>
+const VENUE_MAP_DEFAULT_CENTER = { lat: 47.0379, lng: -122.9007 };
+let venueMapInstance = null;
+let venueMapMarker = null;
+let venueMapAutocomplete = null;
+let venueMapGeocoder = null;
+let venueMapInitialized = false;
+
+const setVenueFieldValue = (id, value) => {
+    const el = document.getElementById(id);
+    if (!el || value === undefined || value === null) return;
+    el.value = value;
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+};
+
+const parseVenueAddressComponents = (components = []) => {
+    const parsed = { street: '', city: '', state: '', zip: '' };
+    let streetNumber = '';
+    let route = '';
+
+    components.forEach(component => {
+        if (!component || !component.types) return;
+        if (component.types.includes('street_number')) streetNumber = component.long_name;
+        if (component.types.includes('route')) route = component.long_name;
+        if (component.types.includes('locality') && !parsed.city) parsed.city = component.long_name;
+        if (component.types.includes('postal_town') && !parsed.city) parsed.city = component.long_name;
+        if (component.types.includes('administrative_area_level_2') && !parsed.city) parsed.city = component.long_name;
+        if (component.types.includes('administrative_area_level_1')) parsed.state = component.short_name || component.long_name;
+        if (component.types.includes('postal_code')) parsed.zip = component.long_name;
+    });
+
+    parsed.street = [streetNumber, route].filter(Boolean).join(' ').trim();
+    return parsed;
+};
+
+const placeVenueMarker = (location, title = 'Selected location') => {
+    if (!location || !venueMapInstance || !window.google || !google.maps) return;
+    if (venueMapMarker) {
+        venueMapMarker.setMap(null);
+    }
+    venueMapMarker = new google.maps.Marker({
+        position: location,
+        map: venueMapInstance,
+        title
+    });
+    venueMapInstance.panTo(location);
+};
+
+const applyPlaceToVenueForm = (place) => {
+    if (!place) return;
+    const address = parseVenueAddressComponents(place.address_components || []);
+    const nameField = document.getElementById('name');
+    if (place.name && nameField && !nameField.value) {
+        setVenueFieldValue('name', place.name);
+    }
+    if (address.street) setVenueFieldValue('street', address.street);
+    if (address.city) setVenueFieldValue('city', address.city);
+    if (address.state) setVenueFieldValue('state', address.state);
+    if (address.zip) setVenueFieldValue('zip_code', address.zip);
+    if (!address.street && place.formatted_address) {
+        setVenueFieldValue('street', place.formatted_address);
+    }
+
+    if (place.geometry && place.geometry.location) {
+        const loc = place.geometry.location;
+        const coords = typeof loc.lat === 'function'
+            ? { lat: loc.lat(), lng: loc.lng() }
+            : loc;
+        setVenueFieldValue('latitude', coords.lat);
+        setVenueFieldValue('longitude', coords.lng);
+        placeVenueMarker(coords, place.name || 'Selected location');
+    }
+};
+
+const reverseLookupVenueLocation = (latLng) => {
+    if (!venueMapGeocoder || !latLng) return;
+    venueMapGeocoder.geocode({ location: latLng }, (results, status) => {
+        if (status === 'OK' && results && results[0]) {
+            const result = results[0];
+            applyPlaceToVenueForm({
+                ...result,
+                geometry: { location: latLng }
+            });
+            setVenueFieldValue('venuePlaceSearch', result.formatted_address || '');
+        } else {
+            placeVenueMarker(latLng);
+        }
+    });
+};
+
+const initVenueMapSelector = () => {
+    if (venueMapInitialized) return;
+    const mapElement = document.getElementById('venueMap');
+    const searchInput = document.getElementById('venuePlaceSearch');
+    if (!mapElement || !searchInput) return;
+
+    venueMapGeocoder = new google.maps.Geocoder();
+    venueMapInstance = new google.maps.Map(mapElement, {
+        center: VENUE_MAP_DEFAULT_CENTER,
+        zoom: 12,
+        streetViewControl: false,
+        mapTypeControl: false,
+        fullscreenControl: true
+    });
+
+    venueMapAutocomplete = new google.maps.places.Autocomplete(searchInput, {
+        fields: ['address_components', 'formatted_address', 'geometry', 'name'],
+        types: ['geocode', 'establishment']
+    });
+    venueMapAutocomplete.addListener('place_changed', () => {
+        const place = venueMapAutocomplete.getPlace();
+        if (!place || !place.geometry) return;
+        applyPlaceToVenueForm(place);
+    });
+
+    venueMapInstance.addListener('click', event => {
+        const clickedLocation = event.latLng;
+        if (!clickedLocation) return;
+        placeVenueMarker({ lat: clickedLocation.lat(), lng: clickedLocation.lng() });
+        reverseLookupVenueLocation(clickedLocation);
+    });
+
+    const clearBtn = document.getElementById('clearVenueSearch');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            if (venueMapMarker) {
+                venueMapMarker.setMap(null);
+                venueMapMarker = null;
+            }
+            ['street','city','state','zip_code','latitude','longitude','name'].forEach(field => setVenueFieldValue(field, ''));
+        });
+    }
+
+    venueMapInitialized = true;
+};
+
+const loadGooglePlacesForVenue = () => {
+    if (venueMapInitialized) return;
+    const startInit = () => {
+        if (!venueMapInitialized) initVenueMapSelector();
+    };
+
+    if (window.google && google.maps && google.maps.places) {
+        startInit();
+        return;
+    }
+
+    const existingScript = document.querySelector('script[data-venue-places-loader]');
+    if (existingScript) {
+        existingScript.addEventListener('load', startInit, { once: true });
+        return;
+    }
+
+    const script = document.createElement('script');
+    script.src = "https://maps.googleapis.com/maps/api/js?key={{ config.GOOGLE_MAPS_API_KEY }}&libraries=places";
+    script.async = true;
+    script.defer = true;
+    script.setAttribute('data-venue-places-loader', 'true');
+    script.onload = startInit;
+    script.onerror = () => console.error('Failed to load Google Maps');
+    document.head.appendChild(script);
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadGooglePlacesForVenue();
+});
+</script>
 {% endblock %}

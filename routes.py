@@ -156,6 +156,36 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def _get_review_queue(section):
+    """Return a label/url combo for the current section's primary review queue."""
+    mapping = {
+        "events": {
+            "url": url_for('admin_review', section='events', status='pending'),
+            "label": "Review events"
+        },
+        "users": {
+            "url": url_for('admin_review', section='users', status='all'),
+            "label": "Review members"
+        },
+        "venues": {
+            "url": url_for('admin_review', section='venues', status='pending'),
+            "label": "Review venues"
+        },
+        "organizations": {
+            "url": url_for('admin_review', section='organizations', status='all'),
+            "label": "Review organizations"
+        },
+        "analytics": {
+            "url": url_for('admin_review', section='events', status='pending'),
+            "label": "Review events"
+        },
+        "overview": {
+            "url": url_for('admin_review', section='events', status='pending'),
+            "label": "Review events"
+        },
+    }
+    return mapping.get(section, mapping["events"])
+
 def _prefers_json_response():
     """Return True when the client is expecting JSON (fetch/AJAX)."""
     accept_header = (request.headers.get("Accept") or "").lower()
@@ -164,6 +194,15 @@ def _prefers_json_response():
         or "application/json" in accept_header
         or request.headers.get("X-Requested-With") == "XMLHttpRequest"
     )
+
+def _action_response(success, message, status_code=200, redirect_url=None, extra_payload=None):
+    """Generic action response that supports JSON or redirect + flash."""
+    if _prefers_json_response():
+        payload = {"success": success, "message": message}
+        if extra_payload: payload.update(extra_payload)
+        return jsonify(payload), status_code
+    flash(message, "success" if success else "danger")
+    return redirect(request.referrer or redirect_url or url_for('admin_dashboard'))
 
 def _event_action_response(event, success, message, status_code=200, redirect_url=None):
     """Return JSON for fetch requests; otherwise flash and redirect."""
@@ -267,6 +306,72 @@ def admin_delete_event(event_id):
             "Could not delete event.",
             status_code=500,
         )
+
+@login_required
+@admin_required
+def admin_toggle_user(user_id):
+    user = User.query.get_or_404(user_id)
+    payload = request.get_json(silent=True) or {}
+    active_value = payload.get("active", request.form.get("active", "true"))
+    active = str(active_value).lower() in {"true", "1", "yes", "on"}
+    try:
+        user.account_active = active
+        db.session.commit()
+        message = f"User {user.email} {'activated' if active else 'deactivated'}."
+        return _action_response(
+            True,
+            message,
+            redirect_url=url_for("admin_review", section="users", status="active" if active else "inactive"),
+            extra_payload={"user_id": user.id, "active": user.account_active},
+        )
+    except Exception as exc:  # noqa: BLE001
+        db.session.rollback()
+        logger.error("Error updating user %s: %s", user_id, exc, exc_info=True)
+        return _action_response(False, "Could not update user status.", status_code=500)
+
+@login_required
+@admin_required
+def admin_toggle_venue(venue_id):
+    venue = Venue.query.get_or_404(venue_id)
+    payload = request.get_json(silent=True) or {}
+    verified_value = payload.get("verified", request.form.get("verified", "true"))
+    verified = str(verified_value).lower() in {"true", "1", "yes", "on"}
+    try:
+        venue.is_verified = verified
+        db.session.commit()
+        message = f"Venue '{venue.name}' {'verified' if verified else 'set to pending'}."
+        return _action_response(
+            True,
+            message,
+            redirect_url=url_for("admin_review", section="venues", status="pending" if not verified else "verified"),
+            extra_payload={"venue_id": venue.id, "verified": venue.is_verified},
+        )
+    except Exception as exc:  # noqa: BLE001
+        db.session.rollback()
+        logger.error("Error updating venue %s: %s", venue_id, exc, exc_info=True)
+        return _action_response(False, "Could not update venue status.", status_code=500)
+
+@login_required
+@admin_required
+def admin_toggle_organization(org_id):
+    organization = Chapter.query.get_or_404(org_id)
+    payload = request.get_json(silent=True) or {}
+    active_value = payload.get("active", request.form.get("active", "true"))
+    active = str(active_value).lower() in {"true", "1", "yes", "on"}
+    try:
+        organization.is_active = active
+        db.session.commit()
+        message = f"Organization '{organization.name}' {'activated' if active else 'deactivated'}."
+        return _action_response(
+            True,
+            message,
+            redirect_url=url_for("admin_review", section="organizations", status="active" if active else "inactive"),
+            extra_payload={"organization_id": organization.id, "active": organization.is_active},
+        )
+    except Exception as exc:  # noqa: BLE001
+        db.session.rollback()
+        logger.error("Error updating organization %s: %s", org_id, exc, exc_info=True)
+        return _action_response(False, "Could not update organization status.", status_code=500)
 
 def index():
     chapters = Chapter.query.all()
@@ -835,6 +940,8 @@ def admin_dashboard():
         "draft": stats["draft_events"],
     }
 
+    review_queue = _get_review_queue(section)
+
     events_query = Event.query
     if status_filter not in {'all', ''}:
         events_query = events_query.filter(func.lower(Event.status) == status_filter)
@@ -926,10 +1033,10 @@ def admin_dashboard():
             "href": url_for('submit_event')
         },
         {
-            "label": "Review Pending",
-            "description": "Approve or reject new submissions.",
+            "label": review_queue["label"],
+            "description": "Approve or reject items awaiting review.",
             "icon": "bi-check-circle",
-            "href": url_for('admin_dashboard', section='events', status='pending')
+            "href": review_queue["url"]
         },
         {
             "label": "Add Venue",
@@ -974,9 +1081,162 @@ def admin_dashboard():
         venue_status_counts=venue_status_counts,
         recent_activity=recent_activity,
         quick_actions=quick_actions,
-        section_label=section_label
+        section_label=section_label,
+        review_queue=review_queue
     )
 
+
+@login_required
+@admin_required
+def admin_review(section='events'):
+    section = (section or 'events').lower()
+    allowed_sections = {'events', 'users', 'venues', 'organizations'}
+    if section not in allowed_sections:
+        section = 'events'
+
+    status_filter = (request.args.get('status') or '').lower()
+    chapters = Chapter.query.order_by(Chapter.name.asc()).all()
+
+    event_counts = {
+        "all": Event.query.count(),
+        "pending": Event.query.filter(func.lower(Event.status) == 'pending').count(),
+        "approved": Event.query.filter(func.lower(Event.status) == 'approved').count(),
+        "rejected": Event.query.filter(func.lower(Event.status) == 'rejected').count(),
+        "draft": Event.query.filter(func.lower(Event.status) == 'draft').count(),
+    }
+    stats = {
+        "pending_events": event_counts["pending"],
+        "approved_events": event_counts["approved"],
+        "rejected_events": event_counts["rejected"],
+        "draft_events": event_counts["draft"],
+        "total_events": event_counts["all"],
+        "total_users": User.query.count(),
+        "active_venues": Venue.query.count(),
+    }
+
+    section_titles = {
+        "events": "Review Events",
+        "users": "Review Members",
+        "venues": "Review Venues",
+        "organizations": "Review Organizations",
+    }
+    queue_descriptions = {
+        "events": "Approve or reject new submissions and feature the best picks.",
+        "users": "Activate or deactivate member accounts and roles.",
+        "venues": "Verify venue ownership claims and accuracy.",
+        "organizations": "Keep chapter visibility aligned with activity.",
+    }
+
+    status_tabs = []
+    items = []
+    status_counts = {}
+
+    if section == 'events':
+        valid_statuses = {'pending', 'approved', 'rejected', 'draft', 'all'}
+        status_filter = status_filter or 'pending'
+        if status_filter not in valid_statuses:
+            status_filter = 'pending'
+        events_query = Event.query
+        if status_filter not in {'all', ''}:
+            events_query = events_query.filter(func.lower(Event.status) == status_filter)
+        items = events_query.order_by(Event.start_date.desc()).limit(50).all()
+        status_counts = event_counts
+        statuses = [('all', 'All'), ('pending', 'Pending'), ('approved', 'Approved'), ('rejected', 'Rejected'), ('draft', 'Draft')]
+        status_tabs = [{
+            "key": key,
+            "label": label,
+            "count": event_counts.get(key, 0),
+            "href": url_for('admin_review', section='events', status=key)
+        } for key, label in statuses]
+    elif section == 'users':
+        user_counts = {
+            "all": User.query.count(),
+            "active": User.query.filter_by(account_active=True).count(),
+        }
+        user_counts["inactive"] = max(user_counts["all"] - user_counts["active"], 0)
+        status_counts = user_counts
+        valid_statuses = {'all', 'active', 'inactive'}
+        if status_filter not in valid_statuses:
+            status_filter = 'all'
+        users_query = User.query
+        if status_filter == 'active':
+            users_query = users_query.filter_by(account_active=True)
+        elif status_filter == 'inactive':
+            users_query = users_query.filter_by(account_active=False)
+        items = users_query.order_by(User.created_at.desc()).limit(50).all()
+        statuses = [('all', 'All'), ('active', 'Active'), ('inactive', 'Inactive')]
+        status_tabs = [{
+            "key": key,
+            "label": label,
+            "count": user_counts.get(key, 0),
+            "href": url_for('admin_review', section='users', status=key)
+        } for key, label in statuses]
+    elif section == 'venues':
+        venue_counts = {
+            "all": Venue.query.count(),
+            "verified": Venue.query.filter_by(is_verified=True).count(),
+        }
+        venue_counts["pending"] = max(venue_counts["all"] - venue_counts["verified"], 0)
+        status_counts = venue_counts
+        valid_statuses = {'all', 'pending', 'verified'}
+        if status_filter not in valid_statuses:
+            status_filter = 'pending'
+        venues_query = Venue.query
+        if status_filter == 'pending':
+            venues_query = venues_query.filter_by(is_verified=False)
+        elif status_filter == 'verified':
+            venues_query = venues_query.filter_by(is_verified=True)
+        items = venues_query.order_by(Venue.created_at.desc()).limit(50).all()
+        statuses = [('all', 'All'), ('pending', 'Pending'), ('verified', 'Verified')]
+        status_tabs = [{
+            "key": key,
+            "label": label,
+            "count": venue_counts.get(key, 0),
+            "href": url_for('admin_review', section='venues', status=key)
+        } for key, label in statuses]
+    elif section == 'organizations':
+        org_counts = {
+            "all": Chapter.query.count(),
+            "active": Chapter.query.filter_by(is_active=True).count(),
+        }
+        org_counts["inactive"] = max(org_counts["all"] - org_counts["active"], 0)
+        status_counts = org_counts
+        valid_statuses = {'all', 'active', 'inactive'}
+        if status_filter not in valid_statuses:
+            status_filter = 'all'
+        orgs_query = Chapter.query
+        if status_filter == 'active':
+            orgs_query = orgs_query.filter_by(is_active=True)
+        elif status_filter == 'inactive':
+            orgs_query = orgs_query.filter_by(is_active=False)
+        items = orgs_query.order_by(Chapter.created_at.desc()).limit(50).all()
+        statuses = [('all', 'All'), ('active', 'Active'), ('inactive', 'Inactive')]
+        status_tabs = [{
+            "key": key,
+            "label": label,
+            "count": org_counts.get(key, 0),
+            "href": url_for('admin_review', section='organizations', status=key)
+        } for key, label in statuses]
+
+    review_queue = _get_review_queue(section)
+
+    return render_template(
+        'admin_review.html',
+        chapters=chapters,
+        active_section=section,
+        section_label=section_titles.get(section, 'Review'),
+        queue_description=queue_descriptions.get(section, ''),
+        status=status_filter,
+        status_tabs=status_tabs,
+        status_counts=status_counts,
+        stats=stats,
+        event_status_counts=event_counts,
+        review_queue=review_queue,
+        events=items if section == 'events' else None,
+        users=items if section == 'users' else None,
+        venues=items if section == 'venues' else None,
+        organizations=items if section == 'organizations' else None,
+    )
 
 @login_required
 @admin_required
@@ -1067,6 +1327,10 @@ def init_routes(app):
     app.route("/admin/event/<int:event_id>/reject", methods=["POST"])(admin_reject_event)
     app.route("/admin/event/<int:event_id>/toggle-feature", methods=["POST"])(admin_toggle_event_feature)
     app.route("/admin/event/<int:event_id>/delete", methods=["POST"])(admin_delete_event)
+    app.route("/admin/user/<int:user_id>/toggle", methods=["POST"])(admin_toggle_user)
+    app.route("/admin/venue/<int:venue_id>/toggle", methods=["POST"])(admin_toggle_venue)
+    app.route("/admin/organization/<int:org_id>/toggle", methods=["POST"])(admin_toggle_organization)
+    app.route("/admin/review/<string:section>")(admin_review)
     app.route("/admin/recompute-funalytics/<int:event_id>", methods=["POST"])(admin_recompute_funalytics)
     app.route("/submit-event", methods=["GET", "POST"])(submit_event)
     app.route('/login', methods=['GET', 'POST'])(login)

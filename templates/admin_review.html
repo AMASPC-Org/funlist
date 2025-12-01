@@ -1,0 +1,285 @@
+{% extends "admin/layout.html" %}
+
+{% block admin_active_section %}{{ active_section|default('events') }}{% endblock %}
+{% block admin_page_title %}{{ section_label|default('Review') }}{% endblock %}
+
+{% block admin_content %}
+{% set section = active_section|default('events') %}
+<div class="admin-card">
+    <div class="admin-card-header flex-wrap">
+        <div>
+            <h3 class="admin-card-title mb-1">{{ section_label }}</h3>
+            <p class="text-muted small mb-0">{{ queue_description }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            {% if section == 'events' %}
+            <a class="btn btn-primary" href="{{ url_for('submit_event') }}">
+                <i class="bi bi-plus-lg me-2"></i>Create event
+            </a>
+            {% elif section == 'venues' %}
+            <a class="btn btn-outline-primary" href="{{ url_for('add_venue') }}">
+                <i class="bi bi-plus-lg me-2"></i>Add venue
+            </a>
+            {% elif section == 'users' %}
+            <a class="btn btn-outline-primary" href="{{ url_for('signup') }}">
+                <i class="bi bi-envelope-plus me-2"></i>Invite member
+            </a>
+            {% elif section == 'organizations' %}
+            <a class="btn btn-outline-primary" href="{{ url_for('chapters_page') }}">
+                <i class="bi bi-diagram-2 me-2"></i>View chapters
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="admin-status-tabs">
+        {% for tab in status_tabs %}
+        <a href="{{ tab.href }}" class="status-tab {% if status == tab.key %}active{% endif %}">
+            <span>{{ tab.label }}</span>
+            <span class="badge rounded-pill">{{ tab.count }}</span>
+        </a>
+        {% endfor %}
+    </div>
+
+    {% if section == 'events' %}
+    <div class="table-responsive">
+        <table class="table align-middle admin-table">
+            <thead>
+                <tr>
+                    <th>Event</th>
+                    <th>Status</th>
+                    <th>Organizer</th>
+                    <th>Featured</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if events %}
+                {% for event in events %}
+                {% set status_key = (event.status or 'pending')|lower %}
+                <tr>
+                    <td>
+                        <div class="fw-semibold">{{ event.title }}</div>
+                        <div class="text-muted small">
+                            {{ event.start_date.strftime('%b %d, %Y %I:%M %p') if event.start_date }} · {{ event.city or 'City TBA' }}{% if event.state %}, {{ event.state }}{% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="status-pill status-pill--{{ status_key }}">{{ status_key|title }}</span>
+                    </td>
+                    <td>
+                        {% if event.user %}
+                        <div class="fw-semibold small">{{ event.user.email }}</div>
+                        {% else %}
+                        <span class="text-muted small">Unknown</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch"
+                                   id="featured-toggle-{{ event.id }}"
+                                   {% if event.featured %}checked{% endif %}
+                                   onchange="window.toggleFeature({{ event.id }}, this.checked)">
+                            <label class="form-check-label small" for="featured-toggle-{{ event.id }}">
+                                {{ 'Featured' if event.featured else 'Standard' }}
+                            </label>
+                        </div>
+                    </td>
+                    <td class="text-end">
+                        <div class="btn-group btn-group-sm">
+                            <a class="btn btn-outline-secondary" href="{{ url_for('event_detail', event_id=event.id) }}">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a class="btn btn-outline-secondary" href="{{ url_for('edit_event', event_id=event.id) }}">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <button type="button" class="btn btn-outline-success approve-event" data-event-id="{{ event.id }}" {% if status_key != 'pending' %}disabled{% endif %}>
+                                <i class="bi bi-check-lg"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-warning reject-event" data-event-id="{{ event.id }}" {% if status_key != 'pending' %}disabled{% endif %}>
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-danger delete-event" data-event-id="{{ event.id }}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">No events in this state.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+    {% elif section == 'users' %}
+    <div class="table-responsive">
+        <table class="table align-middle admin-table">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Roles</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if users %}
+                {% for user in users %}
+                <tr>
+                    <td>
+                        <div class="fw-semibold">{{ user.email }}</div>
+                        <div class="text-muted small">{{ user.first_name or 'Member' }} {{ user.last_name or '' }}</div>
+                    </td>
+                    <td>
+                        {% set role_flags = [('Admin', user.is_admin), ('Organizer', user.is_organizer), ('Creator', user.is_event_creator), ('Vendor', user.is_vendor), ('Sponsor', user.is_sponsor)] %}
+                        {% set roles_ns = namespace(active=false) %}
+                        <div class="role-chip-group">
+                            {% for label, enabled in role_flags %}
+                                {% if enabled %}
+                                    {% set roles_ns.active = true %}
+                                    <span class="role-chip">{{ label }}</span>
+                                {% endif %}
+                            {% endfor %}
+                            {% if not roles_ns.active %}
+                                <span class="text-muted small">Member</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        {% if user.account_active %}
+                        <span class="status-pill status-pill--approved">Active</span>
+                        {% else %}
+                        <span class="status-pill status-pill--rejected">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <form method="POST" action="{{ url_for('admin_toggle_user', user_id=user.id) }}" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <input type="hidden" name="active" value="{{ 'false' if user.account_active else 'true' }}">
+                            <button type="submit" class="btn btn-sm {% if user.account_active %}btn-outline-warning{% else %}btn-outline-success{% endif %}">
+                                {{ 'Deactivate' if user.account_active else 'Activate' }}
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center text-muted py-4">No members in this state.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+    {% elif section == 'venues' %}
+    <div class="table-responsive">
+        <table class="table align-middle admin-table">
+            <thead>
+                <tr>
+                    <th>Venue</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if venues %}
+                {% for venue in venues %}
+                <tr>
+                    <td>
+                        <div class="fw-semibold">{{ venue.name }}</div>
+                        <div class="text-muted small">{{ venue.website or 'No website' }}</div>
+                    </td>
+                    <td>
+                        <div class="text-muted small">{{ venue.city or 'City TBA' }}{% if venue.state %}, {{ venue.state }}{% endif %}</div>
+                    </td>
+                    <td>
+                        {% if venue.is_verified %}
+                        <span class="status-pill status-pill--approved">Verified</span>
+                        {% else %}
+                        <span class="status-pill status-pill--pending">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <div class="btn-group btn-group-sm">
+                            <a class="btn btn-outline-secondary" href="{{ url_for('venue_detail', venue_id=venue.id) }}">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <form method="POST" action="{{ url_for('admin_toggle_venue', venue_id=venue.id) }}" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                <input type="hidden" name="verified" value="{{ 'false' if venue.is_verified else 'true' }}">
+                                <button type="submit" class="btn btn-outline-{% if venue.is_verified %}warning{% else %}success{% endif %}">
+                                    {{ 'Mark pending' if venue.is_verified else 'Verify' }}
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center text-muted py-4">No venues in this state.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+    {% elif section == 'organizations' %}
+    <div class="table-responsive">
+        <table class="table align-middle admin-table">
+            <thead>
+                <tr>
+                    <th>Organization</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if organizations %}
+                {% for org in organizations %}
+                <tr>
+                    <td>
+                        <div class="fw-semibold">{{ org.name }}</div>
+                        <div class="text-muted small">{{ org.description or 'No description provided.' }}</div>
+                    </td>
+                    <td>
+                        <div class="text-muted small">{{ org.city or 'City TBA' }}{% if org.state %}, {{ org.state }}{% endif %}</div>
+                    </td>
+                    <td>
+                        {% if org.is_active %}
+                        <span class="status-pill status-pill--approved">Active</span>
+                        {% else %}
+                        <span class="status-pill status-pill--rejected">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <div class="btn-group btn-group-sm">
+                            <a class="btn btn-outline-secondary" href="{{ url_for('chapter', slug=org.slug) }}">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <form method="POST" action="{{ url_for('admin_toggle_organization', org_id=org.id) }}" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                <input type="hidden" name="active" value="{{ 'false' if org.is_active else 'true' }}">
+                                <button type="submit" class="btn btn-outline-{% if org.is_active %}warning{% else %}success{% endif %}">
+                                    {{ 'Deactivate' if org.is_active else 'Activate' }}
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center text-muted py-4">No organizations in this state.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

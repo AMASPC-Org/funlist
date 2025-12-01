@@ -37,7 +37,7 @@
                 <h3 class="admin-card-title">Latest submissions</h3>
                 <p class="text-muted small mb-0">Freshest events across all statuses</p>
             </div>
-            <a class="btn btn-link btn-sm" href="{{ url_for('admin_dashboard', section='events', status='pending') }}">Open queue</a>
+            <a class="btn btn-link btn-sm" href="{{ review_queue.url if review_queue else url_for('admin_dashboard', section='events', status='pending') }}">Open queue</a>
         </div>
         {% if recent_events %}
         <div class="table-responsive">
@@ -265,11 +265,11 @@
 </div>
 {% elif current_section == 'events' %}
 <div class="admin-card">
-    <div class="admin-card-header flex-wrap">
-        <div>
-            <h3 class="admin-card-title mb-1">Event management</h3>
-            <p class="text-muted small mb-0">Curate what appears on FunList across every market.</p>
-        </div>
+        <div class="admin-card-header flex-wrap">
+            <div>
+                <h3 class="admin-card-title mb-1">Event management</h3>
+                <p class="text-muted small mb-0">Curate what appears on FunList across every market.</p>
+            </div>
         <a class="btn btn-primary" href="{{ url_for('submit_event') }}">
             <i class="bi bi-plus-lg me-2"></i>Create event
         </a>
@@ -444,22 +444,38 @@
         </a>
     </div>
     {% if venues %}
-    <div class="venue-grid">
-        {% for venue in venues %}
-        <div class="venue-card">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <p class="fw-semibold mb-1">{{ venue.name }}</p>
-                    <p class="text-muted small mb-2">{{ venue.city or 'City TBA' }}{% if venue.state %}, {{ venue.state }}{% endif %}</p>
-                </div>
-                <span class="status-pill status-pill--{% if venue.is_verified %}approved{% else %}pending{% endif %}">{{ 'Verified' if venue.is_verified else 'Pending' }}</span>
-            </div>
-            <p class="text-muted small mb-2">{{ venue.description or 'No description yet.' }}</p>
-            {% if venue.website %}
-            <a class="small" href="{{ venue.website }}" target="_blank" rel="noopener">Website</a>
-            {% endif %}
-        </div>
-        {% endfor %}
+    <div class="table-responsive">
+        <table class="table align-middle admin-table">
+            <thead>
+                <tr>
+                    <th>Venue</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for venue in venues %}
+                <tr>
+                    <td>
+                        <div class="fw-semibold">{{ venue.name }}</div>
+                        <div class="text-muted small">{{ venue.website or 'No website' }}</div>
+                    </td>
+                    <td>
+                        <div class="text-muted small">{{ venue.city or 'City TBA' }}{% if venue.state %}, {{ venue.state }}{% endif %}</div>
+                    </td>
+                    <td>
+                        <span class="status-pill status-pill--{% if venue.is_verified %}approved{% else %}pending{% endif %}">{{ 'Verified' if venue.is_verified else 'Pending' }}</span>
+                    </td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-secondary px-2" href="{{ url_for('venue_detail', venue_id=venue.id) }}" title="View venue">
+                            <i class="bi bi-eye"></i><span class="visually-hidden">View</span>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
     {% else %}
     <p class="text-muted mb-0">No venues yet—add one to get started.</p>
