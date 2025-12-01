@@ -181,7 +181,9 @@ def event_detail(event_id):
         chapters = Chapter.query.all()
         funalytics_scores = get_funalytics_scores([event_id])
         event.funalytics = funalytics_scores.get(event_id, None)
-        return render_template("event_detail.html", event=event, chapters=chapters)
+        map_lat = event.latitude or (event.venue.latitude if event.venue else None)
+        map_lng = event.longitude or (event.venue.longitude if event.venue else None)
+        return render_template("event_detail.html", event=event, chapters=chapters, map_lat=map_lat, map_lng=map_lng)
     except Exception as e:
         logger.error(f"Error in event_detail route: {str(e)}")
         return render_template("500.html", error=str(e)), 500

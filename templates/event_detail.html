@@ -5,11 +5,11 @@
     <div class="row">
         <div class="col-md-8">
             <div class="card">
-                <div class="card-body">
+                <div class="card-body text-start">
                     <h1 class="card-title">{{ event.title }}</h1>
                     <div class="event-meta mb-3">
-                        <span class="badge bg-primary">{{ event.category|capitalize }}</span>
-                        <span class="badge bg-info">{{ event.target_audience|capitalize }}</span>
+                        <span class="badge bg-primary">{{ (event.category or 'Uncategorized')|capitalize }}</span>
+                        <span class="badge bg-info">{{ (event.target_audience or 'Everyone')|capitalize }}</span>
                         
                         {% if event.funalytics %}
                             <!-- Funalytics Scores -->
@@ -24,8 +24,71 @@
                             </span>
                         {% else %}
                             <!-- Fallback to old Funalytics™ Score -->
-                            <span class="badge bg-warning">Funalytics™ Score: {{ "⭐" * event.fun_meter }}</span>
+                            {% set fun_meter_value = event.fun_meter if event.fun_meter and event.fun_meter <= 5 else (event.fun_meter / 20 if event.fun_meter else None) %}
+                            {% if fun_meter_value %}
+                                <span class="badge bg-warning">
+                                    Fun Meter: {{ "%.1f"|format(fun_meter_value|round(1)) }}/5
+                                </span>
+                            {% endif %}
                         {% endif %}
+                    </div>
+
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6 d-flex">
+                                    <div class="me-3 text-primary"><i class="fas fa-calendar-day fa-lg"></i></div>
+                                    <div>
+                                        <div class="text-muted small">Starts</div>
+                                        <div class="fw-semibold">{{ event.start_date|format_datetime }}{% if event.start_time %} at {{ event.start_time|format_time }}{% endif %}</div>
+                                        {% if event.end_date %}
+                                            <div class="text-muted small">Ends {{ event.end_date|format_datetime }}{% if event.end_time %} at {{ event.end_time|format_time }}{% endif %}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6 d-flex">
+                                    <div class="me-3 text-danger"><i class="fas fa-map-marker-alt fa-lg"></i></div>
+                                    <div>
+                                        <div class="text-muted small">Location</div>
+                                        <div class="fw-semibold mb-1">
+                                            {% if event.venue %}
+                                                <a href="{{ url_for('venue_detail', venue_id=event.venue.id) }}">{{ event.venue.name }}</a>
+                                            {% elif event.location %}
+                                                {{ event.location }}
+                                            {% endif %}
+                                        </div>
+                                        <div class="small text-muted">
+                                            {{ [event.street, event.city, event.state, event.zip_code]|select|join(', ') }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 d-flex">
+                                    <div class="me-3 text-success"><i class="fas fa-user-friends fa-lg"></i></div>
+                                    <div>
+                                        <div class="text-muted small">Audience</div>
+                                        <div class="fw-semibold">{{ (event.target_audience or 'Open to everyone')|capitalize }}</div>
+                                        {% if event.tags %}
+                                            <div class="small text-muted">{{ event.tags }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6 d-flex">
+                                    <div class="me-3 text-warning"><i class="fas fa-ticket-alt fa-lg"></i></div>
+                                    <div>
+                                        <div class="text-muted small">Tickets & RSVP</div>
+                                        {% if event.website %}
+                                            <div><a href="{{ event.website }}" target="_blank" rel="noopener">Ticket / info link</a></div>
+                                        {% else %}
+                                            <div class="text-muted">No ticket link provided</div>
+                                        {% endif %}
+                                        <div class="small text-muted">
+                                            {% if event.ticket_required %}Tickets required{% else %}Tickets optional{% endif %} •
+                                            {% if event.rsvp_required %}RSVP required{% else %}RSVP not required{% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="event-description mb-4">
@@ -47,13 +110,22 @@
                     {% endif %}
 
                     <div class="event-details">
-                        <h4>Event Details</h4>
+                        <h4>Additional Details</h4>
                         <ul class="list-unstyled">
-                            <li><i class="fas fa-calendar"></i> Start: {{ event.start_date|format_datetime }}
-                                {% if event.start_time %}at {{ event.start_time|format_time }}{% endif %}</li>
-                            <li><i class="fas fa-calendar-check"></i> End: {{ event.end_date|format_datetime }}
-                                {% if event.end_time %}at {{ event.end_time|format_time }}{% endif %}</li>
-                            <li><i class="fas fa-map-marker-alt"></i> {{ event.street }}, {{ event.city }}, {{ event.state }} {{ event.zip_code }}</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Status: {{ event.status|capitalize }}</li>
+                            {% if event.special_instructions %}
+                                <li><i class="fas fa-info-circle text-primary me-2"></i> Notes: {{ event.special_instructions }}</li>
+                            {% endif %}
+                            {% if event.membership_required %}
+                                <li><i class="fas fa-id-badge text-warning me-2"></i> Membership required</li>
+                            {% endif %}
+                            {% if event.network_opt_out %}
+                                <li><i class="fas fa-ban text-danger me-2"></i> Not shared across network sites</li>
+                            {% endif %}
+                            {% if event.event_source %}
+                                <li><i class="fas fa-link text-muted me-2"></i> Source: {{ event.event_source }}</li>
+                            {% endif %}
+                            <li><i class="fas fa-clock text-muted me-2"></i> Submitted {{ event.event_submitted_timestamp|default(event.created_at)|format_datetime }}</li>
                         </ul>
                     </div>
 
@@ -80,14 +152,14 @@
 
         <div class="col-md-4">
             <div class="card mb-4">
-                <div class="card-body">
+                <div class="card-body text-start">
                     <div id="eventMap" style="height: 300px;"></div>
                 </div>
             </div>
 
             {% if event.website or event.facebook or event.instagram or event.twitter %}
             <div class="card mb-4">
-                <div class="card-body">
+                <div class="card-body text-start">
                     <h5 class="card-title">Event Links</h5>
                     <div class="event-links">
                         {% if event.website %}
@@ -115,9 +187,39 @@
             </div>
             {% endif %}
 
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Venue & Organizer</h5>
+                    {% if event.venue %}
+                        <div class="mb-3">
+                            <div class="fw-semibold"><a href="{{ url_for('venue_detail', venue_id=event.venue.id) }}">{{ event.venue.name }}</a></div>
+                            <div class="text-muted small">{{ [event.venue.street, event.venue.city, event.venue.state, event.venue.zip_code]|select|join(', ') }}</div>
+                            {% if event.venue.website %}
+                                <div><a href="{{ event.venue.website }}" target="_blank" rel="noopener">Venue website</a></div>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted small">No linked venue. Address details shown above.</p>
+                    {% endif %}
+
+                    {% if event.host_name or event.host_website or event.host_social_media %}
+                        <div>
+                            <div class="fw-semibold">Organizer</div>
+                            {% if event.host_name %}<div>{{ event.host_name }}</div>{% endif %}
+                            {% if event.host_website %}
+                                <div><a href="{{ event.host_website }}" target="_blank" rel="noopener">Organizer website</a></div>
+                            {% endif %}
+                            {% if event.host_social_media %}
+                                <div class="small text-muted">{{ event.host_social_media }}</div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
             {% if current_user.is_authenticated %}
             <div class="card">
-                <div class="card-body">
+                <div class="card-body text-start">
                     <div class="event-actions">
                         <button class="btn btn-primary btn-block mb-2">
                             <i class="far fa-star"></i> Express Interest
@@ -144,12 +246,23 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    var map = L.map('eventMap').setView([{{ event.latitude }}, {{ event.longitude }}], 15);
+    const lat = {{ map_lat|tojson }};
+    const lng = {{ map_lng|tojson }};
+    const mapEl = document.getElementById('eventMap');
+    if (!mapEl) return;
+
+    if (lat === null || lng === null) {
+        mapEl.innerHTML = '<p class="text-muted small mb-0">Map will appear once location coordinates are available.</p>';
+        mapEl.classList.add('d-flex', 'align-items-center', 'justify-content-center', 'bg-light');
+        return;
+    }
+
+    var map = L.map('eventMap').setView([lat, lng], 15);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    L.marker([{{ event.latitude }}, {{ event.longitude }}])
+    L.marker([lat, lng])
         .bindPopup("{{ event.title }}")
         .addTo(map);
 });
