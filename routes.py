@@ -417,7 +417,15 @@ def edit_event(event_id):
         db.session.commit()
         flash("Event updated.", "success")
         return redirect(url_for('my_events'))
-    return render_template("submit_event.html", form=form, chapters=chapters, is_edit=True, event=event)
+    return render_template(
+        "submit_event.html",
+        form=form,
+        chapters=chapters,
+        is_edit=True,
+        event=event,
+        page_title="Edit Event",
+        form_action=url_for('edit_event', event_id=event.id),
+    )
 
 def login():
     chapters = Chapter.query.all()
