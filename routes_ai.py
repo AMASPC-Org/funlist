@@ -5,6 +5,7 @@ from flask_login import login_required, current_user
 from models import Event, AIAccessLog
 from db_init import db
 from datetime import datetime
+from sqlalchemy.orm import joinedload
 
 logger = logging.getLogger(__name__)
 
@@ -143,14 +144,34 @@ def ai_feed():
     try:
         # Query upcoming approved events
         current_date = datetime.utcnow()
-        events = Event.query.filter(
-            Event.status == 'approved',
-            Event.start_date >= current_date
-        ).order_by(Event.start_date).limit(10).all()
+        events = (
+            Event.query.options(joinedload(Event.venue))
+            .filter(
+                Event.status == 'approved',
+                Event.start_date >= current_date
+            )
+            .order_by(Event.start_date)
+            .limit(10)
+            .all()
+        )
 
         # Format events for AI consumption
         events_data = []
         for event in events:
+            venue = event.venue
+            venue_location = None
+            if venue:
+                venue_location = {
+                    "venue": venue.name,
+                    "street": venue.street,
+                    "city": venue.city,
+                    "state": venue.state,
+                    "zip_code": venue.zip_code,
+                    "coordinates": {
+                        "latitude": venue.latitude,
+                        "longitude": venue.longitude
+                    } if venue.latitude is not None and venue.longitude is not None else None
+                }
             event_dict = {
                 "id": event.id,
                 "title": event.title,
@@ -159,17 +180,7 @@ def ai_feed():
                 "start_time": str(event.start_time) if event.start_time else None,
                 "end_date": event.end_date.strftime('%Y-%m-%d') if event.end_date else None,
                 "end_time": str(event.end_time) if event.end_time else None,
-                "location": {
-                    "venue": event.location,
-                    "street": event.street,
-                    "city": event.city,
-                    "state": event.state,
-                    "zip_code": event.zip_code,
-                    "coordinates": {
-                        "latitude": event.latitude,
-                        "longitude": event.longitude
-                    } if event.latitude and event.longitude else None
-                },
+                "location": venue_location,
                 "category": event.category,
                 "target_audience": event.target_audience,
                 "tags": event.tags.split(',') if event.tags else [],

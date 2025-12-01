@@ -97,8 +97,16 @@ window.FunlistMap = (function() {
             this.clearMarkers();
 
             this.events.forEach(event => {
-                const lat = parseFloat(event.latitude);
-                const lng = parseFloat(event.longitude);
+                const lat = parseFloat(
+                    event.latitude !== undefined && event.latitude !== null
+                        ? event.latitude
+                        : event.venue && event.venue.latitude
+                );
+                const lng = parseFloat(
+                    event.longitude !== undefined && event.longitude !== null
+                        ? event.longitude
+                        : event.venue && event.venue.longitude
+                );
 
                 if (Number.isNaN(lat) || Number.isNaN(lng)) {
                     return;
@@ -133,6 +141,8 @@ window.FunlistMap = (function() {
             const title = escapeHtml(event.title || "Event");
             const description = escapeHtml(event.description ? event.description.substring(0, 140) : "");
             const startDate = escapeHtml(event.start_date || "");
+            const locationName = escapeHtml(event.location_label || (event.venue && event.venue.name) || "");
+            const locationAddress = escapeHtml(event.location_address || "");
             const ratingValue = event.fun_rating ?? event.fun_meter;
             const rating = Number.isFinite(ratingValue) ? `${ratingValue}/5` : "N/A";
             const link = event.detail_url
@@ -142,6 +152,8 @@ window.FunlistMap = (function() {
             return `
                 <div class="event-popup">
                     <strong>${title}</strong><br>
+                    ${locationName ? `Location: ${locationName}<br>` : ""}
+                    ${locationAddress ? `${locationAddress}<br>` : ""}
                     ${startDate ? `Date: ${startDate}<br>` : ""}
                     ${description ? `${description}...<br>` : ""}
                     Fun Rating: ${rating}

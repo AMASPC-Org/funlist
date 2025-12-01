@@ -35,6 +35,12 @@
                                 <div class="col-md-4">
                                     {{ render_field(form.country, class="form-control") }}
                                 </div>
+                                <div class="col-md-6">
+                                    {{ render_field(form.latitude, class="form-control", placeholder="47.0379") }}
+                                </div>
+                                <div class="col-md-6">
+                                    {{ render_field(form.longitude, class="form-control", placeholder="-122.9007") }}
+                                </div>
                             </div>
                         </div>
                         

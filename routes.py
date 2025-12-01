@@ -11,6 +11,7 @@ from forms import (SignupForm, LoginForm, ProfileForm, EventForm,
 from models import User, Event, Subscriber, Chapter, HelpArticle, Venue, ProhibitedAdvertiserCategory, EventExclusionRule, OrganizerMaster, VenueMaster
 from db_init import db
 from sqlalchemy import func, text
+from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from datetime import datetime, timedelta, date, time
 import json
@@ -38,18 +39,31 @@ def combine_date_with_time(date_value, time_value=None, fallback_time=None):
     if fallback_time: return datetime.combine(date_value, fallback_time)
     return datetime.combine(date_value, time.min)
 
-def build_location_details(selected_venue, form):
-    location_label = selected_venue.name if selected_venue else (form.venue_name.data or None)
-    street = form.street.data or None
-    city = form.city.data or None
-    state = form.state.data or None
-    zip_code = form.zip_code.data or None
-    if not street: street = (selected_venue.street if selected_venue else form.venue_street.data) or None
-    if not city: city = (selected_venue.city if selected_venue else form.venue_city.data) or None
-    if not state: state = (selected_venue.state if selected_venue else form.venue_state.data) or None
-    if not zip_code: zip_code = (selected_venue.zip_code if selected_venue else form.venue_zip.data) or None
-    if not location_label: location_label = ", ".join([segment for segment in [street, city, state] if segment])
-    return location_label or "Location TBA", street, city, state, zip_code
+def build_location_details(selected_venue, form=None):
+    if not selected_venue:
+        return "Venue TBA", None, None, None, None
+    street = form.street.data if form else None
+    city = form.city.data if form else None
+    state = form.state.data if form else None
+    zip_code = form.zip_code.data if form else None
+    return (
+        selected_venue.name or "Venue TBA",
+        street or None,
+        city or None,
+        state or None,
+        zip_code or None,
+    )
+
+def get_event_map_point(event):
+    if event.venue and event.venue.latitude is not None and event.venue.longitude is not None:
+        address_parts = [part for part in [event.venue.street, event.venue.city, event.venue.state] if part]
+        return {
+            "lat": event.venue.latitude,
+            "lng": event.venue.longitude,
+            "label": event.venue.name or "Venue",
+            "address": ", ".join(address_parts),
+        }
+    return None
 
 def coerce_form_date(value):
     if not value: return None
@@ -103,6 +117,8 @@ def populate_event_form_from_model(form, event):
         form.venue_city.data = event.venue.city
         form.venue_state.data = event.venue.state
         form.venue_zip.data = event.venue.zip_code
+        form.venue_latitude.data = event.venue.latitude
+        form.venue_longitude.data = event.venue.longitude
 
 def get_funalytics_scores(event_ids=None):
     try:
@@ -147,13 +163,26 @@ def index():
 
 def map():
     try:
-        events = Event.query.all()
+        events = (
+            Event.query
+            .join(Venue)
+            .options(joinedload(Event.venue))
+            .filter(Venue.latitude.isnot(None), Venue.longitude.isnot(None))
+            .all()
+        )
         chapters = Chapter.query.all()
         events_for_map = []
         for event in events:
+            map_point = get_event_map_point(event)
+            if not map_point:
+                continue
             event_data = event.to_dict()
             event_data["fun_rating"] = event.fun_rating if event.fun_rating is not None else event.fun_meter
             event_data["detail_url"] = url_for("event_detail", event_id=event.id)
+            event_data["latitude"] = map_point["lat"]
+            event_data["longitude"] = map_point["lng"]
+            event_data["location_label"] = map_point["label"]
+            event_data["location_address"] = map_point["address"]
             events_for_map.append(event_data)
         return render_template("map.html", events=events, events_json=events_for_map, chapters=chapters)
     except Exception as e:
@@ -181,8 +210,9 @@ def event_detail(event_id):
         chapters = Chapter.query.all()
         funalytics_scores = get_funalytics_scores([event_id])
         event.funalytics = funalytics_scores.get(event_id, None)
-        map_lat = event.latitude or (event.venue.latitude if event.venue else None)
-        map_lng = event.longitude or (event.venue.longitude if event.venue else None)
+        map_point = get_event_map_point(event)
+        map_lat = map_point["lat"] if map_point else None
+        map_lng = map_point["lng"] if map_point else None
         return render_template("event_detail.html", event=event, chapters=chapters, map_lat=map_lat, map_lng=map_lng)
     except Exception as e:
         logger.error(f"Error in event_detail route: {str(e)}")
@@ -210,6 +240,7 @@ def add_venue():
             phone=form.phone.data, email=form.email.data, website=form.website.data,
             venue_type_id=form.venue_type_id.data or None, contact_name=form.contact_name.data,
             contact_phone=form.contact_phone.data, contact_email=form.contact_email.data,
+            latitude=form.latitude.data, longitude=form.longitude.data,
             description=form.description.data, created_by_user_id=current_user.id,
             owner_manager_user_id=current_user.id if form.is_owner_manager.data else None
         )
@@ -252,6 +283,8 @@ def edit_venue(venue_id):
         venue.email = form.email.data
         venue.website = form.website.data
         venue.venue_type_id = form.venue_type_id.data or None
+        venue.latitude = form.latitude.data
+        venue.longitude = form.longitude.data
         venue.contact_name = form.contact_name.data
         venue.contact_phone = form.contact_phone.data
         venue.contact_email = form.contact_email.data
@@ -317,15 +350,28 @@ def submit_event():
         selected_venue = None
         if form.venue_selection_type.data == 'existing' and form.venue_id.data:
             selected_venue = Venue.query.get(form.venue_id.data)
-        if form.venue_selection_type.data == 'new' and form.venue_name.data and form.use_new_venue.data:
+        if form.venue_selection_type.data == 'new':
+            if not form.venue_name.data:
+                flash("Please provide a venue name so we can place this event on the map.", "warning")
+                return render_template("submit_event.html", form=form, chapters=chapters)
+            if form.venue_latitude.data is None or form.venue_longitude.data is None:
+                flash("Add latitude and longitude for the new venue by dropping a pin on the map.", "warning")
+                return render_template("submit_event.html", form=form, chapters=chapters)
             selected_venue = Venue(
                 name=form.venue_name.data, street=form.venue_street.data, city=form.venue_city.data,
                 state=form.venue_state.data, zip_code=form.venue_zip.data,
+                latitude=form.venue_latitude.data, longitude=form.venue_longitude.data,
                 venue_type_id=form.venue_type_id.data or None, created_by_user_id=current_user.id,
                 owner_manager_user_id=current_user.id if form.is_venue_owner.data else None
             )
             db.session.add(selected_venue)
             db.session.flush()
+        if not selected_venue:
+            flash("Please select or create a venue with a mapped location.", "warning")
+            return render_template("submit_event.html", form=form, chapters=chapters)
+        if selected_venue.latitude is None or selected_venue.longitude is None:
+            flash("The selected venue is missing coordinates. Please update it so the event can appear on the map.", "warning")
+            return render_template("submit_event.html", form=form, chapters=chapters)
         location_label, street, city, state, zip_code = build_location_details(selected_venue, form)
 
         event = Event(

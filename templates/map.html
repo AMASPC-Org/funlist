@@ -182,8 +182,8 @@
                 {% for event in events %}
                     <div class="card mb-3 event-card" 
                          data-event-id="{{ event.id }}"
-                         data-lat="{{ event.latitude }}"
-                         data-lng="{{ event.longitude }}"
+                         data-lat="{{ event.venue.latitude if event.venue else '' }}"
+                         data-lng="{{ event.venue.longitude if event.venue else '' }}"
                          data-category="{{ event.category }}"
                          data-date="{{ event.start_date }}"
                          data-fun-rating="{{ event.fun_rating }}">

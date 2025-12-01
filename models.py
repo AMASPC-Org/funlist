@@ -239,17 +239,32 @@ class Event(db.Model):
         self.venue_social_media = json.dumps(socials_dict)
 
     def to_dict(self):
+        venue_data = None
+        if self.venue:
+            venue_data = {
+                'id': self.venue.id,
+                'name': self.venue.name,
+                'street': self.venue.street,
+                'city': self.venue.city,
+                'state': self.venue.state,
+                'zip_code': self.venue.zip_code,
+                'latitude': self.venue.latitude,
+                'longitude': self.venue.longitude
+            }
+        latitude = self.venue.latitude if self.venue else None
+        longitude = self.venue.longitude if self.venue else None
         return {
             'id': self.id,
             'title': self.title,
             'description': self.description,
             'start_date': self.start_date.strftime('%Y-%m-%d') if self.start_date else None,
             'end_date': self.end_date.strftime('%Y-%m-%d') if self.end_date else None,
-            'location': self.location,
-            'city': self.city,
-            'state': self.state,
-            'latitude': self.latitude,
-            'longitude': self.longitude,
+            'location': self.venue.name if self.venue else self.location,
+            'city': self.venue.city if self.venue else self.city,
+            'state': self.venue.state if self.venue else self.state,
+            'latitude': latitude,
+            'longitude': longitude,
+            'venue': venue_data,
             'category': self.category,
             'fun_meter': self.fun_meter,
             'status': self.status

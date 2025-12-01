@@ -2,8 +2,7 @@
 #!/usr/bin/env python3
 
 from datetime import datetime, timedelta, time
-import random
-from models import Event, User
+from models import Event, User, Venue
 from db_init import db
 from app import app
 
@@ -17,63 +16,86 @@ def add_sample_events():
             db.session.add(test_user)
             db.session.commit()
 
-        # Sample events with coordinates
+        def ensure_venue(venue_data):
+            venue = Venue.query.filter_by(name=venue_data["name"]).first()
+            if venue:
+                for key, value in venue_data.items():
+                    setattr(venue, key, value)
+            else:
+                venue = Venue(**venue_data)
+                db.session.add(venue)
+                db.session.flush()
+            return venue
+
+        # Sample events with venue coordinates
         events = [
             {
                 "title": "Olympia Music Festival",
                 "description": "A weekend of live music performances featuring local and national artists.",
                 "date": datetime.now() + timedelta(days=7),
-                "street": "416 Washington St SE",
-                "city": "Olympia",
-                "state": "WA",
-                "zip_code": "98501",
                 "category": "Music",
                 "target_audience": "Adults",
                 "fun_meter": 5,
-                "latitude": 47.0379,
-                "longitude": -122.9007
+                "venue": {
+                    "name": "Olympia Music Hall",
+                    "street": "416 Washington St SE",
+                    "city": "Olympia",
+                    "state": "WA",
+                    "zip_code": "98501",
+                    "latitude": 47.0379,
+                    "longitude": -122.9007
+                }
             },
             {
                 "title": "Thurston County Fair",
                 "description": "Annual county fair with rides, games, food, and exhibitions.",
                 "date": datetime.now() + timedelta(days=14),
-                "street": "3054 Carpenter Rd SE",
-                "city": "Lacey",
-                "state": "WA",
-                "zip_code": "98503",
                 "category": "Other",
                 "target_audience": "Family",
                 "fun_meter": 4,
-                "latitude": 47.0343,
-                "longitude": -122.8815
+                "venue": {
+                    "name": "Thurston County Fairgrounds",
+                    "street": "3054 Carpenter Rd SE",
+                    "city": "Lacey",
+                    "state": "WA",
+                    "zip_code": "98503",
+                    "latitude": 47.0343,
+                    "longitude": -122.8815
+                }
             },
             {
                 "title": "Downtown Art Walk",
                 "description": "Explore local art galleries and meet artists.",
                 "date": datetime.now() + timedelta(days=3),
-                "street": "205 4th Ave E",
-                "city": "Olympia",
-                "state": "WA",
-                "zip_code": "98501",
                 "category": "Arts",
                 "target_audience": "Adults",
                 "fun_meter": 4,
-                "latitude": 47.0448,
-                "longitude": -122.8982
+                "venue": {
+                    "name": "Olympia Art District",
+                    "street": "205 4th Ave E",
+                    "city": "Olympia",
+                    "state": "WA",
+                    "zip_code": "98501",
+                    "latitude": 47.0448,
+                    "longitude": -122.8982
+                }
             },
             {
                 "title": "Food Truck Festival",
                 "description": "Sample diverse cuisines from local food trucks.",
                 "date": datetime.now() + timedelta(days=5),
-                "street": "700 Capitol Way N",
-                "city": "Olympia",
-                "state": "WA",
-                "zip_code": "98501",
                 "category": "Food",
                 "target_audience": "Everyone",
                 "fun_meter": 5,
-                "latitude": 47.0478,
-                "longitude": -122.9020
+                "venue": {
+                    "name": "Capitol Commons",
+                    "street": "700 Capitol Way N",
+                    "city": "Olympia",
+                    "state": "WA",
+                    "zip_code": "98501",
+                    "latitude": 47.0478,
+                    "longitude": -122.9020
+                }
             }
         ]
 
@@ -87,6 +109,7 @@ def add_sample_events():
         
         for idx, event_data in enumerate(events):
             start_time, end_time = time_slots[idx % len(time_slots)]
+            venue = ensure_venue(event_data["venue"])
             event = Event(
                 title=event_data["title"],
                 description=event_data["description"],
@@ -94,16 +117,16 @@ def add_sample_events():
                 end_date=event_data["date"],
                 start_time=start_time,
                 end_time=end_time,
-                street=event_data["street"],
-                city=event_data["city"],
-                state=event_data["state"],
-                zip_code=event_data["zip_code"],
+                location=venue.name,
+                street=None,
+                city=None,
+                state=None,
+                zip_code=None,
                 category=event_data["category"],
                 target_audience=event_data["target_audience"],
                 fun_meter=event_data["fun_meter"],
-                latitude=event_data["latitude"],
-                longitude=event_data["longitude"],
                 user_id=test_user.id,
+                venue=venue,
                 status='approved'  # Set status to approved so events show up immediately
             )
             db.session.add(event)

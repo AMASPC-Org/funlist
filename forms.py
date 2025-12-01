@@ -165,6 +165,8 @@ class VenueForm(FlaskForm):
     email = StringField('Email', validators=[Optional(), Email()])
     website = StringField('Website URL', validators=[Optional(), URL()])
     venue_type_id = SelectField('Venue Type', coerce=int, validators=[Optional()])
+    latitude = FloatField('Latitude', validators=[Optional(), NumberRange(-90, 90)])
+    longitude = FloatField('Longitude', validators=[Optional(), NumberRange(-180, 180)])
     contact_name = StringField('Contact Person Name')
     contact_phone = StringField('Contact Phone')
     contact_email = StringField('Contact Email', validators=[Optional(), Email()])
@@ -204,6 +206,8 @@ class EventForm(FlaskForm):
     venue_state = StringField('Venue State', validators=[Optional()])
     venue_zip = StringField('Venue ZIP Code', validators=[Optional()])
     venue_type_id = SelectField('Venue Type', coerce=int, validators=[Optional()])
+    venue_latitude = FloatField('Venue Latitude', validators=[Optional(), NumberRange(-90, 90)])
+    venue_longitude = FloatField('Venue Longitude', validators=[Optional(), NumberRange(-180, 180)])
     use_new_venue = BooleanField('Add this as a new venue')
     is_venue_owner = BooleanField('I am an owner, manager, or authorized representative of this venue')
 

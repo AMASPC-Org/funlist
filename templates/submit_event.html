@@ -192,6 +192,12 @@
                                 <div class="col-md-4">
                                     {{ render_field(form.venue_zip, class="form-control") }}
                                 </div>
+                                <div class="col-md-6">
+                                    {{ render_field(form.venue_latitude, class="form-control", placeholder="Latitude (auto-filled)") }}
+                                </div>
+                                <div class="col-md-6">
+                                    {{ render_field(form.venue_longitude, class="form-control", placeholder="Longitude (auto-filled)") }}
+                                </div>
                                 <div class="col-md-12">
                                     {{ render_field(form.venue_type_id, class="form-select") }}
                                 </div>
@@ -218,16 +224,16 @@
 
                 <!-- Location Details (only if not using venue) -->
                 <div class="card mb-4">
-                    <div class="card-body">
-                        <h5 class="card-title d-flex justify-content-between align-items-center">
-                            Additional Location Details
-                            <span class="badge bg-light text-muted border">Optional</span>
-                        </h5>
-                        <p class="text-muted small mb-3">Use this if your event does not have a fixed venue or needs extra context (e.g., “Meet near the park fountain”).</p>
-                        <div class="row">
-                            <div class="col-md-12">
-                                {{ render_field(form.street, class="form-control") }}
-                            </div>
+                        <div class="card-body">
+                            <h5 class="card-title d-flex justify-content-between align-items-center">
+                                Additional Location Details
+                                <span class="badge bg-light text-muted border">Optional</span>
+                            </h5>
+                            <p class="text-muted small mb-3">Add any extra context attendees should know once they get to the venue (e.g., “Meet near the park fountain”).</p>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    {{ render_field(form.street, class="form-control") }}
+                                </div>
                             <div class="col-md-4">
                                 {{ render_field(form.city, class="form-control") }}
                             </div>
@@ -517,6 +523,8 @@ const applyPlaceToVenueForm = (place) => {
         const coords = typeof loc.lat === 'function'
             ? { lat: loc.lat(), lng: loc.lng() }
             : loc;
+        setVenueFieldValue('venue_latitude', coords.lat);
+        setVenueFieldValue('venue_longitude', coords.lng);
         placeVenueMarker(coords, place.name || 'Selected location');
     }
 };
@@ -944,6 +952,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 venueMapMarker.setMap(null);
                 venueMapMarker = null;
             }
+            ['venue_latitude', 'venue_longitude'].forEach(id => setVenueFieldValue(id, ''));
         });
     }
 

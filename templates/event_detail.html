@@ -55,10 +55,16 @@
                                                 <a href="{{ url_for('venue_detail', venue_id=event.venue.id) }}">{{ event.venue.name }}</a>
                                             {% elif event.location %}
                                                 {{ event.location }}
+                                            {% else %}
+                                                Location TBA
                                             {% endif %}
                                         </div>
                                         <div class="small text-muted">
-                                            {{ [event.street, event.city, event.state, event.zip_code]|select|join(', ') }}
+                                            {% if event.venue %}
+                                                {{ [event.venue.street, event.venue.city, event.venue.state, event.venue.zip_code]|select|join(', ') }}
+                                            {% else %}
+                                                {{ [event.street, event.city, event.state, event.zip_code]|select|join(', ') }}
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </div>
