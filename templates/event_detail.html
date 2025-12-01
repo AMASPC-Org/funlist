@@ -242,6 +242,14 @@
                             </button>
                         </form>
                         {% endif %}
+                        {% if current_user.is_admin or current_user.id == event.user_id %}
+                        <form method="POST" action="{{ url_for('delete_event', event_id=event.id) }}" class="mt-2" onsubmit="return confirm('Delete this event? This cannot be undone.');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <button type="submit" class="btn btn-outline-danger btn-block">
+                                <i class="fas fa-trash-alt"></i> Delete Event
+                            </button>
+                        </form>
+                        {% endif %}
                     </div>
                 </div>
             </div>

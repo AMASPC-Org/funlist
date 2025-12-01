@@ -57,6 +57,11 @@
                             {{ event.start_date|format_datetime }}{% if event.start_time %} • {{ event.start_time|format_time }}{% endif %}
                             {% if event.end_date %} – {{ event.end_date|format_datetime }}{% endif %}
                         </p>
+                        {% if event.description %}
+                        <p class="mb-2 small text-muted">
+                            {{ event.description|truncate(140, True, '...') }}
+                        </p>
+                        {% endif %}
                         <p class="mb-1">
                             <i class="fas fa-map-marker-alt text-muted me-1"></i>
                             {{ event.city or 'City TBA' }}, {{ event.state or '' }}
@@ -72,6 +77,12 @@
                         <a href="{{ url_for('edit_event', event_id=event.id) }}" class="btn btn-primary btn-sm">
                             <i class="fas fa-edit me-1"></i>Edit
                         </a>
+                        <form method="POST" action="{{ url_for('delete_event', event_id=event.id) }}" onsubmit="return confirm('Delete this event? This cannot be undone.');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                                <i class="fas fa-trash-alt me-1"></i>Delete
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>

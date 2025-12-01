@@ -427,6 +427,23 @@ def edit_event(event_id):
         form_action=url_for('edit_event', event_id=event.id),
     )
 
+@login_required
+def delete_event(event_id):
+    event = Event.query.get_or_404(event_id)
+    if event.user_id != current_user.id and not current_user.is_admin:
+        flash("Permission denied.", "warning")
+        return redirect(url_for('event_detail', event_id=event.id))
+    try:
+        db.session.delete(event)
+        db.session.commit()
+        flash("Event deleted.", "success")
+    except Exception as exc:  # noqa: BLE001
+        db.session.rollback()
+        logger.error("Failed to delete event %s: %s", event_id, exc)
+        flash("Could not delete event.", "danger")
+        return redirect(url_for('event_detail', event_id=event.id))
+    return redirect(url_for('my_events'))
+
 def login():
     chapters = Chapter.query.all()
     form = LoginForm()
@@ -747,6 +764,7 @@ def init_routes(app):
     app.route("/events/mine")(my_events)
     app.route("/events/<int:event_id>")(event_detail)
     app.route("/events/<int:event_id>/edit", methods=["GET", "POST"])(edit_event)
+    app.route("/events/<int:event_id>/delete", methods=["POST"])(delete_event)
     app.route("/admin/recompute-funalytics/<int:event_id>", methods=["POST"])(admin_recompute_funalytics)
     app.route("/submit-event", methods=["GET", "POST"])(submit_event)
     app.route('/login', methods=['GET', 'POST'])(login)
