@@ -77,24 +77,6 @@
         </li>
         {% endif %}
         {# Removed Organizer Profile link as it's now part of the My Profile page #}
-        <!-- AI & Developers Dropdown -->
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="aiDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            AI Gateway
-          </a>
-          <ul class="dropdown-menu" aria-labelledby="aiDropdown">
-            <li><a class="dropdown-item" href="{{ url_for('ai_routes.ai_gateway') }}">AI Gateway</a></li>
-            <li><a class="dropdown-item" href="{{ url_for('ai_routes.ai_policy') }}">AI Policy</a></li>
-            <li><a class="dropdown-item" href="{{ url_for('ai_routes.ai_data_license') }}">Data License</a></li>
-            <li><a class="dropdown-item" href="{{ url_for('ai_routes.ai_feed_guide') }}">Feed Guide</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="/.well-known/ai-policy.json" target="_blank">Policy JSON</a></li>
-            {% if current_user.is_authenticated and current_user.is_admin %}
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="{{ url_for('ai_routes.ai_access_report') }}">Access Report</a></li>
-            {% endif %}
-          </ul>
-        </li>
       </ul>
 
       <!-- Search or Login/Signup based on auth state -->
