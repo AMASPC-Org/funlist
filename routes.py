@@ -380,6 +380,9 @@ def index():
 
 def map():
     try:
+        # --- FIX: Define 'now' to filter past events ---
+        now = datetime.utcnow()
+
         events = (
             Event.query
             .join(Venue)
@@ -389,6 +392,8 @@ def map():
                 Event.is_public_event.is_(True),
                 Venue.latitude.isnot(None),
                 Venue.longitude.isnot(None),
+                # --- FIX: Only map events ending in the future ---
+                Event.end_date >= now
             )
             .all()
         )
@@ -413,12 +418,21 @@ def map():
 
 def events():
     try:
+        # --- FIX: Define 'now' to filter past events ---
+        now = datetime.utcnow()
+
         events = (
             Event.query
-            .order_by(Event.start_date.desc())
-            .filter(func.lower(Event.status) == 'approved', Event.is_public_event.is_(True))
+            # Filter: Only show events where the End Date is in the future
+            .filter(
+                func.lower(Event.status) == 'approved', 
+                Event.is_public_event.is_(True),
+                Event.end_date >= now  
+            )
+            .order_by(Event.start_date.asc()) # Recommendation: Switched to ASC so "soonest" events show first
             .all()
         )
+        
         chapters = Chapter.query.all()
         try:
             funalytics_scores = get_funalytics_scores()
@@ -426,6 +440,7 @@ def events():
                 event.funalytics = funalytics_scores.get(event.id)
         except Exception:
             for event in events: event.funalytics = None
+            
         return render_template("events.html", events=events, chapters=chapters)
     except Exception as e:
         logger.error(f"Error in events route: {str(e)}")
