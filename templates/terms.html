@@ -1,21 +1,68 @@
 
 {% extends "base.html" %}
 
+{% block title %}Terms and Conditions - FunList.ai{% endblock %}
+
 {% block content %}
 <div class="container py-5">
-    <h1>Terms and Conditions</h1>
-    <div class="mt-4">
-        <h3>1. Acceptance of Terms</h3>
-        <p>By accessing and using FunList.ai, you agree to be bound by these terms and conditions.</p>
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <h1 class="mb-4">Terms and Conditions</h1>
+            <p class="lead text-muted mb-5"><strong>Last Updated:</strong> March 2025</p>
 
-        <h3>2. User Accounts</h3>
-        <p>Users must provide accurate information when creating an account and are responsible for maintaining account security.</p>
+            <div class="mb-5">
+                <h2 class="h4 mb-3">1. Acceptance of Terms</h2>
+                <p>By accessing FunList.ai (the "Service"), provided by American Marketing Alliance SPC ("AMA"), you agree to these Terms. If you do not agree, please do not use the Service.</p>
+            </div>
 
-        <h3>3. Event Listings</h3>
-        <p>Event creators must ensure all event information is accurate and comply with local laws and regulations.</p>
+            <div class="mb-5">
+                <h2 class="h4 mb-3">2. The "Funalytics™" Disclaimer (AI Usage)</h2>
+                <p>FunList.ai uses Artificial Intelligence agents (including the "Rating Agent") to generate "Fun Scores," event descriptions, and recommendations.</p>
+                <ul>
+                    <li><strong>Subjectivity:</strong> "Fun Scores" are AI-generated estimates based on data points like amenities, popularity, and user preferences. They are <strong>subjective opinions</strong>, not guarantees of enjoyment.</li>
+                    <li><strong>Accuracy Warning:</strong> AI tools can make errors ("hallucinations"). While we strive for accuracy, event times, prices, and locations may change. <strong>Always verify details with the official venue before attending.</strong></li>
+                </ul>
+            </div>
 
-        <h3>4. Prohibited Content</h3>
-        <p>Users may not post content that is illegal, harmful, or violates others' rights.</p>
+            <div class="mb-5">
+                <h2 class="h4 mb-3">3. Event Listings & Ticket Purchases</h2>
+                <p>FunList.ai is primarily a discovery platform.</p>
+                <ul>
+                    <li><strong>Third-Party Links:</strong> When you click "Buy Tickets" or "Register," you are often directed to a third-party site (e.g., Eventbrite, Ticketmaster, or a Venue's site).</li>
+                    <li><strong>No Liability for Transactions:</strong> We are not a party to the transaction between you and the event host. We are not responsible for refunds, cancellations, or ticket validity for third-party events.</li>
+                    <li><strong>Physical Safety:</strong> AMA does not inspect venues. You assume all risk associated with attending events listed on our platform.</li>
+                </ul>
+            </div>
+
+            <div class="mb-5">
+                <h2 class="h4 mb-3">4. User Accounts & Conduct</h2>
+                <p>You agree to use FunList.ai responsibly:</p>
+                <ul>
+                    <li>You will not post false reviews or spam event listings.</li>
+                    <li>You are responsible for keeping your login credentials secure.</li>
+                    <li>We reserve the right to suspend accounts that violate our "Community Guardrails" (e.g., hate speech, harassment).</li>
+                </ul>
+            </div>
+
+            <div class="mb-5">
+                <h2 class="h4 mb-3">5. Intellectual Property</h2>
+                <p>The "Funalytics" scoring engine, the "Hyper-Local Intelligence Layer," and the site content are owned by AMA SPC. You may not scrape, reproduce, or resell our data without a written license.</p>
+            </div>
+
+            <div class="mb-5">
+                <h2 class="h4 mb-3">6. Limitation of Liability</h2>
+                <p>To the maximum extent permitted by law, AMA SPC is not liable for any indirect damages, lost travel costs, or personal injury arising from your use of the Service or attendance at events listed herein.</p>
+            </div>
+
+            <div class="mb-5">
+                <h2 class="h4 mb-3">7. Contact Information</h2>
+                <ul class="list-unstyled">
+                    <li><strong>General Inquiries:</strong> <a href="mailto:hello@funlist.ai">hello@funlist.ai</a></li>
+                    <li><strong>Trust & Safety:</strong> <a href="mailto:legal@funlist.ai">legal@funlist.ai</a></li>
+                    <li><strong>Event Issues:</strong> <a href="mailto:events@funlist.ai">events@funlist.ai</a></li>
+                </ul>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
