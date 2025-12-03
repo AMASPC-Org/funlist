@@ -1,0 +1,182 @@
+FunList.ai is the "Google of Fun." It deals with families, safety, physical locations, and subjective opinions ("Is this event fun?"). The legal risk here isn't just data; it's Liability (e.g., "The AI said this event was happening, I drove 2 hours, and it was closed" or "The AI said this was kid-friendly, but it wasn't").
+
+Here are the Privacy Policy and Terms of Conditions tailored specifically for the consumer-facing FunList.ai.
+
+1. Privacy Policy (FunList.ai)
+Strategy: This policy doubles down on Location Data (essential for hyper-local discovery) and Preference Data (essential for Funalytics™ scoring), while reassuring parents about the "No Cross-Training" guarantee.
+
+[Copy/Paste into templates/privacy.html]
+
+HTML
+
+{% extends "base.html" %}
+
+{% block title %}Privacy Policy - FunList.ai{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <h1 class="mb-4">Privacy Policy</h1>
+            <p class="lead text-muted mb-5"><strong>Effective Date:</strong> March 2025 | Powered by <strong>American Marketing Alliance SPC</strong></p>
+
+            <div class="card mb-5 border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h2 class="h4 text-primary mb-3">1. The "Community AI Gateway" Guarantee</h2>
+                    <p>FunList.ai is part of the AMA Social Purpose Corporation network. We operate under a strict <strong>Data Sovereignty</strong> model designed to protect local families and businesses:</p>
+                    <ul class="mb-0">
+                        <li><strong>No Cross-Training:</strong> The preferences you share (e.g., "I like jazz" or "I have toddlers") are used to personalize <em>your</em> Funalytics™ scores. We do not use your private profile to train AI models for third-party advertisers.</li>
+                        <li><strong>Location Privacy:</strong> We use your location to find "Fun near you." We do not sell your location history to data brokers.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="privacy-section mb-5">
+                <h2 class="h4 mb-3">2. Information We Collect</h2>
+                <p>To power the "Local Brain" and Funalytics™ engine, we collect:</p>
+                <ul>
+                    <li><strong>Profile Data:</strong> Name, email, and "Fun Personas" (e.g., Date Night, Family with Kids).</li>
+                    <li><strong>Location Data:</strong> Your geolocation (with consent) to sort events by proximity.</li>
+                    <li><strong>Usage Data:</strong> Which events you click, save, or share. This helps our "Rating Agent" learn what is actually popular in your community.</li>
+                    <li><strong>Device Data:</strong> IP address and browser type for security and fraud prevention.</li>
+                </ul>
+            </div>
+
+            <div class="privacy-section mb-5">
+                <h2 class="h4 mb-3">3. How We Use Your Information</h2>
+                <ul>
+                    <li><strong>Funalytics™ Scoring:</strong> To calculate personalized "Fun Scores." (e.g., If you tell us you have kids, we boost the score of events tagged 'Family Friendly').</li>
+                    <li><strong>The "Synergy Loop":</strong> We use aggregated data (e.g., "Families are searching for tacos") to help local businesses create better events, but this is never tied to your personal identity.</li>
+                    <li><strong>Service Delivery:</strong> To send you weekly "Fun Lists" or alerts about cancelled events.</li>
+                </ul>
+            </div>
+
+            <div class="privacy-section mb-5">
+                <h2 class="h4 mb-3">4. Information Sharing</h2>
+                <p>We do not sell your personal data. We share data only:</p>
+                <ul>
+                    <li><strong>With Event Hosts:</strong> If you explicitly RSVP or buy a ticket through our platform, we share necessary contact info with the host.</li>
+                    <li><strong>Within AMA SPC:</strong> Your login works across our network (e.g., BusinessCalendar.ai), so your identity is shared internally for authentication.</li>
+                    <li><strong>By Law:</strong> If required to protect public safety or comply with a subpoena.</li>
+                </ul>
+            </div>
+
+            <div class="privacy-section mb-5">
+                <h2 class="h4 mb-3">5. Children's Privacy</h2>
+                <p>While FunList.ai lists family-friendly events, our platform is <strong>not intended for use by children under 13</strong>. We do not knowingly collect data from children. If you believe we have inadvertently collected such data, please contact our Trust Officer immediately.</p>
+            </div>
+
+            <div class="privacy-section mb-5">
+                <h2 class="h4 mb-3">6. Your Rights & Choices</h2>
+                <ul>
+                    <li><strong>Location:</strong> You can turn off location services in your browser at any time.</li>
+                    <li><strong>AI Personalization:</strong> You can reset your "Fun Persona" preferences in your account settings.</li>
+                    <li><strong>Data Access:</strong> Request a copy or deletion of your data via <a href="mailto:legal@funlist.ai">legal@funlist.ai</a>.</li>
+                </ul>
+            </div>
+
+            <div class="privacy-section mb-5">
+                <h2 class="h4 mb-3">7. Contact Us</h2>
+                <p>For privacy inquiries or to report a data concern:</p>
+                <ul class="list-unstyled">
+                    <li><strong>Community Trust Officer</strong></li>
+                    <li>Email: <a href="mailto:legal@funlist.ai">legal@funlist.ai</a></li>
+                    <li>Address: 120 State Ave NE #118, Olympia, WA 98501</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+2. Terms of Conditions (FunList.ai)
+Strategy: This includes the "Funalytics Disclaimer" (subjective scores) and the "Referral Disclaimer" (we don't sell the tickets, we just link to them).
+
+[Copy/Paste into templates/terms.html]
+
+HTML
+
+{% extends "base.html" %}
+
+{% block title %}Terms and Conditions - FunList.ai{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <h1 class="mb-4">Terms and Conditions</h1>
+            <p class="lead text-muted mb-5"><strong>Last Updated:</strong> March 2025</p>
+
+            <div class="mb-5">
+                <h2 class="h4 mb-3">1. Acceptance of Terms</h2>
+                <p>By accessing FunList.ai (the "Service"), provided by American Marketing Alliance SPC ("AMA"), you agree to these Terms. If you do not agree, please do not use the Service.</p>
+            </div>
+
+            <div class="mb-5">
+                <h2 class="h4 mb-3">2. The "Funalytics™" Disclaimer (AI Usage)</h2>
+                <p>FunList.ai uses Artificial Intelligence agents (including the "Rating Agent") to generate "Fun Scores," event descriptions, and recommendations.</p>
+                <ul>
+                    <li><strong>Subjectivity:</strong> "Fun Scores" are AI-generated estimates based on data points like amenities, popularity, and user preferences. They are <strong>subjective opinions</strong>, not guarantees of enjoyment.</li>
+                    <li><strong>Accuracy Warning:</strong> AI tools can make errors ("hallucinations"). While we strive for accuracy, event times, prices, and locations may change. <strong>Always verify details with the official venue before attending.</strong></li>
+                </ul>
+            </div>
+
+            <div class="mb-5">
+                <h2 class="h4 mb-3">3. Event Listings & Ticket Purchases</h2>
+                <p>FunList.ai is primarily a discovery platform.</p>
+                <ul>
+                    <li><strong>Third-Party Links:</strong> When you click "Buy Tickets" or "Register," you are often directed to a third-party site (e.g., Eventbrite, Ticketmaster, or a Venue's site).</li>
+                    <li><strong>No Liability for Transactions:</strong> We are not a party to the transaction between you and the event host. We are not responsible for refunds, cancellations, or ticket validity for third-party events.</li>
+                    <li><strong>Physical Safety:</strong> AMA does not inspect venues. You assume all risk associated with attending events listed on our platform.</li>
+                </ul>
+            </div>
+
+            <div class="mb-5">
+                <h2 class="h4 mb-3">4. User Accounts & Conduct</h2>
+                <p>You agree to use FunList.ai responsibly:</p>
+                <ul>
+                    <li>You will not post false reviews or spam event listings.</li>
+                    <li>You are responsible for keeping your login credentials secure.</li>
+                    <li>We reserve the right to suspend accounts that violate our "Community Guardrails" (e.g., hate speech, harassment).</li>
+                </ul>
+            </div>
+
+            <div class="mb-5">
+                <h2 class="h4 mb-3">5. Intellectual Property</h2>
+                <p>The "Funalytics" scoring engine, the "Hyper-Local Intelligence Layer," and the site content are owned by AMA SPC. You may not scrape, reproduce, or resell our data without a written license.</p>
+            </div>
+
+            <div class="mb-5">
+                <h2 class="h4 mb-3">6. Limitation of Liability</h2>
+                <p>To the maximum extent permitted by law, AMA SPC is not liable for any indirect damages, lost travel costs, or personal injury arising from your use of the Service or attendance at events listed herein.</p>
+            </div>
+
+            <div class="mb-5">
+                <h2 class="h4 mb-3">7. Contact Information</h2>
+                <ul class="list-unstyled">
+                    <li><strong>General Inquiries:</strong> <a href="mailto:hello@funlist.ai">hello@funlist.ai</a></li>
+                    <li><strong>Trust & Safety:</strong> <a href="mailto:legal@funlist.ai">legal@funlist.ai</a></li>
+                    <li><strong>Event Issues:</strong> <a href="mailto:events@funlist.ai">events@funlist.ai</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+3. Replit Instructions
+Copy this into your Replit chat for the FunList.ai project.
+
+PROMPT FOR REPLIT ASSISTANT:
+
+Plaintext
+
+I need to update the legal pages for FunList.ai. These must be consumer-focused (B2C) and address our specific features like "Funalytics" and event discovery.
+
+Please update `templates/privacy.html` and `templates/terms.html` with the content provided above.
+
+Key changes I am making:
+1. FUNALYTICS DISCLAIMER: Added specific language to Terms (Section 2) stating that AI scores are subjective opinions, not guarantees.
+2. REFERRAL MODEL: Clarified that we link to third-party ticket sellers and are not liable for their transactions.
+3. LOCATION PRIVACY: Explicitly addressed how we use geolocation for "Events Near Me."
+4. ALIAS STANDARDIZATION: Used `legal@funlist.ai` for data rights and `hello@funlist.ai` for general contact.
+
+Please apply these updates now.
