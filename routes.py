@@ -897,7 +897,43 @@ def fun_assistant_page(): return render_template('partials/fun_assistant.html', 
 
 def fun_assistant_chat():
     data = request.get_json()
-    return jsonify({"reply": "AI Chat is currently in maintenance mode while we upgrade the engines."})
+    user_message = data.get('message', '') if data else ''
+    
+    if not user_message:
+        return jsonify({"error": "No message provided"}), 400
+    
+    gemini_api_key = os.environ.get("GEMINI_API_KEY")
+    if not gemini_api_key:
+        logger.error("GEMINI_API_KEY not configured")
+        return jsonify({"error": "AI service not configured"}), 500
+    
+    try:
+        client = genai.Client(api_key=gemini_api_key)
+        
+        system_prompt = """You are Fun Assistant, a friendly and helpful AI assistant for FunList.ai - a platform that helps people discover fun events and activities in their local area.
+
+Your role is to:
+- Help users find events that match their interests (music, sports, family activities, food festivals, etc.)
+- Provide recommendations based on their preferences
+- Answer questions about types of events, activities, and local entertainment
+- Be enthusiastic, friendly, and encouraging about helping people have fun
+- Keep responses concise but helpful (2-3 paragraphs max)
+
+If users ask about specific events, let them know they can browse the events on FunList.ai or use the search feature. Always maintain a positive, fun-loving tone!"""
+
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=[
+                {"role": "user", "parts": [{"text": f"{system_prompt}\n\nUser: {user_message}"}]}
+            ]
+        )
+        
+        reply = response.text if response.text else "I'm sorry, I couldn't generate a response. Please try again!"
+        return jsonify({"reply": reply})
+        
+    except Exception as e:
+        logger.error(f"Gemini API error: {e}", exc_info=True)
+        return jsonify({"error": "Sorry, I'm having trouble connecting right now. Please try again in a moment."}), 500
 
 def analyze_event():
     # ... (Analysis logic using call_ai_with_fallback)

@@ -52,3 +52,4 @@ sift-stack-py
 authlib
 google-genai
 python-dotenv
+google-genai
