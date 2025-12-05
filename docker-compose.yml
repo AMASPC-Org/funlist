@@ -3,25 +3,30 @@ services:
     image: postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: funlist
-      POSTGRES_USER: funlist
-      POSTGRES_PASSWORD: funlist
+      POSTGRES_DB: ${POSTGRES_DB:-funlist}
+      POSTGRES_USER: ${POSTGRES_USER:-funlist}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-funlist}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U funlist -d funlist" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-funlist} -d ${POSTGRES_DB:-funlist}" ]
       interval: 10s
       timeout: 5s
       retries: 5
-
   app:
     build:
       context: .
-    env_file:
-      - .env
+    restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql+psycopg2://funlist:funlist@db:5432/funlist
-      FLASK_ENV: development
+      DATABASE_URL: "postgresql+psycopg2://${POSTGRES_USER:-funlist}:${POSTGRES_PASSWORD:-funlist}@db:5432/${POSTGRES_DB:-funlist}"
+      FLASK_ENV: "development"
+      SESSION_SECRET: "dev-secret"
+      USE_CLOUD_SQL_CONNECTOR: "false"
+      INSTANCE_CONNECTION_NAME: ""
+      POSTGRES_USER: "funlist"
+      POSTGRES_PASSWORD: "funlist"
+      POSTGRES_DB: "funlist"
+      PORT: "8080"
     depends_on:
       db:
         condition: service_healthy

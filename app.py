@@ -2,17 +2,22 @@ import os
 import sys
 import logging
 import traceback
-from datetime import timedelta, datetime
+from datetime import datetime
+from functools import wraps
+import time
+from typing import Optional
+from urllib.parse import urlparse
+
 from flask import Flask, session, request, render_template, redirect, url_for, jsonify
 from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect
-from db_init import db
 from flask_migrate import Migrate
 from werkzeug.exceptions import RequestTimeout
-from functools import wraps
-import time
 
+from app_config import DatabaseConfig, load_base_config, prepare_database_config
 from config import settings
+from db_init import db
+from session_setup import configure_sessions
 from sqlalchemy.exc import IntegrityError
 
 # Configure logging
@@ -23,80 +28,40 @@ logging.basicConfig(
               logging.StreamHandler()])
 logger = logging.getLogger(__name__)
 
-def create_app():
+def create_app(init_db: Optional[bool] = None, seed_on_start: Optional[bool] = None, use_server_side_sessions: Optional[bool] = None):
     logger.info("Starting application creation...")
     app = Flask(__name__, static_folder='static')
 
-    # Production configurations
-    app.config["SECRET_KEY"] = os.environ.get("SESSION_SECRET")
-    if not app.config["SECRET_KEY"]:
-        raise ValueError("SESSION_SECRET environment variable must be set")
-    
-    # Get DATABASE_URL, but check if it's using old SQLite config
-    database_url = settings.get("DATABASE_URL")
-    
-    # If DATABASE_URL is SQLite (from old .env), construct PostgreSQL URL from PG* env vars
-    if database_url and database_url.startswith("sqlite://"):
-        logger.info("Detected old SQLite DATABASE_URL, attempting to construct PostgreSQL URL from environment variables")
-        pg_user = os.environ.get("PGUSER")
-        pg_password = os.environ.get("PGPASSWORD")
-        pg_host = os.environ.get("PGHOST")
-        pg_port = os.environ.get("PGPORT", "5432")
-        pg_database = os.environ.get("PGDATABASE")
-        
-        if all([pg_user, pg_password, pg_host, pg_database]):
-            database_url = f"postgresql://{pg_user}:{pg_password}@{pg_host}:{pg_port}/{pg_database}"
-            logger.info("Constructed PostgreSQL DATABASE_URL from environment variables")
-        else:
-            logger.warning("SQLite URL detected but cannot construct PostgreSQL URL (missing PG* env vars)")
-    
-    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
-    if not app.config["SQLALCHEMY_DATABASE_URI"]:
-        raise ValueError("DATABASE_URL environment variable must be set")
-    
-    app.config["SERVER_NAME"] = None
-    app.config["APPLICATION_ROOT"] = "/"
-    app.config["PREFERRED_URL_SCHEME"] = "https"
-    
-    app.config["GOOGLE_MAPS_API_KEY"] = settings.get("GOOGLE_MAPS_API_KEY", required=True)
-    if not app.config["GOOGLE_MAPS_API_KEY"]:
-        raise ValueError("GOOGLE_MAPS_API_KEY environment variable must be set")
+    # Base config and database wiring
+    load_base_config(app, logger)
+    db_config: DatabaseConfig = prepare_database_config(logger)
+    connector = db_config.connector
 
-    # Default map bounds (fallback to WA/PNW region). Values can be overridden via env.
-    def _get_float(key: str, default: float) -> float:
-        try:
-            value = settings.get(key)
-            return float(value) if value else default
-        except (TypeError, ValueError):
-            return float(default)
+    app.config["SQLALCHEMY_DATABASE_URI"] = db_config.database_url
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = db_config.engine_options
 
-    app.config["MAP_BOUNDS_NORTH"] = _get_float("MAP_BOUNDS_NORTH", 49.0)
-    app.config["MAP_BOUNDS_SOUTH"] = _get_float("MAP_BOUNDS_SOUTH", 45.5)
-    app.config["MAP_BOUNDS_WEST"] = _get_float("MAP_BOUNDS_WEST", -124.8)
-    app.config["MAP_BOUNDS_EAST"] = _get_float("MAP_BOUNDS_EAST", -116.9)
+    init_db_on_start = settings.get_bool("INIT_DB_ON_START", True) if init_db is None else init_db
+    seed_on_boot = settings.get_bool("SEED_ON_START", True) if seed_on_start is None else seed_on_start
+    server_side_sessions = True if use_server_side_sessions is None else use_server_side_sessions
 
-    # Database configuration
-    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-        "pool_recycle": 300,
-        "pool_pre_ping": True,
-        "pool_timeout": 30
-    }
+    parsed_db = urlparse(db_config.database_url)
+    logger.info(
+        "App config resolved: init_db_on_start=%s, seed_on_start=%s, server_side_sessions=%s, db_driver=%s",
+        init_db_on_start,
+        seed_on_boot,
+        server_side_sessions,
+        parsed_db.scheme,
+    )
+    logger.debug("Engine options: %s", db_config.engine_options)
 
-    # Simple session configuration using Flask's default signed cookie sessions
-    secure_session_cookie = settings.get_bool("SESSION_COOKIE_SECURE", True)
-    if os.environ.get('PROD'):
-        secure_session_cookie = True
-    app.config['SESSION_COOKIE_SECURE'] = secure_session_cookie
-    app.config['SESSION_COOKIE_NAME'] = '__Host-funlist' if secure_session_cookie else 'funlist_session'
-
-    # Production session configuration (database-backed for Cloud Run)
-    app.config['SESSION_TYPE'] = 'sqlalchemy'
-    app.config['SESSION_SQLALCHEMY'] = db
-    app.config['SESSION_SQLALCHEMY_TABLE'] = 'flask_sessions'  # Use unique table name
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
-    app.config['SESSION_COOKIE_HTTPONLY'] = True
-    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+    configure_sessions(app, db, use_server_side=server_side_sessions)
+    logger.debug(
+        "Session settings: type=%s, cookie_name=%s, secure=%s, lifetime=%s",
+        app.config.get("SESSION_TYPE"),
+        app.config.get("SESSION_COOKIE_NAME"),
+        app.config.get("SESSION_COOKIE_SECURE"),
+        app.config.get("PERMANENT_SESSION_LIFETIME"),
+    )
 
     try:
         logger.info("Importing models...")
@@ -109,42 +74,47 @@ def create_app():
     try:
         logger.info("Initializing database...")
         db.init_app(app)
-        with app.app_context():
-            try:
-                drop_and_recreate = settings.get_bool("DROP_AND_RECREATE_DB", False) or os.environ.get("DROP_AND_RECREATE_DB") in {"1", "true", "True"}
-                if drop_and_recreate:
-                    logger.warning("DROP_AND_RECREATE_DB enabled: dropping all tables before recreate.")
-                    db.drop_all()
-                    db.session.commit()
+        if init_db_on_start:
+            with app.app_context():
+                try:
+                    drop_and_recreate = settings.get_bool("DROP_AND_RECREATE_DB", False) or os.environ.get("DROP_AND_RECREATE_DB") in {"1", "true", "True"}
+                    if drop_and_recreate:
+                        logger.warning("DROP_AND_RECREATE_DB enabled: dropping all tables before recreate.")
+                        db.drop_all()
+                        db.session.commit()
 
-                db.create_all()
-                logger.info("Database tables created successfully")
+                    logger.info("Creating all tables...")
+                    db.create_all()
+                    logger.info("Database tables created successfully")
 
-                if settings.get_bool("SEED_ON_START", True):
-                    try:
-                        from seed import seed as run_seed
+                    if seed_on_boot:
+                        try:
+                            logger.info("Starting seed-on-start")
+                            from seed import seed as run_seed
 
-                        seed_result = run_seed(app) or {}
-                        logger.info(
-                            "Seed-on-start completed: %s chapters, %s events",
-                            seed_result.get("chapters"),
-                            seed_result.get("events"),
+                            seed_result = run_seed(app) or {}
+                            logger.info(
+                                "Seed-on-start completed: %s chapters, %s events",
+                                seed_result.get("chapters"),
+                                seed_result.get("events"),
+                            )
+                        except Exception as seed_error:  # noqa: BLE001
+                            logger.error(
+                                "Seed-on-start failed: %s", seed_error, exc_info=True
+                            )
+                except IntegrityError as integrity_error:
+                    db.session.rollback()
+                    error_text = str(integrity_error)
+                    if "pg_type_typname_nsp_index" in error_text or "already exists" in error_text:
+                        logger.warning(
+                            "Database already had required tables/types. "
+                            "Continuing startup after IntegrityError: %s",
+                            error_text
                         )
-                    except Exception as seed_error:  # noqa: BLE001
-                        logger.error(
-                            "Seed-on-start failed: %s", seed_error, exc_info=True
-                        )
-            except IntegrityError as integrity_error:
-                db.session.rollback()
-                error_text = str(integrity_error)
-                if "pg_type_typname_nsp_index" in error_text or "already exists" in error_text:
-                    logger.warning(
-                        "Database already had required tables/types. "
-                        "Continuing startup after IntegrityError: %s",
-                        error_text
-                    )
-                else:
-                    raise
+                    else:
+                        raise
+        else:
+            logger.info("Database initialization skipped (init_db_on_start=False)")
     except Exception as e:
         logger.error(f"Failed to initialize database: {str(e)}", exc_info=True)
         raise
@@ -165,8 +135,7 @@ def create_app():
         logger.error(f"Failed to initialize CSRF protection: {str(e)}", exc_info=True)
         raise
 
-    # Using Flask's default signed cookie sessions - no additional session extension needed
-    logger.info("Using Flask default signed cookie sessions")
+    logger.info("Session configuration applied (server_side_sessions=%s)", server_side_sessions)
 
     try:
         logger.info("Setting up login manager...")
@@ -215,6 +184,14 @@ def create_app():
         except Exception as e:
             logger.error(f"Error loading user {user_id}: {str(e)}", exc_info=True)
             return None
+
+    @app.teardown_appcontext
+    def close_cloud_sql_connector(exception=None):
+        if connector:
+            try:
+                connector.close()
+            except Exception as connector_error:
+                logger.warning("Error closing Cloud SQL connector: %s", connector_error)
 
 
     # Add route to accept cookies
