@@ -40,8 +40,8 @@ def create_app(init_db: Optional[bool] = None, seed_on_start: Optional[bool] = N
     app.config["SQLALCHEMY_DATABASE_URI"] = db_config.database_url
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = db_config.engine_options
 
-    init_db_on_start = settings.get_bool("INIT_DB_ON_START", True) if init_db is None else init_db
-    seed_on_boot = settings.get_bool("SEED_ON_START", True) if seed_on_start is None else seed_on_start
+    init_db_on_start = settings.get_bool("INIT_DB_ON_START", False) if init_db is None else init_db
+    seed_on_boot = settings.get_bool("SEED_ON_START", False) if seed_on_start is None else seed_on_start
     server_side_sessions = True if use_server_side_sessions is None else use_server_side_sessions
 
     parsed_db = urlparse(db_config.database_url)
@@ -114,7 +114,7 @@ def create_app(init_db: Optional[bool] = None, seed_on_start: Optional[bool] = N
                     else:
                         raise
         else:
-            logger.info("Database initialization skipped (init_db_on_start=False)")
+            logger.info("Database creation and seeding skipped (init_db_on_start=False)")
     except Exception as e:
         logger.error(f"Failed to initialize database: {str(e)}", exc_info=True)
         raise
