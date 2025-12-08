@@ -1,10 +1,11 @@
+import atexit
+import logging
 import os
 import sys
-import logging
 import traceback
+import time
 from datetime import datetime
 from functools import wraps
-import time
 from typing import Optional
 from urllib.parse import urlparse
 
@@ -152,10 +153,14 @@ def create_app(init_db: Optional[bool] = None, seed_on_start: Optional[bool] = N
 
     @app.before_request
     def log_request():
-        # Don't log HEAD requests to /api (health checks) to reduce log noise
-        if not (request.method == 'HEAD' and request.path == '/api'):
-            logger.info(f"Incoming request: {request.method} {request.url}")
-            logger.debug(f"Request headers: {dict(request.headers)}")
+        # Skip noisy static/health traffic to keep log volume and I/O overhead low
+        path = request.path or ""
+        if path.startswith("/static") or path == "/favicon.ico":
+            return
+        if request.method == 'HEAD' and path == '/api':
+            return
+        logger.info(f"Incoming request: {request.method} {request.url}")
+        logger.debug(f"Request headers: {dict(request.headers)}")
 
     @app.after_request
     def add_header(response):
@@ -185,13 +190,16 @@ def create_app(init_db: Optional[bool] = None, seed_on_start: Optional[bool] = N
             logger.error(f"Error loading user {user_id}: {str(e)}", exc_info=True)
             return None
 
-    @app.teardown_appcontext
-    def close_cloud_sql_connector(exception=None):
-        if connector:
+    if connector:
+        def _close_cloud_sql_connector():
             try:
                 connector.close()
+                logger.info("Cloud SQL connector closed during shutdown")
             except Exception as connector_error:
-                logger.warning("Error closing Cloud SQL connector: %s", connector_error)
+                logger.warning("Error closing Cloud SQL connector during shutdown: %s", connector_error)
+
+        # Close the connector once when the process exits instead of after every request
+        atexit.register(_close_cloud_sql_connector)
 
 
     # Add route to accept cookies

@@ -202,7 +202,7 @@ class Event(db.Model):
         'ProhibitedAdvertiserCategory',
         secondary=event_prohibited_advertisers,
         backref=backref('events', lazy='dynamic'),
-        lazy='joined'
+        lazy='select'
     )
     user = relationship("User", back_populates="events")
     venue = relationship("Venue", back_populates="events")
