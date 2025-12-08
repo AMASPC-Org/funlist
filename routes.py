@@ -3,6 +3,7 @@ import logging
 import requests
 from flask import render_template, flash, redirect, url_for, request, session, jsonify, current_app, Response
 from functools import wraps
+from time import monotonic
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user, login_required, login_user, logout_user
 from forms import (SignupForm, LoginForm, ProfileForm, EventForm,
@@ -32,6 +33,24 @@ from funalytics_scoring import (
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
+FUNALYTICS_CACHE_TTL = 60  # seconds
+_funalytics_cache = {"scores": {}, "expires_at": 0.0}
+
+
+def _get_cached_funalytics(event_ids=None):
+    """Return cached funalytics scores when fresh, optionally filtered to event_ids."""
+    if _funalytics_cache["expires_at"] > monotonic():
+        if not event_ids:
+            return _funalytics_cache["scores"]
+        return {event_id: score for event_id, score in _funalytics_cache["scores"].items() if event_id in event_ids}
+    return None
+
+
+def _set_funalytics_cache(scores, ttl=FUNALYTICS_CACHE_TTL):
+    _funalytics_cache["scores"] = scores
+    _funalytics_cache["expires_at"] = monotonic() + ttl
+
 
 def combine_date_with_time(date_value, time_value=None, fallback_time=None):
     if not date_value: return None
@@ -121,22 +140,41 @@ def populate_event_form_from_model(form, event):
         form.venue_longitude.data = event.venue.longitude
 
 def get_funalytics_scores(event_ids=None):
+    api_base_url = os.environ.get('EXPRESS_API_URL')
+    if not api_base_url:
+        return {}
+
+    cached = _get_cached_funalytics(event_ids)
+    if cached is not None:
+        return cached
+
     try:
-        api_base_url = os.environ.get('EXPRESS_API_URL')
-        if not api_base_url: return {}
         url = f"{api_base_url}/events"
-        response = requests.get(url, timeout=5)
-        if response.status_code == 200:
-            data = response.json()
-            if data.get('success') and data.get('events'):
-                scores = {}
-                for event in data['events']:
-                    if not event_ids or event['id'] in event_ids:
-                        if 'funalytics' in event: scores[event['id']] = event['funalytics']
-                return scores
-    except requests.RequestException as e:
-        logger.warning(f"Failed to fetch Funalytics scores: {e}")
-    return {}
+        # Short timeout keeps page renders fast when the scoring API is slow/unreachable
+        response = requests.get(url, timeout=1.5)
+        response.raise_for_status()
+        data = response.json()
+    except requests.RequestException as exc:
+        logger.warning("Failed to fetch Funalytics scores (skipping): %s", exc)
+        _set_funalytics_cache({}, ttl=15)
+        return {}
+    except ValueError:
+        logger.warning("Funalytics API returned invalid JSON, skipping scores")
+        _set_funalytics_cache({}, ttl=15)
+        return {}
+
+    all_scores = {}
+    if data.get('success') and data.get('events'):
+        for event in data['events']:
+            if 'id' not in event or 'funalytics' not in event:
+                continue
+            all_scores[event['id']] = event['funalytics']
+
+    _set_funalytics_cache(all_scores)
+
+    if event_ids:
+        return {event_id: all_scores.get(event_id) for event_id in event_ids if event_id in all_scores}
+    return all_scores
 
 def recompute_funalytics_score(event_id):
     try:
