@@ -62,7 +62,8 @@ def run_flask_app():
         print(f"\n{'='*60}")
         print(f"Starting Flask server on port {port}")
         print(f"🚀 Server running at: http://0.0.0.0:{port}")
-        print(f"📋 Google OAuth Redirect URI: {app_url}/google_login/callback")
+        firebase_status = os.environ.get('FIREBASE_ENABLED', '').lower() in {'1', 'true', 'yes', 'on'}
+        print(f"🔐 Firebase Auth (Google) enabled: {'yes' if firebase_status else 'no'}")
         print(f"{'='*60}\n")
 
         # Update database schema first (before creating app)

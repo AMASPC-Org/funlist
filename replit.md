@@ -26,18 +26,11 @@ The frontend uses server-side rendering with Jinja2 templates and Bootstrap for 
 ## Fun Rating Algorithm
 The core differentiator is the Fun Rating System that assigns events a 1-5 star rating based on entertainment value. Event organizers provide initial self-assessments, which can be verified by admin review. High-rated events (4+ stars) are eligible for "featured" status and appear in the featured events API for enhanced discovery.
 
-# OAuth Implementation
+# Authentication Implementation
 
-## Security Features
-The application implements OAuth 2.0 authentication with both Google and GitHub providers using industry-standard security practices:
-- **PKCE (Proof Key for Code Exchange)**: Both OAuth providers implement PKCE flow for enhanced security against authorization code interception attacks
-- **CSRF Protection**: State parameter validation to prevent cross-site request forgery
-- **Session Management**: Secure session handling with one-time use code verifiers
-
-## OAuth Configuration
-- **Google OAuth**: Fully configured with PKCE, requires GOOGLE_OAUTH_CLIENT_ID and GOOGLE_OAUTH_CLIENT_SECRET environment variables
-- **GitHub OAuth**: Fully configured with PKCE, requires GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET environment variables
-- **Redirect URIs**: Both providers use `/google_login/callback` and `/auth/github/callback` endpoints respectively
+- **Firebase Auth (Google)**: Frontend uses Firebase web SDK to obtain a Google ID token; backend verifies the token with Firebase Admin and signs the user in. Requires `FIREBASE_ENABLED=true`, Firebase client config vars, and service account credentials.
+- **GitHub OAuth (optional)**: GitHub can still be enabled via `GITHUB_CLIENT_ID`/`GITHUB_CLIENT_SECRET` using Authlib with PKCE, though it is not enabled by default in the app wiring.
+- **Session Management**: Flask-Login + Flask-Session manage server-side sessions; CSRF protection is enforced via Flask-WTF for form and JSON posts.
 
 # External Dependencies
 

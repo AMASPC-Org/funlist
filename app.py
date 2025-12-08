@@ -14,6 +14,7 @@ from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect
 from flask_migrate import Migrate
 from werkzeug.exceptions import RequestTimeout
+from markupsafe import Markup
 
 from app_config import DatabaseConfig, load_base_config, prepare_database_config
 from config import settings
@@ -136,6 +137,30 @@ def create_app(init_db: Optional[bool] = None, seed_on_start: Optional[bool] = N
         logger.error(f"Failed to initialize CSRF protection: {str(e)}", exc_info=True)
         raise
 
+    # Firebase client configuration for frontend auth
+    firebase_client_config = {
+        "apiKey": settings.get("FIREBASE_API_KEY"),
+        "authDomain": settings.get("FIREBASE_AUTH_DOMAIN"),
+        "projectId": settings.get("FIREBASE_PROJECT_ID"),
+        "storageBucket": settings.get("FIREBASE_STORAGE_BUCKET"),
+        "messagingSenderId": settings.get("FIREBASE_MESSAGING_SENDER_ID"),
+        "appId": settings.get("FIREBASE_APP_ID"),
+    }
+    firebase_client_config = {k: v for k, v in firebase_client_config.items() if v}
+    firebase_enabled = settings.get_bool("FIREBASE_ENABLED", False) and bool(firebase_client_config)
+    app.config["FIREBASE_CLIENT_CONFIG"] = firebase_client_config
+    app.config["FIREBASE_ENABLED"] = firebase_enabled
+
+    if firebase_enabled:
+        try:
+            from firebase_auth import init_firebase_app
+            init_firebase_app(logger=logger)
+            logger.info("Firebase auth initialized successfully")
+        except Exception as e:
+            logger.error("Firebase auth enabled but initialization failed: %s", e, exc_info=True)
+            firebase_enabled = False
+            app.config["FIREBASE_ENABLED"] = False
+
     logger.info("Session configuration applied (server_side_sessions=%s)", server_side_sessions)
 
     try:
@@ -166,12 +191,12 @@ def create_app(init_db: Optional[bool] = None, seed_on_start: Optional[bool] = N
     def add_header(response):
         csp = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.jsdelivr.net https://maps.googleapis.com https://*.googleapis.com https://*.cdnjs.cloudflare.com https://unpkg.com; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.jsdelivr.net https://maps.googleapis.com https://*.googleapis.com https://*.cdnjs.cloudflare.com https://unpkg.com https://www.gstatic.com https://www.gstatic.com/firebasejs https://apis.google.com https://*.firebaseapp.com; "
             "style-src 'self' 'unsafe-inline' https://*.jsdelivr.net https://*.googleapis.com https://*.fontawesome.com https://*.cdnjs.cloudflare.com https://unpkg.com; "
-            "img-src 'self' data: blob: https://*.googleapis.com https://*.gstatic.com https://*.google.com; "
+            "img-src 'self' data: blob: https://*.googleapis.com https://*.gstatic.com https://*.google.com https://firebasestorage.googleapis.com; "
             "font-src 'self' data: https://*.jsdelivr.net https://*.gstatic.com https://*.fontawesome.com https://*.bootstrapcdn.com https://*.cdnjs.cloudflare.com; "
-            "connect-src 'self' https://*.googleapis.com https://*.google.com https://maps.googleapis.com; "
-            "frame-src 'self' https://*.google.com; "
+            "connect-src 'self' https://*.googleapis.com https://*.google.com https://maps.googleapis.com https://securetoken.googleapis.com https://identitytoolkit.googleapis.com https://firebaseinstallations.googleapis.com https://*.firebaseapp.com https://www.gstatic.com https://www.google-analytics.com https://www.googletagmanager.com https://*.jsdelivr.net; "
+            "frame-src 'self' https://*.google.com https://*.firebaseapp.com https://accounts.google.com; "
             "worker-src 'self' blob:; "
         )
         response.headers['Content-Security-Policy'] = csp
@@ -179,7 +204,7 @@ def create_app(init_db: Optional[bool] = None, seed_on_start: Optional[bool] = N
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['Access-Control-Allow-Origin'] = '*'
         response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
-        response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, X-CSRFToken, X-CSRF-Token'
         return response
 
     @login_manager.user_loader
@@ -271,10 +296,10 @@ def create_app(init_db: Optional[bool] = None, seed_on_start: Optional[bool] = N
         from routes_debug import debug
         app.register_blueprint(debug)
         
-        # Register Google OAuth blueprint
-        from google_auth import google_auth
-        app.register_blueprint(google_auth)
-        logger.info("Google OAuth blueprint registered successfully")
+        # Register Firebase auth blueprint
+        from firebase_auth import firebase_auth_bp
+        app.register_blueprint(firebase_auth_bp)
+        logger.info("Firebase auth blueprint registered successfully")
         
         # Register AI routes blueprint
         from routes_ai import ai_routes
@@ -290,7 +315,7 @@ def create_app(init_db: Optional[bool] = None, seed_on_start: Optional[bool] = N
     @app.template_filter('tojson')
     def to_json(value):
         import json
-        return json.dumps(value, default=lambda o: o.to_dict() if hasattr(o, 'to_dict') else str(o))
+        return Markup(json.dumps(value, default=lambda o: o.to_dict() if hasattr(o, 'to_dict') else str(o)))
     
     @app.template_filter('format_datetime')
     def format_datetime(value, fmt='%B %d, %Y'):
@@ -328,6 +353,13 @@ def create_app(init_db: Optional[bool] = None, seed_on_start: Optional[bool] = N
                 except ValueError:
                     continue
         return str(value)
+
+    @app.context_processor
+    def inject_firebase_config():
+        return {
+            "firebase_enabled": app.config.get("FIREBASE_ENABLED", False),
+            "firebase_client_config": app.config.get("FIREBASE_CLIENT_CONFIG", {}),
+        }
         
     logger.info("Application creation completed successfully")
     return app

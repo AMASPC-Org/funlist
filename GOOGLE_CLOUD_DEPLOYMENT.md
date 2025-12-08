@@ -27,7 +27,7 @@ This guide provides comprehensive instructions for deploying the FunList.ai Flas
 ### Required API Keys and Credentials
 - Google Maps API key
 - At least one AI service API key (Anthropic, OpenAI, or Google Gemini)
-- Google OAuth 2.0 credentials (if using Google login)
+- Firebase project (with Google sign-in enabled), web client config, and a service account key for the same project (used by the backend to verify Firebase ID tokens)
 
 ### Local Development Tools
 - Google Cloud SDK (`gcloud` CLI)
@@ -108,8 +108,14 @@ postgresql://postgres:PASSWORD@/funlist?host=/cloudsql/PROJECT_ID:us-central1:fu
 
 | Variable | Description | Required For |
 |----------|-------------|--------------|
-| `GOOGLE_OAUTH_CLIENT_ID` | Google OAuth client ID | Google login feature |
-| `GOOGLE_OAUTH_CLIENT_SECRET` | Google OAuth client secret | Google login feature |
+| `FIREBASE_ENABLED` | Toggle Firebase auth integration | Google sign-in via Firebase |
+| `FIREBASE_PROJECT_ID` | Firebase project ID | Google sign-in via Firebase |
+| `FIREBASE_API_KEY` | Firebase web API key | Google sign-in via Firebase |
+| `FIREBASE_AUTH_DOMAIN` | Firebase auth domain | Google sign-in via Firebase |
+| `FIREBASE_STORAGE_BUCKET` | Firebase storage bucket | Google sign-in via Firebase |
+| `FIREBASE_MESSAGING_SENDER_ID` | Firebase messaging sender ID | Google sign-in via Firebase |
+| `FIREBASE_APP_ID` | Firebase app ID | Google sign-in via Firebase |
+| `FIREBASE_CREDENTIALS_JSON` | Service account JSON (or set `FIREBASE_CREDENTIALS_PATH`) | Google sign-in via Firebase |
 | `ANTHROPIC_API_KEY` | Anthropic Claude API key | AI Fun Assistant |
 | `OPENAI_API_KEY` | OpenAI GPT API key | AI Fun Assistant |
 | `GEMINI_API_KEY` | Google Gemini API key | AI Fun Assistant |
