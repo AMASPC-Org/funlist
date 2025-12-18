@@ -195,7 +195,7 @@ def create_app(init_db: Optional[bool] = None, seed_on_start: Optional[bool] = N
             "style-src 'self' 'unsafe-inline' https://*.jsdelivr.net https://*.googleapis.com https://*.fontawesome.com https://*.cdnjs.cloudflare.com https://unpkg.com; "
             "img-src 'self' data: blob: https://*.googleapis.com https://*.gstatic.com https://*.google.com https://firebasestorage.googleapis.com; "
             "font-src 'self' data: https://*.jsdelivr.net https://*.gstatic.com https://*.fontawesome.com https://*.bootstrapcdn.com https://*.cdnjs.cloudflare.com; "
-            "connect-src 'self' https://*.googleapis.com https://*.google.com https://maps.googleapis.com https://securetoken.googleapis.com https://identitytoolkit.googleapis.com https://firebaseinstallations.googleapis.com https://*.firebaseapp.com https://www.gstatic.com https://www.google-analytics.com https://www.googletagmanager.com https://*.jsdelivr.net; "
+            "connect-src 'self' https://unpkg.com https://*.googleapis.com https://*.google.com https://maps.googleapis.com https://securetoken.googleapis.com https://identitytoolkit.googleapis.com https://firebaseinstallations.googleapis.com https://*.firebaseapp.com https://www.gstatic.com https://www.google-analytics.com https://www.googletagmanager.com https://*.jsdelivr.net; "
             "frame-src 'self' https://*.google.com https://*.firebaseapp.com https://accounts.google.com; "
             "worker-src 'self' blob:; "
         )
