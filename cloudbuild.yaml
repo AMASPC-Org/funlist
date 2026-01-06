@@ -70,7 +70,6 @@ steps:
       - '--set-env-vars=GEMINI_API_KEY=$$GEMINI_API_KEY'
       - '--set-env-vars=EXPRESS_API_URL=$$EXPRESS_API_URL'
       - '--add-cloudsql-instances=$$CLOUD_SQL_INSTANCE'
-      - '--service-account=$$SERVICE_ACCOUNT_EMAIL'
 
 # Specify images to be pushed to Container Registry
 images:
