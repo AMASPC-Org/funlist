@@ -68,7 +68,6 @@ steps:
       - '--set-env-vars=OPENAI_API_KEY=$$OPENAI_API_KEY'
       - '--set-env-vars=GEMINI_API_KEY=$$GEMINI_API_KEY'
       - '--set-env-vars=EXPRESS_API_URL=$$EXPRESS_API_URL'
-      - '--add-cloudsql-instances=$$CLOUD_SQL_INSTANCE'
 
 # Specify images to be pushed to Container Registry
 images:
