@@ -53,7 +53,6 @@ steps:
       - '--timeout=${_REQUEST_TIMEOUT}'
       - '--port=8080'
       - '--set-env-vars=FLASK_ENV=production'
-      - '--set-env-vars=PORT=8080'
       - '--set-env-vars=FLASK_SECRET_KEY=$$FLASK_SECRET_KEY'
       - '--set-env-vars=DATABASE_URL=$$DATABASE_URL'
       - '--set-env-vars=GOOGLE_MAPS_API_KEY=$$GOOGLE_MAPS_API_KEY'
