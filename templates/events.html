@@ -33,10 +33,10 @@
             </div>
             <div class="col-md-2">
                 <select class="form-select" id="funFilter">
-                    <option selected>All Fun Ratings</option>
-                    <option value="5">⭐⭐⭐⭐⭐ (5)</option>
-                    <option value="4">⭐⭐⭐⭐ (4+)</option>
-                    <option value="3">⭐⭐⭐ (3+)</option>
+                    <option selected>All Scores</option>
+                    <option value="9">Top Rated (9+)</option>
+                    <option value="8">Great (8+)</option>
+                    <option value="7">Good (7+)</option>
                 </select>
             </div>
             <div class="col-md-2">
@@ -87,14 +87,9 @@
                                             {% endif %}
                                         </div>
                                     {% elif event.fun_meter or event.fun_rating %}
-                                        <!-- Fallback to Funalytics score -->
-                                        <span class="ms-2" title="Funalytics™ Score">
-                                            {% for i in range(1, (event.fun_meter or event.fun_rating or 3)|int + 1) %}
-                                                ⭐
-                                            {% endfor %}
-                                        </span>
+                                        <!-- Legacy data hidden as per user request -->
                                     {% else %}
-                                        <span class="badge bg-secondary ms-2">Rating pending</span>
+                                        <span class="badge bg-secondary ms-2">Score pending</span>
                                     {% endif %}
                                 </div>
                                 <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-sm btn-outline-primary">View Details</a>

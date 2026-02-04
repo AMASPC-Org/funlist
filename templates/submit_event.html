@@ -258,10 +258,7 @@
         </div>
         {{ form.target_audience(class="form-select") }}
     </div>
-    <div class="mb-3">
-        {{ form.fun_meter.label(class="form-label") }}
-        {{ form.fun_meter(class="form-control", type="number", min="1", max="5") }}
-    </div>
+
 
     <div class="mb-3">
         {{ form.prohibited_advertisers.label(class="form-label") }}
@@ -795,10 +792,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
 
-    const getFunMeterValue = () => {
-        const checked = form.querySelector('input[name="fun_meter"]:checked');
-        return checked ? parseInt(checked.value, 10) || 0 : 0;
-    };
+
 
     const openPreview = () => {
         if (!previewContent) return;

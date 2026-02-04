@@ -240,13 +240,6 @@ class EventForm(FlaskForm):
         ('teens', 'Teens'),
         ('performers', 'Performers & Creators')
     ], validators=[Optional()])
-    fun_meter = RadioField('Fun Meter (1-5)', choices=[
-        ('1', '1 - Not Fun'),
-        ('2', '2 - Somewhat Fun'),
-        ('3', '3 - Fun'),
-        ('4', '4 - Very Fun'),
-        ('5', '5 - Extremely Fun')
-    ], validators=[DataRequired()], default='3')
 
     is_recurring = BooleanField('This is a recurring event')
     recurrence_type = SelectField('Recurrence Type', choices=[

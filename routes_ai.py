@@ -184,7 +184,6 @@ def ai_feed():
                 "category": event.category,
                 "target_audience": event.target_audience,
                 "tags": event.tags.split(',') if event.tags else [],
-                "fun_meter": event.fun_meter,
                 "website": event.website,
                 "all_day": event.all_day
             }

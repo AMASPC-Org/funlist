@@ -161,8 +161,7 @@ def import_events_to_db():
                 category=event_data.get('primaryEventType'),
                 target_audience=', '.join(event_data.get('initialTags', [])),
                 tags=', '.join(event_data.get('initialTags', [])),
-                status='approved',
-                fun_meter=4  # Default rating
+                status='approved'
             )
             
             db.session.add(new_event)

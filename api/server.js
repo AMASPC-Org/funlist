@@ -113,10 +113,6 @@ app.get('/events', async (req, res) => {
         city: event.city,
         state: event.state,
         category: event.category,
-        funalyticsScore: {
-          fun_rating: event.fun_rating,
-          fun_meter: event.fun_meter
-        },
         organizer: event.user,
         venue: event.venue,
         status: event.status,

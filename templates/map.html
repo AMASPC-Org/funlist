@@ -136,7 +136,7 @@
         </div>
         <div class="col-md-2">
             <select class="form-select" id="funFilter">
-                <option selected>All Fun Ratings</option>
+                <option selected>All Scores</option>
                 <option value="5">⭐⭐⭐⭐⭐ (5)</option>
                 <option value="4">⭐⭐⭐⭐ (4+)</option>
                 <option value="3">⭐⭐⭐ (3+)</option>
@@ -185,8 +185,7 @@
                          data-lat="{{ event.venue.latitude if event.venue else '' }}"
                          data-lng="{{ event.venue.longitude if event.venue else '' }}"
                          data-category="{{ event.category }}"
-                         data-date="{{ event.start_date }}"
-                         data-fun-rating="{{ event.fun_rating }}">
+                         data-date="{{ event.start_date }}">
                         <div class="card-body">
                             <h5 class="card-title">{{ event.title }}</h5>
                             <p class="card-text small">{{ event.description|truncate(100) }}</p>
@@ -254,18 +253,8 @@
         const title = event.title || "Event";
         const description = event.description || "";
         const date = event.start_date || "";
-        const ratingValue = event.fun_rating ?? event.fun_meter;
-        const rating = Number.isFinite(ratingValue) ? `${ratingValue}/5` : "N/A";
-        const detailLink = event.detail_url
-            ? `<div class="mt-2"><a class="btn btn-sm btn-primary" href="${event.detail_url}">View Details</a></div>`
-            : "";
-
-        return `
-            <div class="event-popup">
-                <strong>${title}</strong><br>
                 ${date ? `Date: ${date}<br>` : ""}
                 ${description ? `${description.substring(0, 140)}...<br>` : ""}
-                Fun Rating: ${rating}
                 ${detailLink}
             </div>
         `;
@@ -317,12 +306,16 @@
             passes = (event.category || "").toLowerCase() === category.toLowerCase();
         }
 
-        if (passes && funRating && funRating !== 'All Fun Ratings') {
+        if (passes && funRating && funRating !== 'All Scores') {
             const minRating = parseInt(funRating, 10);
-            const rating = parseInt(event.fun_rating ?? event.fun_meter ?? 0, 10);
-            if (rating < minRating) {
-                passes = false;
-            }
+            
+            // NOTE: We do not have a Funalytics Score on the client side map data yet
+            // If we want to filter by score, we need to add it to the to_dict() or map data payload
+            // For now, removing the legacy check that would fail.
+            // const rating = parseInt(event.fun_rating ?? event.fun_meter ?? 0, 10);
+            // if (rating < minRating) {
+            //    passes = false;
+            // }
         }
 
         if (passes && date && date !== 'Any Date') {

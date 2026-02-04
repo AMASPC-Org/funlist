@@ -139,11 +139,11 @@
 
 
 
-<!-- Fun Rating System Section -->
+<!-- Funalytics Score Section -->
 <section class="rating-system-section py-5">
     <div class="container text-center">
-        <h2 class="mb-4">How the Fun Rating System Works</h2>
-        <p class="lead mb-5">Every event is rated on a 1-5 scale based on activities, engagement level, and attendee experience:</p>
+        <h2 class="mb-4">How the Funalytics™ Score Works</h2>
+        <p class="lead mb-5">Every event is scored on a 1-10 scale based on activities, engagement level, and attendee experience:</p>
         <div class="rating-scale">
             <div class="rating-item">
                 <span class="stars">⭐</span>
@@ -174,7 +174,7 @@
                 <div class="accordion-item">
                     <h2 class="accordion-header">
                         <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#whoAssigns">
-                            Who assigns Fun Ratings?
+                            Who assigns Funalytics Scores?
                         </button>
                     </h2>
                     <div id="whoAssigns" class="accordion-collapse collapse show" data-bs-parent="#ratingAccordion">
@@ -283,7 +283,7 @@
                     longitude: -122.9007,
                     description: "A weekend of live music performances",
                     category: "Music",
-                    funMeter: 5
+                    funalytics: 8.5
                 }
             ];
 
@@ -294,7 +294,7 @@
                             <h5>${event.title}</h5>
                             <p>${event.description}</p>
                             <p><strong>Category:</strong> ${event.category}</p>
-                            <p><strong>Fun Meter:</strong> ${event.funMeter}/5</p>
+                            <p><strong>Funalytics Score:</strong> ${event.funalytics}/10</p>
                         </div>
                     `);
                 markers[event.id] = marker;

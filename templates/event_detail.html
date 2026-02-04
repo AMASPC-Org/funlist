@@ -22,14 +22,6 @@
                             <span class="badge bg-success">
                                 <i class="fas fa-child"></i> Family: {{ event.funalytics.familyFun }}/10
                             </span>
-                        {% else %}
-                            <!-- Fallback to old Funalytics™ Score -->
-                            {% set fun_meter_value = event.fun_meter if event.fun_meter and event.fun_meter <= 5 else (event.fun_meter / 20 if event.fun_meter else None) %}
-                            {% if fun_meter_value %}
-                                <span class="badge bg-warning">
-                                    Fun Meter: {{ "%.1f"|format(fun_meter_value|round(1)) }}/5
-                                </span>
-                            {% endif %}
                         {% endif %}
                     </div>
 

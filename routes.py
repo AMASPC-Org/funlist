@@ -114,7 +114,6 @@ def populate_event_form_from_model(form, event):
     form.all_day.data = event.all_day
     form.category.data = event.category or ''
     form.target_audience.data = event.target_audience or ''
-    form.fun_meter.data = str(event.fun_meter or event.fun_rating or 3)
     form.is_recurring.data = event.is_recurring
     form.recurrence_type.data = event.recurring_pattern or ''
     form.recurring_pattern.data = event.recurring_pattern or ''
@@ -442,7 +441,6 @@ def map():
             if not map_point:
                 continue
             event_data = event.to_dict()
-            event_data["fun_rating"] = event.fun_rating if event.fun_rating is not None else event.fun_meter
             event_data["detail_url"] = url_for("event_detail", event_id=event.id)
             event_data["latitude"] = map_point["lat"]
             event_data["longitude"] = map_point["lng"]
@@ -659,8 +657,8 @@ def submit_event():
             all_day=form.all_day.data, location=location_label, street=street, city=city, state=state, zip_code=zip_code,
             is_recurring=form.is_recurring.data, recurring_pattern=form.recurring_pattern.data,
             user_id=current_user.id, venue=selected_venue, category=form.category.data,
-            target_audience=form.target_audience.data, fun_meter=int(form.fun_meter.data or 50),
-            fun_rating=int(form.fun_meter.data or 50), status='draft' if is_draft else 'pending',
+            target_audience=form.target_audience.data,
+            status='draft' if is_draft else 'pending',
             network_opt_out=form.network_opt_out.data, website=form.ticket_url.data
         )
         if form.prohibited_advertisers.data:
@@ -692,8 +690,6 @@ def edit_event(event_id):
     if form.validate_on_submit():
         event.title = form.title.data
         event.description = form.description.data
-        event.fun_meter = int(form.fun_meter.data or 50)
-        event.fun_rating = event.fun_meter
         db.session.commit()
         flash("Event updated.", "success")
         return redirect(url_for('my_events'))

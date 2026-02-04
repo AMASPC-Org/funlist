@@ -1,5 +1,5 @@
 /* global google */
-window.FunlistMap = (function() {
+window.FunlistMap = (function () {
     const defaultCenter = { lat: 47.0379, lng: -122.9007 };
 
     function parseEventsFromDataset() {
@@ -43,7 +43,7 @@ window.FunlistMap = (function() {
         cursorBackup: null,
         interactionBackup: null,
 
-        init: function(containerId, options = {}) {
+        init: function (containerId, options = {}) {
             const mapContainer = document.getElementById(containerId);
             if (!mapContainer) {
                 console.error("Map container not found");
@@ -93,7 +93,7 @@ window.FunlistMap = (function() {
             return this.map;
         },
 
-        addEventsToMap: function(onMarkerClick, infoContentBuilder) {
+        addEventsToMap: function (onMarkerClick, infoContentBuilder) {
             this.clearMarkers();
 
             this.events.forEach(event => {
@@ -137,18 +137,12 @@ window.FunlistMap = (function() {
             });
         },
 
-        buildInfoContent: function(event) {
+        buildInfoContent: function (event) {
             const title = escapeHtml(event.title || "Event");
             const description = escapeHtml(event.description ? event.description.substring(0, 140) : "");
             const startDate = escapeHtml(event.start_date || "");
             const locationName = escapeHtml(event.location_label || (event.venue && event.venue.name) || "");
             const locationAddress = escapeHtml(event.location_address || "");
-            const ratingValue = event.fun_rating ?? event.fun_meter;
-            const rating = Number.isFinite(ratingValue) ? `${ratingValue}/5` : "N/A";
-            const link = event.detail_url
-                ? `<div class="mt-2"><a class="btn btn-sm btn-primary" href="${event.detail_url}">View Details</a></div>`
-                : "";
-
             return `
                 <div class="event-popup">
                     <strong>${title}</strong><br>
@@ -156,18 +150,17 @@ window.FunlistMap = (function() {
                     ${locationAddress ? `${locationAddress}<br>` : ""}
                     ${startDate ? `Date: ${startDate}<br>` : ""}
                     ${description ? `${description}...<br>` : ""}
-                    Fun Rating: ${rating}
                     ${link}
                 </div>
             `;
         },
 
-        clearMarkers: function() {
+        clearMarkers: function () {
             Object.values(this.markers).forEach(marker => marker.setMap(null));
             this.markers = {};
         },
 
-        getVisibleEventIds: function() {
+        getVisibleEventIds: function () {
             if (!this.map) {
                 return [];
             }
@@ -187,7 +180,7 @@ window.FunlistMap = (function() {
             return visibleIds;
         },
 
-        highlightMarker: function(eventId, infoContentBuilder) {
+        highlightMarker: function (eventId, infoContentBuilder) {
             const marker = this.markers[eventId];
             if (!marker || !this.map) {
                 return null;
@@ -204,7 +197,7 @@ window.FunlistMap = (function() {
             return marker;
         },
 
-        removeDrawingListeners: function() {
+        removeDrawingListeners: function () {
             this.drawingListeners.forEach(listener => {
                 if (listener) {
                     google.maps.event.removeListener(listener);
@@ -213,7 +206,7 @@ window.FunlistMap = (function() {
             this.drawingListeners = [];
         },
 
-        resetMapInteractivity: function() {
+        resetMapInteractivity: function () {
             if (!this.map) return;
 
             const restore = this.interactionBackup || {};
@@ -228,7 +221,7 @@ window.FunlistMap = (function() {
             this.map.getDiv().style.cursor = '';
         },
 
-        cancelDrawingSession: function() {
+        cancelDrawingSession: function () {
             this.removeDrawingListeners();
             this.resetMapInteractivity();
 
@@ -240,14 +233,14 @@ window.FunlistMap = (function() {
             this.isDrawing = false;
         },
 
-        isMarkerInActivePolygon: function(marker) {
+        isMarkerInActivePolygon: function (marker) {
             if (!this.activePolygon || !google.maps.geometry || !google.maps.geometry.poly) {
                 return true;
             }
             return google.maps.geometry.poly.containsLocation(marker.getPosition(), this.activePolygon);
         },
 
-        setActivePolygon: function(polygon) {
+        setActivePolygon: function (polygon) {
             if (this.activePolygon) {
                 this.activePolygon.setMap(null);
             }
@@ -255,7 +248,7 @@ window.FunlistMap = (function() {
             this.filterMarkers();
         },
 
-        startFreehandDrawing: function(onComplete) {
+        startFreehandDrawing: function (onComplete) {
             if (!this.map) {
                 console.error("Map not initialized");
                 return;
@@ -355,7 +348,7 @@ window.FunlistMap = (function() {
             ];
         },
 
-        clearFreehandDrawing: function() {
+        clearFreehandDrawing: function () {
             this.cancelDrawingSession();
 
             if (this.activePolygon) {
@@ -366,12 +359,12 @@ window.FunlistMap = (function() {
             this.interactionBackup = null;
         },
 
-        cancelFreehandDrawing: function() {
+        cancelFreehandDrawing: function () {
             this.cancelDrawingSession();
             this.interactionBackup = null;
         },
 
-        filterMarkers: function(predicate) {
+        filterMarkers: function (predicate) {
             if (predicate === null) {
                 this.lastFilterPredicate = null;
             } else if (typeof predicate === "function") {
