@@ -3,7 +3,8 @@ from flask_login import UserMixin
 from db_init import db
 from werkzeug.security import generate_password_hash, check_password_hash
 import json
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Float, Text, ForeignKey, Table
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Float, Text, ForeignKey, Table, Numeric, JSON
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.hybrid import hybrid_property
 
@@ -197,6 +198,12 @@ class Event(db.Model):
     event_submitted_timestamp = Column(DateTime, default=datetime.utcnow)
     event_source = Column(String(50), nullable=True)
     disclaimer_checked = Column(Boolean, default=False)
+
+    origin_site = Column(String(50), default='funlist', server_default='funlist')
+    visibility_tags = Column(JSON, nullable=True)
+    confidence_score = Column(Numeric(precision=3, scale=2), default=0.00, server_default='0.00')
+    is_ai_enriched = Column(Boolean, default=False, server_default='false')
+    enrichment_data = Column(JSONB, nullable=True)
 
     prohibited_advertisers = relationship(
         'ProhibitedAdvertiserCategory',

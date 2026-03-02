@@ -6,8 +6,7 @@ from functools import wraps
 from time import monotonic
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user, login_required, login_user, logout_user
-from forms import (SignupForm, LoginForm, ProfileForm, EventForm,
-                   ResetPasswordRequestForm, ResetPasswordForm, ChangePasswordForm,
+from forms import (SignupForm, ProfileForm, EventForm,
                    VenueForm, ContactForm, SearchForm)
 from models import User, Event, Subscriber, Chapter, HelpArticle, Venue, ProhibitedAdvertiserCategory, EventExclusionRule, OrganizerMaster, VenueMaster
 from db_init import db
@@ -722,14 +721,8 @@ def delete_event(event_id):
 
 def login():
     chapters = Chapter.query.all()
-    form = LoginForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
-        if user and user.check_password(form.password.data):
-            login_user(user, remember=form.remember_me.data)
-            return redirect(request.args.get('next') or url_for('index'))
-        flash('Invalid credentials', 'danger')
-    return render_template('login.html', form=form, chapters=chapters)
+    # Login relies entirely on Firebase Auth via frontend
+    return render_template('login.html', chapters=chapters)
 
 @login_required
 def logout():
@@ -738,39 +731,35 @@ def logout():
 
 def signup():
     form = SignupForm()
-    if form.validate_on_submit():
-        user = User(email=form.email.data)
-        user.set_password(form.password.data)
-        if form.primary_role.data == 'organizer': user.is_organizer = True
-        try:
-            db.session.add(user)
-            db.session.commit()
-            login_user(user)
-            session['new_signup'] = True
-            flash("Account created.", "success")
-            return redirect(url_for('index'))
-        except:
-            db.session.rollback()
-            flash("Error creating account.", "danger")
+    if request.method == 'POST' and form.validate_on_submit():
+        # User details should now be sourced from Firebase Auth
+        if current_user.is_authenticated:
+            if form.primary_role.data == 'organizer': current_user.is_organizer = True
+            try:
+                db.session.commit()
+                session['new_signup'] = True
+                flash("Profile updated.", "success")
+                return redirect(url_for('index'))
+            except:
+                db.session.rollback()
+                flash("Error updating profile.", "danger")
+        else:
+            flash("Please sign in with Google first.", "warning")
+            return redirect(url_for('login'))
     return render_template('signup.html', form=form, chapters=Chapter.query.all())
 
 def reset_password_request():
-    form = ResetPasswordRequestForm()
-    return render_template('reset_password_request.html', form=form, chapters=Chapter.query.all())
+    flash('Password resets are handled securely through your Google account.', 'info')
+    return redirect(url_for('login'))
 
 def reset_password(token):
-    form = ResetPasswordForm()
-    return render_template('reset_password.html', form=form, token=token, chapters=Chapter.query.all())
+    flash('Password resets are handled securely through your Google account.', 'info')
+    return redirect(url_for('login'))
 
 @login_required
 def change_password():
-    form = ChangePasswordForm()
-    if form.validate_on_submit():
-        current_user.set_password(form.new_password.data)
-        db.session.commit()
-        flash("Password updated.", "success")
-        return redirect(url_for('profile'))
-    return render_template('change_password.html', form=form, chapters=Chapter.query.all())
+    flash('Password changes are handled securely through your Google account.', 'info')
+    return redirect(url_for('profile'))
 
 @login_required
 def profile():
