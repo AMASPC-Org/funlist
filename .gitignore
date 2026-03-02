@@ -174,3 +174,19 @@ cython_debug/
 
 flask_session/
 firebase-service-account.json
+
+# Agent artifacts
+.agent/
+.gemini/
+CONTEXT.md
+
+# Scratch / debug output
+*.txt
+*.yaml
+!cloudbuild.yaml
+*.json
+!package.json
+!package-lock.json
+
+# Node
+node_modules/

@@ -1,0 +1,57 @@
+
+# Google Cloud Build configuration for FunList Express API
+# This file defines the CI/CD pipeline for deploying the API to Cloud Run
+
+substitutions:
+  _REGION: us-west1
+  _SERVICE_NAME: funlist-api
+  _REPOSITORY: funlist
+  _COMMIT_SHA: latest
+
+steps:
+  # Step 1: Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-image'
+    args: 
+      - 'build'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/api:${_COMMIT_SHA}'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/api:latest'
+      - '-f'
+      - 'Dockerfile'
+      - '.'
+  
+  # Step 2: Push the container image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-image'
+    args: 
+      - 'push'
+      - '--all-tags'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/api'
+  
+  # Step 3: Deploy to Cloud Run
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'deploy-cloud-run'
+    args:
+      - 'run'
+      - 'deploy'
+      - '${_SERVICE_NAME}'
+      - '--image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/api:${_COMMIT_SHA}'
+      - '--region=${_REGION}'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--service-account=funlist-backend@$PROJECT_ID.iam.gserviceaccount.com'
+      - '--set-secrets=DATABASE_URL=DATABASE_URL:latest'
+
+# Specify images to be pushed
+images:
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/api:${_COMMIT_SHA}'
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/api:latest'
+
+# Build timeout
+timeout: '1800s'
+
+# Use Cloud Build machine type for faster builds
+options:
+  logging: CLOUD_LOGGING_ONLY

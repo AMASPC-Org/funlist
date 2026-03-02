@@ -9,8 +9,8 @@ console.log('Starting FunList Express API...');
 const app = express();
 const prisma = new PrismaClient();
 
-// Use port 3001 exclusively for our API
-const PORT = 3001;
+// Use port from environment or default to 3001
+const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(express.json());
