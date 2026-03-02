@@ -184,9 +184,8 @@ CONTEXT.md
 *.txt
 *.yaml
 !cloudbuild.yaml
-*.json
-!package.json
-!package-lock.json
+funlist_app.json
+db_search_results.txt
 
 # Node
 node_modules/
