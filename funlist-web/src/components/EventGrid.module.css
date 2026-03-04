@@ -1,0 +1,16 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+  width: 100%;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 48px 24px;
+  color: #6b7280;
+  font-size: 1.1rem;
+  background-color: #f9fafb;
+  border-radius: 16px;
+  border: 2px dashed #e5e7eb;
+}
