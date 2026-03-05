@@ -56,7 +56,7 @@ export async function getFeaturedEvents(): Promise<EventData[]> {
  */
 export async function fetchEventsForMap(): Promise<FunListEventContract[]> {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/events?origin_site=funlist`, {
+    const res = await fetch(`${API_BASE_URL}/events?origin_site=funlist`, {
       next: { revalidate: 60 }
     });
     

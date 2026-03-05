@@ -228,10 +228,6 @@
     background-color: var(--bg-warm-white);
 }
 
-.rating-scale .rating-item:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 16px rgba(255, 138, 0, 0.15);
-}
 
 /* Advertising Page Styles */
 .ad-specs table {
@@ -2198,7 +2194,7 @@ main {
     z-index: 1;
     overflow: hidden;
     border-radius: 8px;
-    boxshadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .map-content-row {
